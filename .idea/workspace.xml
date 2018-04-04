@@ -2,23 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a8be218f-b406-4b54-8aa0-7b00aac89e7c" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/06_reporting_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/07_recording_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/08_factory_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/09_phasing.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/10_sychronization_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/11_container_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/12_uvm_tlm_interfaces.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/13_predefined_component_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/14_sequence_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/15_sequencer_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/16_policy_classes.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/17_register_layer.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/18_register_model.py" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/pyuvm/19_register_layer_interaction_with_RTL_design.py" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/base_classes.py" afterPath="$PROJECT_DIR$/pyuvm/05_base_classes.py" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/uvm_common.py" afterPath="$PROJECT_DIR$/pyuvm/uvm_common.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -144,6 +128,11 @@
     </findStrings>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Ray Salemi &lt;ray@raysalemi.com&gt;" />
+      </list>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
@@ -269,7 +258,14 @@
       <option name="project" value="LOCAL" />
       <updated>1522592917379</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Have now captured the entire UVM table of contents in files.  However, many of these functions will not be implemented since they are unneccesary in Python.">
+      <created>1522846528849</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1522846528849</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -300,7 +296,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Initial commit with common project structure." />
-    <option name="LAST_COMMIT_MESSAGE" value="Initial commit with common project structure." />
+    <MESSAGE value="Have now captured the entire UVM table of contents in files.  However, many of these functions will not be implemented since they are unneccesary in Python." />
+    <option name="LAST_COMMIT_MESSAGE" value="Have now captured the entire UVM table of contents in files.  However, many of these functions will not be implemented since they are unneccesary in Python." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
