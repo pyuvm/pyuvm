@@ -44,6 +44,7 @@ class uvm_object(uvm_void):
         5.3.2
         '''
     # Private
+        assert(isinstance(name,str))
         self.__name=None
         self.__logger = logging.getLogger ( name )
 

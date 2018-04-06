@@ -2,14 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a8be218f-b406-4b54-8aa0-7b00aac89e7c" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/pyuvm.iml" afterPath="$PROJECT_DIR$/.idea/pyuvm.iml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/docs/UVM_and_Python.md" afterPath="$PROJECT_DIR$/docs/UVM_and_Python.md" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/06_reporting_classes.py" afterPath="$PROJECT_DIR$/pyuvm/06_reporting_classes.py" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/10_sychronization_classes.py" afterPath="$PROJECT_DIR$/pyuvm/10_sychronization_classes.py" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/11_container_classes.py" afterPath="$PROJECT_DIR$/pyuvm/11_container_classes.py" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/12_uvm_tlm_interfaces.py" afterPath="$PROJECT_DIR$/pyuvm/12_uvm_tlm_interfaces.py" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/13_predefined_component_classes.py" afterPath="$PROJECT_DIR$/pyuvm/13_predefined_component_classes.py" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/19_register_layer_interaction_with_RTL_design.py" afterPath="$PROJECT_DIR$/pyuvm/19_register_layer_interaction_with_RTL_design.py" />
+      <change beforePath="$PROJECT_DIR$/pyuvm/base_classes.py" afterPath="$PROJECT_DIR$/pyuvm/base_classes.py" />
+      <change beforePath="$PROJECT_DIR$/pyuvm/predefined_component_classes.py" afterPath="$PROJECT_DIR$/pyuvm/predefined_component_classes.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,56 +16,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="10_sychronization_classes.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyuvm/10_sychronization_classes.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" column="24" lean-forward="false" selection-start-line="2" selection-start-column="24" selection-end-line="2" selection-end-column="24" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="11_container_classes.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyuvm/11_container_classes.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="7" column="0" lean-forward="false" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="12_uvm_tlm_interfaces.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyuvm/12_uvm_tlm_interfaces.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="4" column="3" lean-forward="false" selection-start-line="4" selection-start-column="3" selection-end-line="4" selection-end-column="3" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="13_predefined_component_classes.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/pyuvm/13_predefined_component_classes.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="135">
-              <caret line="9" column="34" lean-forward="true" selection-start-line="9" selection-start-column="34" selection-end-line="9" selection-end-column="34" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="06_reporting_classes.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyuvm/06_reporting_classes.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="0" lean-forward="false" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="UVM_and_Python.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/docs/UVM_and_Python.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
@@ -79,6 +25,26 @@
                 <folding />
               </first_editor>
               <second_editor />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="predefined_component_classes.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/pyuvm/predefined_component_classes.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="927">
+              <caret line="131" column="8" lean-forward="false" selection-start-line="131" selection-start-column="8" selection-end-line="131" selection-end-column="8" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="base_classes.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pyuvm/base_classes.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-2778">
+              <caret line="77" column="34" lean-forward="false" selection-start-line="77" selection-start-column="34" selection-end-line="77" selection-end-column="34" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -114,7 +80,6 @@
         <option value="$PROJECT_DIR$/tests/context.py" />
         <option value="$PROJECT_DIR$/tests/test_basic.py" />
         <option value="$PROJECT_DIR$/setup.py" />
-        <option value="$PROJECT_DIR$/pyuvm/base_classes.py" />
         <option value="$PROJECT_DIR$/pyuvm/07_recording_classes.py" />
         <option value="$PROJECT_DIR$/pyuvm/08_uvm_factory.py" />
         <option value="$PROJECT_DIR$/pyuvm/08_factory_classes.py" />
@@ -132,6 +97,8 @@
         <option value="$PROJECT_DIR$/pyuvm/12_uvm_tlm_interfaces.py" />
         <option value="$PROJECT_DIR$/pyuvm/06_reporting_classes.py" />
         <option value="$PROJECT_DIR$/pyuvm/13_predefined_component_classes.py" />
+        <option value="$PROJECT_DIR$/pyuvm/base_classes.py" />
+        <option value="$PROJECT_DIR$/pyuvm/predefined_component_classes.py" />
       </list>
     </option>
   </component>
@@ -274,16 +241,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="0">
-            <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pyuvm/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -295,6 +252,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
           <caret line="5" column="18" lean-forward="false" selection-start-line="5" selection-start-column="6" selection-end-line="5" selection-end-column="21" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -345,6 +303,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="23" lean-forward="false" selection-start-line="0" selection-start-column="23" selection-end-line="0" selection-end-column="23" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -402,6 +361,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="23" lean-forward="false" selection-start-line="0" selection-start-column="23" selection-end-line="0" selection-end-column="23" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -475,7 +435,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pyuvm/base_classes.py" />
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -518,6 +477,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="465">
           <caret line="31" column="0" lean-forward="true" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -585,17 +545,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/UVM_and_Python.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="908">
-            <caret line="175" column="11" lean-forward="false" selection-start-line="175" selection-start-column="11" selection-end-line="175" selection-end-column="11" />
-            <folding />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pyuvm/11_container_classes.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
@@ -624,6 +573,33 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
           <caret line="9" column="34" lean-forward="true" selection-start-line="9" selection-start-column="34" selection-end-line="9" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/docs/UVM_and_Python.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="908">
+            <caret line="175" column="11" lean-forward="false" selection-start-line="175" selection-start-column="11" selection-end-line="175" selection-end-column="11" />
+            <folding />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyuvm/base_classes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2778">
+          <caret line="77" column="34" lean-forward="false" selection-start-line="77" selection-start-column="34" selection-end-line="77" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyuvm/predefined_component_classes.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="927">
+          <caret line="131" column="8" lean-forward="false" selection-start-line="131" selection-start-column="8" selection-end-line="131" selection-end-column="8" />
           <folding />
         </state>
       </provider>
