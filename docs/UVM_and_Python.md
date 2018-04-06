@@ -171,3 +171,9 @@ port/export system in the UVM. Therefore we do not implement the
 
 `pyuvm` does not run in the simulator, and thus does not use time. We do not
 implement the `uvm_time` class. 
+
+## Reporting Classes
+We will not
+
+## Sychronization Classes
+We will not recreate the Python `threading` package in pyuvm
