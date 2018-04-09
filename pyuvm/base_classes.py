@@ -8,8 +8,6 @@ try:
     import copy
     from pyuvm.uvm_common import *
     from abc import ABC
-    from predefined_component_classes import uvm_component
-    from uvm_tlm_interfaces import *
 except ModuleNotFoundError as mnf:
     print(mnf)
     sys.exit(1)
@@ -302,66 +300,6 @@ class uvm_transaction(uvm_object):
     As a result we do not implement any of the transaction methods in the UVM transaction.  It serves
     only as a placeholder class to be consistent with the fact that uvm_sequence_item extends uvm_transaction.
     '''
-
-
-class uvm_port_base(uvm_component):
-    '''
-    See uvm_tlm_interfaces.py for more details on implementing
-    TLM in pyuvm
-    '''
-
-    def __init__(self, name, parent, export_type):
-        super().__init__(name, parent)
-        self.__queue = None
-        self.connected_to={}
-        self.__export_type=export_type
-        uvm_methods = [uvm_method
-                       for uvm_method in dir (export_type)
-                       if isinstance(getattr(export_type,uvm_method),FunctionType)]
-        for method in uvm_methods:
-            setattr(self, method, getattr(export_type, method))
-
-    def connect(self, export):
-        isinstance(export, self.__export_type)
-        self.__queue = export.queue
-        self.connected_to[export.full_name]=export
-        export.provided_to[self.full_name]=self
-
-
-class pyuvm_export_base(uvm_component):
-    '''
-    This class does not exist in the UVM LRM, since
-    the UVM LRM uses a data member in the uvm_port_base
-    to say what kind of behavior it is implementing.
-
-    This approach is not needed in pyuvm, so we have
-    a pyuvm_export_base.
-
-    There is no equivalent of _imp_ in pyuvm
-    '''
-
-    def __init__(self, name, parent, queue):
-        '''
-        The export in pyuvm carries the Queue stored in a
-        tlm_fifo and provides the get and put methods to
-        interact with that Queue.
-
-        This means that if you instantiate the correct
-        export you will only be able to access the
-        queue in the ways intended (no putting in a get.)
-
-        You cannot instantiate an export without providing
-        a Queue since that makes no sense.
-
-        :param queue: The communication queue
-        '''
-        super().__init__(name, parent)
-        assert(isinstance(queue,Queue))
-        self.__queue=queue
-
-    @property
-    def queue(self):
-        return self.__queue
 
 class uvm_time:
     '''
