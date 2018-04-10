@@ -201,7 +201,70 @@ class uvm_get_peek_imp(uvm_get_imp, uvm_peek_imp):
     Combing the above
     '''
 
+class uvm_blocking_transport_imp(ABC):
+    @abstractmethod
+    def transport(self, req):
+        '''
+        The UVM returns the rsp through the
+        parameter list, but we don't do that
+        in Python.  So we return either rsp
+        or None.
+        :param req: Request
+        :return: rsp
+        '''
+        return None
+
+class uvm_non_blocking_transport_imp(ABC):
+    @abstractmethod
+    def nb_transport(self, req):
+        '''
+        As above we return None when the UVM version would
+        return 0.  Otherwise we return rsp.
+        :param req: Request
+        :return: rsp as Response
+        '''
+        return None
+
+class uvm_transport_imp(uvm_blocking_transport_imp, uvm_non_blocking_transport_imp):
+    '''
+    Must provide both of the above.
+    '''
+
+class uvm_blocking_master_imp(uvm_blocking_put_imp, uvm_blocking_get_peek_imp):
+    '''
+    Everybody blocks
+    '''
+
+class uvm_nonblocking_master_imp(uvm_nonblocking_put_imp, uvm_nonblocking_get_peek_imp):
+    '''
+    Nobody blocks
+    '''
+
+class uvm_master_imp(uvm_nonblocking_master_imp, uvm_blocking_master_imp):
+    '''
+    Block or don't, your choice.
+    '''
+
+class uvm_blocking_slave_imp(uvm_blocking_put_imp, uvm_blocking_get_peek_imp):
+    '''
+    Everybody blocks
+    '''
+
+class uvm_nonblocking_slave_imp(uvm_nonblocking_put_imp, uvm_nonblocking_get_peek_imp):
+    '''
+    Nobody blocks
+    '''
+
+class uvm_slave_imp(uvm_nonblocking_slave_imp, uvm_blocking_slave_imp):
+    '''
+    Block or don't, your choice.
+    '''
+
 class pyuvm_tlm_export_base(pyuvm_export_base):
+    '''
+    Accepts a queue that it will use to implement
+    TLM.
+    '''
     def __init__(self, name, parent, queue):
         assert(queue.maxqueue == 1), f'Tried to create a blocking export using a queue with maxsize not 1'
         super().__init__(name, parent, queue)
@@ -315,55 +378,55 @@ objects dynamically.
 
 class uvm_blocking_put_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_blocking_put_export)
+        super().__init__(name, parent, uvm_blocking_put_imp)
 
 class uvm_nonblocking_put_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_nonblocking_put_export)
+        super().__init__(name, parent, uvm_nonblocking_put_imp)
 
 class uvm_put_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name,parent, uvm_put_export)
+        super().__init__(name,parent, uvm_put_imp)
 
 class uvm_blocking_get_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_blocking_get_export)
+        super().__init__(name, parent, uvm_blocking_get_imp)
 
 class uvm_nonblocking_get_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_nonblocking_get_export)
+        super().__init__(name, parent, uvm_nonblocking_get_imp)
 
 class uvm_get_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name,parent, uvm_get_export)
+        super().__init__(name,parent, uvm_get_imp)
 
 class uvm_blocking_peek_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_blocking_peek_export)
+        super().__init__(name, parent, uvm_blocking_peek_imp)
 
 class uvm_nonblocking_peek_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_nonblocking_peek_export)
+        super().__init__(name, parent, uvm_nonblocking_peek_imp)
 
 class uvm_peek_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name,parent, uvm_peek_export)
+        super().__init__(name,parent, uvm_peek_imp)
 
 class uvm_blocking_get_peek_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_blocking_get_peek_export)
+        super().__init__(name, parent, uvm_blocking_get_peek_imp)
 
 class uvm_nonblocking_get_peek_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_nonblocking_get_peek_export)
+        super().__init__(name, parent, uvm_nonblocking_get_peek_imp)
 
 class uvm_get_peek_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name,parent, uvm_get_peek_export)
+        super().__init__(name,parent, uvm_get_peek_imp)
 
 class uvm_analyis_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_analysis_export)
+        super().__init__(name, parent, uvm_analysis_imp)
 
 
 
