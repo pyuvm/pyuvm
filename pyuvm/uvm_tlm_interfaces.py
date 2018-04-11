@@ -29,7 +29,7 @@ needed to do the job in old SystemVerilog.
 from predefined_component_classes import uvm_component
 from queue import Full as QueueFull, Empty as QueueEmpty
 from abc import ABC, abstractmethod
-
+from types import FunctionType
 '''
 12.2.2
 This section describes a variety of classes without
@@ -62,28 +62,6 @@ Since Python has the concept of an Abstract Base Class
 and since Python has multiple inheritance, we will implement
 the _imp classes as abstract base classes.  This will
 '''
-class uvm_port_base(uvm_component):
-    '''
-    See uvm_tlm_interfaces.py for more details on implementing
-    TLM in pyuvm
-    '''
-
-    def __init__(self, name, parent, export_type):
-        super().__init__(name, parent)
-        self.__queue = None
-        self.connected_to={}
-        self.__export_type=export_type
-        uvm_methods = [uvm_method
-                       for uvm_method in dir (export_type)
-                       if isinstance(getattr(export_type,uvm_method),FunctionType)]
-        for method in uvm_methods:
-            setattr(self, method, getattr(export_type, method))
-
-    def connect(self, export):
-        isinstance(export, self.__export_type)
-        self.__queue = export.queue
-        self.connected_to[export.full_name]=export
-        export.provided_to[self.full_name]=self
 
 class pyuvm_export_base(uvm_component):
     '''
@@ -260,6 +238,10 @@ class uvm_slave_imp(uvm_nonblocking_slave_imp, uvm_blocking_slave_imp):
     Block or don't, your choice.
     '''
 
+'''
+Export Classes
+'''
+
 class pyuvm_tlm_export_base(pyuvm_export_base):
     '''
     Accepts a queue that it will use to implement
@@ -372,9 +354,32 @@ The following port classes can be connected to export classes.
 They check that the export is of the correct type.
 
 uvm_port_base adds the correct methods to this class
-because Python allows you to assign functions to
-objects dynamically.
+rather than reference them because Python allows 
+you to assign functions to objects dynamically.
 '''
+
+class uvm_port_base(uvm_component):  ## FIX ME. This assumes connecting to a Queue. Not necessarily. Use _imp functions.
+    '''
+    See uvm_tlm_interfaces.py for more details on implementing
+    TLM in pyuvm
+    '''
+
+    def __init__(self, name, parent, export_type):
+        super().__init__(name, parent)
+        self.connected_to={}
+        self.__export_type=export_type
+        uvm_methods = [uvm_method
+                       for uvm_method in dir (export_type)
+                       if isinstance(getattr(export_type,uvm_method),FunctionType)]
+        for method in uvm_methods:
+            setattr(self, method, getattr(export_type, method))
+
+    def connect(self, export):
+        isinstance(export, self.__export_type)
+        self.__queue = export.queue
+        self.connected_to[export.full_name]=export
+        export.provided_to[self.full_name]=self
+
 
 class uvm_blocking_put_port(uvm_port_base):
     def __init__(self, name, parent):
@@ -429,7 +434,7 @@ class uvm_analyis_port(uvm_port_base):
         super().__init__(name, parent, uvm_analysis_imp)
 
 
-
+### GO BACK UP AND FIX THE PORT TO USE THE _
 
 
 
