@@ -1,14 +1,34 @@
 '''
 The UVM TLM class hierarchy wraps the behavior of objects (usually Queues) in
-a set of classes and objects.  There are three levels of object that
-deliver functionality to the user.
+a set of classes and objects.
 
-The _imp classes are abstract base classes (like pure virutual classes)
-that define
+The UVM LRM calls for three levels of classes to implement TLM: ports, exports,
+and imp:
+(from 12.2.1)
+
+* ports---Instantiated in components that require or use the associate interface
+to initiate transaction requests.
+
+* exports---Instantiated by components that forward an implementation of
+the methods defined in the associated interface.
+
+* imps---Instantiated by components that provide an implementation of or
+directly implement the methods defined.
+
+This is all a bit much for Python which, because of dynamic typing doesn't
+need so many layers.
+
+Specifically, pyuvm implements the _imp classes using an abstact base
+class and any class that extends the _imp class must provide the associated
+functions (becoming an 'export')  There is no longer a need for the
+export classes since we don't have to define variables that "forward" the
+interface.
+
+Therefore we do not implement 12.2.6
 '''
 
 from predefined_component_classes import uvm_component
-from queue import Full as QueueFull, Empty as QueueEmpty
+from queue import Full as QueueFull, Empty as QueueEmpty, Queue
 from abc import ABC, abstractmethod
 from types import FunctionType
 '''
@@ -23,62 +43,9 @@ repeat the __init__ for classes that do not change the
 __init__ functionality.
 '''
 
-'''
-Old SystemVerilog (pre-2012) did not have interfaces in 
-the sense that Java or C++ did.  There was no way to 
-promise that a given class would implement a function
-call such as put() or get(). 
-
-To work around this, the developers created the concept
-of an _imp.  You instantiated the _imp in your component
-and the _imp would make a call to the required method. If
-you hadn't supplied the method you got a run-time error. 
-(Quasi-duck typing.)
-
-The most common example of this is the uvm_subscriber which
-instantiates a subscriber imp and requires that someone
-who extends uvm_subscriber create a write() method.n
-
-Since Python has the concept of an Abstract Base Class
-and since Python has multiple inheritance, we will implement
-the _imp classes as abstract base classes.  This will
-'''
-
-class pyuvm_export_base(uvm_component):
-    '''
-    This class does not exist in the UVM LRM, since
-    the UVM LRM uses a data member in the uvm_port_base
-    to say what kind of behavior it is implementing.
-
-    All predefined exports in pyuvm instantiate a
-    Python Queue, so we do that here.
-
-    '''
-
-    def __init__(self, name, parent, queue):
-        '''
-        The export in pyuvm carries the Queue stored in a
-        tlm_fifo and provides the get and put methods to
-        interact with that Queue.
-
-        This means that if you instantiate the correct
-        export you will only be able to access the
-        queue in the ways intended (no putting in a get.)
-
-        You cannot instantiate an export without providing
-        a Queue since that makes no sense.
-
-        :param queue: The communication queue
-        '''
-        super().__init__(name, parent)
-        assert(isinstance(queue,Queue))
-        self.__queue=queue
-
-    @property
-    def queue(self):
-        return self.__queue
 
 '''
+12.2.7
 The _imp classes force users to implement the correct
 interface for the various TLM directions. 
 '''
@@ -104,7 +71,7 @@ class uvm_put_imp(uvm_blocking_put_imp,uvm_nonblocking_put_imp):
 
 class uvm_blocking_get_imp(ABC):
     @abstractmethod
-    def get(self,item):
+    def get(self):
         pass
 
 class uvm_nonblocking_get_imp(ABC):
@@ -128,12 +95,12 @@ class uvm_get_imp(uvm_blocking_get_imp,uvm_nonblocking_get_imp):
 
 class uvm_blocking_peek_imp(ABC):
     @abstractmethod
-    def peek(self,item):
+    def peek(self):
         pass
 
 class uvm_nonblocking_peek_imp(ABC):
     @abstractmethod
-    def try_peek(self,item):
+    def try_peek(self):
         return None
 
     @abstractmethod
@@ -219,119 +186,12 @@ class uvm_slave_imp(uvm_nonblocking_slave_imp, uvm_blocking_slave_imp):
     Block or don't, your choice.
     '''
 
-'''
-Export Classes
-'''
-
-class pyuvm_tlm_export_base(pyuvm_export_base):
-    '''
-    Accepts a queue that it will use to implement
-    TLM.
-    '''
-    def __init__(self, name, parent, queue):
-        assert(queue.maxqueue == 1), f'Tried to create a blocking export using a queue with maxsize not 1'
-        super().__init__(name, parent, queue)
-
-class pyuvm_analysis_export_base(pyuvm_export_base):
-    def __init__(self, name, parent, queue):
-        assert(queue.maxqueue == 0), f'Tried to create an analysis export using a blocking queue'
-        super().__init__(name, parent, queue)
-
-class uvm_blocking_put_export(pyuvm_tlm_export_base, uvm_blocking_put_imp):
-    def put(self,item):
-        self.__queue.put(item, block=True)
-
-class uvm_nonblocking_put_export(pyuvm_tlm_export_base, uvm_nonblocking_put_imp):
-    def try_put(self,item):
-        try:
-            self.__queue.put_nowait(item)
-            return True
-        except QueueFull:
-            return False
-
-    def can_put(self):
-        return not self.__queue.full()
-
-class uvm_put_export(uvm_blocking_put_export, uvm_nonblocking_put_export, uvm_put_imp):
-    '''
-    Combines the functions of blocking and non_blocking put
-    '''
-
-class uvm_blocking_get_export(pyuvm_tlm_export_base, uvm_blocking_get_imp):
-    def get(self):
-        return self.__queue.get()
-
-class uvm_nonblocking_get_export(pyuvm_tlm_export_base, uvm_nonblocking_get_imp):
-    '''
-    Python doesn't support call by reference, so we'll
-    return None if try_get doesn't get a value.
-    '''
-    def try_get(self):
-        try:
-            return self.__queue.get_nowait()
-        except QueueEmpty:
-            return None
-
-    def can_get(self):
-        return not self.__queue.empty()
-
-class uvm_get_export(uvm_blocking_get_export, uvm_nonblocking_get_export, uvm_get_imp):
-    '''
-    Combines the functions of blocking and non_blocking get
-    '''
-
-class uvm_blocking_peek_export(pyuvm_tlm_export_base, uvm_blocking_peek_imp):
-    '''
-    Python Queues look down upon peeking and do not
-    provide that function inherently.  We need
-    to hack our way around to get what we want
-    '''
-
-    def peek(self):
-        while self.__queue.empty():
-            self.__queue.not_empty.wait()
-        queue_data = self.__queue.queue
-        return queue_data[0]
-
-class uvm_nonblocking_peek_export(pyuvm_tlm_export_base, uvm_nonblocking_peek_imp):
-
-    def try_peek(self):
-        if self.__queue.empty():
-            return None
-        else:
-            return self.__queue.queue[0]
-
-    def can_peek(self):
-        return not self.__queue.empty()
-
-class uvm_peek_export(uvm_blocking_peek_export,uvm_nonblocking_peek_export):
-    '''
-    Combine the above two
-    '''
-
-class uvm_blocking_get_peek_export(uvm_blocking_get_export, uvm_blocking_peek_export, uvm_blocking_get_peek_imp):
-    '''
-    Combining the above two
-    '''
-
-class uvm_nonblocking_get_peek_export(uvm_nonblocking_get_export, uvm_nonblocking_peek_export, uvm_nonblocking_get_peek_imp):
-    '''
-    Combining the above two
-    '''
-
-class uvm_get_peek_export(uvm_get_export, uvm_peek_export, uvm_get_peek_imp):
-    '''
-    All together now!
-    '''
-
-class uvm_analysis_export(pyuvm_analysis_export_base, uvm_analysis_imp):
-    def write(self,item):
-        self.__queue.put(item)
 
 '''
+12.2.5
 Port Classes
 
-The following port classes can be connected to export classes.
+The following port classes can be connected to "export" classes.
 They check that the export is of the correct type.
 
 uvm_port_base adds the correct methods to this class
@@ -378,7 +238,6 @@ class uvm_port_base(uvm_component):
         export.provided_to[self.full_name]=self
         for method in self.uvm_methods:
             exec( f'self.{method}=self.__export.{method}' )
-
 
 class uvm_blocking_put_port(uvm_port_base):
     def __init__(self, name, parent):
@@ -433,9 +292,64 @@ class uvm_analyis_port(uvm_port_base):
         super().__init__(name, parent, uvm_analysis_imp)
 
 
+'''
+12.2.8 FIFO Classes
+
+These classes provide synchronization control between
+threads using the Queue class.
+
+'''
+
+class uvm_tlm_fifo_base(uvm_component):
+
+    class PutExport(uvm_put_imp):
+        '''
+        12.2.8.1.3
+        '''
+        def put(self,item):
+            self.__queue.put(item)
+
+        def can_put(self):
+            return not self.__queue.full()
+
+        def try_put(self, item):
+            try:
+                self.__queue.put_nowait ( item )
+                return True
+            except QueueFull:
+                return False
+
+    class GetPeekExport(uvm_get_peek_imp):
+        '''
+        12.2.8.1.4
+        '''
+        def get(self):
+            return self.__queue.get()
+
+        def can_get(self):
+            return not self.__queue.empty()
+
+        def try_get(self):
+            try:
+                return self.__queue.get_nowait ()
+            except QueueEmpty:
+                return None
+        def peek(self):
+            while self.__queue.empty ():
+                self.__queue.not_empty.wait ()
+            queue_data = self.__queue.queue
+            return queue_data[0]
+
+    def __init__(self, name, parent):
+        super().__init__(name,parent)
+        self.__queue=None
+        self.put_export=PutExport()
 
 
 
+'''
+UVM TLM 2
+12.3
 
-
-
+This is left for future development.
+'''
