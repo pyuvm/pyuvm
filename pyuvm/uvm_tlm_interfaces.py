@@ -354,7 +354,7 @@ class uvm_tlm_fifo_base(uvm_component):
         super().__init__(name,parent)
         self.__queue=None
         self.put_export=self.PutExport()
-        self.get_export=self.GetPeekExport()
+        self.get_peek_export=self.GetPeekExport()
 
 
 
