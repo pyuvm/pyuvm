@@ -334,16 +334,28 @@ class uvm_tlm_fifo_base(uvm_component):
                 return self.__queue.get_nowait ()
             except QueueEmpty:
                 return None
+
         def peek(self):
             while self.__queue.empty ():
                 self.__queue.not_empty.wait ()
             queue_data = self.__queue.queue
             return queue_data[0]
 
+        def can_peek(self):
+            return not self.__queue.empty()
+
+        def try_peek(self):
+            if self.__queue.empty():
+                return None
+            else:
+                return self.__queue.queue[0]
+
     def __init__(self, name, parent):
         super().__init__(name,parent)
         self.__queue=None
-        self.put_export=PutExport()
+        self.put_export=self.PutExport()
+        self.get_export=self.GetPeekExport()
+
 
 
 

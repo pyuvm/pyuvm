@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a8be218f-b406-4b54-8aa0-7b00aac89e7c" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/uvm_tlm_bidirectional.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pyuvm/uvm_tlm_interfaces.py" beforeDir="false" afterPath="$PROJECT_DIR$/pyuvm/uvm_tlm_interfaces.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/context.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/context.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -19,8 +16,8 @@
       <file leaf-file-name="uvm_tlm_interfaces.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pyuvm/uvm_tlm_interfaces.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="424">
-              <caret line="105" column="19" lean-forward="true" selection-start-line="105" selection-start-column="19" selection-end-line="105" selection-end-column="19" />
+            <state relative-caret-position="536">
+              <caret line="335" column="27" selection-start-line="335" selection-start-column="27" selection-end-line="335" selection-end-column="27" />
               <folding>
                 <element signature="e#1191#1245#0" expanded="true" />
                 <element signature="e#1370#1749#1" />
@@ -478,7 +475,14 @@
       <option name="project" value="LOCAL" />
       <updated>1523534674191</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Now adding TLM FIFO">
+      <created>1523538637880</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1523538637880</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -499,7 +503,7 @@
       <window_info anchor="bottom" id="Find" order="1" weight="0.32935324" />
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.32935324" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32935324" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -526,7 +530,8 @@
     <MESSAGE value="Now have implemented _imp for master, slave, and transport.  Must next implement exports and ports." />
     <MESSAGE value="Minor cleanup.&#10;&#10;Need to fix port to become a dynamic wrapper." />
     <MESSAGE value="Port is now dynamically connecting methods, but realizing that I don't need exports types." />
-    <option name="LAST_COMMIT_MESSAGE" value="Port is now dynamically connecting methods, but realizing that I don't need exports types." />
+    <MESSAGE value="Now adding TLM FIFO" />
+    <option name="LAST_COMMIT_MESSAGE" value="Now adding TLM FIFO" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -890,8 +895,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pyuvm/uvm_tlm_interfaces.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="424">
-          <caret line="105" column="19" lean-forward="true" selection-start-line="105" selection-start-column="19" selection-end-line="105" selection-end-column="19" />
+        <state relative-caret-position="536">
+          <caret line="335" column="27" selection-start-line="335" selection-start-column="27" selection-end-line="335" selection-end-column="27" />
           <folding>
             <element signature="e#1191#1245#0" expanded="true" />
             <element signature="e#1370#1749#1" />
