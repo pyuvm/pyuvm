@@ -1,29 +1,10 @@
 '''
-The SystemVerilog UVM was built for a statically typed language
-that lacked (at the time) OOP interfaces.  The UVM developers
-worked around this problem by creating classes (imp) that delivered
-the behavior associated with an interface.
+The UVM TLM class hierarchy wraps the behavior of objects (usually Queues) in
+a set of classes and objects.  There are three levels of object that
+deliver functionality to the user.
 
-Python is not statically typed and, while there is an `interface`
-module that delivers interface behavior,  this is not a Pythonic
-way of coding.
-
-Python's duck-typing says that you'll get errors when you try
-to use a class improperly, there is less emphasis on not allowing
-the program to even compile if there is an error.
-
-All of this also applies to the paramaterized typing in the UMV
-TLM SystemVerilog implementation.  This is also unnecessary.
-
-That said, asking users to use the basic Queue class for TLM commmunication
-is a suboptimal solution.  There is no mechanism to enforce putting
-and getting in the right places and while you can write code in
-Python that references a Queue that you expect upper level code to
-provide, there is no guarantee that the Queue will be provided with
-the correct name.  Hilarity would ensue.
-
-This file implements the basics of UVM TLM without the overhead
-needed to do the job in old SystemVerilog.
+The _imp classes are abstract base classes (like pure virutual classes)
+that define
 '''
 
 from predefined_component_classes import uvm_component
@@ -358,27 +339,45 @@ rather than reference them because Python allows
 you to assign functions to objects dynamically.
 '''
 
-class uvm_port_base(uvm_component):  ## FIX ME. This assumes connecting to a Queue. Not necessarily. Use _imp functions.
+class uvm_port_base(uvm_component):
     '''
-    See uvm_tlm_interfaces.py for more details on implementing
-    TLM in pyuvm
+    port classes expose the tlm methods to
+    the object that instantiates them.  We extend
+    this class to create the variety of ports and
+    pass this class the implementation type that
+    defines the needed methods (put(), get(),
+    nb_transport(), etc)
+
+    Connect dynamically adds the functions'
+    concrete implementations to the port and
+    wraps them so that port.put() calls export.put()
+
+
+
     '''
 
-    def __init__(self, name, parent, export_type):
+    def __init__(self, name, parent, imp_type):
         super().__init__(name, parent)
         self.connected_to={}
-        self.__export_type=export_type
-        uvm_methods = [uvm_method
-                       for uvm_method in dir (export_type)
-                       if isinstance(getattr(export_type,uvm_method),FunctionType)]
-        for method in uvm_methods:
-            setattr(self, method, getattr(export_type, method))
+        self._imp_type=imp_type
+        self.uvm_methods = [uvm_method
+                            for uvm_method in dir ( imp_type )
+                            if isinstance( getattr( imp_type, uvm_method ), FunctionType )]
 
     def connect(self, export):
-        isinstance(export, self.__export_type)
-        self.__queue = export.queue
+        '''
+        connect() takes an object that implements _imp_type
+        and wraps its implementing methods in the port. That
+        way any port can deliver the methods of any imp
+        :param export: The concrete object that implements imp
+        :return: None
+        '''
+        isinstance( export, self._imp_type )
+        self.__export=export
         self.connected_to[export.full_name]=export
         export.provided_to[self.full_name]=self
+        for method in self.uvm_methods:
+            exec( f'self.{method}=self.__export.{method}' )
 
 
 class uvm_blocking_put_port(uvm_port_base):
@@ -434,7 +433,7 @@ class uvm_analyis_port(uvm_port_base):
         super().__init__(name, parent, uvm_analysis_imp)
 
 
-### GO BACK UP AND FIX THE PORT TO USE THE _
+
 
 
 
