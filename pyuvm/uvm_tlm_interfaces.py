@@ -140,7 +140,7 @@ class uvm_blocking_transport_imp(ABC):
         '''
         return None
 
-class uvm_non_blocking_transport_imp(ABC):
+class uvm_nonblocking_transport_imp( ABC ):
     @abstractmethod
     def nb_transport(self, req):
         '''
@@ -151,7 +151,7 @@ class uvm_non_blocking_transport_imp(ABC):
         '''
         return None
 
-class uvm_transport_imp(uvm_blocking_transport_imp, uvm_non_blocking_transport_imp):
+class uvm_transport_imp( uvm_blocking_transport_imp, uvm_nonblocking_transport_imp ):
     '''
     Must provide both of the above.
     '''
@@ -298,16 +298,29 @@ class uvm_analyis_port(uvm_port_base):
 These classes provide synchronization control between
 threads using the Queue class.
 
+One note.  The RLM has only 12.2.8.1.3 and 12.2.8.1.4, put_export
+and get_peek_export, but the UVM code has all the variants
+of exports. 
+
+The SystemVerilog UVM relies upon static type checking
+and polymorphism to make sure that users connect the
+correct ports to these exports, but we don't have
+static checking, so we implement classes for all the
+port variants. This creates the runtime assertion checking
+that we need.
 '''
 
 class uvm_tlm_fifo_base(uvm_component):
 
-    class PutExport(uvm_put_imp):
+    class BlockingPutExport(uvm_blocking_put_imp):
+        def put(self,item):
+            self.__queue.put(item)
+
+
+    class NonBlockingPutExport(uvm_nonblocking_put_imp):
         '''
         12.2.8.1.3
         '''
-        def put(self,item):
-            self.__queue.put(item)
 
         def can_put(self):
             return not self.__queue.full()
@@ -319,13 +332,13 @@ class uvm_tlm_fifo_base(uvm_component):
             except QueueFull:
                 return False
 
-    class GetPeekExport(uvm_get_peek_imp):
-        '''
-        12.2.8.1.4
-        '''
+    class PutExport(BlockingPutExport, NonBlockingPutExport): ...
+
+    class BlockingGetExport(uvm_blocking_get_imp):
         def get(self):
             return self.__queue.get()
 
+    class NonBlockingGetExport(uvm_nonblocking_get_imp):
         def can_get(self):
             return not self.__queue.empty()
 
@@ -335,12 +348,17 @@ class uvm_tlm_fifo_base(uvm_component):
             except QueueEmpty:
                 return None
 
+
+    class GetExport(BlockingGetExport, NonBlockingGetExport):...
+
+    class BlockingPeekExport(uvm_blocking_peek_imp):
         def peek(self):
             while self.__queue.empty ():
                 self.__queue.not_empty.wait ()
             queue_data = self.__queue.queue
             return queue_data[0]
 
+    class NonBlockingPeekExport(uvm_nonblocking_peek_imp):
         def can_peek(self):
             return not self.__queue.empty()
 
@@ -350,11 +368,70 @@ class uvm_tlm_fifo_base(uvm_component):
             else:
                 return self.__queue.queue[0]
 
+    class PeekExport(BlockingPeekExport, NonBlockingPeekExport): ...
+
+
+    class BlockingGetPeekExport(BlockingGetExport, BlockingPeekExport):...
+    class NonBlockingGetPeekExport(NonBlockingGetExport, NonBlockingPeekExport):...
+    class GetPeekExport(GetExport, PeekExport):
+        '''
+        12.2.8.1.4
+        '''
+
     def __init__(self, name, parent):
         super().__init__(name,parent)
         self.__queue=None
+
         self.put_export=self.PutExport()
+        self.blocking_put_export=self.BlockingPutExport()
+        self.nonblocking_get_export = self.NonBlockingPutExport()
+
         self.get_peek_export=self.GetPeekExport()
+        self.blocking_get_peek_export=self.BlockingGetPeekExport()
+        self.nonblocking_get_peek_export=self.NonBlockingGetPeekExport()
+
+        self.blocking_get_export = self.BlockingGetExport()
+        self.nonblocking_get_export = self.NonBlockingGetExport()
+        self.get_export = self.GetExport()
+
+        self.blocking_peek_export = self.BlockingPeekExport()
+        self.nonblocking_peek_export = self.NonBlockingPeekExport()
+        self.peek_export = self.PeekExport()
+
+        self.blocking_get_peek_export = self.BlockingGetPeekExport()
+        self.nonblocking_get_peek_export = self.NonBlockingGetPeekExport()
+        self.get_peek_export=self.GetPeekExport()
+
+        self.get_ap=uvm_analyis_port()
+        self.put_ap=uvm_analyis_port()
+
+class uvm_tlm_fifo(uvm_tlm_fifo_base):
+
+    def __init__(self, size=1):
+        super().__init__()
+        self.__queue=Queue(maxsize=size)
+
+    def size(self):
+        return self.__queue.maxsize
+
+    def used(self):
+        return self.qsize(self)
+
+    def is_empty(self):
+        return self.__queue.empty()
+
+    def is_full(self):
+        return self.__queue.full()
+
+    def flush(self):
+        self.__queue.mutex.acquire()
+        self.__queue.queue.clear()
+        self.__queue.all_tasks_done.notify_all()
+        self.__queue.unfinished_tasks=0
+        self.__queue.mutex.release()
+
+
+
 
 
 
