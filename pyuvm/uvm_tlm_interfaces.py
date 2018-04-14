@@ -315,7 +315,7 @@ class uvm_tlm_fifo_base(uvm_component):
     class BlockingPutExport(uvm_blocking_put_imp):
         def put(self,item):
             self.__queue.put(item)
-
+            self.put_ap(item)
 
     class NonBlockingPutExport(uvm_nonblocking_put_imp):
         '''
@@ -328,6 +328,7 @@ class uvm_tlm_fifo_base(uvm_component):
         def try_put(self, item):
             try:
                 self.__queue.put_nowait ( item )
+                self.put_ap(item)
                 return True
             except QueueFull:
                 return False
@@ -336,7 +337,9 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class BlockingGetExport(uvm_blocking_get_imp):
         def get(self):
-            return self.__queue.get()
+            item = self.__queue.get()
+            self.get_ap(item)
+            return item
 
     class NonBlockingGetExport(uvm_nonblocking_get_imp):
         def can_get(self):
@@ -344,7 +347,9 @@ class uvm_tlm_fifo_base(uvm_component):
 
         def try_get(self):
             try:
-                return self.__queue.get_nowait ()
+                item = self.__queue.get_nowait ()
+                self.get_ap(item)
+                return item
             except QueueEmpty:
                 return None
 
@@ -370,9 +375,10 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class PeekExport(BlockingPeekExport, NonBlockingPeekExport): ...
 
-
     class BlockingGetPeekExport(BlockingGetExport, BlockingPeekExport):...
+
     class NonBlockingGetPeekExport(NonBlockingGetExport, NonBlockingPeekExport):...
+
     class GetPeekExport(GetExport, PeekExport):
         '''
         12.2.8.1.4
@@ -424,11 +430,106 @@ class uvm_tlm_fifo(uvm_tlm_fifo_base):
         return self.__queue.full()
 
     def flush(self):
+        '''
+        The SystemVerilog UVM flushes the Queue
+        using a while loop and counting the number
+        of threads waiting for a get. If there are
+        still threads waiting after the loop runs
+        it issues an error.
+
+        In pyuvm we just flush the loop and clear
+        all the unfinished tasks.
+        :return: None
+        '''
         self.__queue.mutex.acquire()
         self.__queue.queue.clear()
         self.__queue.all_tasks_done.notify_all()
         self.__queue.unfinished_tasks=0
         self.__queue.mutex.release()
+
+class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
+
+    class AnalysisExport(uvm_analysis_imp):
+        def write(self, item):
+            try:
+                self.__queue.put_nowait(item)
+            except QueueFull:
+                raise QueueFull(f"Full analysis fifo: {self.fullname}. This should never happen")
+
+    def __init__(self):
+        super().__init__(0)
+        self.analysis_export = self.AnalysisExport()
+
+class uvm_tlm_req_rsp_channel(uvm_component):
+    '''
+    12.2.9.1
+    '''
+
+    class MasterSlaveExport ( uvm_master_imp ):
+        def __init__(self, put_export, get_peek_export):
+            self.put_export = put_export
+            self.get_peek_export = get_peek_export
+
+        def put(self, item):
+            self.put_export.put ( item )
+
+        def can_put(self):
+            return self.put_export.can_put ()
+
+        def try_put(self, item):
+            return self.put_export.try_put ( item )
+
+        def get(self):
+            return self.get_peek_export.get ()
+
+        def can_get(self):
+            return self.get_peek_export.can_get ()
+
+        def try_get(self):
+            return self.get_peek_export.try_get
+
+    def __init__(self, name, parent=None, request_fifo_size=1, response_fifo_size = 1):
+        self.__req_tlm_fifo = uvm_tlm_fifo("request_fifo", self, request_fifo_size)
+        self.__rsp_tlm_fifo = uvm_tlm_fifo("rsponse_fifo")
+
+        self.put_request_export = self.__req_tlm_fifo.put_export # 12.2.9.1.3
+        self.get_peek_response_export = self.__rsp_tlm_fifo.get_peek_export # 12.2.9.1.4
+        self.get_peek_request_export = self.__req_tlm_fifo.get_peek_export #12.2.9.1.5
+        self.put_response_export = self.__rsp_tlm_fifo.put_export #12.2.9.1.6
+        self.request_ap = uvm_analyis_port("request_ap", self) #12.2.9.1.7
+        self.response_ap = uvm_analyis_port("response_ap", self) #12.2.9.1.8
+
+        self.master_export = self.MasterSlaveExport(self.put_request_export, self.get_peek_response_export) #12.2.9.1.9
+        self.slave_export  = self.MasterSlaveExport(self.get_peek_request_export, self.put_response_export) #12.2.9.1.10
+
+    def connect_phase(self):
+        self.request_ap.connect(self.__req_tlm_fifo.put_ap) #12.2.9.1.7
+        self.response_ap.connect(self.__rsp_tlm_fifo.get_ap) #12.2.9.1.8
+
+class uvm_tlm_transport_channel(uvm_tlm_req_rsp_channel):
+    '''
+
+    '''
+    class TransportExport(uvm_transport_imp):
+        def transport(self, req):
+            self.__req_tlm_fifo.put_export.put(req)
+            return self.__rsp_tlm_fifo.get_peek_export.get()
+
+        def nb_transport(self, req):
+            if not self.__req_tlm_fifo.put_export.try_put(req):
+                return False
+            return self.__rsp_tlm_fifo.get_peek_export.try_get()
+
+    def __init__(self, name, parent=None):
+        super().__init__(name, parent, 1, 1)
+        self.transport_export=self.TransportExport
+
+
+
+
+
+
+
 
 
 
