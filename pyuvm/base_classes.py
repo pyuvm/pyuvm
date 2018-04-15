@@ -6,7 +6,7 @@ try:
     import logging
     import inspect
     import copy
-    from pyuvm.uvm_common import *
+    from pyuvm.uvm_pkg import *
     from abc import ABC
 except ModuleNotFoundError as mnf:
     print(mnf)

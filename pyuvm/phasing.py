@@ -1,9 +1,8 @@
 '''
-The UVM Specification has a detailed section on phasing, designed with the intention
-of allowing users to define their own phases.
+9.1
+The UVM Specification specifies a generalized phasing solution.  This is left
+as an excercise for future developers.
 
-However, nobody writes user-defined phases, and in fact they are discouraged.
-
-Therefore we are going to simply implement the standard UVM phases using a list and a simple
-class that uses a string to call the correct function.
+Currently uvm_components in pyuvm deliver a top-down list of components that can be reversed
+to do bottom up.
 '''
