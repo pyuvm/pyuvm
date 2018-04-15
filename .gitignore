@@ -1,5 +1,6 @@
 IEEE_UVM.pdf
 *.ipynb
 .idea/*
+.cache
 .idea
 __pycache__
