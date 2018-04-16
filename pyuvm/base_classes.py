@@ -38,6 +38,7 @@ class uvm_object(uvm_void):
         else:
             return cls ( name )
 
+
     def __init__(self, name='unnamed'):
         '''
         Implements behavior in new()

@@ -1,3 +1,4 @@
+from enum import Enum, auto
 
 class UVMNotImplemented(NotImplementedError):
     '''
@@ -10,5 +11,4 @@ class UsePythonMethod(NotImplementedError):
     method rather than a UVM method.  For example
     use __str__() instead of convert2string()
     '''
-
 

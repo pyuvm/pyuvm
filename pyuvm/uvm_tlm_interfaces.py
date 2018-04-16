@@ -525,18 +525,6 @@ class uvm_tlm_transport_channel(uvm_tlm_req_rsp_channel):
         self.transport_export=self.TransportExport
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 '''
 UVM TLM 2
 12.3

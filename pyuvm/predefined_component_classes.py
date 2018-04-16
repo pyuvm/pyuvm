@@ -1,7 +1,8 @@
 import uvm_pkg
 from base_classes import *
 from queue import Queue
-
+from phasing import PyuvmPhases, PhaseType
+from reporting_classes import uvm_report_object
 '''
 This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
 testbenches in Python.
@@ -20,7 +21,7 @@ e: Factory---pyuvm manages the factory throught the create() method without all 
 
 # Class Declarations
 
-class uvm_component(uvm_object):
+class uvm_component(uvm_report_object):
     '''
 The specification calls for uvm_component to extend uvm_report_object. However, pyuvm
 uses the logging module orthogonally to class structure. It may be that in future
@@ -33,6 +34,21 @@ We've opted for the latter.
     '''
     component_dict = {}
     uvm_root=None  #F.7
+    phase_list = [('build','topdown'), ('connect', 'bottomup')]
+
+    @classmethod
+    def create(cls, name='unnamed', parent=None):
+        '''
+        5.3.5.1
+        This implements the factory with overrides. It is much simpler
+        to do this in Python than SystemVerilog
+        '''
+        if cls.override:
+            return cls.override ( name, parent)
+        else:
+            return cls ( name, parent )
+
+
     def __init__(self, name, parent=None):
         '''
         :param name: A string with the name of the object.
@@ -187,7 +203,6 @@ We've opted for the latter.
         except KeyError:
             return None
 
-
     def get_depth(self):
         '''
         13.1.3.8
@@ -199,90 +214,25 @@ We've opted for the latter.
         # levels in the full name.
         return len(self.full_name.split("."))-1
 
-    '''
-    Phasing Interface 13.1.4
-    We are only implementing the basic phases.  Fancy user-defined phasing could be added
-    at a later time.
-    
-    One note. The SystemVerilog UVM uses virtual methods for phases.
-    This is unnecessary in Python. Duck typing means that the variable has only
-    the type of the object in it.
-    
-    Therefore we do not implement the phases using the virtual method approach.
-    
-    '''
+    def build_phase(self,phase=None):...
 
-    def build_phase(self):
-        '''
-        13.1.4.1.1
-        :param self:
-        :return: None
-        '''
-        pass
+    def connect_phase(self, phase=None):...
 
-    def connect_phase(self):
-        '''
-        13.1.4.1.2
-        :param self:
-        :return: None
-        '''
-        pass
+    def end_of_elaboration_phase(self, phase=None):...
 
-    def end_of_elaboration_phase(self):
-        '''
-        13.1.4.1.3
-        :param self:
-        :return: None
-        '''
+    def start_of_simulation_phase(self, phase=None):...
+
+    def run_phase(self,phase=None):...
+
+    def extract_phase(self,phase=None):...
+
+    def check_phase(self,phase=None):...
+
+    def report_phase(self,phase=None):...
+
+    def final_phase(self,phase=None):...
 
 
-    def start_of_simulaiton_phase(self):
-        '''
-        13.1.4.1.4
-        :param self:
-        :return: None
-        '''
-        pass
-
-    def run_phase(self):
-        '''
-        13.1.4.1.5
-        :param self:
-        :return: None
-        '''
-        pass
-
-    def extract_phase(self):
-        '''
-        13.1.4.1.6
-        :param self:
-        :return: None
-        '''
-        pass
-
-    def check_phase(self):
-        '''
-        13.1.4.1.7
-        :param self:
-        :return: None
-        '''
-        pass
-
-    def report_phase(self):
-        '''
-        13.1.4.1.8
-        :param self:
-        :return: None
-        '''
-        pass
-
-    def final_phase(self):
-        '''
-        13.1.4.1.9
-        :param self:
-        :return: None
-        '''
-        pass
 
     '''
     The following sections have been skipped and could
@@ -307,12 +257,33 @@ class uvm_root(uvm_component):
 
     uvm_root is still a singleton that you access through its
     constructor instead of through a get() method.
+
+    Much of the functionality in Annex F delivers functionality
+    in SystemVerilog that is already built into Python. So we're
+    going to skip much of that Annex.
     '''
     def __new__(cls, *args, **kwargs):
-        print(uvm_component.uvm_root)
         if uvm_component.uvm_root == None:
             uvm_component.uvm_root = uvm_component('uvm_root',None)
         return uvm_component.uvm_root
+
+    def run_test(self, test_name=""):
+        '''
+        This implementation skips much of the state-setting and
+        what not in the LRM and focuses on building the
+        hierarchy and running the test.
+
+        At this time pyuvm has not implemented the phasing
+        system described in the LRM.  It's not clear that anyone
+        is using it, and in fact it is recommended that people
+        stick to the basic phases.  So this implementation loops
+        through the hierarchy and runs the phases.
+
+        :param test_name: The uvm testname
+        :return: none
+        '''
+
+
 
 uvm_pkg.uvm_root=uvm_root('uvm_root',None)
 
