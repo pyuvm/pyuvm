@@ -1,6 +1,7 @@
 import pyuvm_unittest
 import unittest
 from predefined_component_classes import *
+import predefined_component_classes
 import uvm_pkg
 
 
@@ -80,6 +81,12 @@ class predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
     def test_component_factory(self):
         mc = self.my_component.create('myname', None)
         self.assertEqual(self.my_component, type(mc))
+
+    class my_test(uvm_test):...
+
+    def test_run_test(self):
+        uvm_component.uvm_root.run_test('my_test')
+        self.assertTrue(isinstance(uvm_component.uvm_root.children[0],my_test))
 
 
 if __name__ == '__main__':

@@ -18,3 +18,4 @@ class base_classes_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         self.my_object.override=self.other_object
         mo = self.my_object.create('overridden')
         self.assertEqual(type(mo), self.other_object)
+

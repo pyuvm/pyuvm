@@ -1,4 +1,5 @@
 import uvm_pkg
+from uvm_pkg import Singleton
 from base_classes import *
 from queue import Queue
 from phasing import PyuvmPhases, PhaseType
@@ -34,7 +35,6 @@ We've opted for the latter.
     '''
     component_dict = {}
     uvm_root=None  #F.7
-    phase_list = [('build','topdown'), ('connect', 'bottomup')]
 
     @classmethod
     def create(cls, name='unnamed', parent=None):
@@ -247,7 +247,7 @@ We've opted for the latter.
     13.1.7--Other interfaces
     '''
 
-class uvm_root(uvm_component):
+class uvm_root(uvm_component, metaclass=Singleton):
     '''
     F.7.  We do not use uvm_pkg to hold uvm_root.  Instead it
     is a class variable of uvm_commponent.  This avoids
@@ -262,10 +262,6 @@ class uvm_root(uvm_component):
     in SystemVerilog that is already built into Python. So we're
     going to skip much of that Annex.
     '''
-    def __new__(cls, *args, **kwargs):
-        if uvm_component.uvm_root == None:
-            uvm_component.uvm_root = uvm_component('uvm_root',None)
-        return uvm_component.uvm_root
 
     def run_test(self, test_name=""):
         '''
@@ -283,10 +279,23 @@ class uvm_root(uvm_component):
         :return: none
         '''
 
+        self.uvm_test_top=uvm_test.create(test_name,'uvm_test_top',self)
+        top_down = self.uvm_test_top.hierarchy
+        bottom_up = list(self.uvm_test_top.hierarchy)
+        bottom_up.reverse()
+
+        for phase, phase_data in PyuvmPhases.__members__.items():
+            method,phase_type=phase_data.value
+            if phase_type == PhaseType.TOPDOWN:
+                comp_list=top_down
+            else:
+                comp_list=bottom_up
+
+            for comp in comp_list:
+                getattr(uvm_component.component_dict[comp],method)()
 
 
 uvm_pkg.uvm_root=uvm_root('uvm_root',None)
-
 
 class uvm_test(uvm_component):
     '''
@@ -297,13 +306,11 @@ class uvm_test(uvm_component):
     UVM class, so we don't do that (same for __init__).
     '''
 
-
 class uvm_env(uvm_component):
     '''
     13.3
     The user's containes for agents and what-not
     '''
-
 
 class uvm_agent(uvm_component):
     '''

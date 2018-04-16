@@ -45,7 +45,7 @@ class uvm_object(uvm_void):
         5.3.2
         '''
     # Private
-        assert(isinstance(name,str))
+        assert(isinstance(name,str)), f"{name} is not a string it is a {type(name)}"
         self.__name=None
         self.__logger = logging.getLogger ( name )
 
