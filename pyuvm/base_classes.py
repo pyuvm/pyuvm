@@ -26,8 +26,15 @@ class uvm_object(uvm_void):
     '''
     override = None
 
+    @staticmethod
+    def create_by_name(class_name, obj_name='unnamed', *args, **kwargs):
+        uvm_object_cls = getattr(sys.modules['__main__'], class_name)
+        uvm_object_cls = globals()[class_name]
+        return uvm_object_cls(obj_name, *args, kwargs)
+
+
     @classmethod
-    def create(cls, name='unnamed'):
+    def create(cls, name='unnamed', *args, **kwargs):
         '''
         5.3.5.1
         This implements the factory with overrides. It is much simpler

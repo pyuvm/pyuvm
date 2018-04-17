@@ -278,8 +278,7 @@ class uvm_root(uvm_component, metaclass=Singleton):
         :param test_name: The uvm testname
         :return: none
         '''
-
-        self.uvm_test_top=uvm_test.create(test_name,'uvm_test_top',self)
+        self.uvm_test_top=uvm_object.create_by_name(test_name,'uvm_test_top',self)
         top_down = self.uvm_test_top.hierarchy
         bottom_up = list(self.uvm_test_top.hierarchy)
         bottom_up.reverse()
