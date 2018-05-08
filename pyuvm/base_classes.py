@@ -12,38 +12,37 @@ except ModuleNotFoundError as mnf:
     print(mnf)
     sys.exit(1)
 
-class uvm_void():
+
+class uvm_void(type):
     '''
     5.2
-    The abstract base class for all classes.  Not really neaded for
-    python in that it defines no methods, and Python uses duck typing.
-    It is here for completeness.
-    '''
+    SystemVerilog Python uses this class to allow all
+    uvm objects to be stored in a uvm_void variable through
+    polymorphism.
 
-class uvm_object(uvm_void):
+    In pyuvm, we're using uvm_void() as a meteaclass so
+    that all UVM classes can be stored in a factory.
+    '''
+    factory_dict = {}
+    def __call__(cls, name='unamed', *args, **kwargs):
+        uvm_void.factory_dict[str(cls)]=cls
+        return super().__call__(name)
+
+class Singleton(uvm_void):
+    _instances={}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls]=super(Singleton,cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+    @classmethod
+    def clear_singletons(cls):
+        cls._instances.clear()
+        pass
+
+class uvm_object(metaclass=uvm_void):
     '''
     5.3.1
     '''
-    override = None
-
-    @staticmethod
-    def create_by_name(class_name, obj_name='unnamed', *args, **kwargs):
-        uvm_object_cls = getattr(sys.modules['__main__'], class_name)
-        uvm_object_cls = globals()[class_name]
-        return uvm_object_cls(obj_name, *args, kwargs)
-
-
-    @classmethod
-    def create(cls, name='unnamed', *args, **kwargs):
-        '''
-        5.3.5.1
-        This implements the factory with overrides. It is much simpler
-        to do this in Python than SystemVerilog
-        '''
-        if cls.override:
-            return cls.override ( name )
-        else:
-            return cls ( name )
 
 
     def __init__(self, name='unnamed'):
@@ -56,8 +55,9 @@ class uvm_object(uvm_void):
         self.__name=None
         self.__logger = logging.getLogger ( name )
 
-    # Publich Properties
-
+    # Public Properties
+        if len(name)==0:
+            name='unnamed'
         self.name=name
 
     def get_uvm_seeding(self):

@@ -1,5 +1,4 @@
 import uvm_pkg
-from uvm_pkg import Singleton
 from base_classes import *
 from queue import Queue
 from phasing import PyuvmPhases, PhaseType
@@ -33,21 +32,7 @@ The choice then becomes whether to create a uvm_report_object class as a placeho
 to preserve the UVM reference manual hierarchy or to code what is really going on.
 We've opted for the latter.
     '''
-    component_dict = {}
     uvm_root=None  #F.7
-
-    @classmethod
-    def create(cls, name='unnamed', parent=None):
-        '''
-        5.3.5.1
-        This implements the factory with overrides. It is much simpler
-        to do this in Python than SystemVerilog
-        '''
-        if cls.override:
-            return cls.override ( name, parent)
-        else:
-            return cls ( name, parent )
-
 
     def __init__(self, name, parent=None):
         '''

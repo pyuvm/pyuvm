@@ -2,7 +2,9 @@ import pyuvm_unittest
 import unittest
 from predefined_component_classes import *
 import predefined_component_classes
-import uvm_pkg
+from uvm_pkg import run_test
+
+class my_test(uvm_test):...
 
 
 class predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
@@ -68,8 +70,8 @@ class predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         self.assertEqual ( child3.get_depth (), 3 )
 
     class my_component ( uvm_component ):
-        def run_phase(self):
-            return 5
+        def run_phase(self): ...
+
 
     def test_phases(self):
         my_obj=self.my_component('my_component')
@@ -82,10 +84,11 @@ class predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         mc = self.my_component.create('myname', None)
         self.assertEqual(self.my_component, type(mc))
 
-    class my_test(uvm_test):...
 
     def test_run_test(self):
-        uvm_component.uvm_root.run_test('my_test')
+        run_test('my_test')
+
+
         self.assertTrue(isinstance(uvm_component.uvm_root.children[0],my_test))
 
 
