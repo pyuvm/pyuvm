@@ -33,6 +33,7 @@ to preserve the UVM reference manual hierarchy or to code what is really going o
 We've opted for the latter.
     '''
     uvm_root=None  #F.7
+    component_dict = {}
 
     def __init__(self, name, parent=None):
         '''

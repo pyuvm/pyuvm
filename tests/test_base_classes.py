@@ -10,6 +10,7 @@ class base_classes_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
 
 
     class other_object(uvm_object):...
+
     def test_base_factory(self):
         mo = self.my_object.create('object_name')
         self.assertEqual(type(mo), self.my_object)
