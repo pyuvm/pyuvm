@@ -1,9 +1,9 @@
-import uvm_pkg
-from base_classes import *
+# from base_classes import *
 from queue import Queue
 from phasing import PyuvmPhases, PhaseType
+import meta_classes
 from reporting_classes import uvm_report_object
-'''
+"""
 This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
 testbenches in Python.
 
@@ -17,12 +17,12 @@ d: Transaction Recording---We do not record transactions since pyuvm does not ru
 could be added later if we see a need or way to do it.
 e: Factory---pyuvm manages the factory throught the create() method without all the SystemVerilog typing overhead.
 
-'''
+"""
 
 # Class Declarations
 
 class uvm_component(uvm_report_object):
-    '''
+    """
 The specification calls for uvm_component to extend uvm_report_object. However, pyuvm
 uses the logging module orthogonally to class structure. It may be that in future
 we find a reason to wrap the basic logging package in the uvm code, but at this point
@@ -31,19 +31,19 @@ we are better off leaving logging to itself.
 The choice then becomes whether to create a uvm_report_object class as a placeholder
 to preserve the UVM reference manual hierarchy or to code what is really going on.
 We've opted for the latter.
-    '''
+    """
     uvm_root=None  #F.7
     component_dict = {}
 
     def __init__(self, name, parent=None):
-        '''
+        """
         :param name: A string with the name of the object.
         :param parent: The parent in the UVM hierarchy.
 
 
         13.1.2.1---This is new() in the IEEE-UVM, but we mean
         the same thing with __init__()
-        '''
+        """
 
         super ().__init__ ( name )
         self.__parent = None
@@ -60,12 +60,16 @@ We've opted for the latter.
         if name != 'uvm_root':
             uvm_component.component_dict[self.full_name]=self
 
+    def create(self, name, parent):
+        return self.__class__(name, parent)
+
+
     @property
     def parent(self):
-        '''
+        """
         :return: parent object
         13.1.3.1--- No 'get_' prefix
-        '''
+        """
         return self.__parent
 
     @parent.setter
@@ -77,15 +81,15 @@ We've opted for the latter.
 
     @property
     def full_name(self):
-        '''
+        """
         :return: Name concatenated to parent name.
         13.1.3.2
-        '''
+        """
         if self.name == 'uvm_root':
             return ''
         parent_fullname= '' if self.parent==None else self.parent.full_name
         return f'{parent_fullname}.{self.name}'
-    '''
+    """
     # Children in pyuvm
     UVM components contain a list of child components as
     the basis for creating the UVM hierarchy.  However
@@ -103,13 +107,13 @@ We've opted for the latter.
     get_first_child() or get_next_child().  We will
     implement __iter__ so that the user can use
     the component as an iterator.
-    '''
+    """
     @property
     def children(self):
-        '''
+        """
         13.1.3.3
         :return: dict with children
-        '''
+        """
         return self.__children
 
     def add_child(self, name, child):
@@ -118,10 +122,10 @@ We've opted for the latter.
 
     @property
     def hierarchy(self):
-        '''
+        """
         :param self: The component in question
         :return: An ordered list of components top to bottom.
-        '''
+        """
         yield self
         for child in self:
             assert isinstance(child, uvm_component)
@@ -132,11 +136,11 @@ We've opted for the latter.
 
 
     def __iter__(self):
-        '''
+        """
         13.1.3.4
         Implements the intention of this requirement
         without the approach taken in the UVM
-        '''
+        """
         for childname in self.children:
             yield self.__children[childname]
 
@@ -144,41 +148,41 @@ We've opted for the latter.
         return self.full_name
 
     def get_child(self, name):
-        '''
+        """
         13.1.3.4
         :param self:
         :param name: child string
         :return: uvm_component of that name
-        '''
+        """
         assert(isinstance(name, str))
         return self.__children[name]
 
     def get_num_children(self):
-        '''
+        """
         13.1.3.5
         :param self:
         :return: Number of children in component
-        '''
+        """
         return len(self.__children)
 
     def has_child(self, name):
-        '''
+        """
         13.1.3.6
         :param self:
         :param name: Name of child object
         :return: True if exists, False otherwise
-        '''
+        """
         assert(isinstance(name,str))
         return name in self.children
 
     def lookup(self, name):
-        '''
+        """
         13.1.3.7
         Return a component base on the path. If . then
         use full name from root otherwise relative
         :param name: The search name
         :return: either the component or None
-        '''
+        """
         assert(isinstance(name,str))
         if name[0] == '.':
             lookup_name=name
@@ -190,12 +194,12 @@ We've opted for the latter.
             return None
 
     def get_depth(self):
-        '''
+        """
         13.1.3.8
         Get the depth that I am from the top component.
         :param self: That's me
         :return: depth
-        '''
+        """
         # Rather than getting all recursive just count
         # levels in the full name.
         return len(self.full_name.split("."))-1
@@ -220,7 +224,7 @@ We've opted for the latter.
 
 
 
-    '''
+    """
     The following sections have been skipped and could
     be implemented at a later time if necessary.
     13.1.4.2--Run time phases
@@ -231,10 +235,10 @@ We've opted for the latter.
     13.1.5--Configurtion interface
     13.1.6--Recording interface
     13.1.7--Other interfaces
-    '''
+    """
 
-class uvm_root(uvm_component, metaclass=Singleton):
-    '''
+class uvm_root(uvm_component):
+    """
     F.7.  We do not use uvm_pkg to hold uvm_root.  Instead it
     is a class variable of uvm_commponent.  This avoids
     circular reference issues regarding uvm_pkg.
@@ -247,10 +251,20 @@ class uvm_root(uvm_component, metaclass=Singleton):
     Much of the functionality in Annex F delivers functionality
     in SystemVerilog that is already built into Python. So we're
     going to skip much of that Annex.
-    '''
+    """
+    _instances={}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls]=super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+    @classmethod
+    def clear_singletons(cls):
+        cls._instances.clear()
 
     def run_test(self, test_name=""):
-        '''
+        """
         This implementation skips much of the state-setting and
         what not in the LRM and focuses on building the
         hierarchy and running the test.
@@ -263,7 +277,7 @@ class uvm_root(uvm_component, metaclass=Singleton):
 
         :param test_name: The uvm testname
         :return: none
-        '''
+        """
         self.uvm_test_top=uvm_object.create_by_name(test_name,'uvm_test_top',self)
         top_down = self.uvm_test_top.hierarchy
         bottom_up = list(self.uvm_test_top.hierarchy)
@@ -280,38 +294,38 @@ class uvm_root(uvm_component, metaclass=Singleton):
                 getattr(uvm_component.component_dict[comp],method)()
 
 
-uvm_pkg.uvm_root=uvm_root('uvm_root',None)
+
 
 class uvm_test(uvm_component):
-    '''
+    """
     13.2
     The base class for all user-defined tests
 
     Python does not require that we override new() for every
     UVM class, so we don't do that (same for __init__).
-    '''
+    """
 
 class uvm_env(uvm_component):
-    '''
+    """
     13.3
     The user's containes for agents and what-not
-    '''
+    """
 
 class uvm_agent(uvm_component):
-    '''
+    """
     13.4
     Contains controls for individual agents
-    '''
+    """
     def __init__(self):
         super().__init__()
         self.__is_active=False
 
 
-    '''
+    """
     Have chosen to implement the spirit of 
     the is_active member rather than the 
     enum-based implementation.
-    '''
+    """
     @property
     def is_active(self):
         return self.__is_active
@@ -321,19 +335,19 @@ class uvm_agent(uvm_component):
         self.__is_active=is_active
 
 class uvm_monitor(uvm_component):
-    '''
+    """
     13.5
     We'll see if anything is ever added
     to uvm_monitor
-    '''
+    """
 
 class uvm_scoreboard(uvm_component):
-    '''
+    """
     13.6
-    '''
+    """
 
 class uvm_driver(uvm_component):
-    '''
+    """
     13.7
     
     The pyuvm driver implementation differs from the SystemVerilog
@@ -355,7 +369,7 @@ class uvm_driver(uvm_component):
     Our sequence_item_port will NOT return a response back. Generally
     we want to encourge using the object handles as the method of 
     transfer.  But there is a rsp_port for those who insist.
-    '''
+    """
 
     def __init__(self):
         super().__init__()
@@ -380,16 +394,16 @@ class uvm_driver(uvm_component):
         assert(isinstance(port,Queue))
         self.__rsp_port=port
 
-'''
+"""
 13.8 uvm_push_driver
 
 Never seen one used. Not implemented.
-'''
+"""
 
 class uvm_subscriber(uvm_component):
-    '''
+    """
     13.9
-    '''
+    """
 
 
 
