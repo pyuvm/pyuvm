@@ -1,2 +1,2 @@
 import unittest
-import uvm_tlm_interfaces
+import s12_uvm_tlm_interfaces

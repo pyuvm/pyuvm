@@ -1,7 +1,7 @@
 import meta_classes
 import error_classes
 # from predefined_component_classes import uvm_object
-from predefined_component_classes import uvm_component
+from s13_predefined_component_classes import uvm_component
 
 
 # Implementing section 8 in the IEEE Specification

@@ -27,7 +27,7 @@ interface.
 Therefore we do not implement 12.2.6
 '''
 
-from predefined_component_classes import uvm_component
+from s13_predefined_component_classes import uvm_component
 from queue import Full as QueueFull, Empty as QueueEmpty, Queue
 from abc import ABC, abstractmethod
 from types import FunctionType

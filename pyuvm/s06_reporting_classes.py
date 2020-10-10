@@ -2,7 +2,7 @@
 pyuvm uses the Python logging system to do reporting.  Therefore we're not
 translating this section.
 '''
-from base_classes import uvm_object
+from s05_base_classes import uvm_object
 import logging
 
 class uvm_report_object(uvm_object):

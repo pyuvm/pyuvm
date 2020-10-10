@@ -1,7 +1,7 @@
 import pyuvm_unittest
 import unittest
-from predefined_component_classes import *
-import predefined_component_classes
+from s13_predefined_component_classes import *
+import s13_predefined_component_classes
 from uvm_pkg import run_test
 import uvm_pkg
 

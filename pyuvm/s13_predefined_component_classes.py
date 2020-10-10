@@ -1,8 +1,8 @@
 # from base_classes import *
 from queue import Queue
-from phasing import PyuvmPhases, PhaseType
+from s09_phasing import PyuvmPhases, PhaseType
 import meta_classes
-from reporting_classes import uvm_report_object
+from s06_reporting_classes import uvm_report_object
 """
 This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
 testbenches in Python.

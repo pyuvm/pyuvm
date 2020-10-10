@@ -51,19 +51,19 @@ class uvm_object(uvm_void):
         """
         5.3.3.1
         """
-        raise UVMNotImplemented('get_uvm_seeding not implemented')
+        raise error_classes.UVMNotImplemented('get_uvm_seeding not implemented')
 
     def set_uvm_seeding(self, enable):
         """
         5.3.3.2
         """
-        raise UVMNotImplemented('set_uvm_seeding not implemented')
+        raise error_classes.UVMNotImplemented('set_uvm_seeding not implemented')
 
     def reseed(self):
         """
         5.3.3.3
         """
-        raise UVMNotImplemented('reseed not implemented')
+        raise error_classes.UVMNotImplemented('reseed not implemented')
 
     @property
     def name(self):
@@ -99,13 +99,13 @@ class uvm_object(uvm_void):
         """
         5.3.4.5
         """
-        raise UVMNotImplemented('Python provides better ways to do this so the uvm_object_wrapper is unimplemented')
+        raise error_classes.UVMNotImplemented('Python provides better ways to do this so the uvm_object_wrapper is unimplemented')
 
     def get_object_type(self):
         """
         5.3.4.6
         """
-        raise UVMNotImplemented('Python provides better ways to do this so the uvm_object_wrapper is unimplemented')
+        raise error_classes.UVMNotImplemented('Python provides better ways to do this so the uvm_object_wrapper is unimplemented')
 
     @property
     def type_name(self):
@@ -134,56 +134,56 @@ class uvm_object(uvm_void):
         """
         5.3.6.1
         """
-        raise UVMNotImplemented('There are probably better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented('There are probably better ways to do printing in Python')
 
     def sprint(self):
-        raise UVMNotImplemented('There are probably better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented('There are probably better ways to do printing in Python')
 
     def do_print(self):
-        raise UVMNotImplemented('There are probably better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented('There are probably better ways to do printing in Python')
 
     def convert2string(self):
         """
         5.3.6.4
         This interface exists in Python as the __str__() method
         """
-        raise UsePythonMethod('Use Python __str__() method')
+        raise error_classes.UsePythonMethod('Use Python __str__() method')
 
     def record(self):
         """
         5.3.7
         """
-        raise UVMNotImplemented('Python does not run in the simulator, so no recording')
+        raise error_classes.UVMNotImplemented('Python does not run in the simulator, so no recording')
 
     def do_record(self):
         """
         5.3.7.2
         """
-        raise UVMNotImplemented('Python does not run in the simulator, so no recording')
+        raise error_classes.UVMNotImplemented('Python does not run in the simulator, so no recording')
 
     def copy(self):
         """
         5.3.8.1
         """
-        raise UsePythonMethod('Python has the __copy__() method and the copy module')
+        raise error_classes.UsePythonMethod('Python has the __copy__() method and the copy module')
 
     def do_copy(self):
         """
         5.3.8.2
         """
-        raise UsePythonMethod('Use the __deepcopy__() method to implement this to support the copy module')
+        raise error_classes.UsePythonMethod('Use the __deepcopy__() method to implement this to support the copy module')
 
     def compare(self):
         """
         5.3.9.1
         """
-        raise UsePythonMethod('Use the __eq__() __lt__() and other comparison methods to implement this')
+        raise error_classes.UsePythonMethod('Use the __eq__() __lt__() and other comparison methods to implement this')
 
     def do_compare(self):
         """
         5.3.9.2
         """
-        raise UsePythonMethod('Use the __eq__(), __lt__() and other comparison methods to implement this.')
+        raise error_classes.UsePythonMethod('Use the __eq__(), __lt__() and other comparison methods to implement this.')
 
     def pack(self):
         """
@@ -192,35 +192,35 @@ class uvm_object(uvm_void):
         :return:
         """
 
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def pack_bytes(self):
         """
         5.3.10.1
         :return:
         """
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def pack_ints(self):
         """
         5.3.10.1
         :return:
         """
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def pack_longints(self):
         """
         5.3.10.1
         :return:
         """
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def do_pack(self):
         """
         5.3.10.2
         :return:
         """
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def unpack(self):
         """
@@ -229,48 +229,48 @@ class uvm_object(uvm_void):
         :return:
         """
 
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def unpack_bytes(self):
         """
         5.3.11.1
         :return:
         """
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def unpack_ints(self):
         """
         5.3.11.1
         :return:
         """
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def unpack_longints(self):
         """
         5.3.11.1
         :return:
         """
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def do_unpack(self):
         """
         5.3.11.2
         :return:
         """
-        raise UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def set_local(self):
         """
         5.3.12
         """
-        raise UsePythonMethod('The getattr and setattr functions handle this')
+        raise error_classes.UsePythonMethod('The getattr and setattr functions handle this')
 
     def do_execute_op(self):
         """
         5.3.13.1
         :return:
         """
-        raise UsePythonMethod('The getattr and setattr functions handle all 5.3.13 issues')
+        raise error_classes.UsePythonMethod('The getattr and setattr functions handle all 5.3.13 issues')
 
 
 class uvm_field_op:
@@ -281,7 +281,7 @@ class uvm_field_op:
     """
 
     def __new__(cls, *args, **kwargs):
-        raise UsePythonMethod('Python has simpler ways of handling field function.')
+        raise error_classes.UsePythonMethod('Python has simpler ways of handling field function.')
 
 
 class uvm_policy:
@@ -292,7 +292,7 @@ class uvm_policy:
     """
 
     def __new__(cls, *args, **kwargs):
-        raise UsePythonMethod('Python has simpler ways of handling functionality provided by policies.')
+        raise error_classes.UsePythonMethod('Python has simpler ways of handling functionality provided by policies.')
 
 
 class uvm_transaction(uvm_object):

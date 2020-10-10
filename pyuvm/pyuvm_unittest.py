@@ -1,7 +1,7 @@
 import unittest
 import logging
 import uvm_pkg
-from predefined_component_classes import uvm_component, uvm_root
+from s13_predefined_component_classes import uvm_component, uvm_root
 class pyuvm_TestCase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
