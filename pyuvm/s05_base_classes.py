@@ -32,20 +32,17 @@ class uvm_object(uvm_void):
     5.3.1
     """
 
-    def __init__(self, name='unnamed'):
+    def __init__(self, name=''):
         """
         Implements behavior in new()
         5.3.2
         """
         # Private
         assert (isinstance(name, str)), f"{name} is not a string it is a {type(name)}"
-        self.__name = None
+        self.set_name(name)
         self.__logger = logging.getLogger(name)
 
-        # Public Properties
-        if len(name) == 0:
-            name = 'unnamed'
-        self.name = name
+
 
     def get_uvm_seeding(self):
         """
@@ -65,20 +62,20 @@ class uvm_object(uvm_void):
         """
         raise error_classes.UVMNotImplemented('reseed not implemented')
 
-    @property
-    def name(self):
+
+    def get_name(self):
         """
         5.3.4.2
         """
-        assert (self.__name != None)
+        assert (self.__name != None), f"Internal error. {str(self)} has no name"
         return self.__name
 
-    @name.setter
-    def name(self, name):
+
+    def set_name(self, name):
         """
         5.3.4.1
         """
-        assert (isinstance(name, str))
+        assert (isinstance(name, str)), f"Must set the name to a string"
         self.__name = name
 
     @property
