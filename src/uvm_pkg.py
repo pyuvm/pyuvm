@@ -33,7 +33,5 @@ from s18_register_model import *
 # Section 19
 from s19_register_layer_interaction_with_RTL_design import *
 
-def run_test(test_name):
-    test = uvm_object.create_by_name ( globals ()[test_name], 'uvm_test_top' )
 
 

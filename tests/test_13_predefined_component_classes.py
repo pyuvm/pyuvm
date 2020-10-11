@@ -2,7 +2,6 @@ import pyuvm_unittest
 import unittest
 from s13_predefined_component_classes import *
 import s13_predefined_component_classes
-from uvm_pkg import run_test
 import uvm_pkg
 
 class my_test(uvm_test):...
@@ -223,10 +222,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         mc2 = mc.create('mc2',None)
         self.assertEqual(type(mc), type(mc2))
 
-    #
-    # def test_run_test(self):
-    #     run_test('my_test')
-    #     self.assertTrue(isinstance(uvm_pkg.uvm_root.children[0],my_test))
+
 
 
 if __name__ == '__main__':
