@@ -8,7 +8,7 @@ import uvm_pkg
 class my_test(uvm_test):...
 
 
-class predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
+class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
     """Basic test cases."""
 
     def test_uvm_component_noparent(self):

@@ -78,34 +78,37 @@ class uvm_object(uvm_void):
         assert (isinstance(name, str)), f"Must set the name to a string"
         self.__name = name
 
-    @property
-    def full_name(self):
+    def get_full_name(self):
         """
         5.3.4.3
         """
-        return self.name
+        return self.get_name()
 
-    @property
-    def inst_id(self):
+
+    def get_inst_id(self):
         """
         5.3.4.4
+        Returns the python ID which fits the bill for what the ID is supposed to be.
         """
         return id(self)
 
     def get_type(self):
         """
         5.3.4.5
+        Not implemented because Python can implement the factory without
+        these shenanigans.
         """
         raise error_classes.UVMNotImplemented('Python provides better ways to do this so the uvm_object_wrapper is unimplemented')
 
     def get_object_type(self):
         """
         5.3.4.6
+        Not implemented because Python can implement the factory without
+        these shenanigans.
         """
         raise error_classes.UVMNotImplemented('Python provides better ways to do this so the uvm_object_wrapper is unimplemented')
 
-    @property
-    def type_name(self):
+    def get_type_name(self):
         """
         5.3.4.7
         """
@@ -226,6 +229,27 @@ class uvm_object(uvm_void):
         :return:
         """
 
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+
+    def push_active_policy(self):
+        """
+        5.3.14.1
+        :return:
+        """
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+
+    def pop_active_policy(self):
+        """
+        5.3.14.2
+        :return:
+        """
+        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+
+    def get_active_policy(self):
+        """
+        5.3.14.3
+        :return:
+        """
         raise error_classes.UVMNotImplemented('Need to implement this before being finished')
 
     def unpack_bytes(self):

@@ -1,2 +1,0 @@
-import unittest
-import s12_uvm_tlm_interfaces
