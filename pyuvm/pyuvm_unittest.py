@@ -8,10 +8,7 @@ class pyuvm_TestCase(unittest.TestCase):
         self.logger = logging.getLogger('pyuvm_TestCase')
 
     def setUp(self):
-        uvm_component.uvm_root=None
-        uvm_pkg.uvm_root=None
         uvm_component.component_dict.clear()
         uvm_root.component_dict.clear()
         uvm_root.clear_singletons()
-        uvm_component.uvm_root=uvm_root('uvm_root')
         pass

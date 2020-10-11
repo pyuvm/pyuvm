@@ -15,7 +15,7 @@ class my_object(uvm_object):
 class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
     """Basic test cases."""
 
-    def test_basic_creation(self):
+    def test_basic_creation_15_3(self):
         """
         Tests whether the factory gets populated and whether it can be used.
         """

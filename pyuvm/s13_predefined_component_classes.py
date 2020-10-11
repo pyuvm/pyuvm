@@ -1,4 +1,5 @@
 # from base_classes import *
+import error_classes
 from queue import Queue
 from s09_phasing import PyuvmPhases, PhaseType
 import meta_classes
@@ -23,6 +24,8 @@ e: Factory---pyuvm manages the factory throught the create() method without all 
 
 class uvm_component(uvm_report_object):
     """
+    13.1.1 Class Declaration
+
 The specification calls for uvm_component to extend uvm_report_object. However, pyuvm
 uses the logging module orthogonally to class structure. It may be that in future
 we find a reason to wrap the basic logging package in the uvm code, but at this point
@@ -32,15 +35,10 @@ The choice then becomes whether to create a uvm_report_object class as a placeho
 to preserve the UVM reference manual hierarchy or to code what is really going on.
 We've opted for the latter.
     """
-    uvm_root=None  #F.7
     component_dict = {}
 
     def __init__(self, name, parent=None):
         """
-        :param name: A string with the name of the object.
-        :param parent: The parent in the UVM hierarchy.
-
-
         13.1.2.1---This is new() in the IEEE-UVM, but we mean
         the same thing with __init__()
         """
@@ -49,8 +47,7 @@ We've opted for the latter.
         self.__parent = None
         self.__children={}
         if parent==None and name != 'uvm_root':
-            assert(uvm_component.uvm_root != None), f'Tried to add {name} with no uvm_root set.'
-            parent=uvm_component.uvm_root
+            parent=uvm_root()
         self.parent = parent
         if parent != None:
             parent.add_child(name, self)
@@ -58,39 +55,49 @@ We've opted for the latter.
 
         # Cache the hierarchy for easy access
         if name != 'uvm_root':
-            uvm_component.component_dict[self.full_name]=self
+            uvm_component.component_dict[self.get_full_name()]=self
+
+    def do_execute_op(self, op):
+        raise error_classes.UVMNotImplemented("Policies not implemented")
 
     def create(self, name, parent):
         return self.__class__(name, parent)
 
 
-    @property
-    def parent(self):
+    def get_parent(self):
         """
         :return: parent object
         13.1.3.1--- No 'get_' prefix
         """
         return self.__parent
+    @property
+    def parent(self):
+        return self.get_parent()
 
     @parent.setter
     def parent(self, parent):
         if parent != None:
             assert(isinstance(parent,uvm_component)), f" {parent} is of type {type(parent)}"
-        assert(parent != self), f'Cannot make a {self.name} its own parent.  That is incest.'
+        assert(parent != self), f'Cannot make a {self.get_name()} its own parent.  That is incest.'
         self.__parent=parent
 
-    @property
-    def full_name(self):
+    def get_full_name(self):
         """
         :return: Name concatenated to parent name.
         13.1.3.2
         """
-        if self.name == 'uvm_root':
+        if self.get_name() == 'uvm_root':
             return ''
-        parent_fullname= '' if self.parent==None else self.parent.full_name
-        return f'{parent_fullname}.{self.name}'
-    """
+        fullname = self.__parent.get_full_name()
+        if len(fullname)==0:
+            fullname = self.get_name()
+        else:
+            fullname = fullname + "." + self.get_name()
+        return fullname
+
     # Children in pyuvm
+    # 13.1.3.4 modified to be pythonic
+    """
     UVM components contain a list of child components as
     the basis for creating the UVM hierarchy.  However
     the UVM accesses those children in an unPythonic
@@ -108,44 +115,53 @@ We've opted for the latter.
     implement __iter__ so that the user can use
     the component as an iterator.
     """
-    @property
-    def children(self):
+    def get_children(self):
         """
         13.1.3.3
         :return: dict with children
         """
-        return self.__children
+        return list(self.children)
 
     def add_child(self, name, child):
-        assert(name not in self.children), f"{self.full_name} already has a child named {name}"
+        assert(name not in self.__children), f"{self.get_full_name()} already has a child named {name}"
         self.__children[name]=child
 
     @property
     def hierarchy(self):
         """
-        :param self: The component in question
+        We return a generator to find the children. This is more pythonic and saves memory
+        for large hierarchies.
         :return: An ordered list of components top to bottom.
         """
         yield self
-        for child in self:
+        for child in self.children:
             assert isinstance(child, uvm_component)
             yield child
-            for grandchild in child:
+            for grandchild in child.children:
                 assert isinstance ( grandchild,uvm_component, )
                 yield grandchild
 
-
-    def __iter__(self):
+        # The UVM relies upon a hokey iteration system to get the children
+        # out of a component class. You get the name of the first child and
+        # then pass it to get_next_child to get the name of the next
+        # child. This continues until get_next_child returns zero.
+        #
+        # Python has a rich iteration system and it would be foolish to
+        # eschew it. So we are not going to implement the above.  Instead
+        # the children() method is a generator that allows you to loop
+        # through the children.
+    @property
+    def children(self):
         """
         13.1.3.4
         Implements the intention of this requirement
         without the approach taken in the UVM
         """
-        for childname in self.children:
+        for childname in self.__children:
             yield self.__children[childname]
 
     def __repr__(self):
-        return self.full_name
+        return self.get_full_name()
 
     def get_child(self, name):
         """
@@ -155,7 +171,11 @@ We've opted for the latter.
         :return: uvm_component of that name
         """
         assert(isinstance(name, str))
-        return self.__children[name]
+        try:
+            return self.__children[name]
+        except KeyError:
+            return None
+
 
     def get_num_children(self):
         """
@@ -173,7 +193,7 @@ We've opted for the latter.
         :return: True if exists, False otherwise
         """
         assert(isinstance(name,str))
-        return name in self.children
+        return name in self.__children
 
     def lookup(self, name):
         """
@@ -185,9 +205,9 @@ We've opted for the latter.
         """
         assert(isinstance(name,str))
         if name[0] == '.':
-            lookup_name=name
+            lookup_name=name[1:]
         else:
-            lookup_name=f'{self.full_name}.{name}'
+            lookup_name=f'{self.get_full_name()}.{name}'
         try:
             return uvm_component.component_dict[lookup_name]
         except KeyError:
@@ -196,13 +216,17 @@ We've opted for the latter.
     def get_depth(self):
         """
         13.1.3.8
-        Get the depth that I am from the top component.
+        Get the depth that I am from the top component. uvm_root is 0.
         :param self: That's me
         :return: depth
         """
         # Rather than getting all recursive just count
         # levels in the full name.
-        return len(self.full_name.split("."))-1
+        fullname = self.get_full_name()
+        if len(fullname) == 0:
+            return 0
+        else:
+            return len(self.get_full_name().split("."))
 
     def build_phase(self,phase=None):...
 
@@ -237,7 +261,7 @@ We've opted for the latter.
     13.1.7--Other interfaces
     """
 
-class uvm_root(uvm_component):
+class uvm_root(uvm_component, metaclass=meta_classes.UVM_ROOT_Singleton):
     """
     F.7.  We do not use uvm_pkg to hold uvm_root.  Instead it
     is a class variable of uvm_commponent.  This avoids
@@ -252,16 +276,20 @@ class uvm_root(uvm_component):
     in SystemVerilog that is already built into Python. So we're
     going to skip much of that Annex.
     """
-    _instances={}
+    singleton = None
 
     def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls]=super().__call__(*args, **kwargs)
-        return cls._instances[cls]
+        if cls.singleton is None:
+            cls.singleton = super().__call__(*args, **kwargs)
+        return cls.singleton
 
     @classmethod
     def clear_singletons(cls):
-        cls._instances.clear()
+        cls.singleton = None
+
+    def __init__(self):
+        super().__init__("uvm_root", None)
+
 
     def run_test(self, test_name=""):
         """
@@ -292,9 +320,6 @@ class uvm_root(uvm_component):
 
             for comp in comp_list:
                 getattr(uvm_component.component_dict[comp],method)()
-
-
-
 
 class uvm_test(uvm_component):
     """

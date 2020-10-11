@@ -28,3 +28,15 @@ class FactoryMeta(type):
         super().__init__(name, bases, clsdict)
 
 
+class UVM_ROOT_Singleton(FactoryMeta):
+    singleton = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls.singleton is None:
+            cls.singleton = super(UVM_ROOT_Singleton, cls).__call__(*args, **kwargs)
+        return cls.singleton
+
+    @classmethod
+    def clear_singletons(cls):
+        cls.singleton = None
+        pass
