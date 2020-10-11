@@ -1,5 +1,5 @@
 import pyuvm_unittest
-from uvm_pkg import *
+from pyuvm import *
 
 class s17_register_layer_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
