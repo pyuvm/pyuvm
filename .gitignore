@@ -4,3 +4,5 @@ IEEE_UVM.pdf
 .cache
 .idea
 __pycache__
+/tests/test_05_base_classes.py-e
+*.py-e
