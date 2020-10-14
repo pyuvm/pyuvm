@@ -2,7 +2,7 @@
 import error_classes
 from queue import Queue
 from s09_phasing import PyuvmPhases, PhaseType
-import meta_classes
+import utility_classes
 from s06_reporting_classes import uvm_report_object
 """
 This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
@@ -261,7 +261,7 @@ We've opted for the latter.
     13.1.7--Other interfaces
     """
 
-class uvm_root(uvm_component, metaclass=meta_classes.UVM_ROOT_Singleton):
+class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     """
     F.7.  We do not use uvm_pkg to hold uvm_root.  Instead it
     is a class variable of uvm_commponent.  This avoids

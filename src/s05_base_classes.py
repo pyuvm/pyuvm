@@ -9,25 +9,15 @@ try:
     import copy
     from abc import ABC
     import error_classes
-    import meta_classes
+    import utility_classes
 except ModuleNotFoundError as mnf:
     print(mnf)
     sys.exit(1)
 
 
-class uvm_void(metaclass=meta_classes.FactoryMeta):
-    """
-    5.2
-    SystemVerilog Python uses this class to allow all
-    uvm objects to be stored in a uvm_void variable through
-    polymorphism.
-
-    In pyuvm, we're using uvm_void() as a meteaclass so
-    that all UVM classes can be stored in a factory.
-    """
 
 
-class uvm_object(uvm_void):
+class uvm_object(utility_classes.uvm_void):
     """
     5.3.1
     """

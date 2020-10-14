@@ -168,14 +168,6 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.get_active_policy()
 
-
-
-
-
-
-
-
-
     def test_create(self):
         """
         Tests the create method.
@@ -185,13 +177,3 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         self.assertEqual(type(mo), type(mo2))
 
 
-    # def test_override(self):
-    #     self.my_object.override(self.other_object)
-    #     mo = self.my_object.create('overridden')
-    #     self.assertEqual(type(mo), self.other_object)
-    #
-    #
-    # def test_create_by_name(self):
-    #     mo = uvm_object.create_by_name(globals()['my_object'], 'myname')
-    #     self.assertEqual(type(mo), my_object)
-    #
