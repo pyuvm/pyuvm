@@ -19,6 +19,12 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         self.orig = self.original("orig", self.sib)
         self.factory = uvm_factory()
 
+    def tearDown(self):
+        self.fd.clear_overrides()
+        uvm_root.clear_singletons()
+        self.top.clear_hierarchy()
+        uvm_component.clear_components()
+
     def test_set_inst_override_by_type_8_3_1_4_1(self):
         """
         8.3.1.4.1 set_inst_override_by_type
@@ -33,7 +39,7 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         :return:
         check that we put the right data into fd for this override.
         """
-        self.factory.set_inst_override_by_name("original", "override", "top.sib.orig")
+        self.factory.set_inst_override_by_name("original", "override_1", "top.sib.orig")
         self.assertEqual(self.fd.name_instance_overrides["top.sib.orig"], ("original", self.override_1))
 
     def test_set_type_override_by_type_8_3_1_4_2(self):

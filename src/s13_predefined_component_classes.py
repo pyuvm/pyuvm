@@ -37,6 +37,10 @@ We've opted for the latter.
     """
     component_dict = {}
 
+    @classmethod
+    def clear_components(cls):
+        cls.component_dict = {}
+
     def __init__(self, name, parent=None):
         """
         13.1.2.1---This is new() in the IEEE-UVM, but we mean
@@ -56,6 +60,10 @@ We've opted for the latter.
         # Cache the hierarchy for easy access
         if name != 'uvm_root':
             uvm_component.component_dict[self.get_full_name()]=self
+
+    def clear_hierarchy(self):
+        self.__parent=None
+        self.__children = {}
 
     def do_execute_op(self, op):
         raise error_classes.UVMNotImplemented("Policies not implemented")
@@ -175,7 +183,6 @@ We've opted for the latter.
             return self.__children[name]
         except KeyError:
             return None
-
 
     def get_num_children(self):
         """

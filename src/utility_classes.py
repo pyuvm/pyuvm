@@ -20,10 +20,14 @@ class Singleton(type):
 class FactoryData(metaclass=Singleton):
     def __init__(self):
         self.classes = {}
+        self.clear_overrides()
+
+    def clear_overrides(self):
         self.class_overrides = {}
         self.name_overrides = {}
         self.type_instance_overrides = OrderedDict()
         self.name_instance_overrides = OrderedDict()
+
 
 class FactoryMeta(type):
     """

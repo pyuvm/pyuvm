@@ -14,9 +14,6 @@ except ModuleNotFoundError as mnf:
     print(mnf)
     sys.exit(1)
 
-
-
-
 class uvm_object(utility_classes.uvm_void):
     """
     5.3.1
@@ -283,7 +280,6 @@ class uvm_object(utility_classes.uvm_void):
         """
         raise error_classes.UsePythonMethod('The getattr and setattr functions handle all 5.3.13 issues')
 
-
 class uvm_field_op:
     """
     5.3.13
@@ -293,7 +289,6 @@ class uvm_field_op:
 
     def __new__(cls, *args, **kwargs):
         raise error_classes.UsePythonMethod('Python has simpler ways of handling field function.')
-
 
 class uvm_policy:
     """
@@ -305,7 +300,6 @@ class uvm_policy:
     def __new__(cls, *args, **kwargs):
         raise error_classes.UsePythonMethod('Python has simpler ways of handling functionality provided by policies.')
 
-
 class uvm_transaction(uvm_object):
     """
     5.4
@@ -316,7 +310,6 @@ class uvm_transaction(uvm_object):
     As a result we do not implement any of the transaction methods in the UVM transaction.  It serves
     only as a placeholder class to be consistent with the fact that uvm_sequence_item extends uvm_transaction.
     """
-
 
 class uvm_time:
     """
