@@ -9,6 +9,7 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
     class original(uvm_component):...
     class override_1(uvm_component):...
     class override_2(uvm_component):...
+    class override_3(uvm_component):...
 
     def setUp(self):
         self.fd = utility_classes.FactoryData()
@@ -31,7 +32,10 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         Basic test to make sure that the factory data is set properly
         """
         self.factory.set_inst_override_by_type(self.original, self.override_1, "top.mid.orig")
-        self.assertEqual(self.fd.type_instance_overrides["top.mid.orig"], (self.original,self.override_1))
+        override = self.fd.overrides[self.original]
+        self.assertEqual("top.mid.orig", override.inst_pattern)
+        self.assertEqual(self.override_1, override.override)
+
 
     def test_set_inst_override_by_name_8_3_1_4_1(self):
         """
@@ -40,7 +44,9 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         check that we put the right data into fd for this override.
         """
         self.factory.set_inst_override_by_name("original", "override_1", "top.sib.orig")
-        self.assertEqual(self.fd.name_instance_overrides["top.sib.orig"], ("original", self.override_1))
+        override = self.fd.overrides[self.original]
+        self.assertEqual("top.sib.orig", override.inst_pattern)
+        self.assertEqual(self.override_1, override.override)
 
     def test_set_type_override_by_type_8_3_1_4_2(self):
         """
@@ -48,11 +54,14 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         Check that class override is set properly
         """
         self.factory.set_type_override_by_type(self.original, self.override_1)
-        self.assertEqual(self.fd.class_overrides[self.original], self.override_1)
+        ovr = self.fd.overrides[self.original]
+        self.assertEqual(self.override_1, ovr.override)
         self.factory.set_type_override_by_type(self.original, self.override_2, False)
-        self.assertEqual(self.fd.class_overrides[self.original], self.override_1)
+        ovr = self.fd.overrides[self.original]
+        self.assertEqual(self.override_1, ovr.override)
         self.factory.set_type_override_by_type(self.original, self.override_2, True)
-        self.assertEqual(self.fd.class_overrides[self.original], self.override_2)
+        ovr = self.fd.overrides[self.original]
+        self.assertEqual(self.override_2, ovr.override)
 
     def test_set_type_override_by_name_8_3_1_4_2(self):
         """
@@ -60,9 +69,40 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         Check that name override is setting correct informmation.
         """
         self.factory.set_type_override_by_name("original", "override_1")
-        self.assertEqual(self.fd.name_overrides["original"], self.override_1)
+        self.assertEqual(self.override_1, self.fd.overrides[self.original].override)
         self.factory.set_type_override_by_name("original", "override_2", False)
-        self.assertEqual(self.fd.name_overrides["original"], self.override_1)
+        self.assertEqual(self.override_1, self.fd.overrides[self.original].override)
         self.factory.set_type_override_by_name("original", "override_2", True)
-        self.assertEqual(self.fd.name_overrides["original"], self.override_2)
+        self.assertEqual(self.override_2, self.fd.overrides[self.original].override)
+
+
+    def test_find_inst_override_8_3_1_5(self):
+        self.factory.set_inst_override_by_type(self.original, self.override_1, "top.sib.orig")
+        overridden = self.fd.find_inst_override(self.original, "top.sib.orig")
+        self.assertEqual(overridden, self.override_1 )
+
+    def test_find_inst_override_wildcard_8_3_1_5(self):
+        self.factory.set_inst_override_by_type(self.original, self.override_2, "*")
+        overridden = self.fd.find_inst_override(self.original, "top.mid.orig")
+        self.assertEqual(self.override_2, overridden )
+        overridden = self.fd.find_inst_override(self.original, "top.sib.orig")
+        self.assertEqual(self.override_2, overridden )
+
+    def test_find_inst_override_wildcard_in_path_8_3_1_5(self):
+        self.factory.set_inst_override_by_type(self.original, self.override_2, "top.mid*")
+        overridden = self.fd.find_inst_override(self.original, "top.mid.orig")
+        self.assertEqual(self.override_2, overridden )
+        overridden = self.fd.find_inst_override(self.original, "top.sib.orig")
+        self.assertEqual(self.original, overridden )
+
+    def test_find_inst_recursive_override_in_path_8_3_1_5(self):
+        self.factory.set_inst_override_by_type(self.original, self.override_1, "*")
+        self.factory.set_inst_override_by_type(self.override_1, self.override_2, "*")
+        self.factory.set_inst_override_by_type(self.override_2, self.override_3, "*")
+        overridden = self.fd.find_inst_override(self.original, "top.mid.orig")
+        self.assertEqual(self.override_3, overridden)
+
+
+
+
 

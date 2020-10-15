@@ -59,7 +59,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         assert issubclass(original_type, utility_classes.uvm_void), "You tried to override a non-uvm_void class"
         assert issubclass(override_type, utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
-        self.fd.type_instance_overrides[full_inst_path] = (original_type, override_type)
+        self.fd.overrides[original_type] = utility_classes.Override(override_type, full_inst_path)
+
 
     def set_inst_override_by_name(self, original_name, override_name, full_inst_path):
         """
@@ -80,9 +81,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         assert isinstance(override_name, str), "Override_name must be a string"
         try:
             override_type = self.fd.classes[override_name]
+            original_type = self.fd.classes[original_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(override_name + " has not been defined.")
-        self.fd.name_instance_overrides[full_inst_path] = (original_name, override_type)
+            raise error_classes.UVMFactoryError(f"{override_name} or {original_name}" + " has not been defined.")
+        self.fd.overrides[original_type] = utility_classes.Override(override_type, full_inst_path)
+
+
 
     def set_type_override_by_type(self, original_type, override_type, replace=True):
         """
@@ -93,8 +97,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         assert issubclass(original_type, utility_classes.uvm_void), "You tried to override a non-uvm_void class"
         assert issubclass(override_type, utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
-        if (original_type not in self.fd.class_overrides) or replace:
-            self.fd.class_overrides[original_type] = override_type
+        if (original_type not in self.fd.overrides) or replace:
+            self.fd.overrides[original_type] = utility_classes.Override(override_type)
 
     def set_type_override_by_name(self, original_type_name, override_type_name, replace=True):
         """
@@ -108,10 +112,20 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         assert isinstance(override_type_name, str), "Override_name must be a string"
         try:
             override_type = self.fd.classes[override_type_name]
+            original_type = self.fd.classes[original_type_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(override_type_name + " has not been defined")
+            raise error_classes.UVMFactoryError(f"{override_type_name} or {original_type_name}" + " has not been defined.")
 
-        if (original_type_name not in self.fd.name_overrides) or replace:
-            self.fd.name_overrides[original_type_name] = override_type
+        if (original_type not in self.fd.overrides) or replace:
+            self.fd.overrides[original_type] = utility_classes.Override(override_type)
 
+
+
+    def create_object_by_type(self, requested_type, parent_inst_path="", name=""):
+        """
+        :param requeested_type: The type that we request but that can be overridden
+        :param parent_inst_path: The get_full_name path of the parrent
+        :param name: The name of the instance requested_type("name")
+        :return: Type that is child of uvm_object.
+        """
 
