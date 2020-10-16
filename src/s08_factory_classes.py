@@ -1,5 +1,7 @@
 import utility_classes
 import error_classes
+from s05_base_classes import uvm_object
+from s13_predefined_component_classes import uvm_component
 # from predefined_component_classes import uvm_object
 from s13_predefined_component_classes import uvm_component
 
@@ -37,7 +39,14 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
     def __init__(self):
         self.fd = utility_classes.FactoryData()
-        pass
+
+    def set_override(self, original, override, path = None):
+        if original not in self.fd.overrides:
+            self.fd.overrides[original] = utility_classes.Override()
+        self.fd.overrides[original].add(override, path)
+
+
+
 
     def set_inst_override_by_type(self, original_type, override_type, full_inst_path):
         """
@@ -59,7 +68,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         assert issubclass(original_type, utility_classes.uvm_void), "You tried to override a non-uvm_void class"
         assert issubclass(override_type, utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
-        self.fd.overrides[original_type] = utility_classes.Override(override_type, full_inst_path)
+        self.set_override(original_type, override_type, full_inst_path)
+
 
 
     def set_inst_override_by_name(self, original_name, override_name, full_inst_path):
@@ -84,8 +94,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
             original_type = self.fd.classes[original_name]
         except KeyError:
             raise error_classes.UVMFactoryError(f"{override_name} or {original_name}" + " has not been defined.")
-        self.fd.overrides[original_type] = utility_classes.Override(override_type, full_inst_path)
-
+        self.set_override(original_type, override_type, full_inst_path)
 
 
     def set_type_override_by_type(self, original_type, override_type, replace=True):
@@ -98,7 +107,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         assert issubclass(original_type, utility_classes.uvm_void), "You tried to override a non-uvm_void class"
         assert issubclass(override_type, utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
         if (original_type not in self.fd.overrides) or replace:
-            self.fd.overrides[original_type] = utility_classes.Override(override_type)
+            self.set_override(original_type, override_type)
 
     def set_type_override_by_name(self, original_type_name, override_type_name, replace=True):
         """
@@ -117,15 +126,33 @@ class uvm_factory(metaclass=utility_classes.Singleton):
             raise error_classes.UVMFactoryError(f"{override_type_name} or {original_type_name}" + " has not been defined.")
 
         if (original_type not in self.fd.overrides) or replace:
-            self.fd.overrides[original_type] = utility_classes.Override(override_type)
+            self.set_override(original_type, override_type)
 
-
-
-    def create_object_by_type(self, requested_type, parent_inst_path="", name=""):
+    def create_object_by_type(self, requested_type, parent_inst_path=None, name=None):
         """
+        8.3.1.5 Creation
         :param requeested_type: The type that we request but that can be overridden
         :param parent_inst_path: The get_full_name path of the parrent
         :param name: The name of the instance requested_type("name")
         :return: Type that is child of uvm_object.
+        Python does not create zero-length strings as defaults. It puts the None object there. That's
+        what we're going to do.
         """
+        assert(issubclass(requested_type, uvm_object)), \
+            f"You can only create uvm_object descendents not {requested_type}"
+
+        if name is not None:
+            assert(isinstance(name, str)), "name must be a string"
+        else:
+            name = ""
+        if parent_inst_path is not None:
+            assert isinstance(parent_inst_path, str), "parent_inst_path must be a string"
+            inst_name = f"{parent_inst_path}.{name}"
+        else:
+            inst_name = None
+
+        new_cls = self.fd.find_override(requested_type, inst_name)
+        return new_cls(name)
+
+
 
