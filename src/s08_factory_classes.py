@@ -1,5 +1,7 @@
 import utility_classes
 import error_classes
+import logging
+from utility_classes import uvm_void
 from s05_base_classes import uvm_object
 from s13_predefined_component_classes import uvm_component
 # from predefined_component_classes import uvm_object
@@ -39,6 +41,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
     def __init__(self):
         self.fd = utility_classes.FactoryData()
+        self.logger = logging.getLogger("Factory")
 
     def set_override(self, original, override, path = None):
         if original not in self.fd.overrides:
@@ -72,7 +75,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
 
 
-    def set_inst_override_by_name(self, original_name, override_name, full_inst_path):
+    def set_inst_override_by_name(self, original_type_name, override_type_name, full_inst_path):
         """
         8.3.1.4.1
         Here we use the names of classes instead of the classes.  The original_name
@@ -87,13 +90,20 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :return:
         """
         assert isinstance(full_inst_path, str), "The inst_path must be a string"
-        assert isinstance(original_name, str), "Original_name must be a string"
-        assert isinstance(override_name, str), "Override_name must be a string"
+        assert isinstance(original_type_name, str), "Original_name must be a string"
+        assert isinstance(override_type_name, str), "Override_name must be a string"
         try:
-            override_type = self.fd.classes[override_name]
-            original_type = self.fd.classes[original_name]
+            override_type = self.fd.classes[override_type_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(f"{override_name} or {original_name}" + " has not been defined.")
+            raise error_classes.UVMFactoryError(f"{override_name}" + " has not been defined.")
+
+        # Set type override by name can use an arbitrary string as a key instead of a type
+        # Fortunately Python dicts don't care about the type of the key.
+        try:
+            original_type = self.fd.classes[original_type_name]
+        except KeyError:
+            original_type = original_type_name
+
         self.set_override(original_type, override_type, full_inst_path)
 
 
@@ -121,12 +131,48 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         assert isinstance(override_type_name, str), "Override_name must be a string"
         try:
             override_type = self.fd.classes[override_type_name]
+        except KeyError:
+            raise error_classes.UVMFactoryError(f"{override_type_name}" + " has not been defined.")
+
+        # Set type override by name can use an arbitrary string as a key instead of a type
+        # Fortunately Python dicts don't care about the type of the key.
+        try:
             original_type = self.fd.classes[original_type_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(f"{override_type_name} or {original_type_name}" + " has not been defined.")
+            original_type = original_type_name
 
         if (original_type not in self.fd.overrides) or replace:
             self.set_override(original_type, override_type)
+
+    def __find_override(self, requested_type, parent_inst_path=None, name=None):
+        """
+        An internal function that finds overrides
+        :param requested_type: The type that could be overridden
+        :param parent_inst_path: The parent inst path for an override
+        :param name: The name of the object, concatenated with parent inst path for override
+        :return: either the requested_type or its override
+        """
+        if not isinstance(requested_type, str):
+            assert (issubclass(requested_type, uvm_void)), \
+                f"You can only create uvm_void descendents not {requested_type}"
+
+        if name is not None:
+            assert(isinstance(name, str)), "name must be a string"
+        else:
+            name = ""
+
+        if parent_inst_path is not None:
+            assert isinstance(parent_inst_path, str), "parent_inst_path must be a string"
+            inst_name = f"{parent_inst_path}.{name}"
+        else:
+            inst_name = None
+
+        new_cls =  self.fd.find_override(requested_type, inst_name)
+        if isinstance(new_cls, str):
+            self.logger.error(f'"{new_cls}" is not declared and is not an override string')
+            return None
+        else:
+            return new_cls
 
     def create_object_by_type(self, requested_type, parent_inst_path=None, name=None):
         """
@@ -138,21 +184,72 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         Python does not create zero-length strings as defaults. It puts the None object there. That's
         what we're going to do.
         """
-        assert(issubclass(requested_type, uvm_object)), \
-            f"You can only create uvm_object descendents not {requested_type}"
-
-        if name is not None:
-            assert(isinstance(name, str)), "name must be a string"
+        new_type = self.__find_override(requested_type, parent_inst_path, name)
+        if new_type is None:
+            return None
+        if not issubclass(new_type, uvm_object):
+            self.logger.error(f"{new_type} is not a subclass of uvm_object")
+            return None
         else:
-            name = ""
-        if parent_inst_path is not None:
-            assert isinstance(parent_inst_path, str), "parent_inst_path must be a string"
-            inst_name = f"{parent_inst_path}.{name}"
+            return new_type(name)
+
+
+    def create_object_by_name(self, requested_type_name, parent_inst_path=None, name=None):
+        """
+        8.3.1.5 createing an object by name.
+        :param requested_type_name: the type that could be overridden
+        :param parent_inst_path: A path if we are checking for inst overrides
+        :param name: The name of the new object.
+        :return: A uvm_object with the name given
+        """
+        try:
+            requested_type = utility_classes.FactoryData().classes[requested_type_name]
+        except KeyError:
+            requested_type = requested_type_name
+
+        new_obj =  self.create_object_by_type(requested_type, parent_inst_path, name)
+        return new_obj (name)
+
+    def create_component_by_type(self, requested_type, parent_inst_path=None, name=None, parent=None):
+        """
+        8.3.1.5 creating a component
+        :param requested_type: Type type to be overriden
+        :param parent_inst_path: The inst path if ew are looking for inst overrides
+        :param name: Concatenated with parent_inst_path if it exists for inst overrides
+        :param parent: The parent component
+        :return: a uvm_component with the name an parent given.
+        """
+
+        if name is None:
+            raise error_classes.UVMFactoryError("Parameter name must be specified in function call.")
+
+        new_type = self.__find_override(requested_type, parent_inst_path, name)
+
+        if new_type is None:
+            return None
+
+        if not issubclass(new_type, uvm_component):
+            self.logger.error(f"{new_type} is not a subclass of uvm_component")
+            return None
         else:
-            inst_name = None
+            new_comp = new_type(name, parent)
+            return new_comp
 
-        new_cls = self.fd.find_override(requested_type, inst_name)
-        return new_cls(name)
+    def create_component_by_name(self, requested_type_name, parent_inst_path=None, name=None, parent=None):
+        """
+        8.3.1.5 creating an component by name.
+        :param requested_type_name: the type that could be overridden
+        :param parent_inst_path: A path if we are checking for inst overrides
+        :param name: The name of the new object.
+        :return: A uvm_object with the name given
+        """
+        if name is None:
+            raise error_classes.UVMFactoryError("Parameter name must be specified in create_component_by_name.")
 
+        try:
+            requested_type = utility_classes.FactoryData().classes[requested_type_name]
+        except KeyError:
+            requested_type = requested_type_name
 
-
+        new_obj =  self.create_component_by_type(requested_type, parent_inst_path, name, parent)
+        return new_obj

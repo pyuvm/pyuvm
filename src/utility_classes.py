@@ -48,7 +48,7 @@ class FactoryData(metaclass=Singleton):
     def __init__(self):
         self.classes = {}
         self.clear_overrides()
-        self.logger = logging.Logger("Factory")
+        self.logger = logging.getLogger("Factory")
 
     def clear_overrides(self):
         self.overrides = {}
@@ -85,8 +85,7 @@ class FactoryData(metaclass=Singleton):
         #
 
         # Is there an override loop?
-        def check_override(override):
-            nonlocal overridden_list
+        def check_override(override, overridden_list):
             if overridden_list is None:
                 overridden_list = []
             if override in overridden_list:
@@ -98,7 +97,6 @@ class FactoryData(metaclass=Singleton):
                 return rec_override
 
         # Save the type for a later check
-
         # Is this requested type even in the list of overrides?
         try:
             override = self.overrides[requested_type]
@@ -109,13 +107,13 @@ class FactoryData(metaclass=Singleton):
             for path in override.inst_overrides:
                 if fnmatch.fnmatch(inst_path, path):
                     found_type = override.inst_overrides[path]
-                    return check_override(found_type)
+                    return check_override(found_type, overridden_list)
 
         # No inst requested or found, do we have a type override?
         if override.type_override is not None:
-            return check_override(override.type_override)
+            return check_override(override.type_override, overridden_list)
         else:
-            return check_override(requested_type)
+            return requested_type
 
 class FactoryMeta(type):
     """
