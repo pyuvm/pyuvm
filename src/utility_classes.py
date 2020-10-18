@@ -42,6 +42,31 @@ class Override():
                 return self.inst_overrides[inst]
         return None
 
+    def __str__(self):
+        """
+        For printing out the overrides
+        :return: str
+        """
+        if self.type_override is not None:
+            to = "Type Override: "+ f"{self.type_override.__name__}"
+        else:
+            to = "Type Override: None"
+        ss = f"{to:25}" + " || "
+        if self.inst_overrides is not None:
+            ss += "Instance Overrides: "
+            first = True
+            for inst in self.inst_overrides:
+                if not first:
+                    ss += " | "
+                first = False
+                if len(inst)>29:
+                    inst = inst[:29]
+                ss+=inst +  f" => {self.inst_overrides[inst].__name__}"
+
+
+        return ss
+
+
 
 class FactoryData(metaclass=Singleton):
 

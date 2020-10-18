@@ -3,21 +3,28 @@ import unittest
 from pyuvm import *
 import logging
 
-class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
-#class s08_factory_classes_TestCase (unittest.TestCase):
+
+class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
+    # class s08_factory_classes_TestCase (unittest.TestCase):
     """
     8.0 Factory Class Testing
     """
 
-    class original_comp(uvm_component):...
-    class comp_1(uvm_component):...
-    class comp_2(uvm_component):...
-    class comp_3(uvm_component):...
-    class original_object(uvm_object):...
-    class object_1(uvm_object):...
-    class object_2(uvm_object):...
-    class object_3(uvm_object):...
+    class original_comp(uvm_component): ...
 
+    class comp_1(uvm_component): ...
+
+    class comp_2(uvm_component): ...
+
+    class comp_3(uvm_component): ...
+
+    class original_object(uvm_object): ...
+
+    class object_1(uvm_object): ...
+
+    class object_2(uvm_object): ...
+
+    class object_3(uvm_object): ...
 
     def setUp(self):
         self.fd = utility_classes.FactoryData()
@@ -63,7 +70,6 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         self.assertEqual(self.comp_2, override.inst_overrides["top.sib.orig2"])
         self.assertEqual(self.comp_2, override.find_inst_override("top.sib.orig2"))
 
-
     def test_set_type_override_by_type_8_3_1_4_2(self):
         """
         8.3.1.4.2
@@ -93,6 +99,18 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         # Test adding an override with an arbitrary string
         self.factory.set_type_override_by_name("xyzzy", "comp_2")
         self.assertEqual(self.comp_2, self.fd.overrides['xyzzy'].type_override)
+
+    def test_override_str(self):
+        self.factory.set_type_override_by_type(self.original_comp, self.comp_1)
+        ovr = self.fd.overrides[self.original_comp]
+        self.assertEqual(self.comp_1, ovr.type_override)
+        # using name because less typing
+        self.factory.set_inst_override_by_name("original_comp", "comp_2", "top.sib.orig")
+        self.factory.set_inst_override_by_name("original_comp", "comp_3", "top.mid.orig")
+        ovr = self.fd.overrides[self.original_comp]
+        ss = str(self.fd.overrides[self.original_comp])
+        self.assertEqual('Type Override: comp_1     || Instance Overrides: top.sib.orig => comp_2 | top.mid.orig => comp_3',
+                         str(self.fd.overrides[self.original_comp]))
 
     def test_find_type_override(self):
         """
@@ -203,14 +221,18 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         """
         8.3.1.5
         Test for looking for an inst override and not finding one and with no type_override
-        :return:
+        :return: None
         """
         self.factory.set_inst_override_by_type(self.original_comp, self.comp_1, "top.sib.orig")
         self.factory.set_inst_override_by_type(self.original_comp, self.comp_2, "top.mid.orig")
         overridden = self.fd.find_override(self.original_comp, "top.notthere.orig")
-        self.assertEqual(self.original_comp, overridden )
+        self.assertEqual(self.original_comp, overridden)
 
     def test_create_object_by_type_and_name_8_3_1_5(self):
+        """
+        8.3.1.5
+        :return: None
+        """
         new_obj = self.factory.create_object_by_type(self.original_object, name="foo")
         self.assertTrue(isinstance(new_obj, self.original_object))
         self.assertEqual("foo", new_obj.get_name())
@@ -218,48 +240,122 @@ class s08_factory_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         self.assertTrue(isinstance(new_obj, self.object_1))
         self.assertEqual("foo_1", new_obj.get_name())
 
-    def test_create_object_by_type_and_name_with_type_override(self):
+    def test_create_object_by_type_and_name_with_type_override_8_3_1_5(self):
+        """
+        8.3.1.5
+        :return: None
+        """
         self.factory.set_type_override_by_type(self.original_object, self.object_2)
         self.factory.set_inst_override_by_type(self.original_object, self.object_1, "top.sib.orig")
         self.factory.set_inst_override_by_name("original_object", "object_1", "top.sib.orig_1")
-        new_obj = self.factory.create_object_by_type(self.original_object, parent_inst_path="top.sib",name="orig")
+        new_obj = self.factory.create_object_by_type(self.original_object, parent_inst_path="top.sib", name="orig")
         self.assertTrue(isinstance(new_obj, self.object_1))
         self.assertEqual("orig", new_obj.get_name())
-        new_obj = self.factory.create_object_by_type(self.original_object, parent_inst_path="top.noway",name="orig")
+        new_obj = self.factory.create_object_by_type(self.original_object, parent_inst_path="top.noway", name="orig")
         self.assertTrue(isinstance(new_obj, self.object_2))
-        self.assertEqual("orig", new_obj.get_name() )
-        new_obj = self.factory.create_object_by_name("original_object", parent_inst_path="top.sib",name="orig_1")
+        self.assertEqual("orig", new_obj.get_name())
+        new_obj = self.factory.create_object_by_name("original_object", parent_inst_path="top.sib", name="orig_1")
         self.assertTrue(isinstance(new_obj, self.object_1))
         self.assertEqual("orig_1", new_obj.get_name())
-        new_obj = self.factory.create_object_by_name("original_object", parent_inst_path="top.noway",name="orig2b")
+        new_obj = self.factory.create_object_by_name("original_object", parent_inst_path="top.noway", name="orig2b")
         self.assertTrue(isinstance(new_obj, self.object_2))
-        self.assertEqual("orig2b", new_obj.get_name() )
+        self.assertEqual("orig2b", new_obj.get_name())
         with self.assertLogs(self.factory.logger):
             not_an_instance = self.factory.create_object_by_name("not_an_object", name="badname")
             self.assertIsNone(not_an_instance)
 
-
-    def test_create_component_by_type_and_name_override(self):
+    def test_create_component_by_type_and_name_override_8_3_1_5(self):
+        """
+        8.3.1.5
+        Create overridden object.
+        :return:
+        """
         test_top = self.factory.create_component_by_type(self.original_comp, name="test_top")
         self.factory.set_type_override_by_type(self.original_comp, self.comp_1)
-        self.factory.set_inst_override_by_type(self.original_comp, self.comp_1,"test_top.sib1")
+        self.factory.set_inst_override_by_type(self.original_comp, self.comp_1, "test_top.sib1")
         self.factory.set_inst_override_by_name("original_comp", "comp_2", "test_top.sib2")
         new_obj = self.factory.create_component_by_type(self.original_comp,
-                                                     parent_inst_path="test_top",name="sib1", parent=test_top)
+                                                        parent_inst_path="test_top", name="sib1", parent=test_top)
         self.assertTrue(isinstance(new_obj, self.comp_1))
         self.assertEqual("sib1", new_obj.get_name())
         self.assertEqual("test_top.sib1", new_obj.get_full_name())
         new_obj = self.factory.create_component_by_name("original_comp",
-                                                     parent_inst_path="test_top",name="sib2", parent=test_top)
+                                                        parent_inst_path="test_top", name="sib2", parent=test_top)
         self.assertTrue(isinstance(new_obj, self.comp_2))
         self.assertEqual("sib2", new_obj.get_name())
         self.assertEqual("test_top.sib2", new_obj.get_full_name())
 
+    def test_set_type_alias_8_3_1_6_1(self):
+        """
+        8.3.1.6.1
+        This is not implemeneted in SystemVerilog or here
+        :return: None
+        """
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            self.factory.set_type_alias("xyzzy", self.original_comp)
+
+    def test_set_inst_alias_8_3_1_6_2(self):
+        """
+        8.3.1.6.2
+        This is not implemeneted in SystemVerilog or here
+        :return: None
+        """
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            self.factory.set_inst_alias("xyzzy", self.original_comp, "instpath")
+
+    def test_find_override_by_type_and_name_8_3_1_7_1(self):
+        """
+        8.3.1.7.1
+        Testing both the type and name variants
+        :return: None
+        """
+        self.factory.set_inst_override_by_type(self.original_object, self.object_1, "top.sib.orig")
+        self.factory.set_inst_override_by_name("original_object", "object_2", "top.sib.orig_2")
+        override = self.factory.find_override_by_type(self.original_object, "top.sib.orig")
+        self.assertEqual(self.object_1, override)
+        override = self.factory.find_override_by_name("original_object", "top.sib.orig_2")
+        self.assertEqual(self.object_2, override)
+        with self.assertRaises(AssertionError):
+            override = self.factory.find_override_by_name(self.original_object, "top.sib.orig_2")
+
+    def test_find_wrapper_by_name_8_3_1_7_2(self):
+        """
+        8.3.1.7.2
+        find_wrapper_by_name is not implemented
+        :return: None
+        """
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            self.factory.find_wrapper_by_name()
+
+    def test_is_type_name_registered_8_3_1_7_3(self):
+        """
+        8.3.1.7.3
+        :return: None
+        """
+        self.assertTrue(self.factory.is_type_name_registered("original_object"))
+        self.assertFalse(self.factory.is_type_name_registered("fake_object"))
+
+    def test_is_type_registered_8_3_1_7_3(self):
+        """
+        8.3.1.7.3
+        :return: None
+        """
+        self.assertTrue(self.factory.is_type_registered(self.original_comp))
+
+        class uvm_fake(uvm_object):...
+        del self.factory.fd.classes["uvm_fake"]
+
+        self.assertFalse(self.factory.is_type_registered(uvm_fake))
 
 
-
-
-
-
-
+    def test_factory_str(self):
+        self.factory.set_type_override_by_type(self.original_comp, self.comp_1)
+        ovr = self.fd.overrides[self.original_comp]
+        self.assertEqual(self.comp_1, ovr.type_override)
+        # using name because less typing
+        self.factory.set_inst_override_by_name("original_comp", "comp_2", "top.sib.orig")
+        self.factory.set_inst_override_by_name("original_comp", "comp_3", "top.mid.orig")
+        self.factory.set_inst_override_by_type(self.original_object, self.object_1, "label")
+        ss = str(self.factory)
+        print(ss)
 

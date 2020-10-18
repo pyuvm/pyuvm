@@ -158,12 +158,13 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
         if name is not None:
             assert(isinstance(name, str)), "name must be a string"
-        else:
-            name = ""
 
         if parent_inst_path is not None:
             assert isinstance(parent_inst_path, str), "parent_inst_path must be a string"
-            inst_name = f"{parent_inst_path}.{name}"
+            if name is None:
+                inst_name = parent_inst_path
+            else:
+                inst_name = f"{parent_inst_path}.{name}"
         else:
             inst_name = None
 
@@ -208,7 +209,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
             requested_type = requested_type_name
 
         new_obj =  self.create_object_by_type(requested_type, parent_inst_path, name)
-        return new_obj (name)
+        return new_obj
 
     def create_component_by_type(self, requested_type, parent_inst_path=None, name=None, parent=None):
         """
@@ -253,3 +254,108 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
         new_obj =  self.create_component_by_type(requested_type, parent_inst_path, name, parent)
         return new_obj
+
+    def set_type_alias(self, alias_type_name, original_type):
+        """
+        8.3.1.6.1
+        :param alias_type_name:A string that will reference the original type
+        :param original_type:The original type toe be referenced
+        :return:None
+        """
+        # This method does not seem to be implemented in SystemVerilog
+        # so I'm skipping it now.
+        raise error_classes.UVMNotImplemented("set_type_alias is not implemented in SystemVerilog")
+
+    def set_inst_alias(self, alias_type_name, original_type, full_inst_path):
+        """
+        8.3.1.6.2
+        :param alias_type_name:A string that will reference the original type
+        :param original_type:The original type toe be referenced
+        :param full_inst_path: The instance path where this alias is active
+        :return:None
+        """
+        # This method does not seem to be implemented in SystemVerilog
+        # so I'm skipping it now.
+        raise error_classes.UVMNotImplemented("set_type_inst is not implemented in SystemVerilog")
+
+    # 8.3.1.7 Introspection
+
+    def find_override_by_type(self, requested_type, full_inst_path):
+        """
+        8.3.1.7.1
+        :param requested_type: The type whose override you want
+        :param full_inst_path: The inst path where one looks
+        :return: class object
+        """
+        override = self.__find_override(requested_type, full_inst_path)
+        return override
+
+    def find_override_by_name(self, requested_type_name, full_inst_path):
+        """
+        8.3.1.7.1
+        :param requested_type_name:
+        :param full_inst_path:
+        :return: class object
+        """
+        assert(isinstance(requested_type_name, str)), f"requested_type_name must be a string not a {type(requested_type_name)}"
+        try:
+            requested_type = self.fd.classes[requested_type_name]
+        except KeyError:
+            error_classes.UVMFactoryError(f"{requested_type_name} is not a defined class name")
+        return self.find_override_by_type(requested_type, full_inst_path)
+
+    def find_wrapper_by_name(self):
+        """
+        8.3.1.7.2
+        There are no wrappers in pyuvm so this is not implemented.
+        :return: None
+        """
+        raise error_classes.UVMNotImplemented("There are no wrappers in pyuvm. So find_wrapper_by_name is not implemented")
+
+    def is_type_name_registered(self, type_name):
+        """
+        8.3.1.7.3
+        :param type_name: string that is name of a type
+        :return: boolean
+        Check the classes dict for the name.
+        """
+        assert(isinstance(type_name,str)), "is_type_name_registered() takes a string as its argument not {type(type_name)}"
+        return type_name in self.fd.classes
+
+    def is_type_registered(self, uvm_type):
+        """
+        8.3.1.7.4
+        Checks that a type is registered. The argument is named "obj" in
+        the spec, but that name is ridiculou and confusing.
+        :param obj:
+        :return: boolean
+        """
+        assert(issubclass(uvm_type, utility_classes.uvm_void)), \
+            "is_type_registered() takes a subclass of uvm_void as its argument not {type(uvm_type)}"
+        return uvm_type in self.fd.classes.values()
+
+    def __str__(self, all_types = 1):
+        """
+        8.3.1.7.5
+        Print out the state of the factory to stdout.
+        all_types = 0 : only overrides
+        all_types = 1 : user defined types and overrides
+        all_types = 2 : uvm_* types + above
+        :param all_types: controls output detail
+        :return: None
+        """
+        assert(0 <= all_types <= 2), "__str__() requires a number from 0 to 2"
+        pstring = ""
+        if len(self.fd.overrides) > 0:
+            pstring += "Overrides\n"+"-" * len("Overrides")+"\n"
+            for inst in self.fd.overrides:
+                pstring+= f"{inst.__name__:25}" + ": "+str(self.fd.overrides[inst])
+                pstring += "\n"
+
+        # Need to add 1 and 2
+
+        return pstring
+
+
+
+
