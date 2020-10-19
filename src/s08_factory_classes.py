@@ -1,6 +1,7 @@
 import utility_classes
 import error_classes
 import logging
+import fnmatch
 from utility_classes import uvm_void
 from s05_base_classes import uvm_object
 from s13_predefined_component_classes import uvm_component
@@ -338,8 +339,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         8.3.1.7.5
         Print out the state of the factory to stdout.
-        all_types = 0 : only overrides
-        all_types = 1 : user defined types and overrides
+        all_types = 0 : overrides
+        all_types = 1 : user defined types + above
         all_types = 2 : uvm_* types + above
         :param all_types: controls output detail
         :return: None
@@ -347,14 +348,30 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         assert(0 <= all_types <= 2), "__str__() requires a number from 0 to 2"
         pstring = ""
         if len(self.fd.overrides) > 0:
-            pstring += "Overrides\n"+"-" * len("Overrides")+"\n"
+            pstring += "Overrides:\n"
             for inst in self.fd.overrides:
                 pstring+= f"{inst.__name__:25}" + ": "+str(self.fd.overrides[inst])
                 pstring += "\n"
 
         # Need to add 1 and 2
+        user_list = [self.fd.classes[cls].__name__
+                         for cls in self.fd.classes
+                         if not fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]
+        uvm_list =  [self.fd.classes[cls].__name__
+                         for cls in self.fd.classes
+                         if fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]
+        if all_types > 0:
+            pstring += "\n" + "-"*25 + "\nUser Defined Types:\n"
+            pstring += "\n".join(user_list)
+
+        if all_types == 2:
+            pstring += "\n"+"-"*25 + "\nUVM Types:\n"
+            pstring += "\n".join(uvm_list)
 
         return pstring
+    def print(self, all_types=1):
+        print(self.__str__(all_types))
+
 
 
 
