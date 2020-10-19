@@ -78,6 +78,9 @@ class FactoryData(metaclass=Singleton):
     def clear_overrides(self):
         self.overrides = {}
 
+    def clear_classes(self):
+        self.classes = {}
+
     def find_override(self, requested_type, inst_path=None, overridden_list=None):
         """
         :param requested_type: The type we're overriding
