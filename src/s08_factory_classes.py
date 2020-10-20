@@ -374,5 +374,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
 
 
+# 8.3.1.8 Usage
+# All the elements of usage have been implemented in pyuvm
+# The biggest difference is that all uvm_void classes get registered
+# with the factory automatically.
 
+# 8.3.2
+# Not implemented.  There is no need for a uvm_object_wrapper in Python. The user will never notice
+# the difference
 

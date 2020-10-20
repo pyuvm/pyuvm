@@ -106,7 +106,7 @@ class uvm_object(utility_classes.uvm_void):
         5.3.5.1
         :return:
         """
-        return self.__class__(name)
+        raise error_classes.UVMNotImplemented("the create function needs to be writen to work with the factory")
 
 
     def clone(self):
@@ -300,19 +300,40 @@ class uvm_policy:
     def __new__(cls, *args, **kwargs):
         raise error_classes.UsePythonMethod('Python has simpler ways of handling functionality provided by policies.')
 
+
 class uvm_transaction(uvm_object):
     """
-    5.4
-    The pyuvm uvm_transaction does not include a uvm_initiator.  This object supports printing and recording
-    and these things are either irrelevant (recording only happens in a simulator) or supplanted (Python
-    provides better ways to handle printing.
-
-    As a result we do not implement any of the transaction methods in the UVM transaction.  It serves
-    only as a placeholder class to be consistent with the fact that uvm_sequence_item extends uvm_transaction.
+    5.4.1
     """
+    def __init__(self, name="", initiator = None):
+        """
+        5.4.2.1
+        :param name: Object name
+        :param initiator: componennt that is initiator
+        """
+        super().__init__(name)
+        self.set_initiator(initiator)
+
+    def set_initiator(self, initiator):
+        """
+        5.4.2.14
+        :param initiator: initiator to set
+        :return: None
+        """
+        self.__initiator = initiator
+
+    def get_initiator(self):
+        """
+        5.4.2.15
+        :return: initiator
+        """
+        return self.__initiator
+
+
 
 class uvm_time:
     """
     5.6
     Not implemented in pyuvm since we are not running in a simulator.
     """
+

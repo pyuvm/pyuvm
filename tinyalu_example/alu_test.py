@@ -10,6 +10,7 @@ class command_transaction(uvm_sequence_item):
 
 class result_transaction(uvm_transaction):
     def __init__(self, r):
+        super().__init__()
         self.result = r
 
 
@@ -64,7 +65,7 @@ class tinyalu_agent(uvm_agent):
     def build_phase(self,phase):
         self.cm_h = command_monitor("cm_h",self)
         self.dr_h = tinyalu_driver("dr_h",self)
-        seqr = uvm_sequencer("seqr", self)
+        self.seqr = uvm_sequencer("seqr", self)
 
         # Fifos
         self.cmd_f = uvm_tlm_fifo("cmd_f",self)
@@ -83,7 +84,7 @@ class tinyalu_agent(uvm_agent):
         self.rm_h.ap.connect(self.result_ap)
 
         self.dr_h.command_port(self.cmd_f.get_export)
-        self.dr_h.sequence_item_port(seqr.seq_item_export)
+        self.dr_h.sequence_item_port(self.seqr.seq_item_export)
 
 class env(uvm_env):
 

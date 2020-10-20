@@ -235,7 +235,7 @@ class uvm_port_base(uvm_component):
         isinstance( export, self._imp_type )
         self.__export=export
         self.connected_to[export.full_name]=export
-        export.provided_to[self.full_name]=self
+        export.provided_to[self.full_name()]=self
         for method in self.uvm_methods:
             exec( f'self.{method}=self.__export.{method}' )
 

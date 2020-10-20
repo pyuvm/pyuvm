@@ -5,7 +5,7 @@ from pyuvm import *
 class my_object(uvm_object):
     def __init__(self, name = ""):
         super().__init__(name)
-        self.val = 5;
+        self.val = 5
     def __eq__(self, other):
         if type(other) is type(self):
             return self.val == other.val
@@ -15,8 +15,9 @@ class my_object(uvm_object):
 class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
     """Basic test cases."""
 
-    def test_basic_creation_15_3(self):
+    def test_basic_creation(self):
         """
+        15.3
         Tests whether the factory gets populated and whether it can be used.
         """
         uvf = uvm_factory()
@@ -26,7 +27,7 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
     # Testing specification
 
-    def test_seeding_5_3_3(self):
+    def test_seeding(self):
         """
         5.3.3.1 get_uvm_seeding
         5.3.3.2 set_uvm_seeding
@@ -40,8 +41,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.reseed()
 
-    def test_identification_5_3_4(self):
-        # 5.3.4.2
+    def test_identification(self):
+        """
+        5.3.4
+        :return:
+        """
         nameless = my_object()
         self.assertTrue(len(nameless.get_name()) == 0)
         moe = my_object("moe")
@@ -68,7 +72,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         # 5.3.4.7
         self.assertEqual("my_object", moe.get_type_name())
 
-    def test_creation_5_3_5(self):
+    def test_creation(self):
+        """
+        5.3.5
+        :return:
+        """
         mo = my_object('mo')
         # 5.3.5.1
         new_mo = mo.create('new_mo')
@@ -79,7 +87,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         cln_mo = mo.clone()
         self.assertTrue(mo.__eq__(cln_mo))
 
-    def test_printing_5_3_6(self):
+    def test_printing(self):
+        """
+        5.3.6
+        :return:
+        """
         mo = my_object("mo")
         # 5.3.6.1
         with self.assertRaises(error_classes.UVMNotImplemented):
@@ -90,7 +102,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         # 5.3.6.3 Use __str__(
         with self.assertRaises(error_classes.UsePythonMethod):
             mo.convert2string()
-    def test_recording_5_3_7(self):
+    def test_recording(self):
+        """
+        5.3.7
+        :return:
+        """
         mo = my_object("mo")
         # 5.3.7.1
         with self.assertRaises(error_classes.UVMNotImplemented):
@@ -99,7 +115,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.do_record()
 
-    def test_copying_5_3_8(self):
+    def test_copying(self):
+        """
+        5.3.8
+        :return:
+        """
         mo = my_object("mo")
         # 5.3.8.1
         with self.assertRaises(error_classes.UsePythonMethod):
@@ -108,7 +128,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UsePythonMethod):
             mo.do_copy()
 
-    def test_comparing_5_3_9(self):
+    def test_comparing(self):
+        """
+        5.3.9
+        :return:
+        """
         mo = my_object("mo")
         # 5.3.9.1
         with self.assertRaises(error_classes.UsePythonMethod):
@@ -117,7 +141,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UsePythonMethod):
             mo.do_compare()
 
-    def test_packing_5_3_10(self):
+    def test_packing(self):
+        """
+        5.3.10
+        :return:
+        """
         mo = my_object("mo")
         # 5.3.10.1
         with self.assertRaises(error_classes.UVMNotImplemented):
@@ -132,7 +160,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.do_pack()
 
-    def test_unpacking_5_3_11(self):
+    def test_unpacking(self):
+        """
+        5.3.11
+        :return:
+        """
         mo = my_object("mo")
         # 5.3.10.1
         with self.assertRaises(error_classes.UVMNotImplemented):
@@ -148,18 +180,30 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.do_unpack()
 
-    def test_configuration_5_3_12(self):
+    def test_configuration(self):
+        """
+        5.3.12
+        :return:
+        """
         mo = my_object("mo")
         # 5.3.12.1
         with self.assertRaises(error_classes.UsePythonMethod):
             mo.set_local()
 
-    def test_field_operations_5_3_13(self):
+    def test_field_operations(self):
+        """
+        5.3.13
+        :return:
+        """
         mo = my_object("mo")
         with self.assertRaises(error_classes.UsePythonMethod):
             mo.do_execute_op()
 
-    def test_active_policy_5_3_14(self):
+    def test_active_policy(self):
+        """
+        5.3.14
+        :return:
+        """
         mo = my_object("mo")
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.push_active_policy()
@@ -170,10 +214,24 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
     def test_create(self):
         """
-        Tests the create method.
+        5.3.5 This needs to be further implemented to include the factory
         """
         mo = my_object("first")
-        mo2 = mo.create("second")
-        self.assertEqual(type(mo), type(mo2))
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            mo2 = mo.create("second")
+
+    def test_uvm_transaction_creation(self):
+        """
+        5.4.2.1
+        5.4.2.14
+        5.4.2.15
+        :return:
+        """
+        tr = uvm_transaction()
+        self.assertEqual(0, len(tr.get_name()))
+        self.assertIsNone(tr.get_initiator())
+        uc = uvm_component("uc")
+        tr.set_initiator(uc)
+        self.assertEqual(uc, tr.get_initiator())
 
 
