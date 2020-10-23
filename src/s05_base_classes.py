@@ -179,35 +179,37 @@ class uvm_object(utility_classes.uvm_void):
         :return:
         """
 
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def pack_bytes(self):
         """
         5.3.10.1
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
+
 
     def pack_ints(self):
         """
         5.3.10.1
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def pack_longints(self):
         """
         5.3.10.1
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def do_pack(self):
         """
         5.3.10.2
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
+
 
     def unpack(self):
         """
@@ -215,57 +217,58 @@ class uvm_object(utility_classes.uvm_void):
         Delivers data in object as a dynamic array of bits
         :return:
         """
-
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def push_active_policy(self):
         """
         5.3.14.1
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def pop_active_policy(self):
         """
         5.3.14.2
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def get_active_policy(self):
         """
         5.3.14.3
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def unpack_bytes(self):
         """
         5.3.11.1
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def unpack_ints(self):
         """
         5.3.11.1
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
+
 
     def unpack_longints(self):
         """
         5.3.11.1
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
 
     def do_unpack(self):
         """
         5.3.11.2
         :return:
         """
-        raise error_classes.UVMNotImplemented('Need to implement this before being finished')
+        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
+
 
     def set_local(self):
         """
@@ -328,6 +331,140 @@ class uvm_transaction(uvm_object):
         :return: initiator
         """
         return self.__initiator
+
+
+    def __not_implemented(self):
+        raise error_classes.UVMNotImplemented('This method is not implemented at this time.')
+
+    def accept_tr(self, time):
+        """
+        5.4.2.2
+        :param time:
+        :return:
+        """
+        self.__not_implemented()
+
+    def do_accept_tr(self):
+        """
+        5.4.2.3
+        :return:
+        """
+        self.__not_implemented()
+
+    def begin_tr(self, begin_time=0, parent_handle = None):
+        """
+        5.4.2.5
+        :param begin_time:
+        :param parent_handle:
+        :return:
+        """
+        self.__not_implemented()
+
+    def do_begin_tr(self):
+        """
+        5.4.2.5
+        :return:
+        """
+        self.__not_implemented()
+
+    def end_tr(self, end_time= 0, free_handle = True):
+        """
+        5.4.2.6
+        :param end_time:
+        :param free_handle:
+        :return:
+        """
+        self.__not_implemented()
+
+    def do_end_tr(self):
+        """
+        5.4.2.7
+        :return:
+        """
+        self.__not_implemented()
+
+    def get_tr_handle(self):
+        """
+        5.4.2.8
+        """
+        self.__not_implemented()
+
+    def enable_recording(self):
+        """
+        5.4.2.9
+        :return:
+        """
+        self.__not_implemented()
+
+    def disable_recording(self):
+        """
+        5.4.2.10
+        :return:
+        """
+        self.__not_implemented()
+
+    def is_recording_enabled(self):
+        """
+        5.4.2.11
+        :return:
+        """
+        self.__not_implemented()
+
+    def is_active(self):
+        """
+        5.4.2.12
+        :return:
+        """
+        self.__not_implemented()
+
+    def get_event_pool(self):
+        """
+        5.4.2.13
+        :return:
+        """
+        self.__not_implemented()
+
+
+    def get_accept_time(self):
+        """
+        5.4.2.16
+        :return:
+        """
+        self.__not_implemented()
+
+
+    def get_begin_time(self):
+        """
+        5.4.2.16
+        :return:
+        """
+        self.__not_implemented()
+
+
+    def get_end_time(self):
+        """
+        5.4.2.16
+        :return:
+        """
+        self.__not_implemented()
+
+    def set_transaction_id(self, id):
+        """
+        5.4.2.17
+        :param self:
+        :return:
+        """
+        self.__not_implemented()
+
+    def get_transaction_id(self):
+        """
+        5.4.2.18
+        :return:
+        """
+        self.__not_implemented()
+
+
+
 
 
 

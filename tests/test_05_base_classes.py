@@ -148,16 +148,16 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         """
         mo = my_object("mo")
         # 5.3.10.1
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.pack()
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.pack_bytes()
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.pack_ints()
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.pack_longints()
         # 5.3.10.2
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.do_pack()
 
     def test_unpacking(self):
@@ -167,17 +167,17 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         """
         mo = my_object("mo")
         # 5.3.10.1
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.unpack()
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.unpack_bytes()
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.unpack_ints()
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.unpack_longints()
         # 5.3.11.2
 
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.do_unpack()
 
     def test_configuration(self):
@@ -235,3 +235,43 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         self.assertEqual(uc, tr.get_initiator())
 
 
+    def test_transaction_recording(self):
+        """
+        5.4.2 all methods
+        :return:
+        """
+        tr = uvm_transaction()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.accept_tr(None)
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.do_accept_tr()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.begin_tr(None, None)
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.do_begin_tr()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.end_tr(None, None)
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.do_end_tr()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.get_tr_handle()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.enable_recording()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.disable_recording()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.is_recording_enabled()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.is_active()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.get_event_pool()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.get_accept_time()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.get_begin_time()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.get_end_time()
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.set_transaction_id(-1)
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            tr.get_transaction_id()
