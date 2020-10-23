@@ -15,16 +15,14 @@ the methods defined in the associated interface.
 * imps---Instantiated by components that provide an implementation of or
 directly implement the methods defined.
 
-This is all a bit much for Python which, because of dynamic typing doesn't
-need so many layers.
+These three levels are unecessary for Python because Python has
+multiple inheritances and duck typing.  You don't need to define
+different ports for each type being transferred.
 
-Specifically, pyuvm implements the _imp classes using an abstact base
-class and any class that extends the _imp class must provide the associated
-functions (becoming an 'export')  There is no longer a need for the
-export classes since we don't have to define variables that "forward" the
-interface.
+Ports have a data member named an export that implements the port
+functionality. uvm_put_port.put() calls its export.put(). Ports get
+their various flavors through multiple inheritance.
 
-Therefore we do not implement 12.2.6
 '''
 
 from s13_predefined_component_classes import uvm_component
@@ -43,148 +41,6 @@ repeat the __init__ for classes that do not change the
 __init__ functionality.
 '''
 
-
-'''
-12.2.7
-The _imp classes force users to implement the correct
-interface for the various TLM directions. 
-'''
-
-class uvm_blocking_put_imp(ABC):
-    @abstractmethod
-    def put(self,item):
-        pass
-
-class uvm_nonblocking_put_imp(ABC):
-    @abstractmethod
-    def try_put(self,item):
-        return None
-
-    @abstractmethod
-    def can_put(self):
-        return False
-
-class uvm_put_imp(uvm_blocking_put_imp,uvm_nonblocking_put_imp):
-    '''
-    Combination of the previous two
-    '''
-
-class uvm_blocking_get_imp(ABC):
-    @abstractmethod
-    def get(self):
-        pass
-
-class uvm_nonblocking_get_imp(ABC):
-    @abstractmethod
-    def try_get(self,item):
-        return None
-
-    @abstractmethod
-    def can_get(self):
-        return False
-
-class uvm_analysis_imp(ABC):
-    @abstractmethod
-    def write(self, item):
-        pass
-
-class uvm_get_imp(uvm_blocking_get_imp,uvm_nonblocking_get_imp):
-    '''
-    Combination of the previous two
-    '''
-
-class uvm_blocking_peek_imp(ABC):
-    @abstractmethod
-    def peek(self):
-        pass
-
-class uvm_nonblocking_peek_imp(ABC):
-    @abstractmethod
-    def try_peek(self):
-        return None
-
-    @abstractmethod
-    def can_peek(self):
-        return False
-
-class uvm_peek_imp(uvm_blocking_peek_imp,uvm_nonblocking_peek_imp):
-    '''
-    Combination of the previous two
-    '''
-
-class uvm_blocking_get_peek_imp(uvm_blocking_get_imp, uvm_blocking_peek_imp):
-    '''
-    Combine the above
-    '''
-
-class uvm_nonblocking_get_peek_imp(uvm_nonblocking_get_imp,uvm_nonblocking_peek_imp):
-    '''
-    Combining the above
-    '''
-
-class uvm_get_peek_imp(uvm_get_imp, uvm_peek_imp):
-    '''
-    Combing the above
-    '''
-
-class uvm_blocking_transport_imp(ABC):
-    @abstractmethod
-    def transport(self, req):
-        '''
-        The UVM returns the rsp through the
-        parameter list, but we don't do that
-        in Python.  So we return either rsp
-        or None.
-        :param req: Request
-        :return: rsp
-        '''
-        return None
-
-class uvm_nonblocking_transport_imp( ABC ):
-    @abstractmethod
-    def nb_transport(self, req):
-        '''
-        As above we return None when the UVM version would
-        return 0.  Otherwise we return rsp.
-        :param req: Request
-        :return: rsp as Response
-        '''
-        return None
-
-class uvm_transport_imp( uvm_blocking_transport_imp, uvm_nonblocking_transport_imp ):
-    '''
-    Must provide both of the above.
-    '''
-
-class uvm_blocking_master_imp(uvm_blocking_put_imp, uvm_blocking_get_peek_imp):
-    '''
-    Everybody blocks
-    '''
-
-class uvm_nonblocking_master_imp(uvm_nonblocking_put_imp, uvm_nonblocking_get_peek_imp):
-    '''
-    Nobody blocks
-    '''
-
-class uvm_master_imp(uvm_nonblocking_master_imp, uvm_blocking_master_imp):
-    '''
-    Block or don't, your choice.
-    '''
-
-class uvm_blocking_slave_imp(uvm_blocking_put_imp, uvm_blocking_get_peek_imp):
-    '''
-    Everybody blocks
-    '''
-
-class uvm_nonblocking_slave_imp(uvm_nonblocking_put_imp, uvm_nonblocking_get_peek_imp):
-    '''
-    Nobody blocks
-    '''
-
-class uvm_slave_imp(uvm_nonblocking_slave_imp, uvm_blocking_slave_imp):
-    '''
-    Block or don't, your choice.
-    '''
 
 
 '''
@@ -216,13 +72,9 @@ class uvm_port_base(uvm_component):
 
     '''
 
-    def __init__(self, name, parent, imp_type):
+    def __init__(self, name, parent):
         super().__init__(name, parent)
         self.connected_to={}
-        self._imp_type=imp_type
-        self.uvm_methods = [uvm_method
-                            for uvm_method in dir ( imp_type )
-                            if isinstance( getattr( imp_type, uvm_method ), FunctionType )]
 
     def connect(self, export):
         '''
@@ -232,16 +84,13 @@ class uvm_port_base(uvm_component):
         :param export: The concrete object that implements imp
         :return: None
         '''
-        isinstance( export, self._imp_type )
         self.__export=export
-        self.connected_to[export.full_name]=export
-        export.provided_to[self.full_name()]=self
-        for method in self.uvm_methods:
-            exec( f'self.{method}=self.__export.{method}' )
+        self.connected_to[export.get_full_name()]=export
+        export.provided_to[self.get_full_name()]=self
 
-class uvm_blocking_put_port(uvm_port_base):
+class uvm_blocking_put_port(uvm_port_base, uvm_blocking_put_imp):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_blocking_put_imp)
+        super().__init__(name, parent)
 
 class uvm_nonblocking_put_port(uvm_port_base):
     def __init__(self, name, parent):
