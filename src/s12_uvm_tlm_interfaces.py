@@ -56,89 +56,187 @@ you to assign functions to objects dynamically.
 '''
 
 class uvm_port_base(uvm_component):
-    '''
-    port classes expose the tlm methods to
-    the object that instantiates them.  We extend
-    this class to create the variety of ports and
-    pass this class the implementation type that
-    defines the needed methods (put(), get(),
-    nb_transport(), etc)
+    """
+    A uvm_port_base is a uvm_component with a connect() function.
+    The connect function creates an __export data member that
+    implements the put/get,etc methods.
 
-    Connect dynamically adds the functions'
-    concrete implementations to the port and
-    wraps them so that port.put() calls export.put()
+    We'll build functionality from uvm_port_base to create the
+    other combinations of ports through multiple inheritance.
 
+    pyuvm will make extensive use of Pythons "ask forgiveness" policy
+    If you try to use the wrong method for the port you created
+    then you'll get a exception, maybe a missing attribute one, though
+    we could catch that one and deliver a more useful message.
 
-
-    '''
+    Unlike the SV implementation of UVM we return results from get and peek
+    as function call returns. This is more pythonic.
+    """
 
     def __init__(self, name, parent):
         super().__init__(name, parent)
         self.connected_to={}
+        self.__export = None
 
     def connect(self, export):
-        '''
-        connect() takes an object that implements _imp_type
-        and wraps its implementing methods in the port. That
-        way any port can deliver the methods of any imp
-        :param export: The concrete object that implements imp
-        :return: None
-        '''
+        """
+        Attach this port to the associated export.
+        :param export:
+        :return:
+        """
         self.__export=export
         self.connected_to[export.get_full_name()]=export
         export.provided_to[self.get_full_name()]=self
 
-class uvm_blocking_put_port(uvm_port_base, uvm_blocking_put_imp):
+class uvm_blocking_put_port(uvm_port_base):
+    """
+    12.2.5.1
+    Access the blocking put interfaces
+    """
     def __init__(self, name, parent):
         super().__init__(name, parent)
 
-class uvm_nonblocking_put_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_nonblocking_put_imp)
-
-class uvm_put_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name,parent, uvm_put_imp)
+    def put(self, data):
+        """
+        12.2.4.2.1
+        A blocking put that calls the export.put
+        :param data:
+        :return: None
+        """
+        self.__export.put(data)
 
 class uvm_blocking_get_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_blocking_get_imp)
-
-class uvm_nonblocking_get_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_nonblocking_get_imp)
-
-class uvm_get_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name,parent, uvm_get_imp)
-
-class uvm_blocking_peek_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_blocking_peek_imp)
-
-class uvm_nonblocking_peek_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_nonblocking_peek_imp)
+    """
+    12.2.5.1
+    Access the blocking get export methods
+    """
+    def get(self):
+        """
+        12.2.4.2.2
+        A blocking get that returns the data got
+        :return: data
+        """
+        data = self.__export.get()
+        return data
 
 class uvm_peek_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name,parent, uvm_peek_imp)
+    """
+    12.2.5.1
+    """
+    def peek(self):
+        """
+        12.2.4.2.3
+        A blocking peek that returns data without
+        consuming it.
+        :return: data
+        """
+        data = self.__export.peek()
+        return data
 
-class uvm_blocking_get_peek_port(uvm_port_base):
+class uvm_nonblocking_put_port(uvm_port_base):
+    """
+    12.2.5.1
+    Access the non_blocking put interface
+    """
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_blocking_get_peek_imp)
+        super().__init__(name, parent)
 
-class uvm_nonblocking_get_peek_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_nonblocking_get_peek_imp)
+    def try_put(self, data):
+        """
+        12.2.4.2.4
+        Tries to put data on a port, but if the
+        port is full it returns False
+        :param data: data to deliver
+        :return: True = success
+        """
+        success = self.__export.try_put(data)
+        return success
 
-class uvm_get_peek_port(uvm_port_base):
-    def __init__(self, name, parent):
-        super().__init__(name,parent, uvm_get_peek_imp)
+    def can_put(self):
+        """
+        12.2.4.2.5
+        Returns true if there is room for data to
+        be put on the port
+        :return: bool
+        """
+        can_do_it = self.__export.can_put()
+        return can_do_it
+
+class uvm_nonblocking_get_port(uvm_port_base):
+    """
+    12.2.5.1
+    Access the non_blocking methods in export
+    """
+
+    def try_get(self):
+        """
+        12.2.4.2.6
+        Returns a tuple containing success and the data
+        This is different than SV UVM that returns the
+        data through the argument list.
+        :return: (success, data)
+        """
+        (success, data) = self.__export.try_get()
+        return (success, data)
+
+    def can_get(self):
+        """
+        12.2.4.2.7
+        Returns true if there is data to get
+        :return: bool
+        """
+        can = self.__export.can_get()
+        return can
+
+class get_peek_port(uvm_port_base):
+    """
+    12.2.5.1
+    Try a peek
+    """
+    def try_peek(self):
+        """
+        12.2.4.2.8
+        Tries to peek for data and returns
+        a tuple with success and the data
+        :return: (success, data)
+        """
+        success, data = self.__export.try_peek()
+        return success, data
+
+    def can_peek(self):
+        """
+        12.2.4.2.9
+        Checks if peeking will be successful
+        :return: bool
+        """
+        can = self.__export.can_peek()
+        return can
+
+class uvm_put_port(uvm_port_base, uvm_blocking_put_port, uvm_blocking_get_port):...
+"""
+12.2.5.1  
+The get port delivers blocking and non_blocking functionality
+"""
+class uvm_get_port(uvm_port_base, uvm_blocking_get_port, uvm_nonblocking_get_port):...
+"""
+12.2.5.1
+The put port delivers blocking puts and gets.  Here is the multiple inheritance that
+SV lacked
+"""
 
 class uvm_analyis_port(uvm_port_base):
     def __init__(self, name, parent):
-        super().__init__(name, parent, uvm_analysis_imp)
+        super().__init__(name, parent)
+
+    def write(self, data):
+        """
+        12.2.8.1
+        :param data: data to send
+        :return: None
+        """
+        self.__export.write(data)
+
+
 
 
 '''
@@ -159,68 +257,75 @@ port variants. This creates the runtime assertion checking
 that we need.
 '''
 
+
+class QueueAccessor():
+    def __init__(self, queue, ap=None):
+        assert(isinstance(queue, Queue)), "Tried to pass a non-Queue to export construtor"
+        self.queue = queue
+        self.ap = ap
+
 class uvm_tlm_fifo_base(uvm_component):
 
-    class BlockingPutExport(uvm_blocking_put_imp):
+    class BlockingPutExport(QueueAccessor):
         def put(self,item):
-            self.__queue.put(item)
-            self.put_ap(item)
+            self.queue.put(item)
+            self.ap.write(item)
 
-    class NonBlockingPutExport(uvm_nonblocking_put_imp):
+    class NonBlockingPutExport(QueueAccessor):
         '''
         12.2.8.1.3
         '''
 
         def can_put(self):
-            return not self.__queue.full()
+            return not self.queue.full()
 
         def try_put(self, item):
             try:
-                self.__queue.put_nowait ( item )
-                self.put_ap(item)
+                self.queue.put_nowait ( item )
+                self.ap.write(item)
                 return True
             except QueueFull:
                 return False
 
     class PutExport(BlockingPutExport, NonBlockingPutExport): ...
 
-    class BlockingGetExport(uvm_blocking_get_imp):
+    class BlockingGetExport(QueueAccessor):
         def get(self):
-            item = self.__queue.get()
-            self.get_ap(item)
+            item = self.queue.get()
+            self.ap.write(item)
             return item
 
-    class NonBlockingGetExport(uvm_nonblocking_get_imp):
+    class NonBlockingGetExport(QueueAccessor):
         def can_get(self):
-            return not self.__queue.empty()
+            return not self.queue.empty()
 
         def try_get(self):
             try:
-                item = self.__queue.get_nowait ()
-                self.get_ap(item)
-                return item
+                item = self.queue.get_nowait ()
+                self.ap.write(item)
+                return True, item
             except QueueEmpty:
-                return None
+                return False, None
 
 
     class GetExport(BlockingGetExport, NonBlockingGetExport):...
 
-    class BlockingPeekExport(uvm_blocking_peek_imp):
+    class BlockingPeekExport(QueueAccessor):
         def peek(self):
-            while self.__queue.empty ():
-                self.__queue.not_empty.wait ()
-            queue_data = self.__queue.queue
+            while self.queue.empty ():
+                self.queue.not_empty.wait ()
+            queue_data = self.queue.queue
             return queue_data[0]
 
-    class NonBlockingPeekExport(uvm_nonblocking_peek_imp):
+    class NonBlockingPeekExport(QueueAccessor):
         def can_peek(self):
-            return not self.__queue.empty()
+            return not self.queue.empty()
 
         def try_peek(self):
-            if self.__queue.empty():
-                return None
+            if self.queue.empty():
+                return False, None
             else:
-                return self.__queue.queue[0]
+                return True, self.queue.queue[0]
 
     class PeekExport(BlockingPeekExport, NonBlockingPeekExport): ...
 
@@ -233,11 +338,13 @@ class uvm_tlm_fifo_base(uvm_component):
         12.2.8.1.4
         '''
 
-    def __init__(self, name, parent):
+    def __init__(self, name, parent, maxsize):
         super().__init__(name,parent)
-        self.__queue=None
+        self.__queue=Queue(maxsize=size)
+        self.get_ap=uvm_analyis_port()
+        self.put_ap=uvm_analyis_port()
 
-        self.put_export=self.PutExport()
+        self.put_export=self.PutExport(self.__queue, )
         self.blocking_put_export=self.BlockingPutExport()
         self.nonblocking_get_export = self.NonBlockingPutExport()
 
@@ -257,20 +364,19 @@ class uvm_tlm_fifo_base(uvm_component):
         self.nonblocking_get_peek_export = self.NonBlockingGetPeekExport()
         self.get_peek_export=self.GetPeekExport()
 
-        self.get_ap=uvm_analyis_port()
-        self.put_ap=uvm_analyis_port()
+
 
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
-    def __init__(self, size=1):
-        super().__init__()
-        self.__queue=Queue(maxsize=size)
+    def __init__(self, name = None,parent = None, size=1):
+        super().__init__(name, parent, size)
+
 
     def size(self):
         return self.__queue.maxsize
 
     def used(self):
-        return self.qsize(self)
+        return self.__queue.qsize()
 
     def is_empty(self):
         return self.__queue.empty()
@@ -298,24 +404,26 @@ class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
 class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
 
-    class AnalysisExport(uvm_analysis_imp):
+    class AnalysisExport(QueueAccessor):
         def write(self, item):
             try:
-                self.__queue.put_nowait(item)
+                self..put_nowait(item)
             except QueueFull:
                 raise QueueFull(f"Full analysis fifo: {self.fullname}. This should never happen")
 
     def __init__(self):
         super().__init__(0)
-        self.analysis_export = self.AnalysisExport()
+        self.__queue = Queue()
+        self.analysis_export = self.AnalysisExport(self.__queue)
+
 
 class uvm_tlm_req_rsp_channel(uvm_component):
     '''
     12.2.9.1
     '''
 
-    class MasterSlaveExport ( uvm_master_imp ):
-        def __init__(self, put_export, get_peek_export):
+    class MasterSlaveExport (QueueAccessor):
+        def __init__(self, queue, put_export, get_peek_export):
             self.put_export = put_export
             self.get_peek_export = get_peek_export
 
