@@ -79,9 +79,10 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         """
         mo = my_object('mo')
         # 5.3.5.1
-        new_mo = mo.create('new_mo')
-        self.assertEqual('new_mo', new_mo.get_name())
-        self.assertEqual(type(new_mo), type(mo))
+        with self.assertRaises(UVMNotImplemented):
+            new_mo = mo.create('new_mo')
+            self.assertEqual('new_mo', new_mo.get_name())
+            self.assertEqual(type(new_mo), type(mo))
         # 5.3.5.2
         mo.val = 5
         cln_mo = mo.clone()
@@ -205,11 +206,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         :return:
         """
         mo = my_object("mo")
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.push_active_policy()
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.pop_active_policy()
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(error_classes.UsePythonMethod):
             mo.get_active_policy()
 
     def test_create(self):
