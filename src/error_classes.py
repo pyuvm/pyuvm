@@ -14,3 +14,8 @@ class UVMFactoryError(TypeError):
     '''
     For cases where a type is not registered with the factory
     '''
+
+class UVMTLMConnectionError(RuntimeError):
+    """
+    For problems connecting TLM
+    """
