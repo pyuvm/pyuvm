@@ -133,7 +133,7 @@ We've opted for the latter.
     def add_child(self, name, child):
         assert(name not in self.__children), f"{self.get_full_name()} already has a child named {name}"
         self.__children[name]=child
-
+        pass
     @property
     def hierarchy(self):
         """

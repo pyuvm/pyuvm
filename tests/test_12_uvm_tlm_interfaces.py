@@ -268,5 +268,15 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
         self.assertTrue(success)
 
 
+    def test_tlm_fifo_size(self):
+        ff = uvm_tlm_fifo("ff", None)
+        size = ff.size()
+        self.assertEqual(1,size)
+        ff0 = uvm_tlm_fifo("ff0", None, 0)
+        size = ff0.size()
+        self.assertEqual(0, size)
+        ff2 = uvm_tlm_fifo("ff2", None, 2)
+        size = ff2.size()
+        self.assertEqual(2, size)
 
     

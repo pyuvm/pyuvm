@@ -288,6 +288,11 @@ class uvm_analyis_port(uvm_port_base):
     def __init__(self, name, parent):
         super().__init__(name, parent)
 
+        self.subscribers = []
+
+    def connect(self, export):
+        self.subscribers.append(export)
+
     def write(self, data):
         """
         12.2.8.1
@@ -295,7 +300,9 @@ class uvm_analyis_port(uvm_port_base):
         :return: None
         """
         try:
-            self.export.write(data)
+            for export in self.subscribers:
+                export.write(data)
+
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
@@ -324,7 +331,8 @@ that we need.
 '''
 
 class QueueAccessor(uvm_export_base):
-    def __init__(self, queue, ap=None):
+    def __init__(self, name, parent, queue, ap):
+        super().__init__(name, parent)
         assert(isinstance(queue, Queue)), "Tried to pass a non-Queue to export construtor"
         self.queue = queue
         self.ap = ap
@@ -375,7 +383,6 @@ class uvm_tlm_fifo_base(uvm_component):
             except QueueEmpty:
                 return False, None
 
-
     class GetExport(BlockingGetExport, NonBlockingGetExport):...
 
     class BlockingPeekExport(QueueAccessor):
@@ -408,29 +415,37 @@ class uvm_tlm_fifo_base(uvm_component):
 
     def __init__(self, name, parent, maxsize):
         super().__init__(name,parent)
-        self.__queue=Queue(maxsize=maxsize)
-        self.get_ap=uvm_analyis_port()
-        self.put_ap=uvm_analyis_port()
+        self.queue=Queue(maxsize=maxsize)
+        self.get_ap=uvm_analyis_port("get_ap", self)
+        self.put_ap=uvm_analyis_port("put_ap", self)
 
-        self.put_export=self.PutExport(self.__queue, )
-        self.blocking_put_export=self.BlockingPutExport()
-        self.nonblocking_get_export = self.NonBlockingPutExport()
+        self.blocking_put_export=self.BlockingPutExport("blocking_put_export",
+                                                        self, self.queue, self.put_ap)
+        self.nonblocking_put_export=self.NonBlockingPutExport("nonblocking_put_export",
+                                                              self, self.queue, self.put_ap)
+        self.put_export=self.PutExport("put_export", self, self.queue, self.put_ap)
 
-        self.get_peek_export=self.GetPeekExport()
-        self.blocking_get_peek_export=self.BlockingGetPeekExport()
-        self.nonblocking_get_peek_export=self.NonBlockingGetPeekExport()
 
-        self.blocking_get_export = self.BlockingGetExport()
-        self.nonblocking_get_export = self.NonBlockingGetExport()
-        self.get_export = self.GetExport()
+        self.blocking_get_export = self.BlockingGetExport("blocking_get_export", self,
+                                                          self.queue, self.get_ap)
+        self.nonblocking_get_export = self.NonBlockingPutExport("nonblocking_get_export", self,
+                                                                self.queue, self.put_ap)
 
-        self.blocking_peek_export = self.BlockingPeekExport()
-        self.nonblocking_peek_export = self.NonBlockingPeekExport()
-        self.peek_export = self.PeekExport()
+        self.get_export = self.GetExport("get_export", self, self.queue, self.get_ap)
 
-        self.blocking_get_peek_export = self.BlockingGetPeekExport()
-        self.nonblocking_get_peek_export = self.NonBlockingGetPeekExport()
-        self.get_peek_export=self.GetPeekExport()
+
+        self.blocking_peek_export = self.BlockingPeekExport("blocking_peek_export", self,
+                                                            self.queue, self.get_ap)
+        self.nonblocking_peek_export = self.NonBlockingPeekExport("nonblocking_peek_export", self,
+                                                                  self.queue, self.get_ap)
+        self.peek_export = self.PeekExport("peek_export", self,
+                                           self.queue,self.get_ap)
+
+        self.blocking_get_peek_export=self.BlockingGetPeekExport("blocking_get_peek_export", self,
+                                                                 self.queue, self.get_ap)
+        self.nonblocking_get_peek_export=self.NonBlockingGetPeekExport("nonblocking_get_peek_export", self,
+                                                                       self.queue, self.get_ap)
+        self.get_peek_export=self.GetPeekExport("get_peek_export", self, self.queue, self.get_ap)
 
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
@@ -439,16 +454,16 @@ class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
 
     def size(self):
-        return self.__queue.maxsize
+        return self.queue.maxsize
 
     def used(self):
-        return self.__queue.qsize()
+        return self.queue.qsize()
 
     def is_empty(self):
-        return self.__queue.empty()
+        return self.queue.empty()
 
     def is_full(self):
-        return self.__queue.full()
+        return self.queue.full()
 
     def flush(self):
         '''
@@ -462,11 +477,11 @@ class uvm_tlm_fifo(uvm_tlm_fifo_base):
         all the unfinished tasks.
         :return: None
         '''
-        self.__queue.mutex.acquire()
-        self.__queue.queue.clear()
-        self.__queue.all_tasks_done.notify_all()
-        self.__queue.unfinished_tasks=0
-        self.__queue.mutex.release()
+        self.queue.mutex.acquire()
+        self.queue.queue.clear()
+        self.queue.all_tasks_done.notify_all()
+        self.queue.unfinished_tasks=0
+        self.queue.mutex.release()
 
 class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
 
