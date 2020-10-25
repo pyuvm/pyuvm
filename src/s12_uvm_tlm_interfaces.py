@@ -110,42 +110,6 @@ class uvm_blocking_put_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
-class uvm_blocking_get_port(uvm_port_base):
-    """
-    12.2.5.1
-    Access the blocking get export methods
-    """
-    def get(self):
-        """
-        12.2.4.2.2
-        A blocking get that returns the data got
-        :return: data
-        """
-        try:
-            data = self.export.get()
-            return data
-        except AttributeError:
-            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
-
-
-class uvm_peek_port(uvm_port_base):
-    """
-    12.2.5.1
-    """
-    def peek(self):
-        """
-        12.2.4.2.3
-        A blocking peek that returns data without
-        consuming it.
-        :return: data
-        """
-        try:
-            data = self.export.peek()
-            return data
-        except AttributeError:
-            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
-
-
 class uvm_nonblocking_put_port(uvm_port_base):
     """
     12.2.5.1
@@ -181,6 +145,24 @@ class uvm_nonblocking_put_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
+class uvm_put_port(uvm_blocking_put_port, uvm_nonblocking_put_port):...
+
+class uvm_blocking_get_port(uvm_port_base):
+    """
+    12.2.5.1
+    Access the blocking get export methods
+    """
+    def get(self):
+        """
+        12.2.4.2.2
+        A blocking get that returns the data got
+        :return: data
+        """
+        try:
+            data = self.export.get()
+            return data
+        except AttributeError:
+            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
 class uvm_nonblocking_get_port(uvm_port_base):
     """
@@ -218,11 +200,35 @@ class uvm_nonblocking_get_port(uvm_port_base):
 
         return can
 
-class get_peek_port(uvm_port_base):
+class uvm_get_port(uvm_blocking_get_port, uvm_nonblocking_get_port):...
+
+class uvm_blocking_peek_port(uvm_port_base):
+    """
+    12.2.5.1
+    """
+    def __init__(self, name, parent):
+        super().__init__(name, parent)
+    def peek(self):
+        """
+        12.2.4.2.3
+        A blocking peek that returns data without
+        consuming it.
+        :return: data
+        """
+        try:
+            data = self.export.peek()
+            return data
+        except AttributeError:
+            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
+
+class uvm_nonblocking_peek_port(uvm_port_base):
     """
     12.2.5.1
     Try a peek
     """
+    def __init__(self, name, parent):
+        super().__init__(name, parent)
+
     def try_peek(self):
         """
         12.2.4.2.8
@@ -230,7 +236,10 @@ class get_peek_port(uvm_port_base):
         a tuple with success and the data
         :return: (success, data)
         """
-        success, data = self.export.try_peek()
+        try:
+            success, data = self.export.try_peek()
+        except AttributeError:
+            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
         return success, data
 
     def can_peek(self):
@@ -242,12 +251,33 @@ class get_peek_port(uvm_port_base):
         can = self.export.can_peek()
         return can
 
-class uvm_put_port(uvm_blocking_put_port, uvm_nonblocking_put_port):...
-"""
-12.2.5.1  
-The get port delivers blocking and non_blocking functionality
-"""
-class uvm_get_port(uvm_blocking_get_port, uvm_nonblocking_get_port):...
+class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port):...
+
+class uvm_blocking_transport_port(uvm_port_base):
+    def __init__(self, name, parent):
+        super().__init__(name, parent)
+
+    def transport(self, put_data):
+        try:
+            get_data = self.export.transport(put_data)
+        except AttributeError:
+            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
+        return get_data
+
+class uvm_nonblocking_transport_port(uvm_port_base):
+
+    def __init__(self, name, parent):
+        super().__init__(name, parent)
+
+    def nb_transport(self, put_data):
+        try:
+            success, get_data = self.export.nb_transport(put_data)
+        except AttributeError:
+            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
+        return success, get_data
+
+class uvm_transport_port(uvm_blocking_transport_port, uvm_nonblocking_transport_port):...
+
 """
 12.2.5.1
 The put port delivers blocking puts and gets.  Here is the multiple inheritance that
@@ -275,8 +305,6 @@ class uvm_export_base(uvm_component):
         super().__init__(name, parent)
         self.provided_to = {}
 
-
-
 '''
 12.2.8 FIFO Classes
 
@@ -295,7 +323,6 @@ port variants. This creates the runtime assertion checking
 that we need.
 '''
 
-
 class QueueAccessor(uvm_export_base):
     def __init__(self, queue, ap=None):
         assert(isinstance(queue, Queue)), "Tried to pass a non-Queue to export construtor"
@@ -303,7 +330,10 @@ class QueueAccessor(uvm_export_base):
         self.ap = ap
 
 class uvm_tlm_fifo_base(uvm_component):
-
+    """
+    Declares and instantiate the exports needed to communicate
+    through the Queue.
+    """
     class BlockingPutExport(QueueAccessor):
         def put(self,item):
             self.queue.put(item)
@@ -402,8 +432,6 @@ class uvm_tlm_fifo_base(uvm_component):
         self.nonblocking_get_peek_export = self.NonBlockingGetPeekExport()
         self.get_peek_export=self.GetPeekExport()
 
-
-
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
     def __init__(self, name = None,parent = None, size=1):
@@ -453,7 +481,6 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
         super().__init__(0)
         self.__queue = Queue()
         self.analysis_export = self.AnalysisExport(self.__queue)
-
 
 class uvm_tlm_req_rsp_channel(uvm_component):
     '''
@@ -520,7 +547,6 @@ class uvm_tlm_transport_channel(uvm_tlm_req_rsp_channel):
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 1, 1)
         self.transport_export=self.TransportExport
-
 
 '''
 UVM TLM 2
