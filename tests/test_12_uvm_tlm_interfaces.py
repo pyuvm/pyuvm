@@ -269,6 +269,10 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
 
     def test_tlm_fifo_size(self):
+        """
+        12.2.8.2.2
+        :return:
+        """
         ff = uvm_tlm_fifo("ff", None)
         size = ff.size()
         self.assertEqual(1,size)
@@ -278,5 +282,34 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
         ff2 = uvm_tlm_fifo("ff2", None, 2)
         size = ff2.size()
         self.assertEqual(2, size)
+
+    def test_tlm_fifo_used(self):
+        """
+        12.2.8.2.3
+        :return:
+        """
+        ff = uvm_tlm_fifo("ff", None, 3)
+        pp = uvm_put_port("pp", None)
+        pp.connect(ff.put_export)
+        pp.put(1)
+        pp.put(2)
+        pp.put(3)
+        self.assertEqual(3, ff.used())
+
+    def test_tlm_fifo_is_empty(self):
+        ff = uvm_tlm_fifo("ff",None)
+        self.assertTrue(ff.is_empty())
+        pp = uvm_put_port("pp", None)
+        pp.connect(ff.put_export)
+        gp = uvm_get_port("gp", None)
+        gp.connect(ff.get_export)
+        pp.put(1)
+        self.assertFalse(ff.is_empty())
+        __ = gp.get()
+        self.assertTrue(ff.is_empty())
+
+
+
+
 
     

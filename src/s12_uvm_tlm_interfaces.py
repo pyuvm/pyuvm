@@ -27,7 +27,8 @@ their various flavors through multiple inheritance.
 
 from s13_predefined_component_classes import uvm_component
 from queue import Full as QueueFull, Empty as QueueEmpty, Queue
-from error_classes import UVMTLMConnectionError 
+from error_classes import UVMTLMConnectionError
+from enum import Enum
 '''
 12.2.2
 This section describes a variety of classes without
@@ -53,6 +54,23 @@ uvm_port_base adds the correct methods to this class
 rather than reference them because Python allows 
 you to assign functions to objects dynamically.
 '''
+
+## We use these classes to check the connect phase
+## to avoid illegal connections
+class NonblockingPutInt(): ...
+class BlockingPutInt(): ...
+class PutInt(NonblockingPutInt, BlockingPutInt): ...
+
+class NonblockingGetInt():...
+class BlockingGetInt():...
+class GetInt(NonblockingGetInt, BlockingGetInt):...
+
+class NonblockingPeekInt():...
+class BlockingPeekInt():...
+class PeekInt(NonblockingPeekInt, BlockingPeekInt):...
+
+class NonblockingTransportInt():...
+class BlockingTransportInt():...
 
 class uvm_port_base(uvm_component):
     """
@@ -90,13 +108,19 @@ class uvm_port_base(uvm_component):
         except:
             raise UVMTLMConnectionError(f"Error connecting {self.get_name()} using {export}")
 
+    def check_export(self, export, check_class):
+        if not isinstance(export, check_class):
+            raise UVMTLMConnectionError(f"You tried to connect an {type(export)} to {self.get_full_name()}")
+
 class uvm_blocking_put_port(uvm_port_base):
     """
     12.2.5.1
     Access the blocking put interfaces
     """
-    def __init__(self, name, parent):
-        super().__init__(name, parent)
+
+    def connect(self, export):
+        self.check_export(export, BlockingPutInt)
+        super().connect(export)
 
     def put(self, data):
         """
@@ -115,8 +139,9 @@ class uvm_nonblocking_put_port(uvm_port_base):
     12.2.5.1
     Access the non_blocking put interface
     """
-    def __init__(self, name, parent):
-        super().__init__(name, parent)
+    def connect(self, export):
+        self.check_export(export, NonblockingPutInt)
+        super().connect(export)
 
     def try_put(self, data):
         """
@@ -152,6 +177,11 @@ class uvm_blocking_get_port(uvm_port_base):
     12.2.5.1
     Access the blocking get export methods
     """
+
+    def connect(self, export):
+        self.check_export(export, BlockingGetInt)
+        super().connect(export)
+
     def get(self):
         """
         12.2.4.2.2
@@ -169,6 +199,10 @@ class uvm_nonblocking_get_port(uvm_port_base):
     12.2.5.1
     Access the non_blocking methods in export
     """
+
+    def connect(self, export):
+        self.check_export(export, NonblockingGetInt)
+        super().connect(export)
 
     def try_get(self):
         """
@@ -206,8 +240,11 @@ class uvm_blocking_peek_port(uvm_port_base):
     """
     12.2.5.1
     """
-    def __init__(self, name, parent):
-        super().__init__(name, parent)
+
+    def connect(self, export):
+        self.check_export(export, BlockingPeekInt)
+        super().connect(export)
+
     def peek(self):
         """
         12.2.4.2.3
@@ -226,8 +263,9 @@ class uvm_nonblocking_peek_port(uvm_port_base):
     12.2.5.1
     Try a peek
     """
-    def __init__(self, name, parent):
-        super().__init__(name, parent)
+
+    def connect(self, export):
+        self.check_export(export, NonblockingPeekInt)
 
     def try_peek(self):
         """
@@ -252,6 +290,32 @@ class uvm_nonblocking_peek_port(uvm_port_base):
         return can
 
 class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port):...
+
+
+class uvm_blocking_get_peek_port(uvm_blocking_get_port, uvm_blocking_peek_port):
+    def connect(self, export):
+        if not (isinstance(export, BlockingGetInt) or isinstance(export, BlockingPeekInt)):
+            raise UVMTLMConnectionError(
+                f"Tried to connect {type(export)} to uvm_blocking_get_peek {self.get_full_name()}")
+        super().connect(export)
+
+
+class uvm_nonblocking_get_peek_port(uvm_blocking_get_port, uvm_blocking_peek_port):
+    def connect(self, export):
+        if not (isinstance(export, NonblockingGetInt) or isinstance(export, NonblockingPeekInt)):
+            raise UVMTLMConnectionError(
+                f"Tried to connect an {export} to uvm_blocking_get_peek {self.get_full_name()}")
+        super().connect(export)
+
+class uvm_get_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port):
+    def connect(self, export):
+        if not (isinstance(export, NonblockingGetInt) or isinstance(export, NonblockingPeekInt) \
+        or isinstance(export, BlockingGetInt) or isinstance(export, BlockingPeekInt)):
+            raise UVMTLMConnectionError(
+                f"Tried to connect an illegal export to uvm_blocking_get_peek {self.get_full_name()}")
+
+
+
 
 class uvm_blocking_transport_port(uvm_port_base):
     def __init__(self, name, parent):
@@ -342,12 +406,12 @@ class uvm_tlm_fifo_base(uvm_component):
     Declares and instantiate the exports needed to communicate
     through the Queue.
     """
-    class BlockingPutExport(QueueAccessor):
+    class BlockingPutExport(QueueAccessor, PutInt):
         def put(self,item):
             self.queue.put(item)
             self.ap.write(item)
 
-    class NonBlockingPutExport(QueueAccessor):
+    class NonBlockingPutExport(QueueAccessor, PutInt):
         '''
         12.2.8.1.3
         '''
@@ -365,13 +429,13 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class PutExport(BlockingPutExport, NonBlockingPutExport): ...
 
-    class BlockingGetExport(QueueAccessor):
+    class BlockingGetExport(QueueAccessor,GetInt):
         def get(self):
             item = self.queue.get()
             self.ap.write(item)
             return item
 
-    class NonBlockingGetExport(QueueAccessor):
+    class NonBlockingGetExport(QueueAccessor, GetInt):
         def can_get(self):
             return not self.queue.empty()
 
@@ -385,14 +449,14 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class GetExport(BlockingGetExport, NonBlockingGetExport):...
 
-    class BlockingPeekExport(QueueAccessor):
+    class BlockingPeekExport(QueueAccessor,PeekInt):
         def peek(self):
             while self.queue.empty ():
                 self.queue.not_empty.wait ()
             queue_data = self.queue.queue
             return queue_data[0]
 
-    class NonBlockingPeekExport(QueueAccessor):
+    class NonBlockingPeekExport(QueueAccessor, PeekInt):
         def can_peek(self):
             return not self.queue.empty()
 
