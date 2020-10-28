@@ -57,20 +57,9 @@ you to assign functions to objects dynamically.
 
 ## We use these classes to check the connect phase
 ## to avoid illegal connections
-class NonblockingPutInt(): ...
-class BlockingPutInt(): ...
-class PutInt(NonblockingPutInt, BlockingPutInt): ...
 
-class NonblockingGetInt():...
-class BlockingGetInt():...
-class GetInt(NonblockingGetInt, BlockingGetInt):...
 
-class NonblockingPeekInt():...
-class BlockingPeekInt():...
-class PeekInt(NonblockingPeekInt, BlockingPeekInt):...
 
-class NonblockingTransportInt():...
-class BlockingTransportInt():...
 
 class uvm_port_base(uvm_component):
     """
@@ -112,6 +101,8 @@ class uvm_port_base(uvm_component):
         if not isinstance(export, check_class):
             raise UVMTLMConnectionError(f"You tried to connect an {type(export)} to {self.get_full_name()}")
 
+#put
+
 class uvm_blocking_put_port(uvm_port_base):
     """
     12.2.5.1
@@ -119,7 +110,7 @@ class uvm_blocking_put_port(uvm_port_base):
     """
 
     def connect(self, export):
-        self.check_export(export, BlockingPutInt)
+        self.check_export(export, uvm_blocking_put_export)
         super().connect(export)
 
     def put(self, data):
@@ -134,13 +125,15 @@ class uvm_blocking_put_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
+
 class uvm_nonblocking_put_port(uvm_port_base):
     """
     12.2.5.1
     Access the non_blocking put interface
     """
+
     def connect(self, export):
-        self.check_export(export, NonblockingPutInt)
+        self.check_export(export, uvm_nonblocking_put_export)
         super().connect(export)
 
     def try_put(self, data):
@@ -172,6 +165,7 @@ class uvm_nonblocking_put_port(uvm_port_base):
 
 class uvm_put_port(uvm_blocking_put_port, uvm_nonblocking_put_port):...
 
+#get
 class uvm_blocking_get_port(uvm_port_base):
     """
     12.2.5.1
@@ -179,7 +173,7 @@ class uvm_blocking_get_port(uvm_port_base):
     """
 
     def connect(self, export):
-        self.check_export(export, BlockingGetInt)
+        self.check_export(export, uvm_blocking_get_export)
         super().connect(export)
 
     def get(self):
@@ -201,7 +195,7 @@ class uvm_nonblocking_get_port(uvm_port_base):
     """
 
     def connect(self, export):
-        self.check_export(export, NonblockingGetInt)
+        self.check_export(export, uvm_nonblocking_get_export)
         super().connect(export)
 
     def try_get(self):
@@ -236,13 +230,14 @@ class uvm_nonblocking_get_port(uvm_port_base):
 
 class uvm_get_port(uvm_blocking_get_port, uvm_nonblocking_get_port):...
 
+#peek
 class uvm_blocking_peek_port(uvm_port_base):
     """
     12.2.5.1
     """
 
     def connect(self, export):
-        self.check_export(export, BlockingPeekInt)
+        self.check_export(export, uvm_blocking_peek_export)
         super().connect(export)
 
     def peek(self):
@@ -265,7 +260,7 @@ class uvm_nonblocking_peek_port(uvm_port_base):
     """
 
     def connect(self, export):
-        self.check_export(export, NonblockingPeekInt)
+        self.check_export(export, uvm_nonblocking_peek_export)
 
     def try_peek(self):
         """
@@ -291,32 +286,30 @@ class uvm_nonblocking_peek_port(uvm_port_base):
 
 class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port):...
 
+#getpeek
 
 class uvm_blocking_get_peek_port(uvm_blocking_get_port, uvm_blocking_peek_port):
     def connect(self, export):
-        if not (isinstance(export, BlockingGetInt) or isinstance(export, BlockingPeekInt)):
+        if not (isinstance(export, uvm_blocking_get_export) or isinstance(export, uvm_blocking_peek_export)):
             raise UVMTLMConnectionError(
                 f"Tried to connect {type(export)} to uvm_blocking_get_peek {self.get_full_name()}")
         super().connect(export)
 
-
 class uvm_nonblocking_get_peek_port(uvm_blocking_get_port, uvm_blocking_peek_port):
     def connect(self, export):
-        if not (isinstance(export, NonblockingGetInt) or isinstance(export, NonblockingPeekInt)):
+        if not (isinstance(export, uvm_nonblocking_get_export) or isinstance(export, uvm_nonblocking_peek_export)):
             raise UVMTLMConnectionError(
                 f"Tried to connect an {export} to uvm_blocking_get_peek {self.get_full_name()}")
         super().connect(export)
 
 class uvm_get_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port):
     def connect(self, export):
-        if not (isinstance(export, NonblockingGetInt) or isinstance(export, NonblockingPeekInt) \
-        or isinstance(export, BlockingGetInt) or isinstance(export, BlockingPeekInt)):
+        if not (isinstance(export, uvm_nonblocking_get_export) or isinstance(export, uvm_nonblocking_peek_export) \
+                or isinstance(export, uvm_blocking_get_export) or isinstance(export, uvm_blocking_peek_export)):
             raise UVMTLMConnectionError(
                 f"Tried to connect an illegal export to uvm_blocking_get_peek {self.get_full_name()}")
 
-
-
-
+#transport
 class uvm_blocking_transport_port(uvm_port_base):
     def __init__(self, name, parent):
         super().__init__(name, parent)
@@ -341,6 +334,12 @@ class uvm_nonblocking_transport_port(uvm_port_base):
         return success, get_data
 
 class uvm_transport_port(uvm_blocking_transport_port, uvm_nonblocking_transport_port):...
+
+#master
+class uvm_master_port(uvm_blocking_put_port, uvm_blocking_get_port):...
+
+class uvm_slave_port(uvm_blocking_put_port, uvm_blocking_get_port):...
+
 
 """
 12.2.5.1
@@ -376,6 +375,55 @@ class uvm_export_base(uvm_component):
         super().__init__(name, parent)
         self.provided_to = {}
 
+# put
+class uvm_nonblocking_put_export(uvm_export_base): ...
+
+class uvm_blocking_put_export(uvm_export_base): ...
+
+class uvm_put_export(uvm_nonblocking_put_export, uvm_blocking_put_export): ...
+
+# get
+class uvm_nonblocking_get_export(uvm_export_base):...
+
+class uvm_blocking_get_export(uvm_export_base):...
+
+class uvm_get_export(uvm_nonblocking_get_export, uvm_blocking_get_export):...
+
+#peek
+class uvm_nonblocking_peek_export(uvm_export_base):...
+
+class uvm_blocking_peek_export(uvm_export_base):...
+
+class uvm_peek_export(uvm_nonblocking_peek_export, uvm_blocking_peek_export):...
+
+#getpeek
+class uvm_nonblocking_get_peek_export(uvm_export_base):...
+
+class uvm_blocking_get_peek_export(uvm_export_base):...
+
+class uvm_get_peek_export(uvm_nonblocking_get_peek_export, uvm_blocking_get_peek_export):...
+
+#transport
+class uvm_nonblocking_transport_export(uvm_export_base):...
+
+class uvm_blocking_transport_export(uvm_export_base):...
+
+class uvm_transport_export(uvm_nonblocking_transport_export, uvm_blocking_transport_export):...
+
+#master
+class uvm_blocking_master_export(uvm_export_base):...
+
+class uvm_nonblocking_master_export(uvm_export_base):...
+
+class uvm_master_export(uvm_export_base):...
+
+#slave
+class uvm_blocking_slave_export(uvm_export_base):...
+
+class uvm_nonblocking_slave_export(uvm_export_base):...
+
+class uvm_slave_export(uvm_export_base):...
+
 '''
 12.2.8 FIFO Classes
 
@@ -394,9 +442,9 @@ port variants. This creates the runtime assertion checking
 that we need.
 '''
 
-class QueueAccessor(uvm_export_base):
+class QueueAccessor():
     def __init__(self, name, parent, queue, ap):
-        super().__init__(name, parent)
+        super(QueueAccessor, self).__init__(name, parent)
         assert(isinstance(queue, Queue)), "Tried to pass a non-Queue to export construtor"
         self.queue = queue
         self.ap = ap
@@ -406,12 +454,12 @@ class uvm_tlm_fifo_base(uvm_component):
     Declares and instantiate the exports needed to communicate
     through the Queue.
     """
-    class BlockingPutExport(QueueAccessor, PutInt):
+    class BlockingPutExport(QueueAccessor, uvm_blocking_put_export):
         def put(self,item):
             self.queue.put(item)
             self.ap.write(item)
 
-    class NonBlockingPutExport(QueueAccessor, PutInt):
+    class NonBlockingPutExport(QueueAccessor, uvm_nonblocking_put_export):
         '''
         12.2.8.1.3
         '''
@@ -429,13 +477,13 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class PutExport(BlockingPutExport, NonBlockingPutExport): ...
 
-    class BlockingGetExport(QueueAccessor,GetInt):
+    class BlockingGetExport(QueueAccessor, uvm_blocking_get_export):
         def get(self):
             item = self.queue.get()
             self.ap.write(item)
             return item
 
-    class NonBlockingGetExport(QueueAccessor, GetInt):
+    class NonBlockingGetExport(QueueAccessor, uvm_nonblocking_get_export):
         def can_get(self):
             return not self.queue.empty()
 
@@ -449,14 +497,14 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class GetExport(BlockingGetExport, NonBlockingGetExport):...
 
-    class BlockingPeekExport(QueueAccessor,PeekInt):
+    class BlockingPeekExport(QueueAccessor, uvm_blocking_peek_export):
         def peek(self):
             while self.queue.empty ():
                 self.queue.not_empty.wait ()
             queue_data = self.queue.queue
             return queue_data[0]
 
-    class NonBlockingPeekExport(QueueAccessor, PeekInt):
+    class NonBlockingPeekExport(QueueAccessor, uvm_nonblocking_peek_export):
         def can_peek(self):
             return not self.queue.empty()
 

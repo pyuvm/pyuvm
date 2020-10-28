@@ -17,11 +17,11 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
             super().__init__(name, parent)
             self.data = None
 
-    class TestBlockingPutExport(TestPutExportBase):
+    class TestBlockingPutExport(TestPutExportBase, uvm_blocking_put_export):
         def put(self, data):
             self.data = data
 
-    class TestNonBlockingPutExport(TestPutExportBase):
+    class TestNonBlockingPutExport(TestPutExportBase, uvm_nonblocking_put_export):
         def __init__(self, name=None, parent = None):
             super().__init__(name, parent)
             self.blocked = None
@@ -41,11 +41,11 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
             super().__init__(name, parent)
             self.data = None
 
-    class TestBlockingGetExport(TestGetExportBase):
+    class TestBlockingGetExport(TestGetExportBase, uvm_blocking_get_export):
         def get(self):
             return self.data
 
-    class TestNonBlockingGetExport(TestGetExportBase):
+    class TestNonBlockingGetExport(TestGetExportBase, uvm_nonblocking_get_export):
         def  __int__(self, name, parent):
             super().__init__(name, parent)
             self.empty = None
@@ -60,12 +60,12 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
     class TestGetExport(TestBlockingGetExport, TestNonBlockingGetExport):...
 
-    class TestBlockingPeekExport(TestBlockingGetExport):
+    class TestBlockingPeekExport(TestBlockingGetExport, uvm_blocking_peek_export):
 
         def peek(self):
             return self.get()
 
-    class TestNonBlockingPeekExport(TestNonBlockingGetExport):
+    class TestNonBlockingPeekExport(TestNonBlockingGetExport, uvm_nonblocking_peek_export):
 
         def try_peek(self):
             return self.try_get()
