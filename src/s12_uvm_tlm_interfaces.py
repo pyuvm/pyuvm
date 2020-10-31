@@ -315,6 +315,10 @@ class uvm_blocking_transport_port(uvm_port_base):
     def __init__(self, name, parent):
         super().__init__(name, parent)
 
+    def connect(self, export):
+        self.check_export(export, uvm_blocking_transport_export)
+        super().connect(export)
+
     def transport(self, put_data):
         try:
             get_data = self.export.transport(put_data)
@@ -326,6 +330,10 @@ class uvm_nonblocking_transport_port(uvm_port_base):
 
     def __init__(self, name, parent):
         super().__init__(name, parent)
+
+    def connect(self, export):
+        self.check_export(export, uvm_nonblocking_transport_export)
+        super().connect(export)
 
     def nb_transport(self, put_data):
         try:

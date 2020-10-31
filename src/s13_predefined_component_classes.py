@@ -61,9 +61,14 @@ We've opted for the latter.
         if name != 'uvm_root':
             uvm_component.component_dict[self.get_full_name()]=self
 
+    def clear_children(self):
+        self.__children = {}
+
+
     def clear_hierarchy(self):
         self.__parent=None
-        self.__children = {}
+        self.clear_children()
+
 
     def do_execute_op(self, op):
         raise error_classes.UVMNotImplemented("Policies not implemented")

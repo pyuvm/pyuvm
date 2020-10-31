@@ -5,20 +5,13 @@ from pyuvm import *
 class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.mc = self.my_comp("mc")
-        self.blocking_pute = self.TestBlockingPutExport("blocking_pute", self.mc)
-        self.nonblocking_pute = self.TestBlockingPutExport("nonblocking_pute", self.mc)
-        self.pute = self.TestPutExport("pute", self.mc)
-        self.blocking_gete = self.TestBlockingGetExport("blocking_gete", self.mc)
-        self.non_blocking_gete = self.TestNonBlockingGetExport("nonblocking_gete", self.mc)
-        self.gete = self.TestGetExport("gete", self.mc)
-        self.blocking_peeke = self.TestBlockingPeekExport("blocking_peeke", self.mc)
-        self.non_blocking_peeke = self.TestNonBlockingPeekExport("non_blocking_peeke", self.mc)
-        self.peeke = self.TestPeekExport("peeke", self.mc)
-        self.blocking_transporte = self.TestBlockingTransportExport("blocking_transporte", self.mc)
-        self.transporte = self.TestTransportExport("trane", self.mc)
+        self.my_root = uvm_component("my_root")
+
+
 
     class my_comp(uvm_component):...
+
+    # Put
     class TestPutExportBase(uvm_export_base):
         def __init__(self, name, parent=None):
             super().__init__(name, parent)
@@ -29,7 +22,7 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
             self.data = data
 
     class TestNonBlockingPutExport(TestPutExportBase, uvm_nonblocking_put_export):
-        def __init__(self, name=None, parent = None):
+        def __init__(self, name=None, parent=None):
             super().__init__(name, parent)
             self.blocked = None
 
@@ -43,6 +36,7 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
     class TestPutExport(TestBlockingPutExport, TestNonBlockingPutExport):...
 
+    # Get
     class TestGetExportBase():
         def __init__(self, name="", parent = None):
             super().__init__(name, parent)
@@ -65,6 +59,7 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
     class TestGetExport(TestBlockingGetExport, TestNonBlockingGetExport):...
 
+    # Peek
     class TestBlockingPeekExport(TestGetExportBase, uvm_blocking_peek_export):
         def peek(self):
             return self.data
@@ -84,20 +79,14 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
     class TestPeekExport(TestBlockingPeekExport, TestNonBlockingPeekExport):...
 
-    class TestNonBlockingPeekExport(TestGetExportBase, uvm_nonblocking_peek_export):
-
-        def try_peek(self):
-            return self.try_get()
-
-        def can_peek(self):
-            return self.can_get()
-
+    # GetPeek
     class TestBlockingGetPeekExport(TestBlockingGetExport, TestBlockingPeekExport):...
 
     class TestNonBlockingGetPeekExport(TestNonBlockingGetExport, TestNonBlockingPeekExport):...
 
     class TestGetPeekExport(TestBlockingGetPeekExport, TestNonBlockingGetPeekExport):...
 
+    # Transport
     class TestTransportExportBase(uvm_export_base):
         def __init__(self, name, parent):
             super().__init__(name, parent)
@@ -105,20 +94,22 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
             self.get_data = None
             self.blocked = True
 
-    class TestBlockingTransportExport(TestTransportExportBase):
+    class TestBlockingTransportExport(TestTransportExportBase, uvm_blocking_transport_export):
         def transport(self, put_data):
             self.put_data = put_data
             return self.get_data
 
-    class TestNonBlockingTransportExport(TestTransportExportBase):
+    class TestNonBlockingTransportExport(TestTransportExportBase, uvm_nonblocking_transport_export):
         def nb_transport(self,put_data):
             if self.blocked:
                 return False, None
             else:
-                return True, self.transport(put_data)
+                self.put_data = put_data
+                return True, self.get_data
 
     class TestTransportExport(TestBlockingTransportExport, TestNonBlockingTransportExport):...
 
+    # Master
     class TestBlockingMasterExport(TestBlockingPutExport, TestNonBlockingGetPeekExport):
         ...
 
@@ -128,6 +119,7 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
     class TestMasterExport(TestBlockingMasterExport, TestNonBlockingMasterExport):
         ...
 
+    # Slave
     class TestBlockingSlaveExport(TestBlockingPutExport, TestNonBlockingGetPeekExport):
         ...
 
@@ -137,167 +129,190 @@ class s12_uvm_tlm_interfaces_TestCase (pyuvm_unittest.pyuvm_TestCase):
     class TestSlaveExport(TestBlockingSlaveExport, TestNonBlockingSlaveExport):
         ...
 
-    def test_uvm_blocking_put_port(self):
-        bpp = uvm_blocking_put_port("bpp", self.mc)
+    class TestInvalidExport(uvm_export_base):
+        """
+        Used to guarantee a port type error
+        """
+        ...
+
+    # Put
+
+    # Common predefined port tests: put, get, peek, get_peek, transport, master, slave
+
+    def make_test_components(self, port_cls, export_cls):
+        """
+        Make the components for a port test in a child-free component
+        :param port_cls:
+        :param export_cls:
+        :return: port, export, invalid
+        """
+        self.my_root.clear_children()
+        port = port_cls("port", self.my_root)
+        export = export_cls("export", self.my_root)
+        invalid = self.TestInvalidExport("invalid", self.my_root)
+        return port, export, invalid
+
+    def blocking_put_test(self, port_cls, export_cls):
+        (bpp, export, invalid) = self.make_test_components(port_cls, export_cls)
         with self.assertRaises(UVMTLMConnectionError):
             bpp.put(0)
         with self.assertRaises(UVMTLMConnectionError):
-            bpp.connect(self.gete)
-        bpp.connect(self.pute)
+            bpp.connect(invalid)
+        bpp.connect(export)
         bpp.put(5)
+        self.assertEqual(export.data, 5)
 
-    def test_uvm_non_blocking_put_port(self):
-        pp = uvm_nonblocking_put_port("pp", self.mc)
-        self.pute.data = 0
+    def nonblocking_put_test(self, port_cls, export_cls):
+        (port, export, invalid) = self.make_test_components(port_cls,export_cls)
+        export.data = 0
         with self.assertRaises(UVMTLMConnectionError):
-            __ = pp.try_put("data")
-        pp.connect(self.pute)
-        self.pute.blocked = True
-        self.assertFalse(pp.try_put(55))
-        self.assertNotEqual(55, self.pute.data)
-        self.pute.blocked = False
-        self.assertTrue(pp.try_put(55))
-        self.assertEqual(55, self.pute.data)
+            __ = port.try_put("data")
+        with self.assertRaises(UVMTLMConnectionError):
+            __ = port.connect(invalid)
+        port.connect(export)
+        export.blocked = True
+        self.assertFalse(port.try_put(55))
+        self.assertNotEqual(55, export.data)
+        export.blocked = False
+        self.assertTrue(port.try_put(55))
+        self.assertEqual(55, export.data)
 
-    def test_uvm_put_port(self):
-        pp = uvm_put_port("pp", self.mc)
+    def blocking_get_test(self, port_cls, export_cls):
+        (port, export, invalid) = self.make_test_components(port_cls,export_cls)
         with self.assertRaises(UVMTLMConnectionError):
-            pp.put(5)
-        pp.connect(self.pute)
-        pp.put(5)
-        self.assertEqual(5, self.pute.data)
-        self.pute.blocked = True
-        self.assertFalse(pp.try_put(0xdeadbee))
-        self.assertNotEqual(0xdeadbee, self.pute.data)
-        self.pute.blocked = False
-        self.assertTrue(pp.try_put(0xdeadbee))
-        self.assertEqual(0xdeadbee, self.pute.data)
+            __ = port.get()
+        with self.assertRaises(UVMTLMConnectionError):
+            __ = port.connect(invalid)
+        port.connect(export)
+        export.data = 0xdeadbeef
+        self.assertEqual(0xdeadbeef, port.get())
 
-    def test_uvm_blocking_get_port(self):
-        gp = uvm_blocking_get_port("gp", self.mc)
+    def nonblocking_get_test(self, port_cls, export_cls):
+        (port, export, invalid) = self.make_test_components(port_cls,export_cls)
         with self.assertRaises(UVMTLMConnectionError):
-            __ = gp.get()
-        gp.connect(self.gete)
-        self.gete.data = 0xdeadbeef
-        self.assertEqual(0xdeadbeef, gp.get())
-
-    def test_uvm_non_blocking_get_port(self):
-        gp = uvm_nonblocking_get_port("gp", self.mc)
+            __, __ = port.try_get()
         with self.assertRaises(UVMTLMConnectionError):
-            __, __ = gp.try_get()
-        gp.connect(self.gete)
-        self.gete.empty = True
-        self.gete.data = "Data"
-        success, data = gp.try_get()
+            __ = port.connect(invalid)
+        port.connect(export)
+        export.empty = True
+        export.data = "Data"
+        success, data = port.try_get()
         self.assertFalse(success)
         self.assertIsNone(data)
-        self.gete.empty = False
-        success, data = gp.try_get()
+        export.empty = False
+        success, data = port.try_get()
         self.assertEqual("Data", data)
         self.assertTrue(success)
 
-    def test_uvm_get_port(self):
-        gp = uvm_get_port("gp", self.mc)
+    def blocking_peek_test(self, port_cls, export_cls):
+        (port, export, invalid) = self.make_test_components(port_cls,export_cls)
         with self.assertRaises(UVMTLMConnectionError):
-            __, __ = gp.try_get()
+            __ = port.peek()
         with self.assertRaises(UVMTLMConnectionError):
-            __ = gp.get()
-        gp.connect(self.gete)
-        self.gete.data = 0xdeadbeef
-        self.assertEqual(0xdeadbeef, gp.get())
-        self.gete.empty = True
-        self.gete.data = "Data"
-        success, data = gp.try_get()
+            port.connect(invalid)
+        port.connect(export)
+        export.data = 0xdeadbeef
+        self.assertEqual(0xdeadbeef, port.peek())
+
+
+    def nonblocking_peek_test(self, port_cls, export_cls):
+        (port, export, invalid) = self.make_test_components(port_cls,export_cls)
+        with self.assertRaises(UVMTLMConnectionError):
+            __, __ = port.try_peek()
+        with self.assertRaises(UVMTLMConnectionError):
+            port.connect(invalid)
+        port.connect(export)
+        export.empty = True
+        export.data = "Data"
+        success, data = port.try_peek()
         self.assertFalse(success)
         self.assertIsNone(data)
-        self.gete.empty = False
-        success, data = gp.try_get()
+        export.empty = False
+        success, data = port.try_peek()
         self.assertEqual("Data", data)
         self.assertTrue(success)
 
-    def test_uvm_blocking_peek_port(self):
-        gp = uvm_blocking_peek_port("gp", self.mc)
-        with self.assertRaises(UVMTLMConnectionError):
-            __ = gp.peek()
-        gp.connect(self.peeke)
-        self.peeke.data = 0xdeadbeef
-        self.assertEqual(0xdeadbeef, gp.peek())
 
-    def test_uvm_non_blocking_peek_port(self):
-        gp = uvm_nonblocking_peek_port("gp", self.mc)
+    def blocking_get_peek_test(self,port_cls, export_cls):
+        pass
+
+    def nonblocking_get_peek_test(self, port_cls, export_cls):
+        pass
+
+    def blocking_transport_test(self, port_cls, export_cls):
+        (port, export, invalid) = self.make_test_components(port_cls,export_cls)
         with self.assertRaises(UVMTLMConnectionError):
-            __, __ = gp.try_peek()
-        gp.connect(self.peeke)
-        self.peeke.empty = True
-        self.peeke.data = "Data"
-        success, data = gp.try_peek()
+            __ = port.transport("sent")
+        with self.assertRaises(UVMTLMConnectionError):
+            port.connect(invalid)
+        port.connect(export)
+        export.get_data = "returned"
+        returned_data = port.transport("sent")
+        self.assertEqual("returned", returned_data)
+
+    def nonblocking_transport_test(self,  port_cls, export_cls):
+        (port, export, invalid) = self.make_test_components(port_cls,export_cls)
+        with self.assertRaises(UVMTLMConnectionError):
+            __, __ = port.nb_transport("sent")
+        with self.assertRaises(UVMTLMConnectionError):
+            port.connect(invalid)
+        port.connect(export)
+        export.blocked = True
+        export.get_data = "returned"
+        success, data = port.nb_transport("sent")
         self.assertFalse(success)
         self.assertIsNone(data)
-        self.peeke.empty = False
-        success, data = gp.try_peek()
-        self.assertEqual("Data", data)
-        self.assertTrue(success)
-
-    def test_peek_port(self):
-        gp = uvm_peek_port("gp", self.mc)
-        with self.assertRaises(UVMTLMConnectionError):
-            __, __ = gp.try_peek()
-        with self.assertRaises(UVMTLMConnectionError):
-            __ = gp.peek()
-        gp.connect(self.peeke)
-        self.peeke.data = 0xdeadbeef
-        self.assertEqual(0xdeadbeef, gp.peek())
-        self.peeke.empty = True
-        self.peeke.data = "Data"
-        success, data = gp.try_peek()
-        self.assertFalse(success)
-        self.assertIsNone(data)
-        self.peeke.empty = False
-        success, data = gp.try_peek()
-        self.assertEqual("Data", data)
-        self.assertTrue(success)
-
-    def test_uvm_blocking_transport_port(self):
-        gp = uvm_blocking_transport_port("gp", self.mc)
-        with self.assertRaises(UVMTLMConnectionError):
-            __ = gp.transport("sent")
-        gp.connect(self.transporte)
-        self.transporte.get_data = "returned"
-        self.assertEqual("returned", gp.transport("sent"))
-
-    def test_uvm_non_blocking_transport_port(self):
-        gp = uvm_nonblocking_transport_port("gp", self.mc)
-        with self.assertRaises(UVMTLMConnectionError):
-            __, __ = gp.nb_transport("sent")
-        gp.connect(self.transporte)
-        self.transporte.blocked = True
-        self.transporte.get_data = "returned"
-        success, data = gp.nb_transport("sent")
-        self.assertFalse(success)
-        self.assertIsNone(data)
-        self.transporte.blocked = False
-        success, data = gp.nb_transport("sent")
+        export.blocked = False
+        success, data = port.nb_transport("sent")
         self.assertEqual("returned", data)
         self.assertTrue(success)
 
+
+    def master_test(self, port_cls, export_cls):
+        pass
+
+    def slave_test(self, port_cls, export_cls):
+        pass
+
+    def test_uvm_blocking_put_port(self):
+        self.blocking_put_test(uvm_blocking_put_port, self.TestBlockingPutExport)
+
+    def test_uvm_non_blocking_put_port(self):
+        self.nonblocking_put_test(uvm_nonblocking_put_port, self.TestNonBlockingPutExport)
+
+    def test_uvm_put_port(self):
+        self.blocking_put_test(uvm_put_port, self.TestPutExport)
+        self.nonblocking_put_test(uvm_put_port, self.TestPutExport)
+
+    def test_uvm_blocking_get_port(self):
+        self.blocking_get_test(uvm_blocking_get_port, self.TestBlockingGetExport)
+
+    def test_uvm_non_blocking_get_port(self):
+        self.nonblocking_get_test(uvm_nonblocking_get_port, self.TestNonBlockingGetExport)
+
+    def test_uvm_get_port(self):
+        self.blocking_get_test(uvm_get_port, self.TestGetExport)
+        self.nonblocking_get_test(uvm_get_port, self.TestGetExport)
+
+    def test_uvm_blocking_peek_port(self):
+        self.blocking_peek_test(uvm_blocking_peek_port, self.TestBlockingPeekExport)
+
+    def test_uvm_non_blocking_peek_port(self):
+        self.nonblocking_peek_test(uvm_nonblocking_peek_port, self.TestNonBlockingPeekExport)
+
+    def test_peek_port(self):
+        self.blocking_peek_test(uvm_peek_port, self.TestPeekExport)
+        self.nonblocking_peek_test(uvm_peek_port, self.TestPeekExport)
+
+    def test_uvm_blocking_transport_port(self):
+        self.blocking_transport_test(uvm_blocking_transport_port, self.TestBlockingTransportExport)
+
+    def test_uvm_non_blocking_transport_port(self):
+        self.nonblocking_transport_test(uvm_nonblocking_transport_port, self.TestNonBlockingTransportExport)
+
     def test_transport_port(self):
-        gp = uvm_transport_port("gp", self.mc)
-        with self.assertRaises(UVMTLMConnectionError):
-            __, __ = gp.nb_transport("sent")
-        with self.assertRaises(UVMTLMConnectionError):
-            __ = gp.transport("sent")
-        gp.connect(self.transporte)
-        self.transporte.get_data = 0xdeadbeef
-        self.assertEqual(0xdeadbeef, gp.transport("sent"))
-        self.transporte.blocked = True
-        self.transporte.get_data = "Data"
-        success, data = gp.nb_transport("sent")
-        self.assertFalse(success)
-        self.assertIsNone(data)
-        self.transporte.blocked = False
-        success, data = gp.nb_transport("sent")
-        self.assertEqual("Data", data)
-        self.assertTrue(success)
+        self.blocking_transport_test(uvm_transport_port, self.TestTransportExport)
+        self.nonblocking_transport_test(uvm_transport_port, self.TestTransportExport)
 
 
     def test_tlm_fifo_size(self):
