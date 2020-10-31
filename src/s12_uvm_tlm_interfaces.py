@@ -99,7 +99,8 @@ class uvm_port_base(uvm_component):
 
     def check_export(self, export, check_class):
         if not isinstance(export, check_class):
-            raise UVMTLMConnectionError(f"You tried to connect an {type(export)} to {self.get_full_name()}")
+            raise UVMTLMConnectionError(f"{export} must be an instance of {check_class} not {type(export)}")
+
 
 #put
 
@@ -296,20 +297,20 @@ class uvm_blocking_get_peek_port(uvm_blocking_get_port, uvm_blocking_peek_port):
                 f"Tried to connect {type(export)} to uvm_blocking_get_peek {self.get_full_name()}")
         super().connect(export)
 
-class uvm_nonblocking_get_peek_port(uvm_blocking_get_port, uvm_blocking_peek_port):
+class uvm_nonblocking_get_peek_port(uvm_nonblocking_get_port, uvm_nonblocking_peek_port):
     def connect(self, export):
         if not (isinstance(export, uvm_nonblocking_get_export) or isinstance(export, uvm_nonblocking_peek_export)):
             raise UVMTLMConnectionError(
                 f"Tried to connect an {export} to uvm_blocking_get_peek {self.get_full_name()}")
         super().connect(export)
 
-class uvm_get_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port):
+class uvm_get_peek_port(uvm_blocking_get_peek_port, uvm_nonblocking_get_peek_port):
     def connect(self, export):
         if not (isinstance(export, uvm_nonblocking_get_export) or isinstance(export, uvm_nonblocking_peek_export) \
                 or isinstance(export, uvm_blocking_get_export) or isinstance(export, uvm_blocking_peek_export)):
             raise UVMTLMConnectionError(
                 f"Tried to connect an illegal export to uvm_blocking_get_peek {self.get_full_name()}")
-
+        super().connect(export)
 #transport
 class uvm_blocking_transport_port(uvm_port_base):
     def __init__(self, name, parent):
@@ -345,9 +346,23 @@ class uvm_nonblocking_transport_port(uvm_port_base):
 class uvm_transport_port(uvm_blocking_transport_port, uvm_nonblocking_transport_port):...
 
 #master
-class uvm_master_port(uvm_blocking_put_port, uvm_blocking_get_port):...
+class uvm_blocking_master_port(uvm_blocking_put_port, uvm_blocking_get_peek_port):
+    ...
 
-class uvm_slave_port(uvm_blocking_put_port, uvm_blocking_get_port):...
+class uvm_nonblocking_master_port(uvm_nonblocking_put_port, uvm_nonblocking_get_peek_port):
+    ...
+
+class uvm_master_port(uvm_blocking_master_port, uvm_nonblocking_master_port):
+    ...
+
+class uvm_blocking_slave_port(uvm_blocking_put_port, uvm_blocking_get_peek_port):
+    ...
+
+class uvm_nonblocking_slave_port(uvm_nonblocking_get_peek_port, uvm_nonblocking_put_port):
+    ...
+
+class uvm_slave_port(uvm_nonblocking_slave_port, uvm_blocking_slave_port):
+    ...
 
 
 """
