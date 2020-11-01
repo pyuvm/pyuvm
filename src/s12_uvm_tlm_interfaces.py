@@ -28,7 +28,8 @@ their various flavors through multiple inheritance.
 from s13_predefined_component_classes import uvm_component
 from queue import Full as QueueFull, Empty as QueueEmpty, Queue
 from error_classes import UVMTLMConnectionError
-from enum import Enum
+from utility_classes import PeekQueue
+
 '''
 12.2.2
 This section describes a variety of classes without
@@ -99,7 +100,7 @@ class uvm_port_base(uvm_component):
 
     def check_export(self, export, check_class):
         if not isinstance(export, check_class):
-            raise UVMTLMConnectionError(f"{export} must be an instance of {check_class} not {type(export)}")
+            raise UVMTLMConnectionError(f"{export} must be an instance of\n{check_class} not\n{type(export)}")
 
 
 #put
@@ -523,10 +524,8 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class BlockingPeekExport(QueueAccessor, uvm_blocking_peek_export):
         def peek(self):
-            while self.queue.empty ():
-                self.queue.not_empty.wait ()
-            queue_data = self.queue.queue
-            return queue_data[0]
+            peek_data = self.queue.peek()
+            return peek_data
 
     class NonBlockingPeekExport(QueueAccessor, uvm_nonblocking_peek_export):
         def can_peek(self):
@@ -551,7 +550,7 @@ class uvm_tlm_fifo_base(uvm_component):
 
     def __init__(self, name, parent, maxsize):
         super().__init__(name,parent)
-        self.queue=Queue(maxsize=maxsize)
+        self.queue=PeekQueue(maxsize=maxsize)
         self.get_ap=uvm_analyis_port("get_ap", self)
         self.put_ap=uvm_analyis_port("put_ap", self)
 
@@ -564,7 +563,7 @@ class uvm_tlm_fifo_base(uvm_component):
 
         self.blocking_get_export = self.BlockingGetExport("blocking_get_export", self,
                                                           self.queue, self.get_ap)
-        self.nonblocking_get_export = self.NonBlockingPutExport("nonblocking_get_export", self,
+        self.nonblocking_get_export = self.NonBlockingGetExport("nonblocking_get_export", self,
                                                                 self.queue, self.put_ap)
 
         self.get_export = self.GetExport("get_export", self, self.queue, self.get_ap)
@@ -586,23 +585,46 @@ class uvm_tlm_fifo_base(uvm_component):
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
     def __init__(self, name = None,parent = None, size=1):
+        """
+        12.2.8.2.1
+        :param name:
+        :param parent:
+        :param size:
+        """
         super().__init__(name, parent, size)
 
 
     def size(self):
+        """
+        12.2.8.2.2
+        :return:
+        """
         return self.queue.maxsize
 
     def used(self):
+        """
+        12.2.8.2.3
+        :return:
+        """
         return self.queue.qsize()
 
     def is_empty(self):
+        """
+        12.2.8.2.4
+        :return:
+        """
         return self.queue.empty()
 
     def is_full(self):
+        """
+        12.2.8.2.5
+        :return:
+        """
         return self.queue.full()
 
     def flush(self):
         '''
+        12.2.8.2.6
         The SystemVerilog UVM flushes the Queue
         using a while loop and counting the number
         of threads waiting for a get. If there are
