@@ -535,7 +535,7 @@ class uvm_tlm_fifo_base(uvm_component):
             if self.queue.empty():
                 return False, None
             else:
-                return True, self.queue.queue[0]
+                return True, self.queue.peek()
 
     class PeekExport(BlockingPeekExport, NonBlockingPeekExport): ...
 
