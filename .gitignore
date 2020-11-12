@@ -6,3 +6,4 @@ IEEE_UVM.pdf
 __pycache__
 /tests/test_05_base_classes.py-e
 *.py-e
+.Ulysses*
