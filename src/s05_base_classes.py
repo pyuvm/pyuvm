@@ -29,8 +29,6 @@ class uvm_object(utility_classes.uvm_void):
         self.set_name(name)
         self.__logger = logging.getLogger(name)
 
-
-
     def get_uvm_seeding(self):
         """
         5.3.3.1
@@ -49,14 +47,12 @@ class uvm_object(utility_classes.uvm_void):
         """
         raise error_classes.UVMNotImplemented('reseed not implemented')
 
-
     def get_name(self):
         """
         5.3.4.2
         """
         assert (self.__name != None), f"Internal error. {str(self)} has no name"
         return self.__name
-
 
     def set_name(self, name):
         """

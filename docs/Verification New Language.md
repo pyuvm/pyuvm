@@ -65,6 +65,33 @@ generic sound
 The above example demonstrates common elements of class declaration. The first thing we notice is the infamous Python indenting. Python uses indenting instead of `begin/end` or `{/}` to signify blocks. Whether one likes this is largely personal taste, but there it is.
 The `def __init__(self, name):` overrides the `__init__` method and demonstrates the double underscore convention for methods that exist in all classes.  The `__init__` method does the initialization one usually does in `new()` in SystemVerilog.  There are many such methods including `__str__`  and `__eq__` that server the UVM roles of `convert2string()` and `compare()`.  
 The `__init__` above requires that we provide a name for the animal. You can also see that we’re not doing any type checking on the name. In the cold and bureaucratic world of this program the animal stored in `aa` received only a number.
+### The `self` Variable
+When we declare a class in SystemVerilog we declare class variables that SystemVerilog implicitly references as in C:
+```SystemVerilog
+class point;
+  byte unsigned x;
+  byte unsigned y;
+
+  function new(byte unsigned X, byte unsigned Y);
+      x = X
+      this.y = Y
+  endfunction
+endclass
+```
+In the above code the `x = X` line does the same thing as the `this.y = Y` code. They both set the instance’s variable to the constructor argument.
+Python does not use the implicit assignment.
+```python
+class Point:
+	def __init__(self, X, Y):
+       self.x = X
+       self.y = Y
+```
+Unlike the implicit `this` in SystemVerilog, Python requires that we explicitly supply the `self` variable as the first variable in an instance method.  The calling mechanism hides this from us so we see when we instantiate a point:
+```python
+make_my_point = Point(10,3)
+```
+The above causes Python to create an instance of the `Point` class and call `__init__(self, X, Y)`, passing the newly created object as `self`. 
+Methods that don’t have `self` as the first argument must be either class methods (which receive a first argument of `cls`) or static methods (which have no required first argument)
 ## Inheritance
 Classes can inherit attributes from other classes and override methods from the base class.  For example:
 ```text
@@ -158,8 +185,162 @@ AssertionError: You must provide a Duck.
 ```
 The `assert` statement checks a condition (`isinstance()` in this case) and raises the `AssertionError` exception if the checked condition is false.
 # Implementing UVM in Python
+SystemVerilog is the boiled frog of languages. The frog didn’t notice the slow heating of the water as bandaid after bandaid, kludge after kludge, and syntax after syntax were piled on top of what was originally a simple RTL solution to create something that prompts dismay in anyone who looks into the pot without proper warning.
+Given that, creating the object-oriented UVM on top of SystemVerilog was a heroic exercise in ingenuity. The developers cobbled together macros, static class members, parameterization, and a judicious combination of inheritance and composition to create  a powerful object-oriented verification methodology.
+The result was a clearly-defined specification IEEE 1800.2, that lays out the steps needed to create the UVM in any object-oriented language.  While it is true that we can ignore some elements of the specification such as the `*_imp` classes in a language with multiple inheritance, overall the spec gives us an excellent roadmap.
+In this section we’ll examine the way Python has made it easier to implement the UVM and how we’ve structured the `pyuvm` project.
+## The `pyuvm` Project
+The `pyuvm` package allows users to import all the UVM classes into a Python script:
+```python
+from pyuvm import *
+import pytlm
+
+class tinyalu_test(uvm_test):
+```
+The repository organizes the project by the sections in the IEEE 1800.2 specification. So `pyuvm.py` starts like this:
+```python
+from enum import Enum, auto
+# Support Modules
+from error_classes import *
+from utility_classes import *
+# Section 5
+from s05_base_classes import *
+# Section 6
+from s06_reporting_classes import *
+# Section 7
+from s07_recording_classes import *
+```
+Unlike the SystemVerilog `import` statement which reads from a compiled library unit, the Python import executes the code in the imported file. For the most part these files contain `class` statements whose execution adds another class object to the collection available classes.
+The work consists primarily of going through the specification and implementing what we see there:
+```python
+class uvm_object(utility_classes.uvm_void):
+    """
+    5.3.1
+    """
+
+    def __init__(self, name=''):
+        """
+        Implements behavior in new()
+        5.3.2
+        """
+        # Private
+        assert (isinstance(name, str)), f"{name} is not a string it is a {type(name)}"
+        self.set_name(name)
+        self.__logger = logging.getLogger(name)
+
+    def get_name(self):
+        """
+        5.3.4.2
+        """
+        assert (self.__name != None), f"Internal error. {str(self)} has no name"
+        return self.__name
+
+    def set_name(self, name):
+        """
+        5.3.4.1
+        """
+        assert (isinstance(name, str)), f"Must set the name to a string"
+        self.__name = name
+```
+Notice above that the code honors the type definitions in the specification by checking `name`’s type using an assertion.
+Notice also that the `__name` variable denotes a `protected` variable as we are accustomed to in SystemVerilog. Python implements the `protected` status by mangling the variable name, changing `__name` to `Point__name`.  So one could still access the protected variable directly, but only a monster would do that.
+### Docstrings
+The strings in the triple quotes `"""` right after the function definition are *docstrings*. They appear in IDEs when you hover over the function call, or in automatically generated documentation.  It could be argued that they deserve more information than the IEEE 1800.2 section number.
+### Python Properties
+A Python-familiar reader may take offense to the existence of a`get_name` and `set_name` as Python has done away with the need for these sorts of accessors. More Pythonic code would look like this:
+```python
+@property
+def name(self):
+	return self.__name	
+
+@name.setter
+def name(self, name):
+	self.__name = name
+```
+The `@property` string is a decorator that wraps these function calls in code that allows us to do this:
+```python
+my_object.name = "Foo"
+print(my_object.name)
+# which results in Foo being printed.
+```
+This is, of course, much cleaner than the accessor functions needed in the SystemVerilog UVM, and one could argue that these accessors should have been implemented in a more Pythonic way.  But, the goal here is to make `pyuvm` easy to use for existing UVM programmers, and changing basic elements of the specification would defeat that goal.
 ## Key base classes, SV vs Python
-## Python simplifies UVM implementation
+Much of the work of writing the UVM in Python is, as we saw above, writing simple functions that implement the specification. However there are some base classes which can take more advantage of Python’s capabilities.  This section shows how Python can make it easier to both write and use the UVM.
+### The Factory
+The SystemVerilog UVM’s implementation of the factory pattern is a heroic act of engineering akin to the Gilligan’s Island professor making a Geiger counter out of coconuts. Still it imposes some work on the programmer.
+First there is the need to remember the ``\`uvm_*_utils`` macros.
+```SystemVerilog
+class my_component extends uvm_component;
+`uvm_component_utils(my_component)
+```
+And then there is the creation incantation that allows a component to be overridden:
+```SystemVerilog
+    my_comp_h = my_component::type_id::create("my_comp_h",this);
+```
+This requires section 8.2.2 in the 1800.2’s *Factory classes* section which specifies a proxy type for all descendants of `uvm_object`:
+```SystemVerilog
+typedef my_component type_id
+```
+In addition there is a `uvm_component_registry` proxy class and other factory enabling tools. 
+Here is how a user creates a component in `pyuvm`:
+```python
+class my_component(uvm_component):
+...
+```
+`pyuvm` automatically adds any descendent of `uvm_void` to the factory.
+We create a new object like this:
+```python
+my_comp_h = my_component.create("my_comp_h", self)
+```
+One can also sidestep the factory with a simple instantiation.
+```python
+my_comp_h = my_component("my_comp_h, self)
+```
+One can implement overrides using the `uvm_factory` singleton.
+```python
+factory = uvm_factory()
+factory.set_type_override_by_type(my_component, overriding_component)
+```
+The factory also implements all the instance-based overrides.
+### Implementing the Factory
+The Python factory implementation takes advantage of the fact that the `class` statement is executed and not compiled.  This gives us an opportunity to control what it means to create a class object.
+As we saw above, most types in Python are objects of type `type`.
+```TeXt
+type(int)
+<class 'type'>
+type(type)
+<class 'type'>
+```
+We see that even the `type` class is an object of class `type`  But it is possible to make classes that are of a different type.  These are called *metatypes*. The `uvm_void` class is such a type:
+```TeXt
+type(uvm_void)
+<class 'utility_classes.FactoryMeta'>
+```
+We specify this in its declaration:
+```python
+class uvm_void(metaclass=FactoryMeta):
+    """
+    5.2
+    In pyuvm, we're using uvm_void() as a meteaclass so that all UVM classes can be stored in a factory.
+	"""
+```
+This code means that the `uvm_void` class object and all class objects descended from it are of type `FactoryMeta`.  FactoryMeta registers all these classes with the factory:
+```python
+class FactoryMeta(type):
+    """
+    This is the metaclass that causes all uvm_void classes to register themselves
+    """
+
+    def __init__(cls, name, bases, clsdict):
+        FactoryData().classes[cls.__name__] = cls
+        super().__init__(name, bases, clsdict)
+
+```
+The code above says that when you execute a class statement to create a class object that extends `uvm_void`  that class object runs the above initialization code as is done with any other object.  Notice though that we have `cls` as the first variable rather than `self`. This is to remind us that we’re being passed a `class` object. (The name is otherwise meaningless.)
+We store the class object in the `FactoryData`singleton’s associative array (`dict` in Python parlance) named `classes`.
+The `FactoryMeta` class extends the `type` class, so we call `super().__init__` to ensure that all the work needed to set up a `type` gets done.
+That is all there is to registering any `uvm_void` class with the factory.
+The code above uses something I called a *singleton*. We’ll discuss singleton’s and their implementation below.
 ## The Dual-Top Testbench: The Proxy Approach
 ## A PyUVM example
 # Conclusion

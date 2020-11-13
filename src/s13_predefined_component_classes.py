@@ -4,6 +4,7 @@ from queue import Queue
 from s09_phasing import PyuvmPhases, PhaseType
 import utility_classes
 from s06_reporting_classes import uvm_report_object
+from pyuvm import uvm_object
 """
 This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
 testbenches in Python.
