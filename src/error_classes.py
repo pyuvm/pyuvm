@@ -19,3 +19,8 @@ class UVMTLMConnectionError(RuntimeError):
     """
     For problems connecting TLM
     """
+
+class UVMBadPhase(RuntimeError):
+    """
+    Errors in phasing
+    """

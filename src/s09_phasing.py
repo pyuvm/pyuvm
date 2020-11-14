@@ -1,7 +1,8 @@
 from enum import Enum, auto, unique
 from pyuvm import uvm_object
-from s13_predefined_component_classes import uvm_component
+from s13_predefined_component_classes import *
 import error_classes
+import threading
 '''
 9.1
 
@@ -175,6 +176,25 @@ class uvm_phase(uvm_object):
     # 9.3.1.3.4 These extensions replace the uvm_phase_type argument in the
     # uvm_phase constructor
 
+    def exec_task(self, comp, phase):
+        """
+        Implements the functor/delegate functionality for a task phase type
+
+        :param comp: the component whose run_task is getting called (probably)
+        :param phase: the phase of the task
+        """
+        ...
+
+    def exec_func(self, comp, phase):
+        """
+        Implements the functor/delegate functionality for the function phase
+        type.
+
+        :param comp: The component whose function is being called
+        :param phase: The phase
+        :return:
+        """
+
 class uvm_phase_imp(uvm_phase):
     ...
 
@@ -203,6 +223,23 @@ class uvm_phase_schedule(uvm_phase, phase_adder):
 class uvm_phase_domain(uvm_phase, phase_adder):
     ...
 
+# 9.4 uvm_domain
+
+# 9.4.1
+class uvm_domain(uvm_phase, uvm_phase_domain):
+    domains = {}
+
+    @staticmethod
+    def get_domains():
+        return uvm_domain.domains
+
+    @staticmethod
+    def add_uvm_phases(schedule):
+        ...
+
+
+
+
 # 9.6 uvm_task_phase
 
 # 9.6.1
@@ -227,6 +264,67 @@ class uvm_task_phase(uvm_phase, uvm_phase_imp):
         assert (isinstance(phase, uvm_phase)), "phase must be a uvm_phase"
         assert (isinstance((state, uvm_phase_state))), "state must be a uvm_phase_state"
 
+        # no m_ as in the SV because not really a protected member class
         phase.num_procs_not_yet_returned = 0
+        self.__traverse(comp, phase, state)
+
+    def __traverse(self, comp, phase, state):
+        """
+        Implements the traversal of the comp tree
+        :param comp: the component to traverse
+        :param phase: The phase we're traversing
+        :param state: The state of the traversal
+        """
+
+        phase_domain = phase.get_domain()
+        comp_domain  = comp.get_domain()
+
+        for child in comp.get_children():
+            self.__traverse(child, phase, state)
+
+        if phase_domain == uvm_domain.common_domain or phase_domain == comp_domain:
+            if state == uvm_phase_state.UVM_PHASE_STARTED:
+                comp.current_phase = phase
+                # comp.apply_verbosity_settings(phase)
+                comp.phase_started(phase)
+                try:
+                    comp.start_phase_sequence(phase)
+                except AttributeError:
+                    pass
+            elif state == uvm_phase_state.UVM_PHASE_EXECUTING:
+                ph = self
+                if self in comp.phase_imps:
+                    try:
+                        ph = comp.phase_imps[self]
+                        ph.execute()
+                    except KeyError:
+                        pass
+            elif state == uvm_phase_state.UVM_PHASE_READY_TO_END:
+                comp.phase_ready_to_end(phase)
+            elif state == uvm_phase_state.UVM_PHASE_ENDED:
+                try:
+                    comp.stop_phase_sequence(phase)
+                except AttributeError:
+                    pass
+                comp.phase_ended(phase)
+                comp.current_phase = None
+            else:
+                raise error_classes.UVMBadPhase(f"Bad phase state {state}")
+
+    def fork_code(self, comp, phase):
+        phase.num_procs_not_yet_returned += 1
+        self.exec_task(comp, phase)
+        phase.num_procs_not_yet_returned -= 1
+
+    def execute(self, comp, phase):
+        assert (isinstance(comp, uvm_component)), "comp must be a uvm_component"
+        assert (isinstance(phase, uvm_phase)), "phase must be a uvm_phase"
+        fork = threading.Thread(target = self.fork_code, args = (comp, phase) )
+        fork.start()
+
+
+
+
+
 
 
