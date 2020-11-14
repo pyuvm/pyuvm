@@ -3,6 +3,7 @@ from pyuvm import uvm_object
 from s13_predefined_component_classes import *
 import error_classes
 import threading
+import utility_classes
 '''
 9.1
 
@@ -322,9 +323,19 @@ class uvm_task_phase(uvm_phase, uvm_phase_imp):
         fork = threading.Thread(target = self.fork_code, args = (comp, phase) )
         fork.start()
 
+class uvm_topdown_phase(uvm_phase, uvm_phase_imp):
+    """
+    Runs phases from the top down.
+    """
+
+    def traverse(self, comp, phase, state):
 
 
+# 9.8 Predefined Phases
+# 9.8.1 Common Phases
+# These are all Singleton objects
 
-
+# 9.8.1.1
+class uvm_build_phase(metaclass=utility_classes.Singleton, uvm_topdown_phase)
 
 
