@@ -1,15 +1,25 @@
 from pyuvm import *
 import pytlm
+from enum import Enum
+import random
+
+@unique
+class ALUOps(Enum):
+    ADD = auto()
+    AND = auto()
+    XOR = auto()
+    MUL = auto()
 
 # Command Transaction
 class command_transaction(uvm_sequence_item):
-    def __init__(self, A, B, op):
+    def __init__(self, name, A, B, op):
+        super().__init__(name)
         self.A = A
         self.B = B
         self.op = op
 
 class result_transaction(uvm_transaction):
-    def __init__(self, r):
+    def __init__(self, name, r):
         super().__init__()
         self.result = r
 
@@ -25,17 +35,19 @@ class tinyalu_driver(uvm_driver):
         while True:
             command = self.command_port.get()
             self.bfm.send_op(command.A, command.B, command.op)
-            result = self.bfm.wait_for()
+            self.bfm.wait_for()
 # Monitor
 class command_monitor(uvm_component):
 
         def build_phase(self, phase = None):
             self.ap = uvm_analyis_port("ap")
-            self.bfm = pytlm.MonitorProxy("xrtl_top.tinyalu_monitor", self)
+            self.monitor_bfm = pytlm.MonitorProxy("xrtl_top.tinyalu_monitor", self)
 
-        def write_to_monitor(self, A, B, op):
-            mon_tr = command_transaction(A, B, op)
-            self.ap.write(mon_tr)
+        def run_phase(self, phase = None):
+            while True:
+                (A, B, op) = self.monitor_bfm.wait_for()
+                mon_tr = command_transaction(A, B, op)
+                self.ap.write(mon_tr)
 
 # Result Monitor
 class result_monitor(uvm_component):
@@ -44,9 +56,11 @@ class result_monitor(uvm_component):
         self.ap = uvm_analyis_port("ap")
         self.bfm = pytlm.MonitorProxy("xrtl_top.result_monitor", self)
 
-    def write_to_monitor(self, result):
-        result_t = result_transaction(result)
-        self.ap.write(result_t)
+    def run_phase(self, phase):
+        while True:
+            result = self.bfm.wait_for()
+            result_t = result_transaction(result)
+            self.ap.write(result_t)
 
 # Scoreboard
 class scoreboard(uvm_subscriber):
@@ -91,13 +105,27 @@ class env(uvm_env):
     def build_phase(self,phase=None):
         self.agent = tinyalu_agent("agent",self)
 
+class uvm_sequence:...
+class alu_sequence(uvm_sequence):
+    def body(self):
+        A = random.randint(0,255)
+        B = random.randint(0,255)
+        op = random.choice(ALUOps)
+        cmd_tr = command_transaction(A, B, op)
+        self.start_item(cmd_tr)
+        self.finish_item(cmd_tr)
+
+
+
+
+
 class test_top(uvm_test):
 
     def build_phase(self,phase=None):
         self.env = env("env",self)
 
     def run_phase(self,phase=None):
-        myseq = my_sequence("myseq")
-        self.env.agent.seqr.start(myseq)
+        myseq = alu_sequence("myseq")
+        self.env.agent.se
 
 

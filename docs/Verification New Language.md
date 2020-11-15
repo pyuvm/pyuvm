@@ -189,7 +189,7 @@ SystemVerilog is the boiled frog of languages. The frog didn’t notice the slow
 Given that, creating the object-oriented UVM on top of SystemVerilog was a heroic exercise in ingenuity. The developers cobbled together macros, static class members, parameterization, and a judicious combination of inheritance and composition to create  a powerful object-oriented verification methodology.
 The result was a clearly-defined specification IEEE 1800.2, that lays out the steps needed to create the UVM in any object-oriented language.  While it is true that we can ignore some elements of the specification such as the `*_imp` classes in a language with multiple inheritance, overall the spec gives us an excellent roadmap.
 In this section we’ll examine the way Python has made it easier to implement the UVM and how we’ve structured the `pyuvm` project.
-## The `pyuvm` Project
+## The `pyuvm` Package
 The `pyuvm` package allows users to import all the UVM classes into a Python script:
 ```python
 from pyuvm import *
@@ -302,7 +302,7 @@ factory = uvm_factory()
 factory.set_type_override_by_type(my_component, overriding_component)
 ```
 The factory also implements all the instance-based overrides.
-### Implementing the Factory
+#### Implementing the Factory in Python
 The Python factory implementation takes advantage of the fact that the `class` statement is executed and not compiled.  This gives us an opportunity to control what it means to create a class object.
 As we saw above, most types in Python are objects of type `type`.
 ```TeXt
@@ -339,10 +339,383 @@ class FactoryMeta(type):
 The code above says that when you execute a class statement to create a class object that extends `uvm_void`  that class object runs the above initialization code as is done with any other object.  Notice though that we have `cls` as the first variable rather than `self`. This is to remind us that we’re being passed a `class` object. (The name is otherwise meaningless.)
 We store the class object in the `FactoryData`singleton’s associative array (`dict` in Python parlance) named `classes`.
 The `FactoryMeta` class extends the `type` class, so we call `super().__init__` to ensure that all the work needed to set up a `type` gets done.
-That is all there is to registering any `uvm_void` class with the factory.
-The code above uses something I called a *singleton*. We’ll discuss singleton’s and their implementation below.
+Now when you define a class that extends `uvm_void` `pyuvm` automatically registers it with the factory.
+### Singletons
+The UVM uses the *Singleton Pattern* in many places.  The Singleton pattern describe a class that has only one instantiated object used throughout the testbench.  We implement singletons in SystemVerilog using a static `get()`  method.
+```SystemVerilog
+class my_singleton;
+
+static my_singleton common_handle = null
+
+static function get();
+    if (common_handle == null) then
+         common_handle = new();
+    return common_handle;
+endfunction
+```
+Then we get the handle like this:
+```SystemVerilog
+single_h = my_singleton::get()
+```
+The `get()` method either returns the previously created handle or creates a new one, stores it in the static `common_handle` location and returns the newly created handle. Regardless `new()` only gets called once.
+Of course, this is susceptible to this bug:
+```SystemVerilog
+my_singleton bad_h;
+bad_h = new()
+```
+And now `bad_h` is a rogue instance of what is supposed to be a singleton.
+Python allows you to avoid this by combining the `get` and `new` functionality in a single call.  The Python code above looks like this:
+```python
+single_h = my_singleton()
+```
+We cannot create the `bad_h`
+```python
+bad_h = my_singleton() # not so bad after all
+```
+#### Implementing the Singleton in Python
+There are many ways to implement the Singleton patterning Python, but the `pyuvm` uses the metaclass approach as was done with the factory:
+```python
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+```
+The above code demonstrates the built-in `__call__` method. `__call__` gets *called* whenever you put parentheses after any object. 
+Of course not all objects have a `__call__` method, or they use the method to raise an error. For example the number `5` is an object, what happens if we call it? Python raises a `TypeError` exception:
+```TeXt
+5()
+<input>:1: SyntaxWarning: 'int' object is not callable; perhaps you missed a comma?
+Traceback (most recent call last):
+  File "<input>", line 1, in <module>
+TypeError: 'int' object is not callable
+```
+But, if our object is of type `class`, then the parenthesis cause Python to call `__call__` and eventually `__call__` calls `__new__` and ultimately `__init__`.
+In the `Singleton` metaclass, `__call__` receives the class object in the `cls` variable, and it creates an instance of that object (using `super` to call the `Singleton`’s parent constructor in `type`) and it stores that instance in an associative array using the `cls` object as an index.  Now future calls to the class return the stored pointer.  
+We define a singleton like this:
+```python
+class my_singleton (metaclass=Singleton):
+```
+And so the two examples of calling `my_singleton()` above deliver the same handle.
+`pyuvm` uses the `Singleton` metaclass for `uvm_root()`,  `uvm_factory()` and `uvm_pool()` among others.
+## Ports and Exports Without the Imps
+Like SystemVerilog, Python has a `Queue` object that implements communication between processes.  And like SystemVerilog the UVM needs us to use the `Queue` to implement the `ports` and `exports` that allow us to connect arbitrary components.  
+Unlike SystemVerilog, Python has multiple inheritance.
+### IMPS and Multiple Inheritance
+SystemVerilog does not implement an important object-oriented function: multiple inheritance. Multiple inheritance lets me do the following:
+```python
+class Human:
+	def say_hello:
+		print("hello")
+
+class Racer:
+	def run:
+		print("running")
+
+class BostonMarathoner(Human, Racer):
+	...
+```
+You use it like this:
+```python
+my_runner = BostonMarathoner()
+my_runner.run()
+```
+ In the above we have a class for `Human` and another class for `Racer`.  Since someone running the Boston Marathon must be human we can create the `BostonMarathoner` class using multiple inheritance.
+The SystemVerilog UVM had no such luxury. It had to do the following:
+```SystemVerilog
+class human;
+
+   imp role;
+
+   function new(imp rr);
+      role = rr;
+   endfunction
+
+   function void say_hello();
+      $display("hello");
+   endfunction
+
+   function do_role();
+      role.do_it();
+   endfunction
+
+class racer_imp;
+
+   function void do_it();
+     $display("running");
+  endfunction
+```
+And you use it like this:
+```SystemVerilog
+racer_imp racer;
+human my_runner;
+
+racer = new();
+my_runner = new(racer);
+my_runner.do_role()
+```
+Since the SystemVerilog doesn’t have multiple inheritance it needs to solve the problem of functional flexibility using composition and thus the SystemVerilog UVM needed to create `*_imp` classes that implemented behaviors such as blocking put, nonblocking get, etc.
+The entire port/export structure is much easier to implement in Python since we don’t need the `*_imp` classes.
+### Implementing Ports and Exports
+The UVM implements TLM behavior using a variety of ports and exports.  These are divided into all the permutations of operations and TLM interfaces.
+The operations consist of the following: *put*, *get*, *peek*, *transport*, *master*, and *slave*.
+The TLM interfaces are *blocking* and *nonblocking*.
+This gives us `6 * 3 = 18` combinations of operations and interfaces.
+#### Implementing Ports
+First we have the `uvm_port_base` that provides common functions to all ports:
+```python
+class uvm_port_base(uvm_component):
+
+    def __init__(self, name, parent):
+        super().__init__(name, parent)
+        self.connected_to={}
+        self.export = None
+
+    def connect(self, export):
+        try:
+            self.export=export
+            self.connected_to[export.get_full_name()]=export
+            export.provided_to[self.get_full_name()]=self
+        except:
+            raise UVMTLMConnectionError(f"Error connecting {self.get_name()} using {export}")
+
+    def check_export(self, export, check_class):
+        if not isinstance(export, check_class):
+            raise UVMTLMConnectionError(f"{export} must be an instance of\n{check_class} not\n{type(export)}")
+```
+
+We see that all ports provide a `connect` method and also the ability to check the an offered `export` is the right type. `pyuvm` raises `UVMTLMConnectionError` exceptions if there is  problem.
+The `connect` method sets the `self.export` variable and populates the `connected_to` and the export’s `provided_to` associative arrays.
+Now we implement a `uvm_blocking_put_port`:
+```python
+class uvm_blocking_put_port(uvm_port_base):
+
+    def connect(self, export):
+        self.check_export(export, uvm_blocking_put_export)
+        super().connect(export)
+
+    def put(self, data):
+        """
+        12.2.4.2.1
+        A blocking put that calls the export.put
+        :param data:
+        :return: None
+        """
+        try:
+            self.export.put(data)
+        except AttributeError:
+            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
+```
+The `uvm_blocking_put_port` overrides the `connect` method because this class knows which type of export it wants. It checks  `export` against its needs for `uvm_blockinig_put_export` and then calls `super().connect(export)` to make the connection.
+The `uvm_blocking_put_port` also provides the `put()` method and implements it using the `export.put()` method. Notice that here we ask permission rather than forgiveness.  We assume that we have the right export and raise `UVMTLMConnectionError` if `export` does not have a `put()` method.
+Implementing `uvm_nonblocking_put_port` is similar:
+```python
+class uvm_nonblocking_put_port(uvm_port_base):
+
+    def connect(self, export):
+        self.check_export(export, uvm_nonblocking_put_export)
+        super().connect(export)
+
+    def try_put(self, data):
+	# snipped
+
+    def can_put(self):
+	# snipped
+```
+Now we can implement `uvm_put_port` using multiple inheritance giving us a one-line definition because a `uvm_put_port` is both a `uvm_blocking_put_port` and `uvm_nonblocking_put_port`:
+```python
+class uvm_put_port(uvm_blocking_put_port, uvm_nonblocking_put_port): ...
+```
+#### Implementing Exports
+Exports are classes that promise to implement the `put`, `get`, `try_put, etc` functionality that the port expects.  As we saw above the ports will assume that the exports have the right function calls.
+This means that its easy to define exports:
+```python
+class uvm_export_base(uvm_component):
+
+    def __init__(self, name="", parent = None):
+        super().__init__(name, parent)
+        self.provided_to = {}
+
+# put
+class uvm_blocking_put_export(uvm_export_base): ...
+
+class uvm_nonblocking_put_export(uvm_export_base): ...
+
+class uvm_put_export(uvm_nonblocking_put_export, uvm_blocking_put_export): ...
+```
+These classes have no methods as we use them only for the error checking as arguments to the `check_export()` method in `uvm_port_base.`
+This allows a wide variety of classes to support the TLM interfaces of their choice. For example, the `uvm_tlm_fifo`.
+#### Implementing the FIFO
+The `uvm_tlm_fifo` uses the Python `Queue` class to coordinate TLM communication between threads (each `run_phase`runs in its own thread.) This means that the exports in a `uvm_tlm_fifo` need to have a handle to the FIFO’s Queue.  We implement this with the `QueueAccessor` class:
+```python
+class QueueAccessor():
+    def __init__(self, name, parent, queue, ap):
+        super(QueueAccessor, self).__init__(name, parent)
+        assert(isinstance(queue, Queue)), "Tried to pass a non-Queue to export construtor"
+        self.queue = queue
+        self.ap = ap
+```
+The `QueueAccessor` assumes that it will be extended along with another class that needs the `name` and `parent` variables.  It’s `__init__` method has four arguments: `name`, `parent`, `queue`, and `ap` (the analysis port).  It uses the first two arguments to create the `uvm_component` that is an export, and it uses the second two arguments to store the `queue` and `ap` handles.
+Now that we have the `QueueAccessor` we can implement the export in the `uvm_tlm_fifo`. For example `BlockingPutExport`:
+```python
+class BlockingPutExport(QueueAccessor, uvm_blocking_put_export):
+    def put(self,item):
+        self.queue.put(item)
+        self.ap.write(item)
+```
+And then we instantiate this class in the `__init__()`method to create `blocking_put_export`:
+
+```python
+
+self.blocking_put_export=self.BlockingPutExport("blocking_put_export", self, self.queue, self.put_ap)                                             
+```
+Now we can connect this `blocking_put_export` to any `blocking_put_port` and pass the `check_export()` method while also having Queue access.
+## Executing Phases
+Python completely breaks with one of the basic assumptions behind SystemVerilog, the notion that classes cannot be modified at run time. In SystemVerilog the compilation step locks classes in place and syntax errors control whether one successfully makes a function call. 
+In Python everything is an object, including functions. A class can have a function object added to it at any time and thus gain new functionality over the course of a run.
+Similarly one can use operations such as `hasattr` and `getattr` to inspect a class and get a handle to a function in it. We use this capability when executing phases.
+The UVM defines a list of common phases that ship with the UVM and are expected to be supported in any `uvm_component`. The list contains phases such as `uvm_build_phase`, `uvm_connect_phase`, and `uvm_run_phase`.  We can see that all the common phases have the string `uvm_` at the beginning and if we strip that off we get the name of the phase function or task.
+This gives the following pseudocode deep in the section 9: Phasing where we loop through a list of phase names and execute the associated function:
+```python
+function exec_func(comp, phase, state): 
+    for phase_name in ['uvm_build', 'uvm_connect', 'uvm_extract']:
+       method=phase_name[4:0] #remove uvm_
+	   try:
+          phase_method = getattr(method)
+          phase_method(phase)
+       except AttributeError:
+          raise UVMError(f"Missing component method {method}")
+```
+Once again we see ourselves asking forgiveness rather than permission.  Given that we were passed a real component the phase methods should always exist, but if they don’t we’ll catch the error and raise an informative exception.
+# Using The Python UVM
+If one takes as given that `pyuvm` works however it is implemented then one must ask how to use it. In this section we’ll see how to create a testbench with `pyuvm`.
+We’ll use the TinyALU example from the _UVM Primer_. This is a simple ALU with ADD, AND, XOR, and MUL functions.
+## Defining the UVM Test
+We can start at the top of the testbench defining a test to launch our test sequence: 
+```python
+class test_top(uvm_test):
+
+    def build_phase(self,phase=None):
+        self.env = env("env",self)
+
+    def run_phase(self,phase=None):
+        myseq = alu_sequence("myseq")
+        self.env.agent.seqr.start(myseq)
+```
+This is, of course, a simplistic test. The hardcoded path to the sequencer in the `agent` limits reusability.  However Python’s introspection capability would make it easy to write a function that finds all the available sequencers in an environment, thus enabling more reusability.
+One advantage we see immediately is that an IDE such as PyCharm can help us write code more quickly:
+\<insert IDE image\>
+## Defining The TinyALU Agent
+Once we import `pyuvm` implementing an agent is remarkably similar to the same SystemVerilog code:
+```python
+class tinyalu_agent(uvm_agent):
+
+    def build_phase(self,phase):
+        self.cm_h = command_monitor("cm_h",self)
+        self.dr_h = tinyalu_driver("dr_h",self)
+        self.seqr = uvm_sequencer("seqr", self)
+
+        # Fifos
+        self.cmd_f = uvm_tlm_fifo("cmd_f",self)
+        self.rslt_f= uvm_tlm_fifo("rslt_f",self)
+        # Make with the factory
+        self.rm_h = result_monitor.create("rm_h",self)
+        self.sb = scoreboard.create("sb",self)
+
+        self.cmd_mon_ap = uvm_analyis_port("cmd_mon_ap", self)
+        self.result_ap = uvm_analyis_port("result_ap", self)
+
+    def connect_phase(self, phase=None):
+        self.dr_h.command_port.connect(self.cmd_f.get_export)
+        self.rm_h.ap.connect(self.cmd_f.put_export)
+        self.cm_h.ap.connect(self.cmd_mon_ap)
+        self.rm_h.ap.connect(self.result_ap)
+
+        self.dr_h.command_port(self.cmd_f.get_export)
+        self.dr_h.sequence_item_port(self.seqr.seq_item_export)
+```
+We now have an agent that provides score boarding, monitoring, and analysis ports for other parts of the testbench.
+## Transactions
+The TinyALU transactions are similarly common to the SystemVerilog versions:
+```python
+class command_transaction(uvm_sequence_item):
+    def __init__(self, name, A, B, op):
+        super().__init__(name)
+        self.A = A
+        self.B = B
+        self.op = op
+
+class result_transaction(uvm_transaction):
+    def __init__(self, name, r):
+        super().__init__()
+        self.result = r
+```
 ## The Dual-Top Testbench: The Proxy Approach
-## A PyUVM example
+Accelerating a testbench on an emulator requires that we create a testbench with two parts. The HVL part (or Python part in this example) creates the stimulus, checks the results, and stores functional coverage. The HDL part contains the DUT and the synthesizable part of emulation-compatible VIP.  (Cite [DVCon Europe 2015 Paper][3])
+Here we will see one mechanism for connecting a Python testbench to an HDL simulation using a suggested `pytlm` interface.  The interface hides the ultimate connections to `uvm_connect` that connect this testbench to a simulation or emulation of the HDL. 
+### The TinyALU Driver
+The `pytlm` uses a proxy object to connect the Python to a given BFM in the HDL side of the testbench. The proxy sends data to the HDL and blocks until the operation has finished.   We use the in the `tinyalu_driver`:
+```python
+class tinyalu_driver(uvm_driver):
+
+    def build_phase(self, phase = None):
+        self.bfm = pytlm.Proxy("xrtl_top.tinyalu_bfm")
+        self.command_port = uvm_get_port("command_port", self)
+
+    def run_phase(self, phase = None):
+        while True:
+            command = self.command_port.get()
+            self.bfm.send_op(command.A, command.B, command.op)
+            self.bfm.wait_for()
+```
+### The TinyALU Monitors
+Similarly the monitors use proxies to wait for their data. We have a command monitor and a result monitor. The agent uses the command monitor to write the command to an analysis port (for the scoreboard predictor to use) and the result monitor writes the result to an analysis port for the scoreboard to use for comparison:
+```python
+class command_monitor(uvm_component):
+
+        def build_phase(self, phase = None):
+            self.ap = uvm_analyis_port("ap")
+            self.monitor_bfm = pytlm.MonitorProxy("xrtl_top.tinyalu_monitor", self)
+
+        def run_phase(self, phase = None):
+            while True:
+                (A, B, op) = self.monitor_bfm.wait_for()
+                mon_tr = command_transaction(A, B, op)
+                self.ap.write(mon_tr)
+```
+We can see above that the monitor uses Python’s ability to return arbitrary tuples from a function call. Rather than having to define a struct to return multiple values we can simply return them directly, in this case with `(A, B, op)` getting returned.
+The result monitor similarly waits for its proxy to send it data:
+```python
+class result_monitor(uvm_component):
+
+    def build_phase(self,phase=None):
+        self.ap = uvm_analyis_port("ap")
+        self.bfm = pytlm.MonitorProxy("xrtl_top.result_monitor", self)
+
+    def run_phase(self, phase):
+        while True:
+            result = self.bfm.wait_for()
+            result_t = result_transaction(result)
+            self.ap.write(result_t)
+
+```
+### A TinyAlu Sequence
+Having all the above in place allows us to create a `uvm_sequence`:
+```python
+class alu_sequence(uvm_sequence):
+    def body(self):
+        A = random.randint(0,255)
+        B = random.randint(0,255)
+        op = random.choice(ALUOps)
+        cmd_tr = command_transaction(A, B, op)
+        self.start_item(cmd_tr)
+        self.finish_item(cmd_tr)
+
+```
+We now have a working TinyALU testbench that is compatible with either a simulator or an emulator and that can leverage the entire Python ecosystem.
 # Conclusion
 This approach literally provides the best of both worlds. Rather than reinventing the wheel, we build on all of the work that has gone in over the years to the development of the UVM, the most popular verification methodology in the industry, as well as existing constraint solvers and other capabilities provided by a simulator, but provide it to a new generation of engineers in a language with which they are already familiar.
 
@@ -354,3 +727,4 @@ This approach literally provides the best of both worlds. Rather than reinventin
 
 [1]:	https://en.wikipedia.org/wiki/C%2B%2B#History
 [2]:	https://docs.python.org/3/library/exceptions.html#bltin-exceptions "Python Built-in Exceptions"
+[3]:	https://dvcon-europe.org/sites/dvcon-europe.org/files/archive/2015/proceedings/DVCon_Europe_2015_P1_4_Paper.pdf
