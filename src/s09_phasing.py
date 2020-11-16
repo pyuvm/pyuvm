@@ -224,6 +224,7 @@ class uvm_phase_schedule(uvm_phase, phase_adder):
 class uvm_phase_domain(uvm_phase, phase_adder):
     ...
 
+
 # 9.4 uvm_domain
 
 # 9.4.1
@@ -237,6 +238,30 @@ class uvm_domain(uvm_phase, uvm_phase_domain):
     @staticmethod
     def add_uvm_phases(schedule):
         ...
+
+    @classmethod
+    def get_common_domain(cls):
+        """
+        Get a singleton handle to the common domain
+        :return: common domain handle
+        """
+        if "common" in uvm_domain.domains:
+            return uvm_domain.domains["common"]
+
+        domain = uvm_domain("common")
+        domain.add(uvm_build_phase())
+        domain.add(uvm_connect_phase())
+        domain.add(uvm_end_of_elaboration_phase())
+        domain.add(uvm_start_of_simulation_phase())
+        domain.add(uvm_run_phase())
+        domain.add(uvm_extract_phase())
+        domain.add(uvm_check_phase())
+        domain.add(uvm_report_phase())
+        domain.add(uvm_final_phase)
+
+        uvm_domain.domains["common"] = domain
+
+        return domain
 
 
 
@@ -323,6 +348,14 @@ class uvm_task_phase(uvm_phase, uvm_phase_imp):
         fork = threading.Thread(target = self.fork_code, args = (comp, phase) )
         fork.start()
 
+# This version of the uvm_topdown_phase ignores
+# the states as these are there to handle
+# simulation delta cycles.  We don't have simulation
+# delta cycles.
+#
+# This is a partial implementation. It traverses from
+# the top down calling the correct common phase task.
+# There are no provisions for other tasks.
 class uvm_topdown_phase(uvm_phase, uvm_phase_imp):
     """
     Runs phases from the top down.
@@ -331,11 +364,58 @@ class uvm_topdown_phase(uvm_phase, uvm_phase_imp):
     def traverse(self, comp, phase, state):
 
 
+
+
+
+
+
+
 # 9.8 Predefined Phases
 # 9.8.1 Common Phases
 # These are all Singleton objects
+class common_phase(metaclass=utility_classes.Singleton, uvm_topdown_phase):
+    """
+    A uvm_topdown_phase that is also a singleton. Used for common phases
+    """
+    ...
 
+# The common phases are described in the order of their execution.
 # 9.8.1.1
-class uvm_build_phase(metaclass=utility_classes.Singleton, uvm_topdown_phase)
+class uvm_build_phase(common_phase):
+    ...
+
+# 9.8.1.2
+class uvm_connect_phase(common_phase):
+    ...
+
+# 9.8.1.3
+class uvm_end_of_elaboration_phase(common_phase):
+    ...
+
+# 9.8.1.4
+class uvm_start_of_simulation_phase(common_phase):
+    ...
+
+# 9.8.1.5
+class uvm_run_phase(metaclass=utility_classes.Singleton, uvm_task_phase):
+    ...
+
+# 9.8.1.6
+class uvm_extract_phase(common_phase):
+    ...
+
+# 9.8.1.7
+class uvm_check_phase(common_phase):
+    ...
+
+# 9.8.1.8
+class uvm_report_phase(common_phase):
+    ...
+
+# 9.8.1.9
+class uvm_final_phase(common_phase):
+    ...
+# 9.8.2
+# Left as an exercise for an enterprising soul
 
 
