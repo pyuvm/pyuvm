@@ -198,7 +198,7 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         """
         mo = my_object("mo")
         with self.assertRaises(error_classes.UsePythonMethod):
-            mo.do_execute_op()
+            mo.do_execute_op(None)
 
     def test_active_policy(self):
         """
