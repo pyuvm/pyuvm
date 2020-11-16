@@ -1,10 +1,11 @@
 # from base_classes import *
 import error_classes
 from queue import Queue
-from s09_phasing import PyuvmPhases, PhaseType
 import utility_classes
 from s06_reporting_classes import uvm_report_object
 from pyuvm import uvm_object
+import s09_phasing
+
 """
 This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
 testbenches in Python.
@@ -20,6 +21,7 @@ could be added later if we see a need or way to do it.
 e: Factory---pyuvm manages the factory throught the create() method without all the SystemVerilog typing overhead.
 
 """
+
 
 # Class Declarations
 
@@ -48,28 +50,26 @@ We've opted for the latter.
         the same thing with __init__()
         """
 
-        super ().__init__ ( name )
+        super().__init__(name)
         self.__parent = None
-        self.__children={}
-        if parent==None and name != 'uvm_root':
-            parent=uvm_root()
+        self.__children = {}
+        if parent == None and name != 'uvm_root':
+            parent = uvm_root()
         self.parent = parent
         if parent != None:
             parent.add_child(name, self)
-        self.print_enabled=True #13.1.2.2
+        self.print_enabled = True  # 13.1.2.2
 
         # Cache the hierarchy for easy access
         if name != 'uvm_root':
-            uvm_component.component_dict[self.get_full_name()]=self
+            uvm_component.component_dict[self.get_full_name()] = self
 
     def clear_children(self):
         self.__children = {}
 
-
     def clear_hierarchy(self):
-        self.__parent=None
+        self.__parent = None
         self.clear_children()
-
 
     def do_execute_op(self, op):
         raise error_classes.UVMNotImplemented("Policies not implemented")
@@ -77,13 +77,13 @@ We've opted for the latter.
     def create(self, name, parent):
         return self.__class__(name, parent)
 
-
     def get_parent(self):
         """
         :return: parent object
         13.1.3.1--- No 'get_' prefix
         """
         return self.__parent
+
     @property
     def parent(self):
         return self.get_parent()
@@ -91,9 +91,9 @@ We've opted for the latter.
     @parent.setter
     def parent(self, parent):
         if parent != None:
-            assert(isinstance(parent,uvm_component)), f" {parent} is of type {type(parent)}"
-        assert(parent != self), f'Cannot make a {self.get_name()} its own parent.  That is incest.'
-        self.__parent=parent
+            assert (isinstance(parent, uvm_component)), f" {parent} is of type {type(parent)}"
+        assert (parent != self), f'Cannot make a {self.get_name()} its own parent.  That is incest.'
+        self.__parent = parent
 
     def get_full_name(self):
         """
@@ -103,7 +103,7 @@ We've opted for the latter.
         if self.get_name() == 'uvm_root':
             return ''
         fullname = self.__parent.get_full_name()
-        if len(fullname)==0:
+        if len(fullname) == 0:
             fullname = self.get_name()
         else:
             fullname = fullname + "." + self.get_name()
@@ -129,6 +129,7 @@ We've opted for the latter.
     implement __iter__ so that the user can use
     the component as an iterator.
     """
+
     def get_children(self):
         """
         13.1.3.3
@@ -137,9 +138,10 @@ We've opted for the latter.
         return list(self.children)
 
     def add_child(self, name, child):
-        assert(name not in self.__children), f"{self.get_full_name()} already has a child named {name}"
-        self.__children[name]=child
+        assert (name not in self.__children), f"{self.get_full_name()} already has a child named {name}"
+        self.__children[name] = child
         pass
+
     @property
     def hierarchy(self):
         """
@@ -152,7 +154,7 @@ We've opted for the latter.
             assert isinstance(child, uvm_component)
             yield child
             for grandchild in child.children:
-                assert isinstance ( grandchild,uvm_component, )
+                assert isinstance(grandchild, uvm_component, )
                 yield grandchild
 
         # The UVM relies upon a hokey iteration system to get the children
@@ -164,6 +166,7 @@ We've opted for the latter.
         # eschew it. So we are not going to implement the above.  Instead
         # the children() method is a generator that allows you to loop
         # through the children.
+
     @property
     def children(self):
         """
@@ -184,7 +187,7 @@ We've opted for the latter.
         :param name: child string
         :return: uvm_component of that name
         """
-        assert(isinstance(name, str))
+        assert (isinstance(name, str))
         try:
             return self.__children[name]
         except KeyError:
@@ -205,7 +208,7 @@ We've opted for the latter.
         :param name: Name of child object
         :return: True if exists, False otherwise
         """
-        assert(isinstance(name,str))
+        assert (isinstance(name, str))
         return name in self.__children
 
     def lookup(self, name):
@@ -216,11 +219,11 @@ We've opted for the latter.
         :param name: The search name
         :return: either the component or None
         """
-        assert(isinstance(name,str))
+        assert (isinstance(name, str))
         if name[0] == '.':
-            lookup_name=name[1:]
+            lookup_name = name[1:]
         else:
-            lookup_name=f'{self.get_full_name()}.{name}'
+            lookup_name = f'{self.get_full_name()}.{name}'
         try:
             return uvm_component.component_dict[lookup_name]
         except KeyError:
@@ -241,25 +244,32 @@ We've opted for the latter.
         else:
             return len(self.get_full_name().split("."))
 
-    def build_phase(self,phase=None):...
+    def build_phase(self, phase=None):
+        ...
 
-    def connect_phase(self, phase=None):...
+    def connect_phase(self, phase=None):
+        ...
 
-    def end_of_elaboration_phase(self, phase=None):...
+    def end_of_elaboration_phase(self, phase=None):
+        ...
 
-    def start_of_simulation_phase(self, phase=None):...
+    def start_of_simulation_phase(self, phase=None):
+        ...
 
-    def run_phase(self,phase=None):...
+    def run_phase(self, phase=None):
+        ...
 
-    def extract_phase(self,phase=None):...
+    def extract_phase(self, phase=None):
+        ...
 
-    def check_phase(self,phase=None):...
+    def check_phase(self, phase=None):
+        ...
 
-    def report_phase(self,phase=None):...
+    def report_phase(self, phase=None):
+        ...
 
-    def final_phase(self,phase=None):...
-
-
+    def final_phase(self, phase=None):
+        ...
 
     """
     The following sections have been skipped and could
@@ -273,6 +283,7 @@ We've opted for the latter.
     13.1.6--Recording interface
     13.1.7--Other interfaces
     """
+
 
 class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     """
@@ -303,7 +314,6 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     def __init__(self):
         super().__init__("uvm_root", None)
 
-
     def run_test(self, test_name=""):
         """
         This implementation skips much of the state-setting and
@@ -319,20 +329,10 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         :param test_name: The uvm testname
         :return: none
         """
-        self.uvm_test_top=uvm_object.create_by_name(test_name,'uvm_test_top',self)
-        top_down = self.uvm_test_top.hierarchy
-        bottom_up = list(self.uvm_test_top.hierarchy)
-        bottom_up.reverse()
+        self.uvm_test_top = uvm_object.create_by_name(test_name, 'uvm_test_top', self)
+        for phase in s09_phasing.uvm_common_phases:
+            phase.execute(self)
 
-        for phase, phase_data in PyuvmPhases.__members__.items():
-            method,phase_type=phase_data.value
-            if phase_type == PhaseType.TOPDOWN:
-                comp_list=top_down
-            else:
-                comp_list=bottom_up
-
-            for comp in comp_list:
-                getattr(uvm_component.component_dict[comp],method)()
 
 class uvm_test(uvm_component):
     """
@@ -343,34 +343,39 @@ class uvm_test(uvm_component):
     UVM class, so we don't do that (same for __init__).
     """
 
+
 class uvm_env(uvm_component):
     """
     13.3
     The user's containes for agents and what-not
     """
 
+
 class uvm_agent(uvm_component):
     """
     13.4
     Contains controls for individual agents
     """
+
     def __init__(self):
         super().__init__()
-        self.__is_active=False
-
+        self.__is_active = False
 
     """
     Have chosen to implement the spirit of 
     the is_active member rather than the 
     enum-based implementation.
     """
+
     @property
     def is_active(self):
         return self.__is_active
+
     @is_active.setter
     def is_active(self, is_active):
-        assert(isinstance(is_active,bool))
-        self.__is_active=is_active
+        assert (isinstance(is_active, bool))
+        self.__is_active = is_active
+
 
 class uvm_monitor(uvm_component):
     """
@@ -379,10 +384,12 @@ class uvm_monitor(uvm_component):
     to uvm_monitor
     """
 
+
 class uvm_scoreboard(uvm_component):
     """
     13.6
     """
+
 
 class uvm_driver(uvm_component):
     """
@@ -411,17 +418,17 @@ class uvm_driver(uvm_component):
 
     def __init__(self):
         super().__init__()
-        self.__sequence_item_port=None
-        self.__rsp_port=None
+        self.__sequence_item_port = None
+        self.__rsp_port = None
 
     @property
     def sequence_item_port(self):
         return self.__sequence_item_port
 
     @sequence_item_port.setter
-    def sequence_item_port(self,port):
-        assert(isinstance(port, Queue))
-        self.__sequence_item_port=port
+    def sequence_item_port(self, port):
+        assert (isinstance(port, Queue))
+        self.__sequence_item_port = port
 
     @property
     def rsp_port(self):
@@ -429,8 +436,9 @@ class uvm_driver(uvm_component):
 
     @rsp_port.setter
     def rsp_port(self, port):
-        assert(isinstance(port,Queue))
-        self.__rsp_port=port
+        assert (isinstance(port, Queue))
+        self.__rsp_port = port
+
 
 """
 13.8 uvm_push_driver
@@ -438,13 +446,8 @@ class uvm_driver(uvm_component):
 Never seen one used. Not implemented.
 """
 
+
 class uvm_subscriber(uvm_component):
     """
     13.9
     """
-
-
-
-
-
-

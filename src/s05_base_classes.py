@@ -272,7 +272,7 @@ class uvm_object(utility_classes.uvm_void):
         """
         raise error_classes.UsePythonMethod('The getattr and setattr functions handle this')
 
-    def do_execute_op(self):
+    def do_execute_op(self, op):
         """
         5.3.13.1
         :return:

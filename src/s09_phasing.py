@@ -2,7 +2,7 @@ from pyuvm import uvm_object
 from s13_predefined_component_classes import *
 import error_classes
 import threading
-import utility_classes
+
 '''
 9.1
 
@@ -27,6 +27,8 @@ and traversing them in order. The order it dependent upon whether they
 are topdown or bottom up phases.
 
 '''
+
+
 # 9.3.1.2 Class declaration
 
 
@@ -39,7 +41,7 @@ class uvm_phase(uvm_object):
 
         :param comp: The component whose turn it is to execute
         """
-        assert(isinstance(self, common_phase)), "We only support phases whose names start with uvm_"
+        assert (isinstance(self, common_phase)), "We only support phases whose names start with uvm_"
         method_name = self.get_type_name()[4:]
         try:
             method = getattr(comp, method_name)
@@ -49,13 +51,14 @@ class uvm_phase(uvm_object):
 
     def raise_objection(self):
         """
-        Does whatever one does to keep the sim runnng
+        Does whatever one does to keep the sim running
         """
 
     def drop_objection(self):
         """
         Does whatever one does to let the sim finish
         """
+
 
 class uvm_topdown_phase(uvm_phase):
     """
@@ -66,22 +69,25 @@ class uvm_topdown_phase(uvm_phase):
         """
         Given a component, we traverse the component tree
         top to bottom calling the phase functions as we go
-        :param comp: The component whose hierarchy will be tranversed
+        :param comp: The component whose hierarchy will be traversed
         """
-        assert(comp, uvm_component), "You can only traverse uvm_components with a phase"
-        self.execute(comp) # first we execute this node then its children
+        assert (isinstance(comp, uvm_component)), "You can only traverse uvm_components with a phase"
+        self.execute(comp)  # first we execute this node then its children
         for child in comp.get_children():
             self.traverse(child)
+
 
 class uvm_bottomup_phase(uvm_phase):
     """
     Runs the phases from bottom up.
     """
+
     def traverse(self, comp):
-        assert(comp, uvm_component), "You can only traverse uvm_components with a phase"
+        assert (isinstance(comp, uvm_component)), "You can only traverse uvm_components with a phase"
         for child in comp.get_children():
             self.traverse(child)
         self.execute(comp)
+
 
 class uvm_threaded_execute_phase(uvm_phase):
     """
@@ -90,52 +96,79 @@ class uvm_threaded_execute_phase(uvm_phase):
     join all the threads.
     """
 
+    def execute(self, comp):
+        assert (isinstance(comp, uvm_component)), "comp must be a uvm_component"
+        assert (isinstance(self, common_phase)), "We only support phases whose names start with uvm_"
+        method_name = self.get_type_name()[4:]
+        try:
+            method = getattr(comp, method_name)
+        except AttributeError:
+            raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
+        method(self)
+        fork = threading.Thread(target=method, args=(self,))
+        fork.start()
+        return fork
+
+
 # 9.8 Predefined Phases
 # 9.8.1 Common Phases
-# These are all Singleton objects
-class common_phase():
+class common_phase(uvm_phase):
     """
     This is used for a simple error checking line.
     """
     ...
 
+
 # The common phases are described in the order of their execution.
 # 9.8.1.1
-class uvm_build_phase(common_phase):
+class uvm_build_phase(uvm_topdown_phase, common_phase):
     ...
+
 
 # 9.8.1.2
-class uvm_connect_phase(common_phase):
+class uvm_connect_phase(uvm_bottomup_phase, common_phase):
     ...
+
 
 # 9.8.1.3
-class uvm_end_of_elaboration_phase(common_phase):
+class uvm_end_of_elaboration_phase(uvm_topdown_phase, common_phase):
     ...
+
 
 # 9.8.1.4
-class uvm_start_of_simulation_phase(common_phase):
+class uvm_start_of_simulation_phase(uvm_topdown_phase, common_phase):
     ...
+
 
 # 9.8.1.5
-class uvm_run_phase(common_phase):
+class uvm_run_phase(uvm_threaded_execute_phase, uvm_bottomup_phase, common_phase):
     ...
+
 
 # 9.8.1.6
-class uvm_extract_phase(common_phase):
+class uvm_extract_phase(uvm_topdown_phase, common_phase):
     ...
+
 
 # 9.8.1.7
-class uvm_check_phase(common_phase):
+class uvm_check_phase(uvm_topdown_phase, common_phase):
     ...
+
 
 # 9.8.1.8
-class uvm_report_phase(common_phase):
+class uvm_report_phase(uvm_topdown_phase, common_phase):
     ...
 
+
 # 9.8.1.9
-class uvm_final_phase(common_phase):
+class uvm_final_phase(uvm_topdown_phase, common_phase):
     ...
+
+
 # 9.8.2
 # Left as an exercise for an enterprising soul
 
-
+uvm_common_phases = [uvm_build_phase, uvm_connect_phase,
+                     uvm_end_of_elaboration_phase, uvm_start_of_simulation_phase,
+                     uvm_run_phase, uvm_extract_phase, uvm_check_phase,
+                     uvm_report_phase, uvm_final_phase]
