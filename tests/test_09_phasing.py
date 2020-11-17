@@ -1,11 +1,12 @@
 import pyuvm_unittest
 from pyuvm import *
 import inspect
+from s09_phasing import uvm_common_phases
 
 
 this_function_name = inspect.currentframe().f_code.co_name
 class s09_phasing_TestCase (pyuvm_unittest.pyuvm_TestCase):
-    phase_list = []
+    phase_list = {}
     class my_comp(uvm_component):
         def log_phase(self):
             """
@@ -13,7 +14,8 @@ class s09_phasing_TestCase (pyuvm_unittest.pyuvm_TestCase):
             """
             comp_name = self.get_name()
             function_name = inspect.stack()[1][3]
-            s09_phasing_TestCase.phase_list.append((comp_name, function_name))
+
+            s09_phasing_TestCase.phase_list[function_name].append(comp_name)
 
         def build_phase(self, phase):
             self.log_phase()
@@ -44,7 +46,11 @@ class s09_phasing_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
 
     def setUp(self):
-        self.phase_list = []
+        s09_phasing_TestCase.phase_list = {}
+        for phase_class in uvm_common_phases:
+            phase_func = phase_class.__name__[4:]
+            s09_phasing_TestCase.phase_list[phase_func] = []
+
         self.top = self.my_comp("top")
         #
         # top +-> A +-> C
@@ -66,7 +72,16 @@ class s09_phasing_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
     # 9.3.1.3.1/9.3.1.3.5
     def test_stub(self):
+        "testing the basic testing mechanism"
+        self.top.build_phase(None)
+        self.assertEqual(("top"), s09_phasing_TestCase.phase_list["build_phase"][0])
+
+
+    def test_traverse(self):
+        for phase_class in uvm_common_phases:
+            phase = phase_class()
+            phase.traverse(self.top)
+        utility_classes.RunningThreads().join_all()
         pass
-#        self.top.build_phase(None)
 
 

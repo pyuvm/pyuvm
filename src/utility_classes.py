@@ -17,6 +17,17 @@ class Singleton(type):
         cls._instances.clear()
         pass
 
+class RunningThreads(metaclass=Singleton):
+    def __init__(self):
+        self.__threads = []
+
+    def add_thread(self, thread):
+        self.__threads.append(thread)
+
+    def join_all(self):
+        for thread in self.__threads:
+            thread.join()
+
 class Override():
     """
     This class stores an override and an optional path.

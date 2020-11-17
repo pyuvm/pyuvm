@@ -1,5 +1,4 @@
-from pyuvm import uvm_object
-from s13_predefined_component_classes import *
+from pyuvm import *
 import error_classes
 import threading
 
@@ -71,7 +70,6 @@ class uvm_topdown_phase(uvm_phase):
         top to bottom calling the phase functions as we go
         :param comp: The component whose hierarchy will be traversed
         """
-        assert (isinstance(comp, uvm_component)), "You can only traverse uvm_components with a phase"
         self.execute(comp)  # first we execute this node then its children
         for child in comp.get_children():
             self.traverse(child)
@@ -83,7 +81,6 @@ class uvm_bottomup_phase(uvm_phase):
     """
 
     def traverse(self, comp):
-        assert (isinstance(comp, uvm_component)), "You can only traverse uvm_components with a phase"
         for child in comp.get_children():
             self.traverse(child)
         self.execute(comp)
@@ -97,17 +94,15 @@ class uvm_threaded_execute_phase(uvm_phase):
     """
 
     def execute(self, comp):
-        assert (isinstance(comp, uvm_component)), "comp must be a uvm_component"
         assert (isinstance(self, common_phase)), "We only support phases whose names start with uvm_"
         method_name = self.get_type_name()[4:]
         try:
             method = getattr(comp, method_name)
         except AttributeError:
             raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
-        method(self)
         fork = threading.Thread(target=method, args=(self,))
         fork.start()
-        return fork
+        utility_classes.RunningThreads().add_thread(fork)
 
 
 # 9.8 Predefined Phases

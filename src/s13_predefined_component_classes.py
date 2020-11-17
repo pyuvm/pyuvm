@@ -3,7 +3,7 @@ import error_classes
 from queue import Queue
 import utility_classes
 from s06_reporting_classes import uvm_report_object
-from pyuvm import uvm_object
+from s05_base_classes import uvm_object
 import s09_phasing
 
 """
