@@ -244,31 +244,31 @@ We've opted for the latter.
         else:
             return len(self.get_full_name().split("."))
 
-    def build_phase(self, phase=None):
+    def build_phase(self, phase):
         ...
 
-    def connect_phase(self, phase=None):
+    def connect_phase(self, phase):
         ...
 
-    def end_of_elaboration_phase(self, phase=None):
+    def end_of_elaboration_phase(self, phase):
         ...
 
-    def start_of_simulation_phase(self, phase=None):
+    def start_of_simulation_phase(self, phase):
         ...
 
-    def run_phase(self, phase=None):
+    def run_phase(self, phase):
         ...
 
-    def extract_phase(self, phase=None):
+    def extract_phase(self, phase):
         ...
 
-    def check_phase(self, phase=None):
+    def check_phase(self, phase):
         ...
 
-    def report_phase(self, phase=None):
+    def report_phase(self, phase):
         ...
 
-    def final_phase(self, phase=None):
+    def final_phase(self, phase):
         ...
 
     """

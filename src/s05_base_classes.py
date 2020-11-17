@@ -47,9 +47,10 @@ class uvm_object(utility_classes.uvm_void):
         """
         raise error_classes.UVMNotImplemented('reseed not implemented')
 
+    # 5.3.3.4
     def get_name(self):
         """
-        5.3.4.2
+        Return the name of this object as passed by the constructor
         """
         assert (self.__name != None), f"Internal error. {str(self)} has no name"
         return self.__name

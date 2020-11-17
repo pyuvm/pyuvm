@@ -37,7 +37,7 @@ class tinyalu_driver(uvm_driver):
             self.bfm.send_op(command.A, command.B, command.op)
             self.bfm.wait_for()
 # Monitor
-class command_monitor(uvm_component):
+class command_monitor(test_comp):
 
         def build_phase(self, phase = None):
             self.ap = uvm_analyis_port("ap")
@@ -50,7 +50,7 @@ class command_monitor(uvm_component):
                 self.ap.write(mon_tr)
 
 # Result Monitor
-class result_monitor(uvm_component):
+class result_monitor(test_comp):
 
     def build_phase(self,phase=None):
         self.ap = uvm_analyis_port("ap")
