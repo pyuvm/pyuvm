@@ -3,10 +3,12 @@ from pyuvm import *
 import inspect
 from s09_phasing import uvm_common_phases
 
-
 this_function_name = inspect.currentframe().f_code.co_name
-class s09_phasing_TestCase (pyuvm_unittest.pyuvm_TestCase):
+
+
+class s09_phasing_TestCase(pyuvm_unittest.pyuvm_TestCase):
     phase_list = {}
+
     class my_comp(uvm_component):
         def log_phase(self):
             """
@@ -44,7 +46,6 @@ class s09_phasing_TestCase (pyuvm_unittest.pyuvm_TestCase):
         def final_phase(self, phase):
             self.log_phase()
 
-
     def setUp(self):
         s09_phasing_TestCase.phase_list = {}
         for phase_class in uvm_common_phases:
@@ -60,22 +61,19 @@ class s09_phasing_TestCase (pyuvm_unittest.pyuvm_TestCase):
         #
         A = self.my_comp("A", self.top)
         B = self.my_comp("B", self.top)
-        C = self.my_comp("C", A)
-        D = self.my_comp("D", A)
-        E = self.my_comp("E", B)
-        F = self.my_comp("F", B)
-
+        self.my_comp("C", A)
+        self.my_comp("D", A)
+        self.my_comp("E", B)
+        self.my_comp("F", B)
 
     def tearDown(self):
         uvm_root().clear_hierarchy()
 
-
     # 9.3.1.3.1/9.3.1.3.5
     def test_stub(self):
-        "testing the basic testing mechanism"
+        """testing the basic testing mechanism"""
         self.top.build_phase(None)
-        self.assertEqual(("top"), s09_phasing_TestCase.phase_list["build_phase"][0])
-
+        self.assertEqual("top", s09_phasing_TestCase.phase_list["build_phase"][0])
 
     def test_traverse(self):
         for phase_class in uvm_common_phases:
@@ -83,5 +81,3 @@ class s09_phasing_TestCase (pyuvm_unittest.pyuvm_TestCase):
             phase.traverse(self.top)
         utility_classes.RunningThreads().join_all()
         pass
-
-
