@@ -1,7 +1,6 @@
 import pyuvm_unittest
 from pyuvm import *
 import inspect
-from s09_phasing import uvm_common_phases
 
 this_function_name = inspect.currentframe().f_code.co_name
 
@@ -76,8 +75,24 @@ class s09_phasing_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.assertEqual("top", s09_phasing_TestCase.phase_list["build_phase"][0])
 
     def test_traverse(self):
+        top_down = ['top', 'A', 'C', 'D', 'B', 'E', 'F']
+        bottom_up = ['C', 'D', 'A', 'E', 'F', 'B', 'top']
+        sorted_list = sorted(top_down)
         for phase_class in uvm_common_phases:
             phase = phase_class()
             phase.traverse(self.top)
-        utility_classes.RunningThreads().join_all()
+            if phase_class == uvm_run_phase:
+                utility_classes.RunningThreads().join_all()
+            function_name = phase_class.__name__[4:]
+            returned_comps = s09_phasing_TestCase.phase_list[function_name]
+            if isinstance(phase, uvm_run_phase):
+                self.assertEqual(sorted_list, sorted(returned_comps))
+            elif isinstance(phase, uvm_topdown_phase):
+                self.assertEqual(top_down, returned_comps)
+            elif isinstance(phase, uvm_bottomup_phase):
+                self.assertEqual(bottom_up, returned_comps)
+            else:
+                # Should not get here.
+                self.assertTrue(False)
+
         pass
