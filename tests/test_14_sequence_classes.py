@@ -28,12 +28,8 @@ class s14_sequence_TestCase (pyuvm_unittest.pyuvm_TestCase):
         """
         si = uvm_sequence_item("test")
         self.assertFalse(si.get_use_sequence_info())
-        si.set_use_sequence_info(True)
-        self.assertTrue(si.get_use_sequence_info())
-        si.set_use_sequence_info(False)
-        self.assertFalse(si.get_use_sequence_info())
-        with self.assertRaises(AssertionError):
-            si.set_use_sequence_info(1)
+        with self.assertRaises(error_classes.UVMNotImplemented):
+            si.set_use_sequence_info(True)
 
 
 
