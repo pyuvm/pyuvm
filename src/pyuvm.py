@@ -20,10 +20,8 @@ from s11_container_classes import *
 from s12_uvm_tlm_interfaces import *
 # Section 13
 from s13_predefined_component_classes import *
-# Section 14
-from s14_sequence_classes import *
-# Section 15
-from s15_sequencer_classes import *
+# Section 14, 15 (Done as fresh Python design)
+from s14_15_python_sequences import *
 # Section 16
 from s16_policy_classes import *
 # Section 17

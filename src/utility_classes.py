@@ -3,6 +3,7 @@ import logging
 import fnmatch
 from queue import *
 from time import monotonic as time
+import threading
 
 class Singleton(type):
     _instances = {}
@@ -188,6 +189,37 @@ class UVM_ROOT_Singleton(FactoryMeta):
     def clear_singletons(cls):
         cls.singleton = None
         pass
+
+
+class ObjectionHandler(metaclass=Singleton):
+    """
+    This singleton accepts objections and then allows
+    them to be removed. It returns True to run_phase_complete()
+    when there are no objections left.
+    """
+    def __init__(self):
+        self.__objections = {}
+        self.run_condition = threading.Condition()
+
+    def __str__(self):
+        ss = "Current Objections:\n"
+        for cc in self.__objections:
+            ss += f"{self.__objections[cc]}\n"
+        return ss
+
+    def raise_objection(self, raiser):
+        self.__objections[raiser] = raiser.get_full_name()
+        with self.run_condition:
+            self.run_condition.notify_all()
+
+    def drop_objection(self, dropper):
+        del self.__objections[dropper]
+        with self.run_condition:
+            self.run_condition.notify_all()
+
+    def run_phase_complete(self):
+        return not self.__objections
+
 
 class PeekQueue(Queue):
     def peek(self, block=True, timeout=None):

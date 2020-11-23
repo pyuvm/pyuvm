@@ -112,7 +112,7 @@ def name(self):
 @name.setter
 def name(self, name):
    assert(isinstance(name, str))
-   self.__name = name   
+   self.obj_name = name   
 ```
 
 A user refers to `obj.name` regardless of whether it is being read or written.

@@ -27,7 +27,7 @@ class uvm_object(utility_classes.uvm_void):
         # Private
         assert (isinstance(name, str)), f"{name} is not a string it is a {type(name)}"
         self.set_name(name)
-        self.__logger = logging.getLogger(name)
+        self.logger = logging.getLogger(name)
 
     def get_uvm_seeding(self):
         """
@@ -52,15 +52,15 @@ class uvm_object(utility_classes.uvm_void):
         """
         Return the name of this object as passed by the constructor
         """
-        assert (self.__name != None), f"Internal error. {str(self)} has no name"
-        return self.__name
+        assert (self.obj_name != None), f"Internal error. {str(self)} has no name"
+        return self.obj_name
 
     def set_name(self, name):
         """
         5.3.4.1
         """
         assert (isinstance(name, str)), f"Must set the name to a string"
-        self.__name = name
+        self.obj_name = name
 
     def get_full_name(self):
         """
@@ -305,7 +305,7 @@ class uvm_transaction(uvm_object):
     """
     5.4.1
     """
-    def __init__(self, name="", initiator = None):
+    def __init__(self, name="", initiator=None):
         """
         5.4.2.1
         :param name: Object name
@@ -313,6 +313,7 @@ class uvm_transaction(uvm_object):
         """
         super().__init__(name)
         self.set_initiator(initiator)
+        self.transaction_id = None
 
     def set_initiator(self, initiator):
         """
@@ -320,14 +321,14 @@ class uvm_transaction(uvm_object):
         :param initiator: initiator to set
         :return: None
         """
-        self.__initiator = initiator
+        self.initiator = initiator
 
     def get_initiator(self):
         """
         5.4.2.15
         :return: initiator
         """
-        return self.__initiator
+        return self.initiator
 
 
     def __not_implemented(self):
@@ -445,20 +446,25 @@ class uvm_transaction(uvm_object):
         """
         self.__not_implemented()
 
-    def set_transaction_id(self, id):
+    def set_transaction_id(self, txn_id):
         """
         5.4.2.17
         :param self:
         :return:
         """
-        self.__not_implemented()
+        assert(isinstance(txn_id,int)), "Transaction ID must be an integer."
+        self.transaction_id = txn_id
 
     def get_transaction_id(self):
         """
         5.4.2.18
         :return:
         """
-        self.__not_implemented()
+        if self.transaction_id is None:
+            return id(self)
+        else:
+            return self.transaction_id
+
 
 
 

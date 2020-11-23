@@ -272,7 +272,4 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
             tr.get_begin_time()
         with self.assertRaises(error_classes.UVMNotImplemented):
             tr.get_end_time()
-        with self.assertRaises(error_classes.UVMNotImplemented):
-            tr.set_transaction_id(-1)
-        with self.assertRaises(error_classes.UVMNotImplemented):
-            tr.get_transaction_id()
+

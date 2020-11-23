@@ -84,6 +84,12 @@ We've opted for the latter.
         """
         return self.__parent
 
+    def raise_objection(self):
+        self.__objection_handler.raise_objection(self)
+
+    def drop_objection(self):
+        self.__objection_handler.drop_objection(self)
+
     @property
     def parent(self):
         return self.get_parent()

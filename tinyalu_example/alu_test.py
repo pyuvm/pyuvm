@@ -40,10 +40,10 @@ class tinyalu_driver(uvm_driver):
 class command_monitor(test_comp):
 
         def build_phase(self, phase = None):
-            self.ap = uvm_analyis_port("ap")
+            self.ap = uvm_analysis_port("ap")
             self.monitor_bfm = pytlm.MonitorProxy("xrtl_top.tinyalu_monitor", self)
 
-        def run_phase(self, phase = None):
+        def run_phase(self):
             while True:
                 (A, B, op) = self.monitor_bfm.wait_for()
                 mon_tr = command_transaction(A, B, op)
@@ -52,11 +52,11 @@ class command_monitor(test_comp):
 # Result Monitor
 class result_monitor(test_comp):
 
-    def build_phase(self,phase=None):
-        self.ap = uvm_analyis_port("ap")
+    def build_phase(self):
+        self.ap = uvm_analysis_port("ap")
         self.bfm = pytlm.MonitorProxy("xrtl_top.result_monitor", self)
 
-    def run_phase(self, phase):
+    def run_phase(self):
         while True:
             result = self.bfm.wait_for()
             result_t = result_transaction(result)
@@ -88,8 +88,8 @@ class tinyalu_agent(uvm_agent):
         self.rm_h = result_monitor.create("rm_h",self)
         self.sb = scoreboard.create("sb",self)
 
-        self.cmd_mon_ap = uvm_analyis_port("cmd_mon_ap", self)
-        self.result_ap = uvm_analyis_port("result_ap", self)
+        self.cmd_mon_ap = uvm_analysis_port("cmd_mon_ap", self)
+        self.result_ap = uvm_analysis_port("result_ap", self)
 
     def connect_phase(self, phase=None):
         self.dr_h.command_port.connect(self.cmd_f.get_export)

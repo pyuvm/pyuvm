@@ -1,5 +1,4 @@
 import pyuvm_unittest
-import unittest
 from pyuvm import *
 import logging
 

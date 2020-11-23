@@ -5,8 +5,7 @@ import fnmatch
 from utility_classes import uvm_void
 from s05_base_classes import uvm_object
 from s13_predefined_component_classes import uvm_component
-# from predefined_component_classes import uvm_object
-from s13_predefined_component_classes import uvm_component
+
 
 
 # Implementing section 8 in the IEEE Specification

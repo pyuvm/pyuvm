@@ -251,11 +251,11 @@ A Python-familiar reader may take offense to the existence of a`get_name` and `s
 ```python
 @property
 def name(self):
-	return self.__name	
+	return self.obj_name	
 
 @name.setter
 def name(self, name):
-	self.__name = name
+	self.obj_name = name
 ```
 The `@property` string is a decorator that wraps these function calls in code that allows us to do this:
 ```python
