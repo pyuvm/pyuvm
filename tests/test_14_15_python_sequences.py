@@ -10,12 +10,6 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         super().__init__(*args, **kwargs)
         self.result_list = []
 
-    def tearDown(self) -> None:
-        if len(threading.enumerate()) > 4:
-            pass
-
-
-
     @staticmethod
     def putter(put_method, data):
         for datum in data:
