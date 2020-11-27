@@ -1,8 +1,6 @@
 import pyuvm_unittest
 import unittest
 from s13_predefined_component_classes import *
-import s13_predefined_component_classes
-import pyuvm
 
 class my_test(uvm_test):...
 
@@ -219,7 +217,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
 
     def test_component_factory(self):
         mc = self.my_component('mc', None)
-        mc2 = mc.create('mc2',None)
+        mc2 = mc.create_component('my_component',"imc2")
         self.assertEqual(type(mc), type(mc2))
 
 

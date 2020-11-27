@@ -769,7 +769,7 @@ class uvm_tlm_req_rsp_channel(uvm_component):
                                                    get_peek_export=self.get_peek_request_export,
                                                    put_export=self.put_response_export)  # 12.2.9.1.10
 
-    def connect_phase(self, phase):
+    def connect_phase(self):
         self.request_ap.connect(self.req_tlm_fifo.put_ap)  # 12.2.9.1.7
         self.response_ap.connect(self.rsp_tlm_fifo.get_ap)  # 12.2.9.1.8
 

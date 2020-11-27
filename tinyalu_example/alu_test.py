@@ -27,11 +27,11 @@ class result_transaction(uvm_transaction):
 # Driver
 class tinyalu_driver(uvm_driver):
 
-    def build_phase(self, phase = None):
+    def build_phase(self):
         self.bfm = pytlm.Proxy("xrtl_top.tinyalu_bfm")
         self.command_port = uvm_get_port("command_port", self)
 
-    def run_phase(self, phase = None):
+    def run_phase(self):
         while True:
             command = self.command_port.get()
             self.bfm.send_op(command.A, command.B, command.op)
@@ -65,7 +65,7 @@ class result_monitor(test_comp):
 # Scoreboard
 class scoreboard(uvm_subscriber):
 
-    def build_phase(self,phase=None):
+    def build_phase(self):
         self.cmd_f = uvm_tlm_analysis_fifo("cmd_f", self)
 
     def write(self, result_transaction):
@@ -76,7 +76,7 @@ class scoreboard(uvm_subscriber):
 
 class tinyalu_agent(uvm_agent):
 
-    def build_phase(self,phase):
+    def build_phase(self):
         self.cm_h = command_monitor("cm_h",self)
         self.dr_h = tinyalu_driver("dr_h",self)
         self.seqr = uvm_sequencer("seqr", self)
@@ -91,7 +91,7 @@ class tinyalu_agent(uvm_agent):
         self.cmd_mon_ap = uvm_analysis_port("cmd_mon_ap", self)
         self.result_ap = uvm_analysis_port("result_ap", self)
 
-    def connect_phase(self, phase=None):
+    def connect_phase(self):
         self.dr_h.command_port.connect(self.cmd_f.get_export)
         self.rm_h.ap.connect(self.cmd_f.put_export)
         self.cm_h.ap.connect(self.cmd_mon_ap)
@@ -102,7 +102,7 @@ class tinyalu_agent(uvm_agent):
 
 class env(uvm_env):
 
-    def build_phase(self,phase=None):
+    def build_phase(self):
         self.agent = tinyalu_agent("agent",self)
 
 class uvm_sequence:...
@@ -121,10 +121,10 @@ class alu_sequence(uvm_sequence):
 
 class test_top(uvm_test):
 
-    def build_phase(self,phase=None):
+    def build_phase(self):
         self.env = env("env",self)
 
-    def run_phase(self,phase=None):
+    def run_phase(self):
         myseq = alu_sequence("myseq")
         self.env.agent.se
 

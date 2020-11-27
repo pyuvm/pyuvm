@@ -4,7 +4,6 @@ import logging
 import fnmatch
 from utility_classes import uvm_void
 from s05_base_classes import uvm_object
-from s13_predefined_component_classes import uvm_component
 
 
 
@@ -229,12 +228,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         if new_type is None:
             return None
 
-        if not issubclass(new_type, uvm_component):
-            self.logger.error(f"{new_type} is not a subclass of uvm_component")
-            return None
-        else:
-            new_comp = new_type(name, parent)
-            return new_comp
+        new_comp = new_type(name, parent)
+        return new_comp
 
     def create_component_by_name(self, requested_type_name, parent_inst_path=None, name=None, parent=None):
         """

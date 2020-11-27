@@ -261,7 +261,7 @@ class uvm_sequencer(uvm_component):
         self.seq_item_export = uvm_seq_item_export("seq_item_export", self)
         self.seq_q = Queue(0)
 
-    def run_phase(self, phase):
+    def run_phase(self):
         while True:
             print("in run phase")
             next_item = self.seq_q.get()

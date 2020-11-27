@@ -1,6 +1,7 @@
 from pyuvm import *
 import error_classes
 import threading
+import utility_classes
 
 '''
 9.1
@@ -33,20 +34,21 @@ are topdown or bottom up phases.
 
 class uvm_phase(uvm_object):
 
-    def execute(self, comp):
+    @classmethod
+    def execute(cls, comp):
         """
         Strips the "uvm_" from this class's name and uses the remainder
         to get a function call out of the component and execute it.
 
         :param comp: The component whose turn it is to execute
         """
-        assert (isinstance(self, common_phase)), "We only support phases whose names start with uvm_"
-        method_name = self.get_type_name()[4:]
+        assert (issubclass(cls, common_phase)), "We only support phases whose names start with uvm_"
+        method_name = cls.__name__[4:]
         try:
             method = getattr(comp, method_name)
         except AttributeError:
             raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
-        method(self)
+        method()
 
     def raise_objection(self):
         """
@@ -63,27 +65,27 @@ class uvm_topdown_phase(uvm_phase):
     """
     Runs phases from the top down.
     """
-
-    def traverse(self, comp):
+    @classmethod
+    def traverse(cls, comp):
         """
         Given a component, we traverse the component tree
         top to bottom calling the phase functions as we go
         :param comp: The component whose hierarchy will be traversed
         """
-        self.execute(comp)  # first we execute this node then its children
+        cls.execute(comp)  # first we execute this node then its children
         for child in comp.get_children():
-            self.traverse(child)
+            cls.traverse(child)
 
 
 class uvm_bottomup_phase(uvm_phase):
     """
     Runs the phases from bottom up.
     """
-
-    def traverse(self, comp):
+    @classmethod
+    def traverse(cls, comp):
         for child in comp.get_children():
-            self.traverse(child)
-        self.execute(comp)
+            cls.traverse(child)
+        cls.execute(comp)
 
 
 class uvm_threaded_execute_phase(uvm_phase):
@@ -93,21 +95,22 @@ class uvm_threaded_execute_phase(uvm_phase):
     join all the threads.
     """
 
-    def execute(self, comp):
-        assert (isinstance(self, common_phase)), "We only support phases whose names start with uvm_"
-        method_name = self.get_type_name()[4:]
+    @classmethod
+    def execute(cls, comp):
+        assert (issubclass(cls, common_phase)), "We only support phases whose names start with uvm_"
+        method_name = cls.__name__[4:]
         try:
             method = getattr(comp, method_name)
         except AttributeError:
             raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
-        fork = threading.Thread(target=method, args=(self,))
+        fork = threading.Thread(target=method)
         fork.start()
         utility_classes.RunningThreads().add_thread(fork)
 
 
 # 9.8 Predefined Phases
 # 9.8.1 Common Phases
-class common_phase(uvm_phase):
+class common_phase():
     """
     This is used for a simple error checking line.
     """

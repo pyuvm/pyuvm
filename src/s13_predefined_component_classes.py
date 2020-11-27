@@ -5,7 +5,8 @@ import utility_classes
 from s06_reporting_classes import uvm_report_object
 from s05_base_classes import uvm_object
 import s09_phasing
-
+from s08_factory_classes import uvm_factory
+import time
 """
 This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
 testbenches in Python.
@@ -74,8 +75,9 @@ We've opted for the latter.
     def do_execute_op(self, op):
         raise error_classes.UVMNotImplemented("Policies not implemented")
 
-    def create(self, name, parent):
-        return self.__class__(name, parent)
+    def create_component(self, type_name, name):
+        new_comp = uvm_factory().create_component_by_name(type_name, self.get_full_name(),name, self)
+        return new_comp
 
     def get_parent(self):
         """
@@ -85,10 +87,11 @@ We've opted for the latter.
         return self.__parent
 
     def raise_objection(self):
-        self.__objection_handler.raise_objection(self)
+        utility_classes.ObjectionHandler().raise_objection(self)
 
     def drop_objection(self):
-        self.__objection_handler.drop_objection(self)
+        utility_classes.ObjectionHandler().drop_objection(self)
+
 
     @property
     def parent(self):
@@ -250,31 +253,31 @@ We've opted for the latter.
         else:
             return len(self.get_full_name().split("."))
 
-    def build_phase(self, phase):
+    def build_phase(self):
         ...
 
-    def connect_phase(self, phase):
+    def connect_phase(self):
         ...
 
-    def end_of_elaboration_phase(self, phase):
+    def end_of_elaboration_phase(self):
         ...
 
-    def start_of_simulation_phase(self, phase):
+    def start_of_simulation_phase(self):
         ...
 
-    def run_phase(self, phase):
+    def run_phase(self):
         ...
 
-    def extract_phase(self, phase):
+    def extract_phase(self):
         ...
 
-    def check_phase(self, phase):
+    def check_phase(self):
         ...
 
-    def report_phase(self, phase):
+    def report_phase(self):
         ...
 
-    def final_phase(self, phase):
+    def final_phase(self):
         ...
 
     """
@@ -319,6 +322,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
 
     def __init__(self):
         super().__init__("uvm_root", None)
+        self.uvm_test_top = None
 
     def run_test(self, test_name=""):
         """
@@ -335,9 +339,18 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         :param test_name: The uvm testname
         :return: none
         """
-        self.uvm_test_top = uvm_object.create_by_name(test_name, 'uvm_test_top', self)
+
+        factory = uvm_factory()
+        self.uvm_test_top = factory.create_component_by_name(test_name, "", "uvm_test_top", self)
         for phase in s09_phasing.uvm_common_phases:
-            phase.execute(self)
+            phase.traverse(self.uvm_test_top)
+            if phase == s09_phasing.uvm_run_phase:
+                time.sleep(.1)
+                run_cond = utility_classes.ObjectionHandler().run_condition
+                run_over = utility_classes.ObjectionHandler().run_phase_complete
+                with run_cond:
+                    run_cond.wait_for(run_over)
+
 
 
 class uvm_test(uvm_component):

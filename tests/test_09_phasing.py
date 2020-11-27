@@ -18,31 +18,31 @@ class s09_phasing_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
             s09_phasing_TestCase.phase_list[function_name].append(comp_name)
 
-        def build_phase(self, phase):
+        def build_phase(self):
             self.log_phase()
 
-        def connect_phase(self, phase):
+        def connect_phase(self):
             self.log_phase()
 
-        def end_of_elaboration_phase(self, phase):
+        def end_of_elaboration_phase(self):
             self.log_phase()
 
-        def start_of_simulation_phase(self, phase):
+        def start_of_simulation_phase(self):
             self.log_phase()
 
-        def run_phase(self, phase):
+        def run_phase(self):
             self.log_phase()
 
-        def extract_phase(self, phase):
+        def extract_phase(self):
             self.log_phase()
 
-        def check_phase(self, phase):
+        def check_phase(self):
             self.log_phase()
 
-        def report_phase(self, phase):
+        def report_phase(self):
             self.log_phase()
 
-        def final_phase(self, phase):
+        def final_phase(self):
             self.log_phase()
 
     def setUp(self):
@@ -71,7 +71,7 @@ class s09_phasing_TestCase(pyuvm_unittest.pyuvm_TestCase):
     # 9.3.1.3.1/9.3.1.3.5
     def test_stub(self):
         """testing the basic testing mechanism"""
-        self.top.build_phase(None)
+        self.top.build_phase()
         self.assertEqual("top", s09_phasing_TestCase.phase_list["build_phase"][0])
 
     def test_traverse(self):
