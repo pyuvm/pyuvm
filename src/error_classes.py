@@ -27,3 +27,12 @@ class UVMBadPhase(RuntimeError):
 class UVMSequenceError(RuntimeError):
     """Errors using sequences"""
     ...
+
+class UVMConfigError(RuntimeError):
+    """Errors using the config_db"""
+    ...
+
+
+class UVMConfigItemNotFound(KeyError):
+    """Couldn't find something in config_db"""
+    ...

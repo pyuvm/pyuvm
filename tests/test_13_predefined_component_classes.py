@@ -208,12 +208,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         def run_phase(self): ...
 
 
-    # def test_phases(self):
-    #     my_obj=self.my_component('my_component')
-    #     for phase, method in PyuvmPhases.__members__.items ():
-    #         (method_name, phaseType) = method.value
-    #         self.assertTrue(hasattr(my_obj,method_name))
-    #         self.assertEqual(my_obj.run_phase(),5)
+
 
     def test_component_factory(self):
         mc = self.my_component('mc', None)
@@ -221,7 +216,25 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         self.assertEqual(type(mc), type(mc2))
 
 
+    def test_config_db(self):
+        A = uvm_component ( 'A' )
+        B = uvm_component ( 'B', A )
+        C = uvm_component ( 'C', A )
+        D = uvm_component ( 'D', C )
+        E = uvm_component ('E', B)
 
+        A.config_db_set(5, "FIVE")
+        datum = A.config_db_get("FIVE")
+        self.assertEqual(5, datum)
+
+        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+            B.config_db_get("FIVE")
+
+        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+            A.config_db_set("A.*", "TEN", 10)
+
+        datum = E.config_db_get("TEN")
+        self.assertEqual(10, datum)
 
 if __name__ == '__main__':
     unittest.main ()

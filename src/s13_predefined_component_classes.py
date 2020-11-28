@@ -3,7 +3,6 @@ import error_classes
 from queue import Queue
 import utility_classes
 from s06_reporting_classes import uvm_report_object
-from s05_base_classes import uvm_object
 import s09_phasing
 from s08_factory_classes import uvm_factory
 import time
@@ -91,6 +90,32 @@ We've opted for the latter.
 
     def drop_objection(self):
         utility_classes.ObjectionHandler().drop_objection(self)
+
+    def config_db_set(self, item, label, inst_path=None):
+        """
+        Store an object in the config_db.
+
+        :param item: The object to store
+        :param label: The label to use to retrieve it
+        :param inst_path: A path with globs or if left blank the get_full_name() path
+        """
+        if inst_path is None:
+            inst_path = self.get_full_name()
+
+        utility_classes.ConfigDB().set(inst_path, label, item)
+
+    def config_db_get(self, label):
+        """
+        Retrieve an object from the config_db using this compnents
+        get_full_name() path. Can find objects stored with wildcards
+
+        :param label: The label to use to retrieve the object
+        :return: The object at this path stored at the label
+        """
+        datum = utility_classes.ConfigDB().get(self.get_full_name(), label)
+        return datum
+
+
 
 
     @property
