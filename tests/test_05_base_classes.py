@@ -79,10 +79,9 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         """
         mo = my_object('mo')
         # 5.3.5.1
-        with self.assertRaises(UVMNotImplemented):
-            new_mo = mo.create('new_mo')
-            self.assertEqual('new_mo', new_mo.get_name())
-            self.assertEqual(type(new_mo), type(mo))
+        new_mo = mo.create('new_mo')
+        self.assertEqual('new_mo', new_mo.get_name())
+        self.assertEqual(type(new_mo), type(mo))
         # 5.3.5.2
         mo.val = 5
         cln_mo = mo.clone()
@@ -218,8 +217,8 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         5.3.5 This needs to be further implemented to include the factory
         """
         mo = my_object("first")
-        with self.assertRaises(error_classes.UVMNotImplemented):
-            mo2 = mo.create("second")
+        mo2 = mo.create("second")
+        self.assertEqual(mo, mo2)
 
     def test_uvm_transaction_creation(self):
         """

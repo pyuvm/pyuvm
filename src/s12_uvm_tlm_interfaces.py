@@ -23,10 +23,11 @@
 # their various flavors through multiple inheritance.
 
 
-from s13_predefined_component_classes import uvm_component
-from queue import Full as QueueFull, Empty as QueueEmpty, Queue
+from s13_uvm_component import uvm_component
+import queue
 from error_classes import UVMTLMConnectionError
-from utility_classes import PeekQueue
+from utility_classes import UVMQueue
+import error_classes
 
 
 # 12.2.2
@@ -109,10 +110,11 @@ class uvm_blocking_put_port(uvm_port_base):
         self.check_export(export, uvm_blocking_put_port)
         super().connect(export)
 
-    def put(self, data):
+    def put(self, data, timeout=None):
         """
         12.2.4.2.1
         A blocking put that calls the export.put
+        :param timeout: Timeout
         :param data:
         :return: None
         """
@@ -178,17 +180,19 @@ class uvm_blocking_get_port(uvm_port_base):
         self.check_export(export, uvm_blocking_get_port)
         super().connect(export)
 
-    def get(self):
+    def get(self, timeout=None):
         """
         12.2.4.2.2
         A blocking get that returns the data got
         :return: data
         """
         try:
-            data = self.export.get()
+            data = self.export.get(timeout=timeout)
             return data
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
+        except :
+            raise
 
 
 class uvm_nonblocking_get_port(uvm_port_base):
@@ -393,6 +397,7 @@ class uvm_analysis_port(uvm_port_base):
         self.subscribers = []
 
     def connect(self, export):
+        self.check_export(export, uvm_analysis_port)
         self.subscribers.append(export)
 
     def write(self, data):
@@ -513,6 +518,15 @@ class uvm_slave_export(uvm_blocking_slave_export, uvm_nonblocking_slave_export):
     ...
 
 
+class uvm_analysis_export(uvm_analysis_port):
+    """
+    The analysis export overrides the port's write method and forces otherse
+    to override its write method.
+    """
+    def write(self, data):
+        raise error_classes.UVMTLMConnectionError("If you extend uvm_analysis_export, or uvm_subscriber, you must"
+                                                  " override the write method")
+
 '''
 12.2.8 FIFO Classes
 
@@ -535,7 +549,7 @@ that we need.
 class QueueAccessor:
     def __init__(self, name, parent, queue, ap):
         super(QueueAccessor, self).__init__(name, parent)
-        assert (isinstance(queue, PeekQueue)), "Tried to pass a non-PeekQueue to export constructor"
+        assert (isinstance(queue, UVMQueue)), "Tried to pass a non-PeekQueue to export constructor"
         self.queue = queue
         self.ap = ap
 
@@ -547,8 +561,8 @@ class uvm_tlm_fifo_base(uvm_component):
     """
 
     class BlockingPutExport(QueueAccessor, uvm_blocking_put_export):
-        def put(self, item):
-            self.queue.put(item)
+        def put(self, item, timeout=None):
+            self.queue.put(item, timeout=timeout)
             self.ap.write(item)
 
     #  12.2.8.1.3
@@ -562,15 +576,15 @@ class uvm_tlm_fifo_base(uvm_component):
                 self.queue.put_nowait(item)
                 self.ap.write(item)
                 return True
-            except QueueFull:
+            except queue.Full:
                 return False
 
     class PutExport(BlockingPutExport, NonBlockingPutExport):
         ...
 
     class BlockingGetExport(QueueAccessor, uvm_blocking_get_export):
-        def get(self):
-            item = self.queue.get()
+        def get(self, timeout=None):
+            item = self.queue.get(timeout=timeout)
             self.ap.write(item)
             return item
 
@@ -583,7 +597,7 @@ class uvm_tlm_fifo_base(uvm_component):
                 item = self.queue.get_nowait()
                 self.ap.write(item)
                 return True, item
-            except QueueEmpty:
+            except queue.Empty:
                 return False, None
 
     class GetExport(BlockingGetExport, NonBlockingGetExport):
@@ -617,9 +631,9 @@ class uvm_tlm_fifo_base(uvm_component):
     class GetPeekExport(GetExport, PeekExport):
         ...
 
-    def __init__(self, name, parent, maxsize):
+    def __init__(self, name, parent, maxsize=1):
         super().__init__(name, parent)
-        self.queue = PeekQueue(maxsize=maxsize)
+        self.queue = UVMQueue(maxsize=maxsize)
         self.get_ap = uvm_analysis_port("get_ap", self)
         self.put_ap = uvm_analysis_port("put_ap", self)
 
@@ -709,18 +723,17 @@ class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
 
 class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
-    class AnalysisExport(QueueAccessor):
+    class AnalysisExport(QueueAccessor, uvm_analysis_port):
         def write(self, item):
             try:
                 self.queue.put(item, block=False)
-            except QueueFull:
-                raise QueueFull(f"Full analysis fifo: {self.__name__}. This should never happen")
+            except queue.Full:
+                raise queue.Full(f"Full analysis fifo: {self.__name__}. This should never happen")
 
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 0)
-        self.__queue = Queue()
         self.analysis_export = self.AnalysisExport(name="analysis_export", parent=self,
-                                                   queue=self.__queue, ap=None)
+                                                   queue=self.queue, ap=None)
 
 
 #    12.2.9.1
@@ -731,7 +744,7 @@ class uvm_tlm_req_rsp_channel(uvm_component):
             self.put_export = put_export
             self.get_peek_export = get_peek_export
 
-        def put(self, item):
+        def put(self, item, timeout=None):
             self.put_export.put(item)
 
         def can_put(self):
@@ -740,8 +753,8 @@ class uvm_tlm_req_rsp_channel(uvm_component):
         def try_put(self, item):
             return self.put_export.try_put(item)
 
-        def get(self):
-            return self.get_peek_export.get()
+        def get(self, timeout=None):
+            return self.get_peek_export.get(timeout=timeout)
 
         def can_get(self):
             return self.get_peek_export.can_get()
@@ -781,9 +794,9 @@ class uvm_tlm_transport_channel(uvm_tlm_req_rsp_channel):
             self.req_fifo = req_fifo
             self.rsp_fifo = rsp_fifo
 
-        def transport(self, req):
+        def transport(self, req, timeout=None):
             self.req_fifo.put_export.put(req)
-            return self.rsp_fifo.get_peek_export.get()
+            return self.rsp_fifo.get_peek_export.get(timeout=timeout)
 
         def nb_transport(self, req):
             if not self.req_fifo.put_export.try_put(req):

@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tl.testing-0.5" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tl.testing-0.5/tl" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tinyalu_example" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/inspectionProfiles" />
       <excludeFolder url="file://$MODULE_DIR$/.pytest_cache" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />

@@ -36,3 +36,8 @@ class UVMConfigError(RuntimeError):
 class UVMConfigItemNotFound(KeyError):
     """Couldn't find something in config_db"""
     ...
+
+class UVMFatalError(RuntimeError):
+    """ Used to dump out of the testbench"""
+    ...
+

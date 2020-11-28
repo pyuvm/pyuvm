@@ -232,7 +232,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
 
         C.config_db_set(33, "TT", "A.B.C.*")
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            datum = C.config_db_get("TT")
+            C.config_db_get("TT")
 
         A.config_db_set(10, "TEN", "A.*")
         datum = E.config_db_get("TEN")

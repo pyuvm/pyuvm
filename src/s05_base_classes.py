@@ -103,7 +103,9 @@ class uvm_object(utility_classes.uvm_void):
         5.3.5.1
         :return:
         """
-        raise error_classes.UVMNotImplemented("the create function needs to be writen to work with the factory")
+        return self.__class__(name)
+
+
 
 
     def clone(self):

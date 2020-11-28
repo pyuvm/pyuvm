@@ -91,7 +91,7 @@ Unlike the implicit `this` in SystemVerilog, Python requires that we explicitly 
 make_my_point = Point(10,3)
 ```
 The above causes Python to create an instance of the `Point` class and call `__init__(self, X, Y)`, passing the newly created object as `self`. 
-Methods that don’t have `self` as the first argument must be either class methods (which receive a first argument of `cls`) or static methods (which have no required first argument)
+Methods that don’t have `self` as the first argument must be either class methods (which receive a first argument of `mcs`) or static methods (which have no required first argument)
 ## Inheritance
 Classes can inherit attributes from other classes and override methods from the base class.  For example:
 ```text
@@ -193,7 +193,7 @@ In this section we’ll examine the way Python has made it easier to implement t
 The `pyuvm` package allows users to import all the UVM classes into a Python script:
 ```python
 from pyuvm import *
-import pytlm
+import tinyalu
 
 class tinyalu_test(uvm_test):
 ```
@@ -331,12 +331,12 @@ class FactoryMeta(type):
     This is the metaclass that causes all uvm_void classes to register themselves
     """
 
-    def __init__(cls, name, bases, clsdict):
-        FactoryData().classes[cls.__name__] = cls
+    def __init__(mcs, name, bases, clsdict):
+        FactoryData().classes[mcs.__name__] = mcs
         super().__init__(name, bases, clsdict)
 
 ```
-The code above says that when you execute a class statement to create a class object that extends `uvm_void`  that class object runs the above initialization code as is done with any other object.  Notice though that we have `cls` as the first variable rather than `self`. This is to remind us that we’re being passed a `class` object. (The name is otherwise meaningless.)
+The code above says that when you execute a class statement to create a class object that extends `uvm_void`  that class object runs the above initialization code as is done with any other object.  Notice though that we have `mcs` as the first variable rather than `self`. This is to remind us that we’re being passed a `class` object. (The name is otherwise meaningless.)
 We store the class object in the `FactoryData`singleton’s associative array (`dict` in Python parlance) named `classes`.
 The `FactoryMeta` class extends the `type` class, so we call `super().__init__` to ensure that all the work needed to set up a `type` gets done.
 Now when you define a class that extends `uvm_void` `pyuvm` automatically registers it with the factory.
@@ -378,10 +378,10 @@ There are many ways to implement the Singleton patterning Python, but the `pyuvm
 class Singleton(type):
     _instances = {}
 
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+    def __call__(mcs, *args, **kwargs):
+        if mcs not in mcs._instances:
+            mcs._instances[mcs] = super(Singleton, mcs).__call__(*args, **kwargs)
+        return mcs._instances[mcs]
 
 ```
 The above code demonstrates the built-in `__call__` method. `__call__` gets *called* whenever you put parentheses after any object. 
@@ -394,7 +394,7 @@ Traceback (most recent call last):
 TypeError: 'int' object is not callable
 ```
 But, if our object is of type `class`, then the parenthesis cause Python to call `__call__` and eventually `__call__` calls `__new__` and ultimately `__init__`.
-In the `Singleton` metaclass, `__call__` receives the class object in the `cls` variable, and it creates an instance of that object (using `super` to call the `Singleton`’s parent constructor in `type`) and it stores that instance in an associative array using the `cls` object as an index.  Now future calls to the class return the stored pointer.  
+In the `Singleton` metaclass, `__call__` receives the class object in the `mcs` variable, and it creates an instance of that object (using `super` to call the `Singleton`’s parent constructor in `type`) and it stores that instance in an associative array using the `mcs` object as an index.  Now future calls to the class return the stored pointer.  
 We define a singleton like this:
 ```python
 class my_singleton (metaclass=Singleton):
@@ -667,7 +667,7 @@ class tinyalu_driver(uvm_driver):
 
     def run_phase(self, phase = None):
         while True:
-            command = self.command_port.get()
+            command = self.command_port.get(,
             self.bfm.send_op(command.A, command.B, command.op)
             self.bfm.wait_for()
 ```

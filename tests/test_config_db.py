@@ -77,34 +77,34 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_config_db(self):
         cdb = ConfigDB()
         # simple set/get
-        cdb.set("*", "LABEL", 5)
-        datum = cdb.get("A", "LABEL")
+        cdb.set(5, "LABEL", "*")
+        datum = cdb.get("LABEL", "A")
         self.assertEqual(5, datum)
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            cdb.get("A", "NOT THERE")
+            cdb.get("NOT THERE", "A")
 
-        cdb.set("*", "OTHER_LABEL", 88)
-        datum = cdb.get("top.B.C", "OTHER_LABEL")
+        cdb.set(88, "OTHER_LABEL", "*")
+        datum = cdb.get("OTHER_LABEL", "top.B.C")
         self.assertEqual(88, datum)
-        datum = cdb.get("A", "OTHER_LABEL")
+        datum = cdb.get("OTHER_LABEL", "A")
         self.assertEqual(88, datum)
 
     def test_empty_db(self):
         cdb = ConfigDB()
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            cdb.get("A", "LABEL")
+            cdb.get("LABEL", "A")
 
-        cdb.set("A", "LABEL", 5)
-        datum = cdb.get("A", "LABEL")
+        cdb.set(5, "LABEL", "A")
+        datum = cdb.get("LABEL", "A")
         self.assertEqual(5, datum)
 
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            cdb.get("B", "LABEL")
+            cdb.get("LABEL", "B")
 
-        cdb.set("B", "OTHER_LABEL", 88)
-        datum = cdb.get("B", "OTHER_LABEL")
+        cdb.set(88, "OTHER_LABEL", "B")
+        datum = cdb.get("OTHER_LABEL", "B")
         self.assertEqual(88, datum)
 
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            cdb.get("B", "LABEL")
+            cdb.get("LABEL", "B")
 

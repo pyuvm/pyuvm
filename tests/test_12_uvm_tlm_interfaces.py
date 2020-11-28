@@ -12,6 +12,17 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         else:
             self.my_root = uvm_component("my_root")
 
+
+    def setUp(self):
+        ObjectionHandler().run_phase_done_flag = False
+        self.my_root.clear_children()
+
+
+    def tearDown(self):
+        ObjectionHandler().run_phase_done_flag = True
+        time.sleep(0.2)
+
+
     class my_comp(uvm_component):
         ...
 
@@ -22,7 +33,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
             self.data = None
 
     class TestBlockingPutExport(TestPutExportBase, uvm_blocking_put_export):
-        def put(self, data):
+        def put(self, data, timeout=None):
             self.data = data
 
     class TestNonBlockingPutExport(TestPutExportBase, uvm_nonblocking_put_export):
@@ -49,7 +60,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
             self.empty = None
 
     class TestBlockingGetExport(TestGetExportBase, uvm_blocking_get_export):
-        def get(self):
+        def get(self, timeout=None):
             return self.data
 
     class TestNonBlockingGetExport(TestGetExportBase, uvm_nonblocking_get_export):
@@ -67,7 +78,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
     # Peek
     class TestBlockingPeekExport(TestGetExportBase, uvm_blocking_peek_export):
-        def peek(self):
+        def peek(self, timeout=None):
             return self.data
 
     class TestNonBlockingPeekExport(TestGetExportBase, uvm_nonblocking_peek_export):
@@ -434,13 +445,14 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         12.2.8.2.2
         :return:
         """
-        ff = uvm_tlm_fifo("ff", None)
+
+        ff = uvm_tlm_fifo("ff", self.my_root)
         size = ff.size()
         self.assertEqual(1, size)
-        ff0 = uvm_tlm_fifo("ff0", None, 0)
+        ff0 = uvm_tlm_fifo("ff0", self.my_root, 0)
         size = ff0.size()
         self.assertEqual(0, size)
-        ff2 = uvm_tlm_fifo("ff2", None, 2)
+        ff2 = uvm_tlm_fifo("ff2", self.my_root, 2)
         size = ff2.size()
         self.assertEqual(2, size)
 
@@ -449,8 +461,8 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         12.2.8.2.3
         :return:
         """
-        ff = uvm_tlm_fifo("ff", None, 3)
-        pp = uvm_put_port("pp", None)
+        ff = uvm_tlm_fifo("ff", self.my_root, 3)
+        pp = uvm_put_port("pp", self.my_root)
         pp.connect(ff.put_export)
         pp.put(1)
         pp.put(2)
@@ -560,7 +572,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 else:
                     break
             else:
-                time.sleep(0.2)
+                time.sleep(0.1)
 
     @staticmethod
     def do_nonblocking_peek(peek_port, data_list):
@@ -577,9 +589,9 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         put_data = [1, 2, 3, 'c', None]
         get_data = []
         peek_data = []
-        pt = threading.Thread(target=self.do_nonblocking_put, args=(pp, put_data))
-        gt = threading.Thread(target=self.do_nonblocking_get, args=(gp, get_data))
-        pkt = threading.Thread(target=self.do_nonblocking_peek, args=(pk, peek_data))
+        pt = threading.Thread(target=self.do_nonblocking_put, args=(pp, put_data), name="pt")
+        gt = threading.Thread(target=self.do_nonblocking_get, args=(gp, get_data), name="gt")
+        pkt = threading.Thread(target=self.do_nonblocking_peek, args=(pk, peek_data), name="pkt")
         current_time = self.get_deciseconds()
         self.assertFalse(pk.can_peek())
         pkt.start()
@@ -597,6 +609,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.assertTrue(success)
         self.assertEqual(data, put_data[0])
         gt.start()
+        time.sleep(0.1)
         gt.join()
         new_time = self.get_deciseconds()
         self.assertTrue(new_time >= current_time + len(put_data[:-1]))

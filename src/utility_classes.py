@@ -2,8 +2,8 @@ from collections import OrderedDict
 import logging
 import fnmatch
 import error_classes
-from queue import *
-from time import monotonic as time
+import queue
+import time
 import threading
 from collections.abc import MutableMapping
 
@@ -17,8 +17,8 @@ class Singleton(type):
         return cls._instances[cls]
 
     @classmethod
-    def clear_singletons(cls):
-        cls._instances.clear()
+    def clear_singletons(mcs):
+        mcs._instances.clear()
         pass
 
 
@@ -206,6 +206,8 @@ class ObjectionHandler(metaclass=Singleton):
     def __init__(self):
         self.__objections = {}
         self.run_condition = threading.Condition()
+        self.objection_raised = False
+        self.run_phase_done_flag=None # used in test suites
 
     def __str__(self):
         ss = "Current Objections:\n"
@@ -213,8 +215,17 @@ class ObjectionHandler(metaclass=Singleton):
             ss += f"{self.__objections[cc]}\n"
         return ss
 
+    def monitor_run_phase(self):
+        while not self.run_phase_complete():
+            time.sleep(0.1)
+            with self.run_condition:
+                self.run_condition.notify_all()
+
     def raise_objection(self, raiser):
         self.__objections[raiser] = raiser.get_full_name()
+        self.objection_raised = True
+        monitor_finish_thread = threading.Thread(target = self.monitor_run_phase, name='run_phase_monitor_loop')
+        monitor_finish_thread.start()
         with self.run_condition:
             self.run_condition.notify_all()
 
@@ -224,12 +235,36 @@ class ObjectionHandler(metaclass=Singleton):
             self.run_condition.notify_all()
 
     def run_phase_complete(self):
-        return not self.__objections
+        if self.run_phase_done_flag is not None:
+            return self.run_phase_done_flag
+        if not self.objection_raised:
+            return False
+        else:
+            return not self.__objections
 
 
-class PeekQueue(Queue):
+class UVMQueue(queue.Queue):
+    """
+    The UVMQueue provides a peek function as well as the
+    ability to break out of a blocking operation if
+    the time_to_die predicate is true.  The time
+    to die is set to the dropping of all run_phase objections
+    by default.
+    """
+    def __init__(self, maxsize=0, time_to_die=None, sleep_time=0.1):
+        super().__init__(maxsize=maxsize)
+        self.sleep_time = sleep_time
+        if time_to_die is None:
+            self.end_while_predicate = ObjectionHandler().run_phase_complete
+        else:
+            self.end_while_predicate = time_to_die
+
+    def peek_nowait(self):
+        return self.peek(block=False)
+
     def peek(self, block=True, timeout=None):
-        '''Return first item from queue without removing it
+        """
+        Return first item from queue without removing it
 
         If optional args 'block' is true and 'timeout' is None (the default),
         block if necessary until an item is available. If 'timeout' is
@@ -237,8 +272,63 @@ class PeekQueue(Queue):
         the Empty exception if no item was available within that time.
         Otherwise ('block' is false), return an item if one is immediately
         available, else raise the Empty exception ('timeout' is ignored
-        in that case).
-        '''
+        in that case). Default sleep time is a tenth of a second.
+        """
+        if not block  or timeout is not None:
+            self._peek(block, timeout)
+        else: # We would normally have blocking behavior
+            while not self.end_while_predicate():
+                try:
+                    datum = self._peek(block=True,timeout=self.sleep_time)
+                    return datum
+                except queue.Empty:
+                    pass
+            exit() # Kill therad if it's time to die
+
+    def get(self, block=True, timeout=None):
+        """
+        THe blocking thread does not block. Instead it checks the
+        time_to_die predicate and if it is time to die then it kills
+        the thread
+
+        :param block: Blocking get
+        :param timeout: user-defined timeout
+        :return: datum from queue
+        """
+        if not block or timeout is not None:
+            try:
+                return super().get(block, timeout)
+            except queue.Empty:
+                raise
+        else: # create block that can die
+            while not self.end_while_predicate():
+                try:
+                    datum = super().get(block=True,timeout=self.sleep_time)
+                    return datum
+                except queue.Empty:
+                    pass
+            exit() # Kill therad if it's time to die
+
+    def put(self, item, block=True, timeout=None):
+        """
+        Does a blocking put, but the put will kill the thread
+        when it is time to die.
+        """
+        if not block or timeout is not None:
+            try:
+                super().put(item, block, timeout)
+            except queue.Full:
+                raise
+        else:
+            while not self.end_while_predicate():
+                try:
+                    super().put(item, timeout=self.sleep_time)
+                    return
+                except queue.Full:
+                    pass
+            exit()
+
+    def _peek(self, block=True, timeout=None):
         with self.not_empty:
             if not block:
                 if not self._qsize():
@@ -249,11 +339,11 @@ class PeekQueue(Queue):
             elif timeout < 0:
                 raise ValueError("'timeout' must be a non-negative number")
             else:
-                endtime = time() + timeout
+                end_time = time.monotonic() + timeout
                 while not self._qsize():
-                    remaining = endtime - time()
+                    remaining = end_time - time.monotonic()
                     if remaining <= 0.0:
-                        raise Empty
+                        raise queue.Empty
                     self.not_empty.wait(remaining)
             item = self.queue[0]
             self.not_full.notify()
@@ -349,7 +439,7 @@ class ConfigDB(metaclass=Singleton):
     def __init__(self):
         self._path_dict = GlobPathDict()
 
-    def set(self, inst_path, field_name, item):
+    def set(self, item, field_name, inst_path):
         """
         Stores the item using the key at the path.  The path can have
         glob characters so that later gets can match component
@@ -365,7 +455,7 @@ class ConfigDB(metaclass=Singleton):
 
         self._path_dict[inst_path][field_name] = item
 
-    def get(self, inst_name, field_name):
+    def get(self, field_name, inst_name):
         """
         The component path matches against the paths in the configdb. The path
         cannot have wildcards, but can match against keys with wildcards.
@@ -376,7 +466,8 @@ class ConfigDB(metaclass=Singleton):
         :return: item found at location
         """
         if set(inst_name).intersection({"*", "?", "[", "]", "!"}):
-            raise error_classes.UVMConfigItemNotFound(f'"{key}" is illegal: Glob characters only allowed when storing.')
+            raise error_classes.UVMConfigItemNotFound(f'"{inst_name}" is illegal: Glob "'
+                                                      f'characters only allowed when storing.')
         try:
             component_dict = self._path_dict[inst_name]
             item = component_dict[field_name]

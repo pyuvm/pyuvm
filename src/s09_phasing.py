@@ -1,4 +1,4 @@
-from pyuvm import *
+from s05_base_classes import uvm_object
 import error_classes
 import threading
 import utility_classes
@@ -103,7 +103,7 @@ class uvm_threaded_execute_phase(uvm_phase):
             method = getattr(comp, method_name)
         except AttributeError:
             raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
-        fork = threading.Thread(target=method)
+        fork = threading.Thread(target=method, name=comp.get_full_name())
         fork.start()
         utility_classes.RunningThreads().add_thread(fork)
 

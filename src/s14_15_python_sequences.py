@@ -6,13 +6,12 @@
 # Python using Python features instead of emulating
 # SystemVerilog features.
 
-import error_classes
+
 from s05_base_classes import *
-from s13_predefined_component_classes import *
 from s12_uvm_tlm_interfaces import *
 from queue import Queue
-from threading import Condition, Thread
-import threading
+from threading import Condition, enumerate
+
 
 """
 The sequence system allows users to create and populate sequence items and then send them to a driver. The driver 
@@ -23,7 +22,7 @@ Remembering that all run_phases run in their own thread we see this code in the 
 def run_phase(phase):
     while True:
        req = self.seq_item_port.get_next_item()
-       # send the req to the dut and get rsp
+       # send the req to the tinyalu and get rsp
        self.seq_item_port.item_done(rsp)
 
 or
@@ -90,15 +89,15 @@ We'll build from the seq_item_port out.
 # uvm_seq_item_port
 # The uvm_seq_item_port is a uvm_put_port with two extra methods.
 
-class ResponseQueue(Queue):
+class ResponseQueue(UVMQueue):
     """
     Returns either the next response or the item with the id.
     """
 
-    def get_response(self, txn_id=None):
+    def get_response(self, txn_id=None, timeout=None):
 
         if txn_id is None:
-            return self.get()
+            return self.get(timeout=timeout)
         else:
             plucked = None
             with self.not_empty:
@@ -151,7 +150,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
 
     def __init__(self, name, parent):
         super().__init__(name, parent)
-        self.req_q = Queue()
+        self.req_q = UVMQueue()
         self.rsp_q = ResponseQueue()
         self.current_item = None
 
@@ -164,14 +163,15 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         """
         self.req_q.put(item)
 
-    def put(self, item):
+    def put(self, item, timeout=None):
         """
         Put response into response queue
 
+        :param timeout:
         :param item: response item
         :return:
         """
-        self.rsp_q.put(item)
+        self.rsp_q.put(item, timeout=timeout)
 
     def get_next_item(self, timeout=None):
         """
@@ -182,8 +182,6 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         if self.current_item is not None:
             raise error_classes.UVMSequenceError("You must call item_done() before calling get_next_item again")
         self.current_item = self.req_q.get(timeout=timeout)
-        with self.current_item.start_condition:
-            self.current_item.start_condition.notify_all()
         return self.current_item
 
     def item_done(self, rsp=None):
@@ -202,14 +200,14 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         if rsp is not None:
             self.put(rsp)
 
-    def get_response(self, transaction_id=None):
+    def get_response(self, transaction_id=None, timeout=None):
         """
         If transaction_id is not none, block until a response with the transaction
         id becomes available.
         :param transaction_id:
         :return:
         """
-        datum = self.rsp_q.get_response(transaction_id)
+        datum = self.rsp_q.get_response(transaction_id, timeout)
         return datum
 
 
@@ -259,11 +257,10 @@ class uvm_sequencer(uvm_component):
     def __init__(self, name, parent):
         super().__init__(name, parent)
         self.seq_item_export = uvm_seq_item_export("seq_item_export", self)
-        self.seq_q = Queue(0)
+        self.seq_q = UVMQueue(0)
 
     def run_phase(self):
         while True:
-            print("in run phase")
             next_item = self.seq_q.get()
             with next_item.start_condition:
                 next_item.start_condition.notify_all()
