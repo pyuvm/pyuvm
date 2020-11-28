@@ -217,11 +217,11 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
 
 
     def test_config_db(self):
-        A = uvm_component ( 'A' )
-        B = uvm_component ( 'B', A )
-        C = uvm_component ( 'C', A )
-        D = uvm_component ( 'D', C )
-        E = uvm_component ('E', B)
+        A = uvm_component('A')
+        B = uvm_component('B', A)
+        C = uvm_component('C', A)
+        D = uvm_component('D', C)
+        E = uvm_component('E', B)
 
         A.config_db_set(5, "FIVE")
         datum = A.config_db_get("FIVE")
@@ -230,11 +230,19 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
             B.config_db_get("FIVE")
 
+        C.config_db_set(33, "TT", "A.B.C.*")
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            A.config_db_set("A.*", "TEN", 10)
+            datum = C.config_db_get("TT")
 
+        A.config_db_set(10, "TEN", "A.*")
         datum = E.config_db_get("TEN")
         self.assertEqual(10, datum)
+
+        C.config_db_set(44, "FF", "A.C*")
+        datum = C.config_db_get("FF")
+        self.assertEqual(44, datum)
+
+
 
 if __name__ == '__main__':
     unittest.main ()

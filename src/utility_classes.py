@@ -7,6 +7,7 @@ from time import monotonic as time
 import threading
 from collections.abc import MutableMapping
 
+
 class Singleton(type):
     _instances = {}
 
@@ -20,6 +21,7 @@ class Singleton(type):
         cls._instances.clear()
         pass
 
+
 class RunningThreads(metaclass=Singleton):
     def __init__(self):
         self.__threads = []
@@ -31,18 +33,20 @@ class RunningThreads(metaclass=Singleton):
         for thread in self.__threads:
             thread.join()
 
+
 class Override():
     """
     This class stores an override and an optional path.
     It is intended to be stored in a dict with the original class
     as the key.
     """
+
     def __init__(self):
 
         self.type_override = None
         self.inst_overrides = None
 
-    def add(self, override, path = None):
+    def add(self, override, path=None):
         if path is None:
             self.type_override = override
         else:
@@ -62,7 +66,7 @@ class Override():
         :return: str
         """
         if self.type_override is not None:
-            to = "Type Override: "+ f"{self.type_override.__name__}"
+            to = "Type Override: " + f"{self.type_override.__name__}"
         else:
             to = "Type Override: None"
         ss = f"{to:25}" + " || "
@@ -73,13 +77,11 @@ class Override():
                 if not first:
                     ss += " | "
                 first = False
-                if len(inst)>29:
+                if len(inst) > 29:
                     inst = inst[:29]
-                ss+=inst +  f" => {self.inst_overrides[inst].__name__}"
-
+                ss += inst + f" => {self.inst_overrides[inst].__name__}"
 
         return ss
-
 
 
 class FactoryData(metaclass=Singleton):
@@ -157,6 +159,7 @@ class FactoryData(metaclass=Singleton):
         else:
             return requested_type
 
+
 class FactoryMeta(type):
     """
     This is the metaclass that causes all uvm_void classes to register themselves
@@ -199,6 +202,7 @@ class ObjectionHandler(metaclass=Singleton):
     them to be removed. It returns True to run_phase_complete()
     when there are no objections left.
     """
+
     def __init__(self):
         self.__objections = {}
         self.run_condition = threading.Condition()
@@ -306,10 +310,11 @@ class GlobPathDict(MutableMapping):
             key_matches = [dk for dk in self._path_dict.keys()
                            if fnmatch.fnmatch(key, dk)]
         except TypeError:
-            raise error_classes.UVMConfigItemNotFound(f'"{key}" is not a component path. Argument order is path, key, item.')
+            raise error_classes.UVMConfigItemNotFound(
+                f'"{key}" is not a component path. Argument order is path, key, item.')
         # Didn't find it
         if len(key_matches) == 0:
-            raise error_classes.UVMConfigItemNotFound (f"Path {key} not found")
+            raise error_classes.UVMConfigItemNotFound(f"Path {key} not found")
         # Found only one
         if len(key_matches) == 1:
             return key_matches.pop()
@@ -326,10 +331,12 @@ class GlobPathDict(MutableMapping):
                 longest_match_list = match_list
         return ".".join(longest_match_list)
 
+
 class ConfigDB(metaclass=Singleton):
     """
     A path-based singleton storage system
     """
+
     # The ConfigDB is a dual-level dict. The outer dict is a
     # GlobPathDict that can store globs in keys that match
     # later retrievals. Each entry contains another dict
@@ -368,11 +375,11 @@ class ConfigDB(metaclass=Singleton):
         :param field_name: the field_name being retrieved
         :return: item found at location
         """
-        if set(inst_name).intersection({"*","?","[","]","!"}):
+        if set(inst_name).intersection({"*", "?", "[", "]", "!"}):
             raise error_classes.UVMConfigItemNotFound(f'"{key}" is illegal: Glob characters only allowed when storing.')
         try:
             component_dict = self._path_dict[inst_name]
             item = component_dict[field_name]
             return item
         except KeyError:
-            raise error_classes.UVMConfigItemNotFound(f'"{inst_name}/{field_name} empty')
+            raise error_classes.UVMConfigItemNotFound(f'"Component {inst_name} has no field: {field_name}')
