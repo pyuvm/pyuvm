@@ -5,7 +5,7 @@ test:
 	nosetests tests
 
 run_nosim:
-	python tinyalu_example/no_sim_alu_test.py
+	python tinyalu_example/tests/no_sim_alu_test.py
 
 run_icarus:
 	echo Not Implemented Yet
