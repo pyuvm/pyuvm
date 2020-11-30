@@ -1,5 +1,12 @@
-# pyuvm
+# Running a simulation
 
-`pyuvm` is a the Universal Verification Methdology implemented in Python.  
+1. source setup.sh to set the PYTHONPATH to the src directory.
 
-There is a detailed description of the project in the docs directory.
+2. make the following targets:
+
+  * run_nosim--Runs the python-only version
+  * run_icarus--Runs the verilog version in Icarus (MacOS)
+  * run_questa--Runs the VHDL version in Questa
+
+
+
