@@ -406,12 +406,11 @@ class uvm_analysis_port(uvm_port_base):
         :param data: data to send
         :return: None
         """
-        try:
-            for export in self.subscribers:
-                export.write(data)
+        for export in self.subscribers:
+            if not hasattr(export, "write"):
+                raise UVMTLMConnectionError(f"No write() method in {export}. Did you connect it?")
+            export.write(data)
 
-        except AttributeError:
-            raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
 
 # THE UNNECESSARY EXPORTS

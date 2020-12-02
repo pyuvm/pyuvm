@@ -6,7 +6,7 @@ from s06_reporting_classes import uvm_report_object
 import s09_phasing
 from s08_factory_classes import uvm_factory
 from s14_15_python_sequences import uvm_seq_item_port
-from s12_uvm_tlm_interfaces import uvm_analysis_export
+from s12_uvm_tlm_interfaces import  uvm_analysis_export
 from s13_uvm_component import *
 
 """

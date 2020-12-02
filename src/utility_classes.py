@@ -439,7 +439,7 @@ class ConfigDB(metaclass=Singleton):
     def __init__(self):
         self._path_dict = GlobPathDict()
 
-    def set(self, item, field_name, inst_path):
+    def set(self, item, field_name, inst_path="*"):
         """
         Stores the item using the key at the path.  The path can have
         glob characters so that later gets can match component
@@ -455,7 +455,7 @@ class ConfigDB(metaclass=Singleton):
 
         self._path_dict[inst_path][field_name] = item
 
-    def get(self, field_name, inst_name):
+    def get(self, field_name, inst_name="*"):
         """
         The component path matches against the paths in the configdb. The path
         cannot have wildcards, but can match against keys with wildcards.
