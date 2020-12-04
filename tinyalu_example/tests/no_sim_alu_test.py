@@ -17,7 +17,7 @@ from enum import Enum, unique, auto
 
 
 #
-# This is how Python implements an enumeration. The enumation values are class variables
+# This is how Python implements an enumeration. The enumeration values are class variables
 # of a class of type Enum.
 
 @unique
@@ -52,7 +52,10 @@ class command_transaction(uvm_sequence_item):
         automatically with all functions that take a string as an input
         such as print()
         """
-        return f"{self.A} {self.op} {self.B}"
+        if((self.op == ALUOps.AND) or (self.op == ALUOps.XOR)):
+            return f"{self.A:#0x} {self.op} {self.B:#0x}"
+        else: 
+            return f"{self.A} {self.op} {self.B}"
 
 class result_transaction(uvm_transaction):
     """
@@ -189,10 +192,16 @@ class scoreboard(uvm_subscriber):
         if not success:
             raise error_classes.UVMFatalError(f"Got result: {result_t} with no cmd in queue")
         predicted_t = self.predict_result(cmd)
-        if predicted_t != result_t:
-            print(f"Avast! Bug here! {cmd} should make {predicted_t}, made {result_t}")
+        if((cmd.op==ALUOps.AND) or (cmd.op==ALUOps.XOR)):
+            predicted_s = hex(predicted_t.result)
+            result_s = hex(result_t.result)
         else:
-            print(f"Test passed: {cmd} = {result_t}")
+            predicted_s = predicted_t.result
+            result_s = result_t.result
+        if predicted_t != result_t:
+            print(f"Avast! Bug here! {cmd} should make {predicted_s}, made {result_s}")
+        else:
+            print(f"Test passed: {cmd} = {result_s}")
 
 # The uvm_agent encapsulates the drivers, monitors, sequencer, and scoreboard. 
 # This one does not turn off the driver/sequencer pair.
@@ -234,7 +243,7 @@ class tinyalu_agent(uvm_agent):
 class tinyalu_dut(uvm_component):
     """
     The DUT pretends to be some sort of TLM interface. It exposes
-    function calls that deliver te operation and results to the
+    function calls that deliver the operation and results to the
     associated monitors.
     send_op--Starts an operation
     get_op--Waits for an operation to be available and returns it
