@@ -548,7 +548,7 @@ that we need.
 class QueueAccessor:
     def __init__(self, name, parent, queue, ap):
         super(QueueAccessor, self).__init__(name, parent)
-        assert (isinstance(queue, UVMQueue)), "Tried to pass a non-PeekQueue to export constructor"
+        assert (isinstance(queue, UVMQueue)), "Tried to pass a non-UVMQueue to QueueAccessor constructor"
         self.queue = queue
         self.ap = ap
 

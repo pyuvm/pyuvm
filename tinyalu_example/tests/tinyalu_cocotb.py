@@ -63,13 +63,9 @@ class AluDriverBfm():
         prev_start = 0
         while True:
             await FallingEdge(self.dut.clk)
-#            print("-- negedge cmd_mon --")
-#            print(f"start: {int(self.dut.start)}")
-#            print(f"prevs: {prev_start}")
             if self.dut.start == 1:
                 if prev_start == 0:
                     try:
-#                        print(f"writing cmd: {int(self.dut.A)}, {int(self.dut.B)}, {int(self.dut.op)}")
                         self.cmd_mon_queue.put_nowait((int(self.dut.A), int(self.dut.B), int(self.dut.op)))
                     except queue.Full:
                         raise RuntimeError("Full analysis FIFO?")
@@ -77,16 +73,12 @@ class AluDriverBfm():
                     pass
             prev_start = int(self.dut.start.value)
 
-
     async def result_mon_bfm(self):
         prev_done = 0
         while True:
             await FallingEdge(self.dut.clk)
             done = int(self.dut.done)
-#            print(f"done : {done}")
-#            print(f"prevd: {prev_done}")
             if done == 1 and prev_done == 0:
-#                print(f'writing result {int(self.dut.result)}')
                 self.result_mon_queue.put_nowait(int(self.dut.result))
             prev_done = done
 

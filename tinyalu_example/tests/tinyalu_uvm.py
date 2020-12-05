@@ -56,7 +56,7 @@ class command_transaction(uvm_sequence_item):
         automatically with all functions that take a string as an input
         such as print()
         """
-        return f"A: {self.A} OP: {self.op} ({self.op.value}) B: {self.B}"
+        return f"A: {self.A:#0x} OP: {self.op} ({self.op.value}) B: {self.B:#0x}"
 
 class result_transaction(uvm_transaction):
     """
@@ -69,7 +69,7 @@ class result_transaction(uvm_transaction):
 
     # The convert2string() equivalent
     def __str__(self):
-        return str(self.result)
+        return f"{self.result:#0x}"
 
     # This is similar to the do_compare() method
     # in the UVM. There are functions in Python that
@@ -217,7 +217,7 @@ class tinyalu_agent(uvm_agent):
 
         # Make with the factory
         self.rm_h = self.create_component("result_monitor", "rm_h") # Now the factory methods
-        self.sb_h = scoreboard("sb_h", self)       # can be part of uvm_component
+        self.sb_h = self.create_component("scoreboard", "sb_h")     # can be part of uvm_component
                                                                     # No typing issues.
 
         self.cmd_mon_ap = uvm_analysis_port("cmd_mon_ap", self)     # The agent provides two
@@ -256,7 +256,6 @@ class alu_sequence(uvm_sequence):
             cmd_tr.B = random.randint(0,255)
             cmd_tr.op = random.choice(list(ALUOps)) # Pick an operation
             self.finish_item(cmd_tr) # UVM finish_item waits for the driver to call item_done
-            time.sleep(0.2)
 
 
 # The test instantiates the environment and the DUT. There is

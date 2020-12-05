@@ -50,15 +50,7 @@ class uvm_phase(uvm_object):
             raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
         method()
 
-    def raise_objection(self):
-        """
-        Does whatever one does to keep the sim running
-        """
 
-    def drop_objection(self):
-        """
-        Does whatever one does to let the sim finish
-        """
 
 
 class uvm_topdown_phase(uvm_phase):
