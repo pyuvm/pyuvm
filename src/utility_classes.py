@@ -251,7 +251,7 @@ class UVMQueue(queue.Queue):
     to die is set to the dropping of all run_phase objections
     by default.
     """
-    def __init__(self, maxsize=0, time_to_die=None, sleep_time=0.1):
+    def __init__(self, maxsize=0, time_to_die=None, sleep_time=0.01):
         super().__init__(maxsize=maxsize)
         self.sleep_time = sleep_time
         if time_to_die is None:

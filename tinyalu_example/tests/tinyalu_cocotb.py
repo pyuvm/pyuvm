@@ -60,26 +60,35 @@ class AluDriverBfm():
 
 
     async def cmd_mon_bfm(self):
-        saw_start = False
+        prev_start = 0
         while True:
-            await RisingEdge(self.dut.clk)
+            await FallingEdge(self.dut.clk)
+#            print("-- negedge cmd_mon --")
+#            print(f"start: {int(self.dut.start)}")
+#            print(f"prevs: {prev_start}")
             if self.dut.start == 1:
-                if not saw_start:
+                if prev_start == 0:
                     try:
+#                        print(f"writing cmd: {int(self.dut.A)}, {int(self.dut.B)}, {int(self.dut.op)}")
                         self.cmd_mon_queue.put_nowait((int(self.dut.A), int(self.dut.B), int(self.dut.op)))
-                        saw_start=True
                     except queue.Full:
                         raise RuntimeError("Full analysis FIFO?")
                 else:
                     pass
-            else:
-                saw_start = False
+            prev_start = int(self.dut.start.value)
+
 
     async def result_mon_bfm(self):
+        prev_done = 0
         while True:
-            await RisingEdge(self.dut.clk)
-            if self.dut.done == 1 and self.dut.start == 1:
+            await FallingEdge(self.dut.clk)
+            done = int(self.dut.done)
+#            print(f"done : {done}")
+#            print(f"prevd: {prev_done}")
+            if done == 1 and prev_done == 0:
+#                print(f'writing result {int(self.dut.result)}')
                 self.result_mon_queue.put_nowait(int(self.dut.result))
+            prev_done = done
 
 def run_uvm_test(test_name):
     root = uvm_root()
@@ -93,14 +102,11 @@ async def test_alu(dut):
     cocotb.fork(clock.start())
     bfm = AluDriverBfm(dut, "ALUDRIVERBFM")
     await bfm.reset()
-    await FallingEdge(dut.clk)
-    await FallingEdge(dut.clk)
     cocotb.fork(bfm.start())
     await FallingEdge(dut.clk)
     test_thread = threading.Thread(target=run_uvm_test, args=("alu_test",), name="run_test")
     test_thread.start()
     await bfm.done.wait()
-    print("END OF TEST###!!")
 
 
 

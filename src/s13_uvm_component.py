@@ -4,9 +4,6 @@ from s09_phasing import uvm_common_phases, uvm_run_phase
 import error_classes
 import utility_classes
 import time
-import os
-import signal
-import threading
 class uvm_component(uvm_report_object):
     """
     13.1.1 Class Declaration

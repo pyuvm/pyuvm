@@ -47,7 +47,7 @@ class command_transaction(uvm_sequence_item):
         super().__init__(name)
         self.A = A
         self.B = B
-        self.op = op
+        self.op = ALUOps(op)
 
 
     def __str__(self):
@@ -56,7 +56,7 @@ class command_transaction(uvm_sequence_item):
         automatically with all functions that take a string as an input
         such as print()
         """
-        return f"A: {self.A} OP: {self.op} B: {self.B}"
+        return f"A: {self.A} OP: {self.op} ({self.op.value}) B: {self.B}"
 
 class result_transaction(uvm_transaction):
     """
@@ -144,14 +144,13 @@ class result_monitor(uvm_component):
 
     def run_phase(self):
         while True:
-            result = self.result_mon.get_result() #blocks until there is a result
+            result = self.result_mon.get_result() # blocks until there is a result
             result_t = result_transaction("result", int(result)) # create a transaction
             self.ap.write(result_t) # write it into the analysis port.
 
 
 # The uvm_subscriber class extends analysis_export (which is a uvm_component)
 # The subscriber promises to override the write() method.
-
 class scoreboard(uvm_subscriber):
     """
     Waits to get results and then uses the most
@@ -169,16 +168,17 @@ class scoreboard(uvm_subscriber):
     # They could go anywhere but are in the class for convenience
     @staticmethod
     def predict_result(cmd):
-        if cmd.op == ALUOps.ADD.value:    # python replaces case with elif cascades.
+        if cmd.op == ALUOps.ADD:    # python replaces case with elif cascades.
             result = cmd.A + cmd.B
-        elif cmd.op == ALUOps.AND.value:
+        elif cmd.op == ALUOps.AND:
             result = cmd.A & cmd.B
-        elif cmd.op == ALUOps.XOR.value:
+        elif cmd.op == ALUOps.XOR:
             result = cmd.A ^ cmd.B
-        elif cmd.op == ALUOps.MUL.value:
+        elif cmd.op == ALUOps.MUL:
             result = cmd.A * cmd.B
         else:
-            error_classes.UVMFatalError(f"Got illegal operation {cmd.op.value}") # replace the uvm_fatal
+            result = None
+            print(f"Got illegal operation {cmd}") # replace the uvm_fatal
                                                                            # error message with an exception
 
         return result_transaction("predicted", result) # create a transaction and return it
@@ -189,9 +189,7 @@ class scoreboard(uvm_subscriber):
         Use the most recent command to predict a result and compare
         to the result sent to write.
         """
-        success, cmd = self.cmd_p.try_get()
-        if not success:
-            raise error_classes.UVMFatalError(f"Got result: {result_t} with no cmd in queue")
+        cmd = self.cmd_p.get()
         predicted_t = self.predict_result(cmd)
         if predicted_t != result_t:
             if result_t is None:
@@ -258,7 +256,8 @@ class alu_sequence(uvm_sequence):
             cmd_tr.B = random.randint(0,255)
             cmd_tr.op = random.choice(list(ALUOps)) # Pick an operation
             self.finish_item(cmd_tr) # UVM finish_item waits for the driver to call item_done
-        time.sleep(1) # give the last transaction time to go through
+            time.sleep(0.2)
+
 
 # The test instantiates the environment and the DUT. There is
 # no need to connect them. The DUT stores itself in the
@@ -281,7 +280,6 @@ class alu_test(uvm_test):
         seq = alu_sequence("seq") # Here is the ten item sequencer
         seqr = self.config_db_get("SEQR") # The sequencer stored itself in the config_db
         seq.start(seqr) # Start the sequence on the sequencer.
-        time.sleep(1) # Give everything time to settle out.
         self.drop_objection() # Allow the testbench to go to the next phase
 
     def final_phase(self):
