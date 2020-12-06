@@ -7,12 +7,12 @@ try:
     import logging
     import inspect
     import copy
-    from abc import ABC
     import error_classes
     import utility_classes
 except ModuleNotFoundError as mnf:
     print(mnf)
     sys.exit(1)
+
 
 class uvm_object(utility_classes.uvm_void):
     """

@@ -6,7 +6,6 @@ from utility_classes import uvm_void
 from s05_base_classes import uvm_object
 
 
-
 # Implementing section 8 in the IEEE Specification
 # The IEEE spec assumes that UVM is being written in SystemVerilog,
 # a language that does not allow you to control how classes get defined.
@@ -20,7 +19,6 @@ from s05_base_classes import uvm_object
 # by copying themselves into a dict.
 
 # However there is a need to provide the methods in 8.
-
 
 
 class uvm_factory(metaclass=utility_classes.Singleton):
@@ -42,13 +40,10 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         self.fd = utility_classes.FactoryData()
         self.logger = logging.getLogger("Factory")
 
-    def set_override(self, original, override, path = None):
+    def set_override(self, original, override, path=None):
         if original not in self.fd.overrides:
             self.fd.overrides[original] = utility_classes.Override()
         self.fd.overrides[original].add(override, path)
-
-
-
 
     def set_inst_override_by_type(self, original_type, override_type, full_inst_path):
         """
@@ -69,10 +64,9 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         are registered later.
         """
         assert issubclass(original_type, utility_classes.uvm_void), "You tried to override a non-uvm_void class"
-        assert issubclass(override_type, utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
+        assert issubclass(override_type,
+                          utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
         self.set_override(original_type, override_type, full_inst_path)
-
-
 
     def set_inst_override_by_name(self, original_type_name, override_type_name, full_inst_path):
         """
@@ -84,8 +78,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         Later we will retrieve this by searching through the keys for a match to
         a path and then checking that the name given in the search matches the
         original_name
-        :param original:
-        :param override:
+        :param original_type_name: the name of type being replaced
+        :param override_type_name: the name of the substitute type
         :return:
         """
         assert isinstance(full_inst_path, str), "The inst_path must be a string"
@@ -94,7 +88,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         try:
             override_type = self.fd.classes[override_type_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(f"{override_name}" + " has not been defined.")
+            raise error_classes.UVMFactoryError(f"{override_type_name}" + " has not been defined.")
 
         # Set type override by name can use an arbitrary string as a key instead of a type
         # Fortunately Python dicts don't care about the type of the key.
@@ -105,7 +99,6 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
         self.set_override(original_type, override_type, full_inst_path)
 
-
     def set_type_override_by_type(self, original_type, override_type, replace=True):
         """
         8.3.1.4.2
@@ -114,7 +107,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param replace: If the override exists, only replace it if this is True
         """
         assert issubclass(original_type, utility_classes.uvm_void), "You tried to override a non-uvm_void class"
-        assert issubclass(override_type, utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
+        assert issubclass(override_type,
+                          utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
         if (original_type not in self.fd.overrides) or replace:
             self.set_override(original_type, override_type)
 
@@ -156,7 +150,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
                 f"You can only create uvm_void descendents not {requested_type}"
 
         if name is not None:
-            assert(isinstance(name, str)), "name must be a string"
+            assert (isinstance(name, str)), "name must be a string"
 
         if parent_inst_path is not None:
             assert isinstance(parent_inst_path, str), "parent_inst_path must be a string"
@@ -167,7 +161,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         else:
             inst_name = None
 
-        new_cls =  self.fd.find_override(requested_type, inst_name)
+        new_cls = self.fd.find_override(requested_type, inst_name)
         if isinstance(new_cls, str):
             self.logger.error(f'"{new_cls}" is not declared and is not an override string')
             return None
@@ -193,7 +187,6 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         else:
             return new_type(name)
 
-
     def create_object_by_name(self, requested_type_name, parent_inst_path=None, name=None):
         """
         8.3.1.5 createing an object by name.
@@ -207,7 +200,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         except KeyError:
             requested_type = requested_type_name
 
-        new_obj =  self.create_object_by_type(requested_type, parent_inst_path, name)
+        new_obj = self.create_object_by_type(requested_type, parent_inst_path, name)
         return new_obj
 
     def create_component_by_type(self, requested_type, parent_inst_path=None, name=None, parent=None):
@@ -247,7 +240,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         except KeyError:
             requested_type = requested_type_name
 
-        new_obj =  self.create_component_by_type(requested_type, parent_inst_path, name, parent)
+        new_obj = self.create_component_by_type(requested_type, parent_inst_path, name, parent)
         return new_obj
 
     def set_type_alias(self, alias_type_name, original_type):
@@ -292,7 +285,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param full_inst_path:
         :return: class object
         """
-        assert(isinstance(requested_type_name, str)), f"requested_type_name must be a string not a {type(requested_type_name)}"
+        assert (isinstance(requested_type_name,
+                           str)), f"requested_type_name must be a string not a {type(requested_type_name)}"
         try:
             requested_type = self.fd.classes[requested_type_name]
         except KeyError:
@@ -305,7 +299,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         There are no wrappers in pyuvm so this is not implemented.
         :return: None
         """
-        raise error_classes.UVMNotImplemented("There are no wrappers in pyuvm. So find_wrapper_by_name is not implemented")
+        raise error_classes.UVMNotImplemented(
+            "There are no wrappers in pyuvm. So find_wrapper_by_name is not implemented")
 
     def is_type_name_registered(self, type_name):
         """
@@ -314,7 +309,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :return: boolean
         Check the classes dict for the name.
         """
-        assert(isinstance(type_name,str)), "is_type_name_registered() takes a string as its argument not {type(type_name)}"
+        assert (isinstance(type_name,
+                           str)), "is_type_name_registered() takes a string as its argument not {type(type_name)}"
         return type_name in self.fd.classes
 
     def is_type_registered(self, uvm_type):
@@ -325,11 +321,11 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param obj:
         :return: boolean
         """
-        assert(issubclass(uvm_type, utility_classes.uvm_void)), \
+        assert (issubclass(uvm_type, utility_classes.uvm_void)), \
             "is_type_registered() takes a subclass of uvm_void as its argument not {type(uvm_type)}"
         return uvm_type in self.fd.classes.values()
 
-    def __str__(self, all_types = 1):
+    def __str__(self, all_types=1):
         """
         8.3.1.7.5
         Print out the state of the factory to stdout.
@@ -339,34 +335,33 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param all_types: controls output detail
         :return: None
         """
-        assert(0 <= all_types <= 2), "__str__() requires a number from 0 to 2"
+        assert (0 <= all_types <= 2), "__str__() requires a number from 0 to 2"
         pstring = ""
         if len(self.fd.overrides) > 0:
             pstring += "Overrides:\n"
             for inst in self.fd.overrides:
-                pstring+= f"{inst.__name__:25}" + ": "+str(self.fd.overrides[inst])
+                pstring += f"{inst.__name__:25}" + ": " + str(self.fd.overrides[inst])
                 pstring += "\n"
 
         # Need to add 1 and 2
         user_list = [self.fd.classes[cls].__name__
-                         for cls in self.fd.classes
-                         if not fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]
-        uvm_list =  [self.fd.classes[cls].__name__
-                         for cls in self.fd.classes
-                         if fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]
+                     for cls in self.fd.classes
+                     if not fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]
+        uvm_list = [self.fd.classes[cls].__name__
+                    for cls in self.fd.classes
+                    if fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]
         if all_types > 0:
-            pstring += "\n" + "-"*25 + "\nUser Defined Types:\n"
+            pstring += "\n" + "-" * 25 + "\nUser Defined Types:\n"
             pstring += "\n".join(user_list)
 
         if all_types == 2:
-            pstring += "\n"+"-"*25 + "\nUVM Types:\n"
+            pstring += "\n" + "-" * 25 + "\nUVM Types:\n"
             pstring += "\n".join(uvm_list)
 
         return pstring
+
     def print(self, all_types=1):
         print(self.__str__(all_types))
-
-
 
 # 8.3.1.8 Usage
 # All the elements of usage have been implemented in pyuvm
@@ -376,4 +371,3 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 # 8.3.2
 # Not implemented.  There is no need for a uvm_object_wrapper in Python. The user will never notice
 # the difference
-
