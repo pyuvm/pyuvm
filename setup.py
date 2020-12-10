@@ -21,6 +21,6 @@ setup(
     author_email='ray@raysalemi.com',
     url='https://rayboston@bitbucket.org/rayboston/pyuvm.git',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests', 'docs', 'examples'))
 )
 
