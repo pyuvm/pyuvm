@@ -1,12 +1,39 @@
-# Running a simulation
+# Package Description
+`pyuvm` is a Python implementation of the Universal Verification Methodology 
 
-1. source setup.sh to set the PYTHONPATH to the src directory.
+## Installation
 
-2. make the following targets:
+You can install `pyuvm` with `pip`
 
-  * run_nosim--Runs the python-only version
-  * run_icarus--Runs the verilog version in Icarus (MacOS)
-  * run_questa--Runs the VHDL version in Questa
+```bash
+% pip install pyuvm
+```
 
+# Usage
+
+Testbenches written in the SystemVerilog UVM usually import the package like this:
+
+```SystemVerilog
+import uvm_pkg::*;
+```
+
+This gives you access to the class names without needing a path.  To get 
+similar behavior with `pyuvm` us the `from` import syntax.
+
+```Python
+from pyuvm import *
+```
+
+Then you can run a simple test:
+
+```
+% python
+>>> from pyuvm import *
+>>> ff = uvm_object("ff")
+>>> type(ff)
+<class 's05_base_classes.uvm_object'>
+>>> print(ff.get_name())
+ff
+```
 
 

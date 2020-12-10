@@ -5,7 +5,7 @@
 from setuptools import setup, find_packages
 
 
-with open('README.rst') as f:
+with open('README.md') as f:
     readme = f.read()
 
 with open('LICENSE') as f:
@@ -13,9 +13,10 @@ with open('LICENSE') as f:
 
 setup(
     name='pyuvm',
-    version='0.1.0',
+    version='1.0a',
     description='Python Implementation of Universal Verification Methodology',
     long_description=readme,
+    long_description_content_type="text/markdown",
     author='Ray Salemi',
     author_email='ray@raysalemi.com',
     url='https://rayboston@bitbucket.org/rayboston/pyuvm.git',
