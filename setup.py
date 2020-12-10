@@ -14,7 +14,7 @@ with open('LICENSE') as f:
 setup(
     name='pyuvm',
     version='0.1.0',
-    description='Python Implementation of Universal Verification Methdology',
+    description='Python Implementation of Universal Verification Methodology',
     long_description=readme,
     author='Ray Salemi',
     author_email='ray@raysalemi.com',
