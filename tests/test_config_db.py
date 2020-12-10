@@ -1,6 +1,6 @@
 import pyuvm_unittest
 from pyuvm import *
-import utility_classes
+import pyuvm.utility_classes as utility_classes
 import inspect
 
 class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):

@@ -1,7 +1,7 @@
 import pyuvm_unittest
 import threading
 import time
-import utility_classes
+import pyuvm.utility_classes as utility_classes
 
 class UVMQueue_TestCase (pyuvm_unittest.pyuvm_TestCase):
 
