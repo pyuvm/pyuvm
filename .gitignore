@@ -11,3 +11,5 @@ venv/*
 venv
 *~
 build
+dist
+pyuvm.egg-info
