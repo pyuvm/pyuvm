@@ -5,7 +5,7 @@ to be true to the hierarchy.  Every instance of a child class has its own logger
 There may be a need to implement uvm_info, uvm_error, uvm_warning, and uvm_fatal, but
 it would be best to first see how the native Python logging system does the job.
 '''
-from s05_base_classes import uvm_object
+from pyuvm.s05_base_classes import uvm_object
 import logging
 """
 6.2.1

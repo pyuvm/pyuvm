@@ -23,11 +23,11 @@
 # their various flavors through multiple inheritance.
 
 
-from s13_uvm_component import uvm_component
+from pyuvm.s13_uvm_component import uvm_component
 import queue
-from error_classes import UVMTLMConnectionError
-from utility_classes import UVMQueue
-import error_classes
+from pyuvm.error_classes import UVMTLMConnectionError
+from pyuvm.utility_classes import UVMQueue
+from pyuvm import error_classes
 
 
 # 12.2.2

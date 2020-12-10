@@ -1,9 +1,9 @@
-import utility_classes
-import error_classes
+from pyuvm import utility_classes
+from pyuvm import error_classes
 import logging
 import fnmatch
-from utility_classes import uvm_void
-from s05_base_classes import uvm_object
+from pyuvm.utility_classes import uvm_void
+from pyuvm.s05_base_classes import uvm_object
 
 
 # Implementing section 8 in the IEEE Specification

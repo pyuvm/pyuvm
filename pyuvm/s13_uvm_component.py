@@ -1,9 +1,11 @@
-from s06_reporting_classes import uvm_report_object
-from s08_factory_classes import uvm_factory
-from s09_phasing import uvm_common_phases, uvm_run_phase
-import error_classes
-import utility_classes
+from pyuvm.s06_reporting_classes import uvm_report_object
+from pyuvm.s08_factory_classes import uvm_factory
+from pyuvm.s09_phasing import uvm_common_phases, uvm_run_phase
+from pyuvm import error_classes
+from pyuvm import utility_classes
 import time
+
+
 class uvm_component(uvm_report_object):
     """
     13.1.1 Class Declaration

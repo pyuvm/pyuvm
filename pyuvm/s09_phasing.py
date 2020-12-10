@@ -1,7 +1,7 @@
-from s05_base_classes import uvm_object
-import error_classes
+from pyuvm.s05_base_classes import uvm_object
+import pyuvm.error_classes as error_classes
 import threading
-import utility_classes
+import pyuvm.utility_classes as utility_classes
 
 '''
 9.1

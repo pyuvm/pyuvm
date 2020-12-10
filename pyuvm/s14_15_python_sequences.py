@@ -7,9 +7,8 @@
 # SystemVerilog features.
 
 
-from s05_base_classes import *
-from s12_uvm_tlm_interfaces import *
-from queue import Queue
+from pyuvm.s05_base_classes import *
+from pyuvm.s12_uvm_tlm_interfaces import *
 from threading import Condition, enumerate
 
 
