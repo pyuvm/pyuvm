@@ -7,8 +7,8 @@ try:
     import logging
     import inspect
     import copy
-    import error_classes
-    import utility_classes
+    import pyuvm.error_classes as error_classes
+    import pyuvm.utility_classes as utility_classes
 except ModuleNotFoundError as mnf:
     print(mnf)
     sys.exit(1)

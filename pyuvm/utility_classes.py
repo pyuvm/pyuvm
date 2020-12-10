@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import logging
 import fnmatch
-import error_classes
+from pyuvm import error_classes
 import queue
 import time
 import threading
