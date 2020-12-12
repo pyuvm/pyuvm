@@ -1,0 +1,15 @@
+IEEE_UVM.pdf
+*.ipynb
+.idea/*
+.cache
+.idea
+__pycache__
+/tests/test_05_base_classes.py-e
+*.py-e
+.Ulysses*
+venv/*
+venv
+*~
+build
+dist
+pyuvm.egg-info
