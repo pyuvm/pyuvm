@@ -1,11 +1,12 @@
 run_icarus:
-	make -C examples/tinyalu/tests
+	make -C examples/tinyalu/tests SIM=icarus
 
 run_nosim:
 	python examples/tinyalu/tests/no_sim_alu_test.py
 
 run_questa:
-	echo Not Implemented Yet
+	make -C examples/tinyalu/tests SIM=questa
+
 
 init:
 	pip install -r requirements.txt
