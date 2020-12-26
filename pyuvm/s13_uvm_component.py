@@ -4,6 +4,7 @@ from pyuvm.s09_phasing import uvm_common_phases, uvm_run_phase
 from pyuvm import error_classes
 from pyuvm import utility_classes
 import time
+import logging
 
 
 class uvm_component(uvm_report_object):
@@ -31,15 +32,14 @@ We've opted for the latter.
         the same thing with __init__()
         """
 
-        super().__init__(name)
-        self.__parent = None
         self.__children = {}
-        if parent == None and name != 'uvm_root':
+        if parent is None and name != 'uvm_root':
             parent = uvm_root()
         self.parent = parent
-        if parent != None:
+        if parent is not None:
             parent.add_child(name, self)
         self.print_enabled = True  # 13.1.2.2
+        super().__init__(name)
 
         # Cache the hierarchy for easy access
         if name != 'uvm_root':
@@ -49,7 +49,7 @@ We've opted for the latter.
         self.__children = {}
 
     def clear_hierarchy(self):
-        self.__parent = None
+        self._parent = None
         self.clear_children()
 
     def do_execute_op(self, op):
@@ -64,7 +64,7 @@ We've opted for the latter.
         :return: parent object
         13.1.3.1--- No 'get_' prefix
         """
-        return self.__parent
+        return self._parent
 
     def raise_objection(self):
         utility_classes.ObjectionHandler().raise_objection(self)
@@ -87,7 +87,7 @@ We've opted for the latter.
 
     def config_db_get(self, label):
         """
-        Retrieve an object from the config_db using this compnents
+        Retrieve an object from the config_db using this components
         get_full_name() path. Can find objects stored with wildcards
 
         :param label: The label to use to retrieve the object
@@ -102,19 +102,22 @@ We've opted for the latter.
 
     @parent.setter
     def parent(self, parent):
-        if parent != None:
+        if parent is not None:
             assert (isinstance(parent, uvm_component)), f" {parent} is of type {type(parent)}"
         assert (parent != self), f'Cannot make a {self.get_name()} its own parent.  That is incest.'
-        self.__parent = parent
+        self._parent = parent
 
     def get_full_name(self):
         """
         :return: Name concatenated to parent name.
         13.1.3.2
         """
-        if self.get_name() == 'uvm_root':
+        if self.get_name() is None or self.get_name() == 'uvm_root':
             return ''
-        fullname = self.__parent.get_full_name()
+        if self._parent is None:
+            fullname = ""
+        else:
+            fullname = self._parent.get_full_name()
         if len(fullname) == 0:
             fullname = self.get_name()
         else:
@@ -186,8 +189,8 @@ We've opted for the latter.
         Implements the intention of this requirement
         without the approach taken in the UVM
         """
-        for childname in self.__children:
-            yield self.__children[childname]
+        for child in self.__children:
+            yield self.__children[child]
 
     def __repr__(self):
         return self.get_full_name()
@@ -256,6 +259,28 @@ We've opted for the latter.
         else:
             return len(self.get_full_name().split("."))
 
+    # noinspection SpellCheckingInspection
+    def set_logging_level_hier(self, logging_level):
+        """
+        Set the logging level for this component and all the way down the hierarchy
+        :param logging_level: typically a constant from logging module
+        :return: None
+        """
+        self.set_logging_level(logging_level)
+        for child in self.hierarchy:
+            child.set_logging_level(logging_level)
+
+    def add_logging_handler_hier(self, handler):
+        """
+        Add an additional handler all the way down the component hierarchy
+        :param handler: A logging.Handler object
+        :return: None
+        """
+        assert isinstance(handler, logging.Handler), f"You can only add logging.Handler objects not {type(handler)}"
+        self.add_logging_handler(handler)
+        for child in self.hierarchy:
+            child.add_logging_handler(handler)
+
     def build_phase(self):
         ...
 
@@ -291,14 +316,16 @@ We've opted for the latter.
     13.1.4.4--*_domain methods
     13.1.5.5--suspend
     13.1.4.6--pre_abort
-    13.1.5--Configurtion interface
+    13.1.5--Configuration interface
     13.1.6--Recording interface
     13.1.7--Other interfaces
     """
+
+
 class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     """
     F.7.  We do not use uvm_pkg to hold uvm_root.  Instead it
-    is a class variable of uvm_commponent.  This avoids
+    is a class variable of uvm_component.  This avoids
     circular reference issues regarding uvm_pkg.
 
     Plus, it's cleaner.
@@ -331,7 +358,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         stick to the basic phases.  So this implementation loops
         through the hierarchy and runs the phases.
 
-        :param test_name: The uvm testname
+        :param test_name: The uvm test name
         :return: none
         """
 
@@ -345,14 +372,3 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
                 run_over = utility_classes.ObjectionHandler().run_phase_complete
                 with run_cond:
                     run_cond.wait_for(run_over)
-        time.sleep(1)
-        pass
-
-
-
-
-
-
-
-
-

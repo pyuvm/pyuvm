@@ -6,6 +6,7 @@ import queue
 import time
 import threading
 from collections.abc import MutableMapping
+import inspect
 
 
 class Singleton(type):
@@ -208,12 +209,16 @@ class ObjectionHandler(metaclass=Singleton):
         self.run_condition = threading.Condition()
         self.objection_raised = False
         self.run_phase_done_flag=None # used in test suites
+        self.first_check_time = None
+        self.monitor_finish_thread = None
+        self.printed_warning = False
 
     def __str__(self):
         ss = "Current Objections:\n"
         for cc in self.__objections:
             ss += f"{self.__objections[cc]}\n"
         return ss
+
 
     def monitor_run_phase(self):
         while not self.run_phase_complete():
@@ -224,8 +229,6 @@ class ObjectionHandler(metaclass=Singleton):
     def raise_objection(self, raiser):
         self.__objections[raiser] = raiser.get_full_name()
         self.objection_raised = True
-        monitor_finish_thread = threading.Thread(target = self.monitor_run_phase, name='run_phase_monitor_loop')
-        monitor_finish_thread.start()
         with self.run_condition:
             self.run_condition.notify_all()
 
@@ -235,10 +238,21 @@ class ObjectionHandler(metaclass=Singleton):
             self.run_condition.notify_all()
 
     def run_phase_complete(self):
+        if self.monitor_finish_thread is None:
+            self.monitor_finish_thread = threading.Thread(target = self.monitor_run_phase, name='run_phase_monitor_loop')
+            self.monitor_finish_thread.start()
+        if self.first_check_time is None:
+            self.first_check_time = time.time()
         if self.run_phase_done_flag is not None:
             return self.run_phase_done_flag
         if not self.objection_raised:
-            return False
+            if time.time() - self.first_check_time < 1:
+                return False
+            else:
+                if not self.printed_warning:
+                    self.printed_warning=True
+                    print("Warning: No run_phase() objections raised. Finished run_phase after timeout")
+                return True
         else:
             return not self.__objections
 
