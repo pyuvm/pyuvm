@@ -56,7 +56,7 @@ class command_transaction(uvm_sequence_item):
         automatically with all functions that take a string as an input
         such as print()
         """
-        return f"A: {self.A:#0x} OP: {self.op} ({self.op.value}) B: {self.B:#0x}"
+        return f"A: {self.A:02x} OP: {self.op} ({self.op.value}) B: {self.B:02x}"
 
 class result_transaction(uvm_transaction):
     """
@@ -69,7 +69,7 @@ class result_transaction(uvm_transaction):
 
     # The convert2string() equivalent
     def __str__(self):
-        return f"{self.result:#0x}"
+        return f"{self.result:04x}"
 
     # This is similar to the do_compare() method
     # in the UVM. There are functions in Python that

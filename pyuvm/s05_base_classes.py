@@ -27,7 +27,6 @@ class uvm_object(utility_classes.uvm_void):
         # Private
         assert (isinstance(name, str)), f"{name} is not a string it is a {type(name)}"
         self.set_name(name)
-        self.logger = logging.getLogger(name)
 
     def get_uvm_seeding(self):
         """
@@ -52,7 +51,7 @@ class uvm_object(utility_classes.uvm_void):
         """
         Return the name of this object as passed by the constructor
         """
-        assert (self.obj_name != None), f"Internal error. {str(self)} has no name"
+        assert (self.obj_name is not None), f"Internal error. {str(self)} has no name"
         return self.obj_name
 
     def set_name(self, name):

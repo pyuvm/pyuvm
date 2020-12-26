@@ -207,7 +207,7 @@ class ObjectionHandler(metaclass=Singleton):
         self.__objections = {}
         self.run_condition = threading.Condition()
         self.objection_raised = False
-        self.run_phase_done_flag=None # used in test suites
+        self.run_phase_done_flag = None  # used in test suites
 
     def __str__(self):
         ss = "Current Objections:\n"
@@ -215,17 +215,9 @@ class ObjectionHandler(metaclass=Singleton):
             ss += f"{self.__objections[cc]}\n"
         return ss
 
-    def monitor_run_phase(self):
-        while not self.run_phase_complete():
-            time.sleep(0.1)
-            with self.run_condition:
-                self.run_condition.notify_all()
-
     def raise_objection(self, raiser):
         self.__objections[raiser] = raiser.get_full_name()
         self.objection_raised = True
-        monitor_finish_thread = threading.Thread(target = self.monitor_run_phase, name='run_phase_monitor_loop')
-        monitor_finish_thread.start()
         with self.run_condition:
             self.run_condition.notify_all()
 
@@ -237,10 +229,7 @@ class ObjectionHandler(metaclass=Singleton):
     def run_phase_complete(self):
         if self.run_phase_done_flag is not None:
             return self.run_phase_done_flag
-        if not self.objection_raised:
-            return False
-        else:
-            return not self.__objections
+        return not self.__objections
 
 
 class UVMQueue(queue.Queue):
