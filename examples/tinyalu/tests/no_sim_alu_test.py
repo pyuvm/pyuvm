@@ -96,7 +96,7 @@ class driver(uvm_driver):
         # that manages component path names and the database.
         #
 
-        self.bfm = self.config_db_get("DUT")
+        self.bfm = self.cdb_get(, "DUT"
 
         # The bfm is a handle to the DUT, but in a real testbench
         # it would be a handle to a bfm.
@@ -124,7 +124,7 @@ class command_monitor(uvm_component):
             self.ap = uvm_analysis_port("ap", self)
 
         def run_phase(self):
-            self.monitor_bfm = self.config_db_get("DUT")
+            self.monitor_bfm = self.cdb_get(, "DUT"
             while True:
                 (A, B, op) = self.monitor_bfm.get_cmd() # the tuple allows three values to return
                 mon_tr = command_transaction("mon_tr", A, B, op) # convert to a transaction
@@ -140,7 +140,7 @@ class result_monitor(uvm_component):
         self.ap = uvm_analysis_port("ap", self)
 
     def run_phase(self):
-        self.result_mon = self.config_db_get("DUT")
+        self.result_mon = self.cdb_get(, "DUT"
         while True:
             result = self.result_mon.get_result() #blocks until there is a result
             result_t = result_transaction("result", result) # create a transaction
@@ -218,7 +218,7 @@ class tinyalu_agent(uvm_agent):
         self.dr_h = driver("dr_h", self)         # the driver (note no parameter)
         self.seqr = uvm_sequencer("seqr", self)  # the sequncer (note no parameter here either)
 
-        self.config_db_set(self.seqr, "SEQR", "*") # Store the sequencer in the config_db
+        self.cdb_set("SEQR", "*", self.seqr)  # Store the sequencer in the config_db
 
         # Make with the factory
         self.rm_h = self.create_component("result_monitor", "rm_h") # Now the factory methods
@@ -270,7 +270,7 @@ class tinyalu_dut(uvm_component):
 
         # Store the DUT where people can get it
         # in the config DB.  Notice that the * works for all paths.
-        self.config_db_set(self, "DUT", "*")
+        self.cdb_set("DUT", "*", self)
 
     def connect_phase(self):
         # Connect up the command fifo
@@ -372,7 +372,7 @@ class alu_test(uvm_test):
         """
         self.raise_objection() # Keeps the phase from advancing until the sequence is done.
         seq = alu_sequence("seq") # Here is the ten item sequencer
-        seqr = self.config_db_get("SEQR") # The sequencer stored itself in the config_db
+        seqr = self.cdb_get(, "SEQR"  # The sequencer stored itself in the config_db
         seq.start(seqr) # Start the sequence on the sequencer.
         time.sleep(1) # Give everything time to settle out.
         self.drop_objection() # Allow the testbench to go to the next phase

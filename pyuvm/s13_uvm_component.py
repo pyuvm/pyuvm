@@ -1,10 +1,12 @@
 from pyuvm.s06_reporting_classes import uvm_report_object
 from pyuvm.s08_factory_classes import uvm_factory
-from pyuvm.s09_phasing import uvm_common_phases, uvm_run_phase
+from pyuvm.s09_phasing import uvm_common_phases, uvm_run_phase, uvm_build_phase
 from pyuvm import error_classes
 from pyuvm import utility_classes
 import time
 import logging
+import fnmatch
+import string
 
 
 class uvm_component(uvm_report_object):
@@ -55,8 +57,16 @@ We've opted for the latter.
     def do_execute_op(self, op):
         raise error_classes.UVMNotImplemented("Policies not implemented")
 
-    def create_component(self, type_name, name):
-        new_comp = uvm_factory().create_component_by_name(type_name, self.get_full_name(), name, self)
+
+    @classmethod
+    def create(cls, name="", parent=None):
+        if parent is None:
+            parent_inst_path = ""
+        else:
+            parent_inst_path = parent.get_full_name()
+
+        new_comp = uvm_factory().create_component_by_type(cls, parent_inst_path=parent_inst_path,
+                                                          name=name, parent=parent)
         return new_comp
 
     def get_parent(self):
@@ -72,7 +82,7 @@ We've opted for the latter.
     def drop_objection(self):
         utility_classes.ObjectionHandler().drop_objection(self)
 
-    def config_db_set(self, item, label, inst_path=None):
+    def cdb_set(self, label, item, inst_path="*"):
         """
         Store an object in the config_db.
 
@@ -80,21 +90,21 @@ We've opted for the latter.
         :param label: The label to use to retrieve it
         :param inst_path: A path with globs or if left blank the get_full_name() path
         """
-        if inst_path is None:
-            inst_path = self.get_full_name()
 
-        utility_classes.ConfigDB().set(item, label, inst_path)
+        ConfigDB().set(self, inst_path, label, item)
 
-    def config_db_get(self, label):
+    def cdb_get(self, label, inst_path=""):
         """
         Retrieve an object from the config_db using this components
         get_full_name() path. Can find objects stored with wildcards
 
-        :param label: The label to use to retrieve the object
+        :param inst_path: The path below this component
+        :param label: The label used to store the item
         :return: The object at this path stored at the label
         """
-        datum = utility_classes.ConfigDB().get(label, self.get_full_name())
+        datum = ConfigDB().get(self, inst_path, label)
         return datum
+
 
     @property
     def parent(self):
@@ -345,7 +355,11 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     def __init__(self):
         super().__init__("uvm_root", None)
         self.uvm_test_top = None
+        self.running_phase = None
 
+    def _utt(self):
+        """Used in testing"""
+        return self.get_child("uvm_test_top")
     def run_test(self, test_name=""):
         """
         This implementation skips much of the state-setting and
@@ -364,11 +378,199 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
 
         factory = uvm_factory()
         self.uvm_test_top = factory.create_component_by_name(test_name, "", "uvm_test_top", self)
-        for phase in uvm_common_phases:
-            phase.traverse(self.uvm_test_top)
-            if phase == uvm_run_phase:
-                time.sleep(.1)
-                run_cond = utility_classes.ObjectionHandler().run_condition
-                run_over = utility_classes.ObjectionHandler().run_phase_complete
-                with run_cond:
-                    run_cond.wait_for(run_over)
+        try:
+            for self.running_phase in uvm_common_phases:
+                self.running_phase.traverse(self.uvm_test_top)
+                if self.running_phase == uvm_run_phase:
+                    time.sleep(.1)
+                    run_cond = utility_classes.ObjectionHandler().run_condition
+                    run_over = utility_classes.ObjectionHandler().run_phase_complete
+                    with run_cond:
+                        run_cond.wait_for(run_over)
+        except error_classes.UVMError as uve:
+            self.logger.error(uve)
+
+# In the SystemVerilog UVM the uvm_config_db is a
+# convenience layer on top of the much more complicated
+# uvm_resource_db class. However, few people
+# use the uvm_resource_db and in fact, Mentor recommends
+# that people use the uvm_config_db interface.
+#
+# Therefore pyuvm implements only the behavior of
+# the ConfigDB. It also does NOT implement the
+# regular expression form of wildcards, which are
+# also rarely used. Instead it implements globbing
+# as defined by fnmatch().
+#
+# To avoid confusion with the full uvm_config_db
+# our class is named ConfigDB.
+class ConfigDB(metaclass=utility_classes.Singleton):
+    default_precedence = 1000
+    legal_chars = set(string.ascii_letters) | set(string.digits) | set("_.")
+    """
+    A path-based singleton storage system
+    """
+
+    # The ConfigDB is a dual-level dict. The outer dict is a
+    # GlobPathDict that can store globs in keys that match
+    # later retrievals. Each entry contains another dict
+    # that stores items by keys.
+    #
+    # Unlike the UVM config_db, this config_db makes no effort
+    # to store multiple items at one location. The last stored
+    # wins
+    #
+    # Also, pyuvm does not support wildcards in the field names
+    # at this time.
+
+    def __init__(self):
+        self._path_dict = {}
+        self.is_tracing = False
+        self._cond_dict = {}
+
+    def clear(self):
+        """Reset the ConfigDB. Used for testing."""
+        self._path_dict = {}
+
+    @staticmethod
+    def _get_context_inst_name(context, inst_name):
+        """
+        Get the config_key from context and passed inst_name
+        :param context: uvm_component or None
+        :param inst_name: string that can be a glob
+        :return: string that is the key
+        """
+        assert context is None or isinstance(context, uvm_component), "config_db context " \
+                                                                      "must be None or a uvm_component. " \
+                                                                      f"Not {type(context)}"
+        if context is None:
+            context = uvm_root()
+
+        if inst_name is None or inst_name == "":
+            inst_name = context.get_full_name()
+        elif context.get_full_name() != "":
+            inst_name = context.get_full_name() + "." + inst_name
+        return context, inst_name
+
+    def set(self, context, inst_name, field_name, value):
+        """
+        Stores an object in the db using the context and
+        inst_name to create a retrieval path, and the field
+        name.
+        :param context: A handle to a component
+        :param inst_name: The instance name within the component
+        :param field_name: The field we're setting
+        :param value: The object to be stored
+        :return: None
+        """
+
+        if not set(field_name).issubset(self.legal_chars):
+            raise error_classes.UVMNotImplemented(f"pyuvm does not allow wildcards in field names ({field_name})")
+
+        context, inst_name = self._get_context_inst_name(context, inst_name)
+
+        if inst_name not in self._path_dict:
+            self._path_dict[inst_name] = {}
+
+        if field_name not in self._path_dict[inst_name]:
+            self._path_dict[inst_name][field_name] = {}
+
+        precedence = self.default_precedence
+        if uvm_root().running_phase is uvm_build_phase:
+            precedence = self.default_precedence - context.get_depth()
+
+        self._path_dict[inst_name][field_name][precedence] = value
+
+        if self.is_tracing:
+            # noinspection SpellCheckingInspection
+            print(f"CFGDB/SET Configuration set {context} {inst_name} {field_name} {value}")
+
+    def get(self, context, inst_name, field_name):
+        """
+        The component path matches against the paths in the ConfigDB. The path
+        cannot have wildcards, but can match against keys with wildcards.
+        Return the item stored at key or raise UVMConfigError if there is no key.
+
+        :param inst_name: component full path with no wildcards
+        :param field_name: the field_name being retrieved
+        :param context: The component making the call
+        :return: item found at location
+        """
+        if not set(inst_name).issubset(self.legal_chars):
+            raise error_classes.UVMError(f'"{inst_name}" is illegal: '
+                                         f'inst_name wildcards only allowed when storing.')
+
+        context, inst_name = self._get_context_inst_name(context, inst_name)
+
+        key_matches = []  # Make the linter happy by setting this.
+        try:
+           # key_matches = [dk for dk in self._path_dict.keys()
+           #                if fnmatch.fnmatch(inst_name, dk)]
+            for dk in self._path_dict.keys():
+                if fnmatch.fnmatch(inst_name, dk):
+                    key_matches.append(dk)
+
+        except TypeError:
+            raise error_classes.UVMConfigItemNotFound(f'"{inst_name}" is not a in ConfigDB().')
+        finally:
+            if len(key_matches) == 0:
+                raise error_classes.UVMConfigItemNotFound(f'"{inst_name}" is not a in ConfigDB().')
+        # Here we sort the list of paths by which paths are "in" other
+        # paths. That is A comes before '*'  A.B comes before A.*, etc.
+        # We use an insertion sort. A path is inserted in front of the
+        # first path it is "in"
+        sorted_paths = []
+        try:
+            sorted_paths.append(key_matches.pop())
+        except IndexError:
+            raise error_classes.UVMConfigItemNotFound(f"{inst_name} not in ConfigDB()")
+
+        # Sort the matching keys from most specific to
+        # most greedy. A.B.C before A.B.* before A.* before *
+        for path in key_matches:
+            inserted = False
+            for ii in range(len(sorted_paths)):
+                if fnmatch.fnmatch(path, sorted_paths[ii]):
+                    sorted_paths.insert(ii, path)
+                    inserted = True
+                    break
+            if not inserted:
+                sorted_paths.append(path)
+        item = None
+        for path in sorted_paths:
+            try:
+                component_fields = self._path_dict[path]
+                matching_path_fields = component_fields[field_name]
+                max_precedence = max(matching_path_fields.keys())
+                item = matching_path_fields[max_precedence]
+                break
+            except KeyError:
+                pass
+        if item is not None:
+            return item
+        else:
+            raise error_classes.UVMConfigItemNotFound(f'"Component {inst_name} has no field: {field_name}')
+
+    def exists(self, context, inst_name, field_name):
+        """
+        Returns true if there is data in the database at this location
+        :param context: None or uvm_component
+        :param inst_name: instance name string in context
+        :param field_name: field name for location
+        :return: True if exists
+        """
+        try:
+            _ = self.get(context, inst_name, field_name)
+        except error_classes.UVMConfigItemNotFound:
+            return False
+        return True
+
+    def wait_modified(self):
+        raise error_classes.UVMNotImplemented("wait_modified not implemented pending requests for it.")
+
+    def __str__(self):
+        str_list = [f"\n{'PATH':20}: {'FIELD':10}: {'DATA':30}"]
+        for inst_path in self._path_dict:
+            for field in self._path_dict[inst_path]:
+                str_list.append(f"{inst_path:20}: {field:10}: {self._path_dict[inst_path][field]}")
+        return "\n".join(str_list)

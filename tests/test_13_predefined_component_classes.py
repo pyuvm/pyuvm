@@ -7,6 +7,9 @@ class my_test(uvm_test):...
 
 class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
     """Basic test cases."""
+    def setUp(self):
+        super().setUp()
+        ConfigDB().clear()
 
     def test_uvm_component_noparent(self):
         """
@@ -212,7 +215,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
 
     def test_component_factory(self):
         mc = self.my_component('mc', None)
-        mc2 = mc.create_component('my_component',"imc2")
+        mc2 = self.my_component.create('my_component' , None)
         self.assertEqual(type(mc), type(mc2))
 
 
@@ -223,26 +226,100 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         D = uvm_component('D', C)
         E = uvm_component('E', B)
 
-        A.config_db_set(5, "FIVE")
-        datum = A.config_db_get("FIVE")
+        A.cdb_set("FIVE", 5, "")
+        datum = A.cdb_get("FIVE", "")
         self.assertEqual(5, datum)
 
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            B.config_db_get("FIVE")
+            B.cdb_get("FIVE", "")
 
-        C.config_db_set(33, "TT", "A.B.C.*")
+        C.cdb_set("TT", 33, "A.B.C.*")
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            C.config_db_get("TT")
+            C.cdb_get("TT", "")
 
-        A.config_db_set(10, "TEN", "A.*")
-        datum = E.config_db_get("TEN")
+        ConfigDB().set(None, "A.*", "TEN",  10)
+        datum = E.cdb_get("TEN", "")
         self.assertEqual(10, datum)
 
-        C.config_db_set(44, "FF", "A.C*")
-        datum = C.config_db_get("FF")
+        ConfigDB().set(None, "A.C","FF", 44)
+        datum = C.cdb_get("FF", "")
         self.assertEqual(44, datum)
 
 
+    def test_wildcard_precedence(self):
+        A = uvm_component('A')
+        B = uvm_component('B', A)
+        C = uvm_component('C', A)
+        A.cdb_set("TEST", 11, "*")
+        A.cdb_set("TEST", 22, "B")
+        ConfigDB().set(A, "A", "OTHER", 55)
+        aa = A.cdb_get("TEST", "X")
+        bb = B.cdb_get("TEST", "")
+        self.assertEqual(22,bb)
+        cc = C.cdb_get("TEST", "")
+        self.assertEqual(11, cc)
+        aao = A.cdb_get("OTHER", "A")
+        self.assertEqual(55, aao)
+
+    def test_contextless_behavior_in_heirarchy(self):
+        A = uvm_component('A')
+        B = uvm_component('B', A)
+        C = uvm_component('C', A)
+        ConfigDB().set(A, "*", "OTHER", 55)
+        aa = ConfigDB().get(A, "B", "OTHER")
+        self.assertEqual(55, aa)
+
+    def test_agent_config(self):
+        class bottom(uvm_agent):
+            def build_phase(self):
+                super().build_phase()
+
+        class comp(uvm_agent):
+            def build_phase(self):
+                super().build_phase()
+                ConfigDB().set(self, "bot", "is_active", 0)
+                self.bot = bottom("bot", self)
+
+        class test(uvm_test):
+            def build_phase(self):
+                self.cdb_set("is_active", uvm_active_passive_enum.UVM_ACTIVE)
+                self.agent = comp("agent", self)
+
+            def run_phase(self):
+                self.raise_objection()
+                time.sleep(0.1)
+                self.drop_objection()
+        uvm_root().run_test("test")
+        utt = uvm_root().get_child("uvm_test_top")
+        self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE, utt.agent.get_is_active())
+        self.assertEqual(uvm_active_passive_enum.UVM_PASSIVE, utt.agent.bot.get_is_active())
+        self.assertTrue(utt.agent.active())
+        self.assertFalse(utt.agent.bot.active())
+
+    def test_default_agent_config(self):
+        class bottom(uvm_agent):
+            def build_phase(self):
+                super().build_phase()
+
+        class comp(uvm_agent):
+            def build_phase(self):
+                super().build_phase()
+                self.bot = bottom("bot", self)
+
+        class test(uvm_test):
+            def build_phase(self):
+                self.agent = comp("agent", self)
+
+            def run_phase(self):
+                self.raise_objection()
+                time.sleep(0.1)
+                self.drop_objection()
+        uvm_root().run_test("test")
+        utt = uvm_root().get_child("uvm_test_top")
+        self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE, utt.agent.get_is_active())
+        self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE, utt.agent.bot.get_is_active())
+        self.assertTrue(utt.agent.active())
+        self.assertTrue(utt.agent.bot.active())
 
 if __name__ == '__main__':
     unittest.main ()

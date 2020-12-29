@@ -130,6 +130,9 @@ class uvm_sequence_item(uvm_transaction):
         self.parent_sequence_id = None
         self.response_id = None
 
+
+
+
     def set_context(self, item):
         """
         Use this to link a new response transaction to the request transaction.
@@ -324,6 +327,7 @@ class uvm_sequence(uvm_object):
         if self.sequencer is None:
             raise error_classes.UVMSequenceError(f"Tried start_item in a virtual sequence {self.get_full_name()}")
         item.parent_sequence_id = self.sequence_id
+        self.running_item = item
         self.sequencer.start_item(item)
 
     def finish_item(self, item):

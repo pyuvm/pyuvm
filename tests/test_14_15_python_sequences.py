@@ -2,6 +2,13 @@ import pyuvm_unittest
 from pyuvm import *
 from threading import Thread
 import time
+import random
+
+class DataHolder(metaclass=Singleton):
+    def __init__(self):
+        self.datum = None
+        self.dict_ = {}
+
 
 
 class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
@@ -17,9 +24,12 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def setUp(self):
         ObjectionHandler().run_phase_done_flag = False
         self.my_root.clear_children()
+        uvm_root().clear_hierarchy()
+        ObjectionHandler.clear_singletons()
 
     def tearDown(self):
-        ObjectionHandler().run_phase_done_flag = True
+        ObjectionHandler().run_phase_done_flag = None
+        uvm_factory.clear_singletons()
         time.sleep(0.2)
 
     @staticmethod
@@ -224,7 +234,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.assertFalse(rsp_thread.is_alive())
         finish_item_thread.join()
         rsp_thread.join()
-        pass
+
     # Time to test the sequence itself.
     def test_base_virtual_sequence(self):
         class basic_seq(uvm_sequence):
@@ -278,4 +288,179 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         ObjectionHandler().run_phase_done_flag = True
         time.sleep(.1)
         self.assertEqual(55, item.datum)
-        pass
+
+    def test_run_sequence(self):
+        ObjectionHandler().run_phase_done_flag = None
+        class SeqItem(uvm_sequence_item):
+            def __init__(self, name):
+                super().__init__(name)
+                self.op = None
+                self.result = None
+
+        class SeqDriver(uvm_driver):
+            def run_phase(self):
+                while True:
+                    op_item = self.seq_item_port.get_next_item()
+                    op_item.result = op_item.data + 1
+                    self.seq_item_port.item_done()
+
+        class Seq(uvm_sequence):
+            def body(self):
+                op = SeqItem("op")
+                self.start_item(op)
+                op.data = 0
+                self.finish_item(op)
+                DataHolder().datum = (op.result == (op.data + 1))
+
+        class SeqTest(uvm_test):
+            def build_phase(self):
+                self.seqr = uvm_sequencer("seqr", self)
+                self.drvr = SeqDriver("drvr", self)
+
+            def connect_phase(self):
+                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+
+            def run_phase(self):
+                self.raise_objection()
+                seq = Seq("seq")
+                seq.start(self.seqr)
+                self.drop_objection()
+        uvm_root().run_test("SeqTest")
+        self.assertTrue(DataHolder().datum)
+
+    def test_put_response(self):
+        ObjectionHandler().run_phase_done_flag = None
+        class SeqItem(uvm_sequence_item):
+            def __init__(self, name):
+                super().__init__(name)
+                self.op = None
+                self.result = None
+
+        class SeqDriver(uvm_driver):
+            def run_phase(self):
+                while True:
+                    op_item = self.seq_item_port.get_next_item()
+                    self.seq_item_port.put(op_item.data + 1)
+                    self.seq_item_port.item_done()
+
+        class Seq(uvm_sequence):
+            def body(self):
+                op = SeqItem("op")
+                self.start_item(op)
+                op.data = 0
+                self.finish_item(op)
+                result = self.get_response()
+                DataHolder().datum = (result == (op.data + 1))
+
+        class SeqTest(uvm_test):
+            def build_phase(self):
+                self.seqr = uvm_sequencer("seqr", self)
+                self.drvr = SeqDriver("drvr", self)
+
+            def connect_phase(self):
+                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+
+            def run_phase(self):
+                self.raise_objection()
+                seq = Seq("seq")
+                seq.start(self.seqr)
+                self.drop_objection()
+        uvm_root().run_test("SeqTest")
+        self.assertTrue(DataHolder().datum)
+
+    def test_item_done_response(self):
+        ObjectionHandler().run_phase_done_flag = None
+        class SeqItem(uvm_sequence_item):
+            def __init__(self, name):
+                super().__init__(name)
+                self.op = None
+                self.result = None
+
+        class SeqDriver(uvm_driver):
+            def run_phase(self):
+                while True:
+                    op_item = self.seq_item_port.get_next_item()
+                    self.seq_item_port.item_done(op_item.data + 1)
+
+        class Seq(uvm_sequence):
+            def body(self):
+                op = SeqItem("op")
+                self.start_item(op)
+                op.data = 0
+                self.finish_item(op)
+                result = self.get_response()
+                DataHolder().datum = (result == (op.data + 1))
+
+        class SeqTest(uvm_test):
+            def build_phase(self):
+                self.seqr = uvm_sequencer("seqr", self)
+                self.drvr = SeqDriver("drvr", self)
+
+            def connect_phase(self):
+                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+
+            def run_phase(self):
+                self.raise_objection()
+                seq = Seq("seq")
+                seq.start(self.seqr)
+                self.drop_objection()
+        uvm_root().run_test("SeqTest")
+        self.assertTrue(DataHolder().datum)
+
+    def test_multiple_seq_runs(self):
+        ObjectionHandler().run_phase_done_flag = None
+        class SeqItem(uvm_sequence_item):
+            def __init__(self, name):
+                super().__init__(name)
+                self.op = None
+                self.result = None
+
+        class SeqDriver(uvm_driver):
+            def run_phase(self):
+                while True:
+                    op_item = self.seq_item_port.get_next_item()
+                    self.seq_item_port.item_done(op_item.data + 1)
+
+        class Seq(uvm_sequence):
+            def body(self):
+                op = SeqItem("op")
+                self.start_item(op)
+                op.data = DataHolder().dict_[self.runner_name]
+                self.finish_item(op)
+                self.result = self.get_response()
+
+        class SeqAgent(uvm_agent):
+            def build_phase(self):
+                self.seqr = uvm_sequencer("seqr", self)
+                self.drvr = SeqDriver("drvr", self)
+                ConfigDB().set(None, "*", "SEQR", self.seqr)
+
+            def connect_phase(self):
+                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+
+        class SeqRunner(uvm_component):
+
+            def connect_phase(self):
+                self.seqr = self.cdb_get("SEQR")
+
+            def run_phase(self):
+                self.raise_objection()
+                seq = Seq("seq")
+                seq.runner_name = self.get_name()
+                seq.start(self.seqr)
+                DataHolder().dict_[self.get_name()] = seq.result
+                self.drop_objection()
+
+        class SeqTest(uvm_test):
+            def build_phase(self):
+                self.agent = SeqAgent("seq1", self)
+                DataHolder().dict_["run1"] = 5
+                DataHolder().dict_["run2"] = 25
+                self.run1 = SeqRunner("run1", self)
+                self.run2 = SeqRunner("run2", self)
+
+
+        uvm_root().run_test("SeqTest")
+        self.assertEqual(26, DataHolder().dict_["run2"])
+        self.assertEqual(6, DataHolder().dict_["run1"])
+

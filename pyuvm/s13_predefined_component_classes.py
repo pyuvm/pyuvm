@@ -2,7 +2,7 @@
 from pyuvm.s14_15_python_sequences import uvm_seq_item_port
 from pyuvm.s12_uvm_tlm_interfaces import  uvm_analysis_export
 from pyuvm.s13_uvm_component import *
-
+from enum import IntEnum
 """
 This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
 testbenches in Python.
@@ -15,12 +15,17 @@ b: Phasing---This is also implemented in pyuvm, but is hardcoded to the standard
 c: Hierarchical Reporting---We manage this with the logging module. It is orthogonal to the components.
 d: Transaction Recording---We do not record transactions since pyuvm does not run in the simulator. This
 could be added later if we see a need or way to do it.
-e: Factory---pyuvm manages the factory throught the create() method without all the SystemVerilog typing overhead.
+e: Factory---pyuvm manages the factory through the create() method without all the SystemVerilog typing overhead.
 
 """
 
 
+class uvm_active_passive_enum(IntEnum):
+    UVM_PASSIVE = 0
+    UVM_ACTIVE = 1
+
 # Class Declarations
+
 
 class uvm_test(uvm_component):
     """
@@ -45,24 +50,24 @@ class uvm_agent(uvm_component):
     Contains controls for individual agents
     """
 
-    def __init__(self, name, parent):
-        super().__init__(name, parent)
-        self.__is_active = False
+    def build_phase(self):
+        super().build_phase()
+        self.is_active = uvm_active_passive_enum.UVM_ACTIVE
+        try:
+            self.is_active = self.cdb_get("is_active")
+        except error_classes.UVMConfigItemNotFound:
+            self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 
-    """
-    Have chosen to implement the spirit of 
-    the is_active member rather than the 
-    enum-based implementation.
-    """
+        if self.is_active not in list(uvm_active_passive_enum):
+            self.logger.warning(f"{self.get_full_name()} has illegal is_active "
+                                f"value: {self.is_active}. Setting to UVM_ACTIVE")
+            self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 
-    @property
-    def is_active(self):
-        return self.__is_active
+    def get_is_active(self):
+        return self.is_active
 
-    @is_active.setter
-    def is_active(self, is_active):
-        assert (isinstance(is_active, bool))
-        self.__is_active = is_active
+    def active(self):
+        return self.get_is_active() == uvm_active_passive_enum.UVM_ACTIVE
 
 
 class uvm_monitor(uvm_component):

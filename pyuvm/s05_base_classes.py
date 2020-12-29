@@ -9,6 +9,7 @@ try:
     import copy
     import pyuvm.error_classes as error_classes
     import pyuvm.utility_classes as utility_classes
+    from pyuvm.s08_factory_classes import uvm_factory
 except ModuleNotFoundError as mnf:
     print(mnf)
     sys.exit(1)
@@ -97,12 +98,14 @@ class uvm_object(utility_classes.uvm_void):
         """
         return type(self).__name__
 
-    def create(self, name):
+    @classmethod
+    def create(cls, name):
         """
         5.3.5.1
         :return:
         """
-        return self.__class__(name)
+        new_obj = uvm_factory().create_object_by_type(cls, name=name)
+        return new_obj
 
 
 
@@ -310,11 +313,14 @@ class uvm_transaction(uvm_object):
         """
         5.4.2.1
         :param name: Object name
-        :param initiator: componennt that is initiator
+        :param initiator: component that is initiator
         """
         super().__init__(name)
         self.set_initiator(initiator)
-        self.transaction_id = None
+        self.transaction_id = id(self)
+
+    def set_id_info(self, other):
+        self.transaction_id = other.transaction_id
 
     def set_initiator(self, initiator):
         """
@@ -465,16 +471,3 @@ class uvm_transaction(uvm_object):
             return id(self)
         else:
             return self.transaction_id
-
-
-
-
-
-
-
-class uvm_time:
-    """
-    5.6
-    Not implemented in pyuvm since we are not running in a simulator.
-    """
-

@@ -1,110 +1,196 @@
 import pyuvm_unittest
 from pyuvm import *
-import pyuvm.utility_classes as utility_classes
-import inspect
 
 class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
     def tearDown(self) -> None:
-        utility_classes.ConfigDB.clear_singletons()
+        super().tearDown()
+        ConfigDB().clear()
 
-    def test_GlobPathDict_set_get(self):
-        gpd = utility_classes.GlobPathDict()
-        gpd["aa"] = 1
-        self.assertEqual(1, gpd["aa"])
-
-    def test_Glob_set_get(self):
-        gpd = utility_classes.GlobPathDict()
-        gpd["aa"] = 1
-        gpd["bb"] = 2
-        gpd["*"] = 3
-        datum = gpd["aa"]
-        self.assertEqual(1, datum)
-        datum = gpd["bb"]
-        self.assertEqual(2,datum)
-        datum = gpd["cc"]
-        self.assertEqual(3, datum)
-
-    def test_index_match(self):
-        gpd = utility_classes.GlobPathDict()
-        gpd["aa"] = 1
-        gpd["b?"] = 2
-
-        self.assertEqual(1, gpd["aa"])
-        self.assertEqual(2, gpd["bb"])
-        gpd["*"] = 5
-        self.assertEqual(5, gpd["zz"])
-
-    def test_long_path_match(self):
-        gpd = utility_classes.GlobPathDict()
-        gpd["*"] = 5
-        gpd["top.*"] = 8
-        gpd["top.A.B"] = 3
-        datum = gpd["X"]
-        self.assertEqual(5, datum)
-        datum = gpd['top.X']
-        self.assertEqual(8, datum)
-        datum = gpd["top.A"]
-        self.assertEqual(8, datum)
-        datum = gpd["top.A.B"]
-        self.assertEqual(3, datum)
-
-    def test_longest_path_match(self):
-        gpd = utility_classes.GlobPathDict()
-        gpd["*"] = 5
-        gpd["A.*"] = 6
-        gpd["A.B.*"] = 7
-        gpd["A.B.D"] = 8
-
-        datum = gpd["B"]
-        self.assertEqual(5, datum)
-
-        datum = gpd["A"]
-        self.assertEqual(5, datum)
-
-        datum = gpd["A.B"]
-        self.assertEqual(6, datum)
-
-        datum = gpd["A.B.C"]
-        self.assertEqual(7, datum)
-
-        datum = gpd["A.B.D"]
-        self.assertEqual(8, datum)
-
-        datum = gpd["A.C"]
-        self.assertEqual(6, datum)
-
-    def test_config_db(self):
+    def test_context_None(self):
         cdb = ConfigDB()
         # simple set/get
-        cdb.set(5, "LABEL", "*")
-        datum = cdb.get("LABEL", "A")
+        cdb.set(None, "*", "LABEL", 5)
+        with self.assertRaises(error_classes.UVMError):
+            cdb.exists(None, "*", "LABEL")
+        self.assertTrue(cdb.exists(None, "A", "LABEL"))
+        datum = cdb.get(None, "A", "LABEL")
         self.assertEqual(5, datum)
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            cdb.get("NOT THERE", "A")
-
-        cdb.set(88, "OTHER_LABEL", "*")
-        datum = cdb.get("OTHER_LABEL", "top.B.C")
+            cdb.get(None, "A", "NOT THERE")
+        self.assertFalse(cdb.exists(None, "A", "NOT THERE"))
+        cdb.set(None, "top.B.C", "OTHER_LABEL", 88)
+        datum = cdb.get(None, "top.B.C", "OTHER_LABEL")
         self.assertEqual(88, datum)
-        datum = cdb.get("OTHER_LABEL", "A")
-        self.assertEqual(88, datum)
+        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+            _ = cdb.get(None, "A", "OTHER_LABEL")
+        cdb.set(None, "", "BLANK", 99)
+        datum = cdb.get(None, "", "BLANK")
+        self.assertEqual(99, datum)
 
     def test_empty_db(self):
         cdb = ConfigDB()
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            cdb.get("LABEL", "A")
+            cdb.get(None, "A", "LABEL")
 
-        cdb.set(5, "LABEL", "A")
-        datum = cdb.get("LABEL", "A")
+        cdb.set(None, "A", "LABEL", 5)
+        datum = cdb.get(None, "A", "LABEL")
         self.assertEqual(5, datum)
 
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            cdb.get("LABEL", "B")
+            cdb.get(None, "B", "LABEL")
 
-        cdb.set(88, "OTHER_LABEL", "B")
-        datum = cdb.get("OTHER_LABEL", "B")
+        cdb.set(None, "B", "OTHER_LABEL", 88)
+        datum = cdb.get(None, "B", "OTHER_LABEL")
         self.assertEqual(88, datum)
 
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
-            cdb.get("LABEL", "B")
+            cdb.get(None, "B", "LABEL")
+
+    def test_context(self):
+        class comp(uvm_component):
+            def build_phase(self):
+                self.cdb_set("XXC", 93, "")
+        class test(uvm_test):
+            def build_phase(self):
+                self.xx = comp("xx", self)
+                self.cdb_set("XXC", 855, "")
+            def run_phase(self):
+                self.raise_objection()
+                time.sleep(0.1)
+                self.drop_objection()
+
+        cdb = ConfigDB()
+        cdb.is_tracing = True
+        uvm_root().run_test("test")
+        cdb.set(uvm_root(), '*', "LABEL", 55)
+        datum = cdb.get(uvm_root(), "tt", "LABEL")
+        self.assertEqual(55, datum)
+        utt = uvm_root().get_child("uvm_test_top")
+        cdb.set(utt, "*", "WC", 99)
+        datum = cdb.get(utt, "xx", "WC")
+        self.assertEqual(99, datum)
+        datum = utt.xx.cdb_get("XXC", "")
+        self.assertEqual(93, datum)
+
+    def test_wildards(self):
+        class comp(uvm_component):
+            def build_phase(self):
+                self.numb = ConfigDB().get(self, "", "CONFIG")
+        class test(uvm_test):
+            def build_phase(self):
+                ConfigDB().set(self, "*", "CONFIG", 88)
+                self.cc1 = comp("cc1", self)
+                self.cc2 = comp("cc", self)
+            def run_phase(self):
+                self.raise_objection()
+                time.sleep(0.1)
+                self.drop_objection()
+        uvm_root().run_test("test")
+        utt = uvm_root().get_child("uvm_test_top")
+        self.assertEqual(88, utt.cc1.numb)
+        self.assertEqual(88, utt.cc2.numb)
+
+    def test_one_wildard(self):
+        class comp(uvm_component):
+            def build_phase(self):
+                self.numb = ConfigDB().get(self, "", "CONFIG")
+        class test(uvm_test):
+            def build_phase(self):
+                ConfigDB().set(self, "*", "CONFIG", 88)
+                ConfigDB().set(self, "cc2", "CONFIG", 66)
+                self.cc1 = comp("cc1", self)
+                self.cc2 = comp("cc2", self)
+                self.cc3 = comp("cc3", self)
+
+            def run_phase(self):
+                self.raise_objection()
+                time.sleep(0.1)
+                self.drop_objection()
+        uvm_root().run_test("test")
+        utt = uvm_root().get_child("uvm_test_top")
+        self.assertEqual(88, utt.cc1.numb)
+        self.assertEqual(66, utt.cc2.numb)
+        self.assertEqual(88, utt.cc3.numb)
+
+    def test_precedence(self):
+        class bottom(uvm_component):
+            def build_phase(self):
+                self.numb = ConfigDB().get(self, "", "CONFIG")
+
+        class comp(uvm_component):
+            def build_phase(self):
+                ConfigDB().set(self, "*", "CONFIG", 55)
+                self.bot = bottom("bot", self)
+
+        class test(uvm_test):
+            def build_phase(self):
+                ConfigDB().set(self, "cc1.*", "CONFIG", 88)
+                self.cc1 = comp("cc1", self)
+
+            def run_phase(self):
+                self.raise_objection()
+                time.sleep(0.1)
+                self.drop_objection()
+
+        uvm_root().run_test("test")
+        utt = uvm_root().get_child("uvm_test_top")
+        self.assertEqual(88, utt.cc1.bot.numb)
+
+    def test_wildcard_hierarchy_in_context(self):
+        class Printer(uvm_component):
+            def build_phase(self):
+                self.msg = ConfigDB().get(self, "", "MSG")
+
+        class PrintTest(uvm_test):
+            def build_phase(self):
+                self.pmsg = f"Hooray for {self.get_name()}!"
+                self.mmsg = "Settle down, you too."
+                self.rmsg = "What's going on?"
+                ConfigDB().set(self, 'p?', "MSG", self.pmsg)
+                ConfigDB().set(self, 'm*', "MSG", self.mmsg)
+                ConfigDB().set(self, '*', "MSG",  self.rmsg)
+                self.p1 = Printer("p1", self)
+                self.p2 = Printer("p2", self)
+                self.mediator = Printer("mediator", self)
+                self.reporters = Printer("reporters", self)
+            def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        uvm_root().run_test("PrintTest")
+        utt = uvm_root().get_child("uvm_test_top")
+        self.assertEqual(utt.pmsg, utt.p1.msg)
+        self.assertEqual(utt.pmsg, utt.p2.msg)
+        self.assertEqual(utt.mmsg, utt.mediator.msg)
+        self.assertEqual(utt.rmsg, utt.reporters.msg)
+
+
+    def test_wildcard_hierarchy_at_root(self):
+        class Printer(uvm_component):
+            def build_phase(self):
+                self.msg = ConfigDB().get(self, "", "MSG")
+
+        class PrintTest(uvm_test):
+            def build_phase(self):
+                self.pmsg = f"Hooray for {self.get_name()}!"
+                self.mmsg = "Settle down, you too."
+                self.rmsg = "What's going on?"
+                ConfigDB().set(None, '*p?', "MSG", self.pmsg)
+                ConfigDB().set(None, '*me*', "MSG", self.mmsg)
+                ConfigDB().set(None, '*', "MSG",  self.rmsg)
+                self.p1 = Printer("p1", self)
+                self.p2 = Printer("p2", self)
+                self.mediator = Printer("mediator", self)
+                self.reporters = Printer("reporters", self)
+            def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        uvm_root().run_test("PrintTest")
+        utt = uvm_root().get_child("uvm_test_top")
+        self.assertEqual(utt.pmsg, utt.p1.msg)
+        self.assertEqual(utt.pmsg, utt.p2.msg)
+        self.assertEqual(utt.mmsg, utt.mediator.msg)
+        self.assertEqual(utt.rmsg, utt.reporters.msg)
 

@@ -346,7 +346,6 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
         self.assertFalse(self.factory.is_type_registered(uvm_fake))
 
-
     def test_factory_str(self):
         self.factory.set_type_override_by_type(self.original_comp, self.comp_1)
         ovr = self.fd.overrides[self.original_comp]
@@ -361,3 +360,125 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         # Testing for the actual strings will cause errors as classes change due to
         # other tests being run. This catches the basic functionality.
         self.assertTrue(len(ss2) > len(ss1) > len(ss0))
+
+    def test_object_creation(self):
+        new_obj = uvm_object.create("claribel")
+        self.assertTrue(isinstance(new_obj, uvm_object))
+        self.assertEqual("claribel", new_obj.get_name())
+
+    def test_class_creation(self):
+        class Foo(uvm_object):
+            ...
+        new_obj = Foo.create("foobar")
+        self.assertTrue(isinstance(new_obj, Foo))
+        self.assertEqual("foobar", new_obj.get_name())
+
+    def test_component_creation(self):
+        new_comp = uvm_component.create("test", None)
+        self.assertTrue(isinstance(new_comp, uvm_component))
+        self.assertEqual("test", new_comp.get_name())
+
+    def test_ext_comp_creation(self):
+        class FooComp(uvm_component):
+            ...
+        new_comp = FooComp.create("Foo", None)
+        self.assertEqual("Foo", new_comp.get_name())
+        self.assertTrue(isinstance(new_comp, FooComp))
+
+    def test_type_override_by_type(self):
+        class Comp(uvm_component):
+            ...
+        class Other(Comp):
+            ...
+        class Test(uvm_test):
+            def build_phase(self):
+                uvm_factory().set_type_override_by_type(Comp, Other)
+                self.cc = Comp.create("cc", self)
+        uvm_root().run_test("Test")
+        utt = uvm_root()._utt()
+        self.assertTrue(isinstance(utt.cc, Other))
+
+    def test_inst_override_by_type(self):
+        class Comp(uvm_component):
+            ...
+        class Other(Comp):
+            ...
+        class Test(uvm_test):
+            def build_phase(self):
+                uvm_factory().set_inst_override_by_type(Comp, Other, self.get_full_name()+".cc2")
+                self.cc1 = Comp.create("cc1", self)
+                self.cc2 = Comp.create("cc2", self)
+        uvm_root().run_test("Test")
+        utt = uvm_root()._utt()
+        self.assertTrue(isinstance(utt.cc1, Comp))
+        self.assertTrue(isinstance(utt.cc2, Other))
+
+    def test_inst_override_by_name(self):
+        class Comp(uvm_component):
+            ...
+        class Other(Comp):
+            ...
+        class Test(uvm_test):
+            def build_phase(self):
+                uvm_factory().set_inst_override_by_name("Comp", "Other", self.get_full_name()+".cc2")
+                self.cc1 = Comp.create("cc1", self)
+                self.cc2 = Comp.create("cc2", self)
+        uvm_root().run_test("Test")
+        utt = uvm_root()._utt()
+        self.assertTrue(isinstance(utt.cc1, Comp))
+        self.assertTrue(isinstance(utt.cc2, Other))
+
+    def test_type_override_by_name(self):
+        class Comp(uvm_component):
+            ...
+        class Other(Comp):
+            ...
+        class Test(uvm_test):
+            def build_phase(self):
+                uvm_factory().set_type_override_by_name("Comp", "Other")
+                self.cc1 = Comp.create("cc1", self)
+                self.cc2 = Comp.create("cc2", self)
+        uvm_root().run_test("Test")
+        utt = uvm_root()._utt()
+        self.assertTrue(isinstance(utt.cc1, Other))
+        self.assertTrue(isinstance(utt.cc2, Other))
+
+    def test_obj_type_override_by_type(self):
+        class Obj(uvm_object):
+            ...
+        class OtherObj(Obj):
+            ...
+        class Test(uvm_test):
+            def build_phase(self):
+                uvm_factory().set_type_override_by_type(Obj, OtherObj)
+                self.cc1 = Obj.create("cc1")
+        uvm_root().run_test("Test")
+        utt = uvm_root()._utt()
+        self.assertTrue(isinstance(utt.cc1, OtherObj))
+
+    def test_obj_type_override_by_name(self):
+        class Obj(uvm_object):
+            ...
+        class OtherObj(Obj):
+            ...
+        class Test(uvm_test):
+            def build_phase(self):
+                uvm_factory().set_type_override_by_name("Obj", "OtherObj")
+                self.cc1 = Obj.create("cc1")
+        uvm_root().run_test("Test")
+        utt = uvm_root()._utt()
+        self.assertTrue(isinstance(utt.cc1, OtherObj))
+
+    def test_obj_inst_override_by_type(self):
+        class Obj(uvm_object):
+            ...
+        class OtherObj(Obj):
+            ...
+        class Test(uvm_test):
+            def build_phase(self):
+                uvm_factory().set_inst_override_by_type(Obj, OtherObj, self.get_full_name())
+                self.cc1 = Obj.create("cc1")
+        uvm_root().run_test("Test")
+        utt = uvm_root()._utt()
+        self.assertTrue(isinstance(utt.cc1, Obj)) #Cant inst override objects
+

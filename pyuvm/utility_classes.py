@@ -1,12 +1,10 @@
 from collections import OrderedDict
 import logging
 import fnmatch
-from pyuvm import error_classes
 import queue
 import time
 import threading
-from collections.abc import MutableMapping
-import inspect
+import sys
 
 
 class Singleton(type):
@@ -45,14 +43,12 @@ class Override():
     def __init__(self):
 
         self.type_override = None
-        self.inst_overrides = None
+        self.inst_overrides = OrderedDict()
 
     def add(self, override, path=None):
         if path is None:
             self.type_override = override
         else:
-            if self.inst_overrides is None:
-                self.inst_overrides = OrderedDict()
             self.inst_overrides[path] = override
 
     def find_inst_override(self, path):
@@ -297,7 +293,7 @@ class UVMQueue(queue.Queue):
                     return datum
                 except queue.Empty:
                     pass
-            exit() # Kill therad if it's time to die
+            sys.exit() # Kill therad if it's time to die
 
     def get(self, block=True, timeout=None):
         """
@@ -321,7 +317,7 @@ class UVMQueue(queue.Queue):
                     return datum
                 except queue.Empty:
                     pass
-            exit() # Kill therad if it's time to die
+            sys.exit()  # Kill thread if it's time to die
 
     def put(self, item, block=True, timeout=None):
         """
@@ -340,7 +336,7 @@ class UVMQueue(queue.Queue):
                     return
                 except queue.Full:
                     pass
-            exit()
+            sys.exit()
 
     def _peek(self, block=True, timeout=None):
         with self.not_empty:
@@ -364,127 +360,3 @@ class UVMQueue(queue.Queue):
             return item
 
 
-class GlobPathDict(MutableMapping):
-    """
-    This dict stores items in globbed uvm_component paths.
-    top.A.* matches top.A.B or top.A.C
-    If multiple keys match, return the one with the longest path, ie most dots.
-    If we store * and top.A.* then top.A.B matches top.A.* not *.
-    If key is stored then key is returned. top.A beats *
-    """
-
-    def __init__(self):
-        self._path_dict = dict()
-
-    def __getitem__(self, key):
-        """
-        Return item using glob in keys to compare to key.
-        top.A.B matches * or top.A.*. If both exist choose the path with more levels.
-
-        :param key: A search key with no glob
-        :return: the value stored at that key. Raise KeyError otherwise
-        """
-        return self._path_dict[self._keytransform(key)]
-
-    def __setitem__(self, key, value):
-        """
-        Stores the value at the key directly. The key can contain glob
-
-        :param key: key with possible glob
-        :param value: any object to store
-        """
-        self._path_dict[key] = value
-
-    def __delitem__(self, key):
-        """
-        Find the item that would have been collected from the key and delete it.
-
-        :param key: Search key
-        """
-        del self._path_dict[self._keytransform(key)]
-
-    def __iter__(self):
-        return iter(self._path_dict)
-
-    def __len__(self):
-        return len(self._path_dict)
-
-    def _keytransform(self, key):
-        try:
-            key_matches = [dk for dk in self._path_dict.keys()
-                           if fnmatch.fnmatch(key, dk)]
-        except TypeError:
-            raise error_classes.UVMConfigItemNotFound(
-                f'"{key}" is not a component path. Argument order is path, key, item.')
-        # Didn't find it
-        if len(key_matches) == 0:
-            raise error_classes.UVMConfigItemNotFound(f"Path {key} not found")
-        # Found only one
-        if len(key_matches) == 1:
-            return key_matches.pop()
-        # Found many but key was one of them (string compare)
-        if key in key_matches:
-            return key
-        # Search the globbed finds and return first one with
-        # longest path
-        # There is more than one match.
-        longest_match_list = []
-        for match in key_matches:
-            match_list = match.split(".")
-            if len(match_list) > len(longest_match_list):
-                longest_match_list = match_list
-        return ".".join(longest_match_list)
-
-
-class ConfigDB(metaclass=Singleton):
-    """
-    A path-based singleton storage system
-    """
-
-    # The ConfigDB is a dual-level dict. The outer dict is a
-    # GlobPathDict that can store globs in keys that match
-    # later retrievals. Each entry contains another dict
-    # that stores items by keys.
-    #
-    # Unlike the UVM config_db, this config_db makes no effort
-    # to store multiple items at one location. The last stored
-    # wins
-
-    def __init__(self):
-        self._path_dict = GlobPathDict()
-
-    def set(self, item, field_name, inst_path="*"):
-        """
-        Stores the item using the key at the path.  The path can have
-        glob characters so that later gets can match component
-        paths to the path.
-
-        :param inst_path: a component path with globs
-        :param field_name: a string that is used to retrieve the item
-        :param item: the item to store
-        """
-
-        if inst_path not in self._path_dict:
-            self._path_dict[inst_path] = {}
-
-        self._path_dict[inst_path][field_name] = item
-
-    def get(self, field_name, inst_name="*"):
-        """
-        The component path matches against the paths in the configdb. The path
-        cannot have wildcards, but can match against keys with wildcards.
-        Return the item stored at key or raise UVMConfigError if there is no key.
-
-        :param inst_name: component full path with no wildcards
-        :param field_name: the field_name being retrieved
-        :return: item found at location
-        """
-        if set(inst_name).intersection({"*", "?", "[", "]", "!"}):
-            raise error_classes.UVMConfigItemNotFound(f'"{inst_name}" is illegal: Glob "'
-                                                      f'characters only allowed when storing.')
-        try:
-            component_dict = self._path_dict[inst_name]
-            item = component_dict[field_name]
-            return item
-        except KeyError:
-            raise error_classes.UVMConfigItemNotFound(f'"Component {inst_name} has no field: {field_name}')
