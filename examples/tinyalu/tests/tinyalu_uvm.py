@@ -112,9 +112,10 @@ class driver(uvm_driver):
         
         while True:
             command = self.seq_item_port.get_next_item()
+            print("sending", command)
             self.bfm.send_op(command)
             self.seq_item_port.item_done()
-
+            print("item done")
 
 #
 # Like the driver the command_monitor gets a handle to the 
@@ -191,7 +192,7 @@ class scoreboard(uvm_component):
             result = cmd.A * cmd.B
         else:
             result = None
-            print(f"Got illegal operation {cmd}") # replace the uvm_fatal
+            self.logger.critical(f"Got illegal operation {cmd}") # replace the uvm_fatal
                                                                            # error message with an exception
 
         return result_transaction("predicted", result) # create a transaction and return it
@@ -203,15 +204,19 @@ class scoreboard(uvm_component):
         to the result sent to write.
         """
         while True:
+            print("                     reading result")
             result_t = self.result_p.get()
+            print("                     got result",result_t)
+            print("                     reading_command")
             cmd = self.cmd_p.get()
+            print("                     got cmd", cmd)
             predicted_t = self.predict_result(cmd)
             if predicted_t != result_t:
                 if result_t is None:
                     raise RuntimeError("Result is None")
-                print(f"Avast! Bug here! {cmd} should make {predicted_t}, made {result_t}")
+                self.logger.error(f"Avast! Bug here! {cmd} should make {predicted_t}, made {result_t}")
             else:
-                print(f"Test passed: {cmd} = {result_t}")
+                self.logger.info(f"Test passed: {cmd} = {result_t}")
 
 # The uvm_agent encapsulates the drivers, monitors, sequencer, and scoreboard. 
 # This one does not turn off the driver/sequencer pair.
@@ -269,6 +274,7 @@ class alu_sequence(uvm_sequence):
             cmd_tr.A = random.randint(0,255) # use Python randomization
             cmd_tr.B = random.randint(0,255)
             cmd_tr.op = random.choice(list(ALUOps)) # Pick an operation
+            print ("SENDING ", ii, cmd_tr)
             self.finish_item(cmd_tr) # UVM finish_item waits for the driver to call item_done
 
 
