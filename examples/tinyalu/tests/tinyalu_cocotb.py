@@ -2,12 +2,14 @@ from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge, RisingEdge
 from tinyalu_uvm import *
 import threading
+import cocotb
+
 
 
 class AluDriverBfm():
     def __init__(self, dut, label):
         self.dut = dut
-        ConfigDB().set(self, label)
+        ConfigDB().set(None, "*", label, self)
         self.driver_queue = UVMQueue(maxsize=1)
         self.cmd_mon_queue = UVMQueue(maxsize=0)
         self.result_mon_queue = UVMQueue(maxsize=0)
@@ -89,7 +91,7 @@ def run_uvm_test(test_name):
 
 @cocotb.test()
 async def test_alu(dut):
-    ConfigDB().set(dut, "DUT", "*")
+    ConfigDB().set(None, "*", "DUT", dut)
     clock = Clock(dut.clk, 2, units="us")
     cocotb.fork(clock.start())
     bfm = AluDriverBfm(dut, "ALUDRIVERBFM")

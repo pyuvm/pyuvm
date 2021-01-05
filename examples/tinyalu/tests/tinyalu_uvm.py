@@ -1,10 +1,7 @@
 from pyuvm import *
 import random
-import logging
-from enum import Enum, unique, auto
-import asyncio
-import concurrent.futures
-import cocotb
+from enum import Enum, unique
+
 
 
 # The TinyALU testbench is a simulation of a simulation demonstrating what a testbench
@@ -105,7 +102,7 @@ class driver(uvm_driver):
         # that manages component path names and the database.
         #
 
-        self.bfm = self.cdb_get(, "ALUDRIVERBFM"
+        self.bfm = self.cdb_get("ALUDRIVERBFM")
 
         # The bfm is a handle to the DUT, but in a real testbench
         # it would be a handle to a bfm.
@@ -131,7 +128,7 @@ class command_monitor(uvm_component):
         """
         def build_phase(self, phase = None):
             self.ap = uvm_analysis_port("ap", self)
-            self.monitor_bfm = self.cdb_get(, "ALUDRIVERBFM"
+            self.monitor_bfm = self.cdb_get("ALUDRIVERBFM")
 
 
         def run_phase(self):
@@ -148,7 +145,7 @@ class result_monitor(uvm_component):
     """
     def build_phase(self):
         self.ap = uvm_analysis_port("ap", self)
-        self.result_mon = self.cdb_get(, "ALUDRIVERBFM"
+        self.result_mon = self.cdb_get("ALUDRIVERBFM")
 
     def run_phase(self):
         while True:
@@ -186,7 +183,7 @@ class scoreboard(uvm_subscriber):
             result = cmd.A * cmd.B
         else:
             result = None
-            print(f"Got illegal operation {cmd}") # replace the uvm_fatal
+            raise error_classes.UVMFatalError(f"Got illegal operation {cmd}") # replace the uvm_fatal
                                                                            # error message with an exception
 
         return result_transaction("predicted", result) # create a transaction and return it
@@ -202,9 +199,9 @@ class scoreboard(uvm_subscriber):
         if predicted_t != result_t:
             if result_t is None:
                 raise RuntimeError("Result is None")
-            print(f"Avast! Bug here! {cmd} should make {predicted_t}, made {result_t}")
+            self.logger.error(f"Avast! Bug here! {cmd} should make {predicted_t}, made {result_t}")
         else:
-            print(f"Test passed: {cmd} = {result_t}")
+            self.logger.info(f"Test passed: {cmd} = {result_t}")
 
 # The uvm_agent encapsulates the drivers, monitors, sequencer, and scoreboard. 
 # This one does not turn off the driver/sequencer pair.
@@ -221,11 +218,11 @@ class tinyalu_agent(uvm_agent):
         self.dr_h = driver("dr_h", self)         # the driver (note no parameter)
         self.seqr = uvm_sequencer("seqr", self)  # the sequncer (note no parameter here either)
 
-        self.cdb_set("SEQR", "*", self.seqr)  # Store the sequencer in the config_db
+        ConfigDB().set(None, "*", "SEQR",self.seqr)  # Store the sequencer in the config_db
 
         # Make with the factory
-        self.rm_h = self.create_component("result_monitor", "rm_h") # Now the factory methods
-        self.sb_h = self.create_component("scoreboard", "sb_h")     # can be part of uvm_component
+        self.rm_h = result_monitor.create("rm_h", self) # Now the factory methods
+        self.sb_h = scoreboard.create("sb_h", self)     # can be part of uvm_component
                                                                     # No typing issues.
 
         self.cmd_mon_ap = uvm_analysis_port("cmd_mon_ap", self)     # The agent provides two
@@ -262,7 +259,8 @@ class alu_sequence(uvm_sequence):
             self.start_item(cmd_tr) # UVM start_item gets the sequencer
             cmd_tr.A = random.randint(0,255) # use Python randomization
             cmd_tr.B = random.randint(0,255)
-            cmd_tr.op = random.choice(list(ALUOps)) # Pick an operation
+            legal_ops = list(ALUOps)[1:]
+            cmd_tr.op = random.choice(legal_ops) # Pick an operation not NOP
             self.finish_item(cmd_tr) # UVM finish_item waits for the driver to call item_done
 
 
@@ -285,11 +283,11 @@ class alu_test(uvm_test):
         """
         self.raise_objection() # Keeps the phase from advancing until the sequence is done.
         seq = alu_sequence("seq") # Here is the ten item sequencer
-        seqr = self.cdb_get(, "SEQR"  # The sequencer stored itself in the config_db
+        seqr = self.cdb_get("SEQR")  # The sequencer stored itself in the config_db
         seq.start(seqr) # Start the sequence on the sequencer.
         self.drop_objection() # Allow the testbench to go to the next phase
 
     def final_phase(self):
-        bfm = self.cdb_get(, "ALUDRIVERBFM"
+        bfm = self.cdb_get("ALUDRIVERBFM")
         bfm.done.set()
 
