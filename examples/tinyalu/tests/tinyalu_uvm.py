@@ -159,7 +159,7 @@ class result_monitor(uvm_component):
 
 # The uvm_subscriber class extends analysis_export (which is a uvm_component)
 # The subscriber promises to override the write() method.
-class scoreboard(uvm_subscriber):
+class scoreboard(uvm_component):
     """
     Waits to get results and then uses the most
     recent command to create a predicted value. Then
@@ -167,11 +167,16 @@ class scoreboard(uvm_subscriber):
     """
     def build_phase(self):
         self.cmd_f = uvm_tlm_analysis_fifo("cmd_f", self) # fifo for commands
+        self.result_f = uvm_tlm_analysis_fifo("result_f", self) # fifo for commands
         self.cmd_p =  uvm_get_port("cmd_p", self) # a port for reading the fifo
+        self.result_p =  uvm_get_port("result_p", self) # a port for reading the fifo
 
     def connect_phase(self):
         self.cmd_p.connect(self.cmd_f.get_export) # Connect the fifo export to the port.
-
+        self.result_p.connect(self.result_f.get_export) # Connect the result export to the port
+        self.cmd_export = self.cmd_f.analysis_export
+        self.result_export = self.result_f.analysis_export
+        
     # Static methods don't use the self pointer or the cls pointer. 
     # They could go anywhere but are in the class for convenience
     @staticmethod
@@ -192,19 +197,21 @@ class scoreboard(uvm_subscriber):
         return result_transaction("predicted", result) # create a transaction and return it
 
     # Overrides the write method in the analysis_export
-    def write(self, result_t):
+    def run_phase(self):
         """
         Use the most recent command to predict a result and compare
         to the result sent to write.
         """
-        cmd = self.cmd_p.get()
-        predicted_t = self.predict_result(cmd)
-        if predicted_t != result_t:
-            if result_t is None:
-                raise RuntimeError("Result is None")
-            print(f"Avast! Bug here! {cmd} should make {predicted_t}, made {result_t}")
-        else:
-            print(f"Test passed: {cmd} = {result_t}")
+        while True:
+            result_t = self.result_p.get()
+            cmd = self.cmd_p.get()
+            predicted_t = self.predict_result(cmd)
+            if predicted_t != result_t:
+                if result_t is None:
+                    raise RuntimeError("Result is None")
+                print(f"Avast! Bug here! {cmd} should make {predicted_t}, made {result_t}")
+            else:
+                print(f"Test passed: {cmd} = {result_t}")
 
 # The uvm_agent encapsulates the drivers, monitors, sequencer, and scoreboard. 
 # This one does not turn off the driver/sequencer pair.
@@ -238,9 +245,8 @@ class tinyalu_agent(uvm_agent):
 
         self.dr_h.seq_item_port.connect(self.seqr.seq_item_export) # Connect driver to sequencer
         
-        self.cm_h.ap.connect(self.sb_h.cmd_f.analysis_export) # Connect the command monitor to an
-                                                              # analysis FIFO in the scoreboard
-        self.rm_h.ap.connect(self.sb_h)  # The scoreboard connects directly to the result analysis_port.
+        self.cm_h.ap.connect(self.sb_h.cmd_export) 
+        self.rm_h.ap.connect(self.sb_h.result_export) 
 
 
 # The environment (env) instantiates the agent.
