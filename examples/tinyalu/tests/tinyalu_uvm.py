@@ -192,8 +192,8 @@ class scoreboard(uvm_component):
             result = cmd.A * cmd.B
         else:
             result = None
-            self.logger.critical(f"Got illegal operation {cmd}") # replace the uvm_fatal
-                                                                           # error message with an exception
+            error_classes.UVMFatalError(f"Got illegal operation {cmd}") # replace the uvm_fatal
+                                                             # error message with an exception
 
         return result_transaction("predicted", result) # create a transaction and return it
 
@@ -237,7 +237,7 @@ class tinyalu_agent(uvm_agent):
 
         # Make with the factory
         self.rm_h = result_monitor.create("rm_h", self) # Now the factory methods
-        self.sb_h = scoreboard.create("sb_h", self)     # can be part of uvm_component
+#        self.sb_h = scoreboard.create("sb_h", self)     # can be part of uvm_component
                                                                     # No typing issues.
 
         self.cmd_mon_ap = uvm_analysis_port("cmd_mon_ap", self)     # The agent provides two
@@ -250,8 +250,8 @@ class tinyalu_agent(uvm_agent):
 
         self.dr_h.seq_item_port.connect(self.seqr.seq_item_export) # Connect driver to sequencer
         
-        self.cm_h.ap.connect(self.sb_h.cmd_export) 
-        self.rm_h.ap.connect(self.sb_h.result_export) 
+#        self.cm_h.ap.connect(self.sb_h.cmd_export)
+#        self.rm_h.ap.connect(self.sb_h.result_export)
 
 
 # The environment (env) instantiates the agent.
@@ -273,7 +273,8 @@ class alu_sequence(uvm_sequence):
             self.start_item(cmd_tr) # UVM start_item gets the sequencer
             cmd_tr.A = random.randint(0,255) # use Python randomization
             cmd_tr.B = random.randint(0,255)
-            cmd_tr.op = random.choice(list(ALUOps)) # Pick an operation
+            alu_ops = list(ALUOps)[1:]
+            cmd_tr.op = random.choice(list(ALUOps)[1:]) # Pick an operation
             print ("SENDING ", ii, cmd_tr)
             self.finish_item(cmd_tr) # UVM finish_item waits for the driver to call item_done
 

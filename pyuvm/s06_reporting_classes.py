@@ -15,7 +15,7 @@ class uvm_report_object(uvm_object):
         super().__init__(name)
         full_name = self.get_full_name()
         self.logger = logging.getLogger(full_name)
-        self.logger.setLevel(level=logging.DEBUG)
+        self.logger.setLevel(level=logging.INFO)
         self.logger.propagate=False
         handler = logging.StreamHandler()
         handler.setLevel(logging.INFO)

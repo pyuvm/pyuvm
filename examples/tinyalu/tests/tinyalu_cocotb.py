@@ -44,16 +44,20 @@ class AluDriverBfm():
         self.dut.op = 0
         while True:
             await RisingEdge(self.dut.clk)
+            print(f"start: {self.dut.start}  done: {self.dut.done}")
             if self.dut.start == 0 and self.dut.done == 0:
                 try:
                     cmd = self.driver_queue.get(timeout=0.1)
+                    print("          BFM cmd:", cmd)
                     self.dut.A = cmd.A
                     self.dut.B = cmd.B
                     self.dut.op = int(cmd.op.value)
                     self.dut.start = 1
                 except queue.Empty:
+                    print("QUEUE EMPTY")
                     pass
             elif self.dut.start == 1:
+                print(f"start: {self.dut.start}  done: {self.dut.done}")
                 if self.dut.done.value == 1:
                     self.dut.start = 0
                     self.dut.op = 0
