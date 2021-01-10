@@ -9,7 +9,7 @@
 
 from pyuvm.s05_base_classes import *
 from pyuvm.s12_uvm_tlm_interfaces import *
-from threading import Condition, enumerate
+import threading
 
 
 """
@@ -125,8 +125,8 @@ class uvm_sequence_item(uvm_transaction):
 
     def __init__(self, name):
         super().__init__(name)
-        self.start_condition = Condition()
-        self.finish_condition = Condition()
+        self.start_condition = threading.Condition()
+        self.finish_condition = threading.Condition()
         self.parent_sequence_id = None
         self.response_id = None
 
@@ -165,7 +165,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         """
         self.req_q.put(item)
 
-    def put(self, item, timeout=None):
+    def put_response(self, item, timeout=None):
         """
         Put response into response queue
 
@@ -200,7 +200,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
             self.current_item.finish_condition.notify_all()
         self.current_item = None
         if rsp is not None:
-            self.put(rsp)
+            self.put_response(rsp)
 
     def get_response(self, transaction_id=None, timeout=None):
         """
@@ -222,9 +222,9 @@ class uvm_seq_item_port(uvm_blocking_put_port):
         """Put a request item in the request queue"""
         self.export.put_req(item)
 
-    def put(self, item):
+    def put_response(self, item):
         """Put a response back in the queue. aka put_response"""
-        self.export.put(item)
+        self.export.put_response(item)
 
     def get_next_item(self, timeout=None):
         """get the next sequence item from the request queue
@@ -295,6 +295,13 @@ class uvm_sequence(uvm_object):
     using start_item() and finish_item(). It can also get back results with get_response()
     body() gets launched in a thread at start.
     """
+    @staticmethod
+    def fork_sequence(seq, seqr):
+        thread = threading.Thread(target=seq.start, args=(seqr,), name=seq.get_name())
+        thread.start()
+        return thread
+
+
 
     def __init__(self, name):
         super().__init__(name)

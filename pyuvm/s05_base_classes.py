@@ -82,7 +82,8 @@ class uvm_object(utility_classes.uvm_void):
         Not implemented because Python can implement the factory without
         these shenanigans.
         """
-        raise error_classes.UVMNotImplemented('Python provides better ways to do this so the uvm_object_wrapper is unimplemented')
+        raise error_classes.UVMNotImplemented('Python provides better ways to do this '
+                                              'so the uvm_object_wrapper is unimplemented')
 
     def get_object_type(self):
         """
@@ -90,7 +91,8 @@ class uvm_object(utility_classes.uvm_void):
         Not implemented because Python can implement the factory without
         these shenanigans.
         """
-        raise error_classes.UVMNotImplemented('Python provides better ways to do this so the uvm_object_wrapper is unimplemented')
+        raise error_classes.UVMNotImplemented('Python provides better ways to do this '
+                                              'so the uvm_object_wrapper is unimplemented')
 
     def get_type_name(self):
         """
@@ -107,9 +109,6 @@ class uvm_object(utility_classes.uvm_void):
         new_obj = uvm_factory().create_object_by_type(cls, name=name)
         return new_obj
 
-
-
-
     def clone(self):
         """
         5.3.5.2
@@ -122,13 +121,13 @@ class uvm_object(utility_classes.uvm_void):
         """
         5.3.6.1
         """
-        raise error_classes.UVMNotImplemented('There are probably better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented('There are better ways to do printing in Python')
 
     def sprint(self):
-        raise error_classes.UVMNotImplemented('There are probably better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented('There are better ways to do printing in Python')
 
     def do_print(self):
-        raise error_classes.UVMNotImplemented('There are probably better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented('There are better ways to do printing in Python')
 
     def convert2string(self):
         """
@@ -302,7 +301,8 @@ class uvm_policy:
     """
 
     def __new__(cls, *args, **kwargs):
-        raise error_classes.UsePythonMethod('Python has simpler ways of handling functionality provided by policies.')
+        raise error_classes.UsePythonMethod('Python has simpler ways of handling '
+                                            'functionality provided by policies.')
 
 
 class uvm_transaction(uvm_object):

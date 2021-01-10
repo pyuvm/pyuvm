@@ -1,6 +1,3 @@
-class UVMNotImplemented(NotImplementedError):
-    """For methods that we haven't yet implemented."""
-
 
 class UVMError(Exception):
     """
@@ -8,7 +5,11 @@ class UVMError(Exception):
     """
 
 
-class UsePythonMethod(NotImplementedError):
+class UVMNotImplemented(UVMError):
+    """For methods that we haven't yet implemented."""
+
+
+class UsePythonMethod(UVMError):
     """
     For cases where the user should use a Python
     method rather than a UVM method.  For example

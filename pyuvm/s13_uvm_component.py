@@ -57,7 +57,6 @@ We've opted for the latter.
     def do_execute_op(self, op):
         raise error_classes.UVMNotImplemented("Policies not implemented")
 
-
     @classmethod
     def create(cls, name="", parent=None):
         if parent is None:
@@ -104,7 +103,6 @@ We've opted for the latter.
         """
         datum = ConfigDB().get(self, inst_path, label)
         return datum
-
 
     @property
     def parent(self):
@@ -360,6 +358,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     def _utt(self):
         """Used in testing"""
         return self.get_child("uvm_test_top")
+
     def run_test(self, test_name=""):
         """
         This implementation skips much of the state-setting and
@@ -389,6 +388,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
                         run_cond.wait_for(run_over)
         except error_classes.UVMError as uve:
             self.logger.error(uve)
+
 
 # In the SystemVerilog UVM the uvm_config_db is a
 # convenience layer on top of the much more complicated
@@ -504,8 +504,8 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
         key_matches = []  # Make the linter happy by setting this.
         try:
-           # key_matches = [dk for dk in self._path_dict.keys()
-           #                if fnmatch.fnmatch(inst_name, dk)]
+            # key_matches = [dk for dk in self._path_dict.keys()
+            #                if fnmatch.fnmatch(inst_name, dk)]
             for dk in self._path_dict.keys():
                 if fnmatch.fnmatch(inst_name, dk):
                     key_matches.append(dk)
