@@ -26,8 +26,9 @@
 from pyuvm.s13_uvm_component import uvm_component
 import queue
 from pyuvm.error_classes import UVMTLMConnectionError
-from pyuvm.utility_classes import UVMQueue
+from pyuvm.utility_classes import UVMQueue, FIFO_DEBUG
 from pyuvm import error_classes
+import logging
 
 
 # 12.2.2
@@ -558,10 +559,11 @@ class uvm_tlm_fifo_base(uvm_component):
     Declares and instantiate the exports needed to communicate
     through the Queue.
     """
-
     class BlockingPutExport(QueueAccessor, uvm_blocking_put_export):
         def put(self, item, timeout=None):
+            self.logger.log(FIFO_DEBUG, f"blocking put: {item}")
             self.queue.put(item, timeout=timeout)
+            self.logger.log(FIFO_DEBUG, f"success put {item}")
             self.ap.write(item)
 
     #  12.2.8.1.3
@@ -583,7 +585,9 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class BlockingGetExport(QueueAccessor, uvm_blocking_get_export):
         def get(self, timeout=None):
+            self.logger.log(FIFO_DEBUG, "Attempting blocking get")
             item = self.queue.get(timeout=timeout)
+            self.logger.log(FIFO_DEBUG, f"got {item}")
             self.ap.write(item)
             return item
 
@@ -604,7 +608,9 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class BlockingPeekExport(QueueAccessor, uvm_blocking_peek_export):
         def peek(self):
+            self.logger.log(FIFO_DEBUG, "Attempting blocking peek")
             peek_data = self.queue.peek()
+            self.logger.log(FIFO_DEBUG, f"peeked at {peek_data}")
             return peek_data
 
     class NonBlockingPeekExport(QueueAccessor, uvm_nonblocking_peek_export):
@@ -662,6 +668,9 @@ class uvm_tlm_fifo_base(uvm_component):
                                                                          self.queue, self.get_ap)
         self.get_peek_export = self.GetPeekExport("get_peek_export", self, self.queue, self.get_ap)
 
+    def end_of_elaboration_phase(self):
+        formatter = logging.Formatter("%(levelname)s: [%(name)s]: %(message)s")
+        self.set_formatter_on_handlers_hier(formatter)
 
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
 

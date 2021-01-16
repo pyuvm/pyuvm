@@ -270,13 +270,25 @@ We've opted for the latter.
     # noinspection SpellCheckingInspection
     def set_logging_level_hier(self, logging_level):
         """
-        Set the logging level for this component and all the way down the hierarchy
+        Set the logging level for this component's logger
+        and all the way down the hierarchy
         :param logging_level: typically a constant from logging module
         :return: None
         """
         self.set_logging_level(logging_level)
         for child in self.hierarchy:
             child.set_logging_level(logging_level)
+
+    def set_handlers_logging_levels_hier(self, logging_level):
+        """
+        Set the logging level for the handlers in this component's
+        logger and all the components below it.
+        :param logging_level:
+        :return:
+        """
+        self.set_logging_level_on_handlers(logging_level)
+        for child in self.hierarchy:
+            child.set_logging_level_on_handlers(logging_level)
 
     def add_logging_handler_hier(self, handler):
         """
@@ -288,6 +300,21 @@ We've opted for the latter.
         self.add_logging_handler(handler)
         for child in self.hierarchy:
             child.add_logging_handler(handler)
+
+    def remove_logging_handler_hier(self, handler):
+        """
+        Remove a handler from all loggers below this component
+        :param handler: logging handler
+        :return: None
+        """
+        assert isinstance(handler, logging.Handler), f"You must pass a logging.Handler not {type(handler)}"
+        self.logger.removeHandler(handler)
+        for child in self.hierarchy:
+            child.remove_logging_handler(handler)
+
+    def set_formatter_on_handlers_hier(self, formatter):
+        for child in self.hierarchy:
+            child.set_formatter_on_handlers(formatter)
 
     def build_phase(self):
         ...

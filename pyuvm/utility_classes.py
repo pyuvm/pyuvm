@@ -6,6 +6,8 @@ import time
 import threading
 import sys
 
+FIFO_DEBUG = 5
+logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
 
 class Singleton(type):
     _instances = {}
