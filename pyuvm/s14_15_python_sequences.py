@@ -296,7 +296,7 @@ class uvm_sequence(uvm_object):
     body() gets launched in a thread at start.
     """
     @staticmethod
-    def fork_sequence(seq, seqr):
+    def fork(seq, seqr):
         thread = threading.Thread(target=seq.start, args=(seqr,), name=seq.get_name())
         thread.start()
         return thread

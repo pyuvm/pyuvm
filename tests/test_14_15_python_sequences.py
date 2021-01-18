@@ -585,8 +585,8 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 seqr = ConfigDB().get(None, "", "SEQR")
                 inc = IncSeq("inc")
                 dec = DecSeq("dec")
-                inc_thread = uvm_sequence.fork_sequence(inc, seqr)
-                dec_thread = uvm_sequence.fork_sequence(dec, seqr)
+                inc_thread = uvm_sequence.fork(inc, seqr)
+                dec_thread = uvm_sequence.fork(dec, seqr)
                 inc_thread.join()
                 dec_thread.join()
 
