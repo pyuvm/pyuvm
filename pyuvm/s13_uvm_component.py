@@ -279,17 +279,6 @@ We've opted for the latter.
         for child in self.hierarchy:
             child.set_logging_level(logging_level)
 
-    def set_handlers_logging_levels_hier(self, logging_level):
-        """
-        Set the logging level for the handlers in this component's
-        logger and all the components below it.
-        :param logging_level:
-        :return:
-        """
-        self.set_logging_level_on_handlers(logging_level)
-        for child in self.hierarchy:
-            child.set_logging_level_on_handlers(logging_level)
-
     def add_logging_handler_hier(self, handler):
         """
         Add an additional handler all the way down the component hierarchy
