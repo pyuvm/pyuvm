@@ -231,7 +231,11 @@ class ObjectionHandler(metaclass=Singleton):
             self.run_condition.notify_all()
 
     def drop_objection(self, dropper):
-        del self.__objections[dropper]
+        try:
+            del self.__objections[dropper]
+        except KeyError:
+            self.objection_raised = True
+            pass
         with self.run_condition:
             self.run_condition.notify_all()
 
