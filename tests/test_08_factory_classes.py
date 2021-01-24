@@ -27,7 +27,7 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
     def setUp(self):
         self.fd = utility_classes.FactoryData()
-        self.top = uvm_component("top")
+        self.top = uvm_component("top", None)
         self.mid = uvm_component("mid", self.top)
         self.sib = uvm_component("sib", self.top)
         self.mid_orig = self.original_comp("orig", self.mid)

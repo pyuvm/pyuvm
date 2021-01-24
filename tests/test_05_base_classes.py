@@ -230,7 +230,7 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         tr = uvm_transaction()
         self.assertEqual(0, len(tr.get_name()))
         self.assertIsNone(tr.get_initiator())
-        uc = uvm_component("uc")
+        uc = uvm_component("uc", None)
         tr.set_initiator(uc)
         self.assertEqual(uc, tr.get_initiator())
 

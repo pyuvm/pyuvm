@@ -212,7 +212,8 @@ class ObjectionHandler(metaclass=Singleton):
         self.printed_warning = False
 
     def __str__(self):
-        ss = "Current Objections:\n"
+        ss = f"run_phase complete: {self.run_phase_complete()}\n"
+        ss += "Current Objections:\n"
         for cc in self.__objections:
             ss += f"{self.__objections[cc]}\n"
         return ss
@@ -348,7 +349,7 @@ class UVMQueue(queue.Queue):
         with self.not_empty:
             if not block:
                 if not self._qsize():
-                    raise Empty
+                    raise queue.Empty
             elif timeout is None:
                 while not self._qsize():
                     self.not_empty.wait()

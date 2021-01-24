@@ -19,7 +19,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         if uvm_root().has_child("my_root"):
             self.my_root = uvm_root().get_child("my_root")
         else:
-            self.my_root = uvm_component("my_root")
+            self.my_root = uvm_component("my_root", None)
 
     def setUp(self):
         ObjectionHandler().run_phase_done_flag = False

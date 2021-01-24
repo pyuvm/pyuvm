@@ -17,7 +17,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         13.1.2.1 Constructor
         13.1 class defined
         """
-        comp = uvm_component ( 'test' )
+        comp = uvm_component('test', None)
         self.assertTrue ( 'test' in uvm_component.component_dict )
         self.assertTrue ( comp.parent == uvm_root() )
         self.assertTrue(comp.print_enabled) #13.1.2.2
@@ -27,13 +27,13 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         13.1.2.3
         We have not implemented policies.
         """
-        comp = uvm_component('test')
+        comp = uvm_component('test', None)
         with self.assertRaises(error_classes.UVMNotImplemented):
             comp.do_execute_op("op")
 
     def test_component_with_parent(self):
-        parent = uvm_component ( 'parent' )
-        child = uvm_component ( 'child', parent )
+        parent = uvm_component('parent', None)
+        child = uvm_component('child', parent)
         self.assertTrue ( 'parent' in uvm_component.component_dict )
         self.assertTrue ( f'parent.child' in uvm_component.component_dict )
         self.assertTrue ( parent.parent == uvm_root() )
@@ -41,11 +41,11 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         self.assertEqual ( list ( parent.hierarchy ), [parent, child] )
 
     def test_hierarchy(self):
-        parent = uvm_component ( 'parent' )
-        child1 = uvm_component ( 'child1', parent )
-        child2 = uvm_component ( 'child2', parent )
-        child3 = uvm_component ( 'child3', child1 )
-        child4 = uvm_component ( 'child4', child3 )
+        parent = uvm_component('parent', None)
+        child1 = uvm_component('child1', parent)
+        child2 = uvm_component('child2', parent)
+        child3 = uvm_component('child3', child1)
+        child4 = uvm_component('child4', child3)
         golden_list = [parent, child1, child3, child2]
         self.assertEqual ( list ( parent.hierarchy ), golden_list )
         hier = list ( parent.hierarchy )
@@ -58,9 +58,9 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         13.1.3.1 get_parent test
         :return:
         """
-        parent = uvm_component('parent')
+        parent = uvm_component('parent', None)
         child = uvm_component('child', parent)
-        grandchild = uvm_component('grandchild',child)
+        grandchild = uvm_component('grandchild', child)
         par = grandchild.get_parent()
         self.assertEqual(child, par)
         gpar = child.get_parent()
@@ -73,10 +73,10 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         13.1.3.1 get_parent test
         :return:
         """
-        parent = uvm_component('parent')
+        parent = uvm_component('parent', None)
         child1 = uvm_component('child1', parent)
         child2 = uvm_component('child2', parent)
-        child21 = uvm_component('child21',child2)
+        child21 = uvm_component('child21', child2)
         parent_name = parent.get_full_name()
         self.assertEqual("parent", parent_name)
         self.assertEqual("parent.child1", child1.get_full_name())
@@ -91,12 +91,12 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         13.1.3.3
 
         """
-        parent = uvm_component ( 'parent' )
-        child1 = uvm_component ( 'child1', parent )
-        child2 = uvm_component ( 'child2', parent )
-        child3 = uvm_component ( 'child3', parent )
-        child11 = uvm_component ( 'child11', child1 )
-        child111 = uvm_component ( 'child111', child11 )
+        parent = uvm_component('parent', None)
+        child1 = uvm_component('child1', parent)
+        child2 = uvm_component('child2', parent)
+        child3 = uvm_component('child3', parent)
+        child11 = uvm_component('child11', child1)
+        child111 = uvm_component('child111', child11)
         children = parent.get_children()
         print(children)
         self.assertTrue(len(children) == 3)
@@ -116,7 +116,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         copy of the children list.
         """
 
-        parent = uvm_component('parent')
+        parent = uvm_component('parent', None)
         child1 = uvm_component('child1', parent)
         child2 = uvm_component('child2', parent)
         child3 = uvm_component('child3', parent)
@@ -134,7 +134,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         than throwing a Lookup exception.
         :return:
         """
-        parent = uvm_component('parent')
+        parent = uvm_component('parent', None)
         child1 = uvm_component('child1', parent)
         child2 = uvm_component('child2', parent)
         child3 = uvm_component('child3', parent)
@@ -146,7 +146,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         13.1.3.5
         get_num_children() returns the number of children.
         """
-        parent = uvm_component('parent')
+        parent = uvm_component('parent', None)
         child1 = uvm_component('child1', parent)
         child2 = uvm_component('child2', parent)
         child3 = uvm_component('child3', parent)
@@ -160,7 +160,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         Returns the child of the name
         :return:
         """
-        parent = uvm_component('parent')
+        parent = uvm_component('parent', None)
         child1 = uvm_component('child1', parent)
         child2 = uvm_component('child2', parent)
         child3 = uvm_component('child3', child1)
@@ -179,11 +179,11 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         .a.b.c means a is the top level and we find our way down.
         :return:
         """
-        parent = uvm_component ( 'parent' )
-        child1 = uvm_component ( 'child1', parent )
-        child2 = uvm_component ( 'child2', parent )
-        child3 = uvm_component ( 'child3', child1 )
-        child4 = uvm_component ( 'child4', child3 )
+        parent = uvm_component('parent', None)
+        child1 = uvm_component('child1', parent)
+        child2 = uvm_component('child2', parent)
+        child3 = uvm_component('child3', child1)
+        child4 = uvm_component('child4', child3)
         self.assertEqual (child1, parent.lookup ( 'child1' ))
         self.assertEqual (child3, parent.lookup ( 'child1.child3' ))
         self.assertNotEqual (child1, parent.lookup ( 'child2' ))
@@ -197,11 +197,11 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         get_depth measures dept from uvm_root where uvm_root is 0
         :return:
         """
-        parent = uvm_component ( 'parent' )
-        child1 = uvm_component ( 'child1', parent )
-        child2 = uvm_component ( 'child2', parent )
-        child3 = uvm_component ( 'child3', child1 )
-        child4 = uvm_component ( 'child4', child3 )
+        parent = uvm_component('parent', None)
+        child1 = uvm_component('child1', parent)
+        child2 = uvm_component('child2', parent)
+        child3 = uvm_component('child3', child1)
+        child4 = uvm_component('child4', child3)
         self.assertEqual( 0, uvm_root().get_depth())
         self.assertEqual(1, parent.get_depth())
         self.assertEqual(2, child1.get_depth())
@@ -220,7 +220,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
 
 
     def test_config_db(self):
-        A = uvm_component('A')
+        A = uvm_component('A', None)
         B = uvm_component('B', A)
         C = uvm_component('C', A)
         D = uvm_component('D', C)
@@ -247,7 +247,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
 
 
     def test_wildcard_precedence(self):
-        A = uvm_component('A')
+        A = uvm_component('A', None)
         B = uvm_component('B', A)
         C = uvm_component('C', A)
         A.cdb_set("TEST", 11, "*")
@@ -262,7 +262,7 @@ class s13_predefined_component_TestCase ( pyuvm_unittest.pyuvm_TestCase ):
         self.assertEqual(55, aao)
 
     def test_contextless_behavior_in_heirarchy(self):
-        A = uvm_component('A')
+        A = uvm_component('A', None)
         B = uvm_component('B', A)
         C = uvm_component('C', A)
         ConfigDB().set(A, "*", "OTHER", 55)

@@ -28,7 +28,7 @@ We've opted for the latter.
     def clear_components(cls):
         cls.component_dict = {}
 
-    def __init__(self, name, parent=None):
+    def __init__(self, name, parent):
         """
         13.1.2.1---This is new() in the IEEE-UVM, but we mean
         the same thing with __init__()
@@ -276,8 +276,8 @@ We've opted for the latter.
         :return: None
         """
         self.set_logging_level(logging_level)
-        for child in self.hierarchy:
-            child.set_logging_level(logging_level)
+        for child in self.children:
+            child.set_logging_level_hier(logging_level)
 
     def add_logging_handler_hier(self, handler):
         """
@@ -287,8 +287,8 @@ We've opted for the latter.
         """
         assert isinstance(handler, logging.Handler), f"You can only add logging.Handler objects not {type(handler)}"
         self.add_logging_handler(handler)
-        for child in self.hierarchy:
-            child.add_logging_handler(handler)
+        for child in self.children:
+            child.add_logging_handler_hier(handler)
 
     def remove_logging_handler_hier(self, handler):
         """
@@ -298,12 +298,12 @@ We've opted for the latter.
         """
         assert isinstance(handler, logging.Handler), f"You must pass a logging.Handler not {type(handler)}"
         self.logger.removeHandler(handler)
-        for child in self.hierarchy:
-            child.remove_logging_handler(handler)
+        for child in self.children:
+            child.remove_logging_handler_hier(handler)
 
     def set_formatter_on_handlers_hier(self, formatter):
-        for child in self.hierarchy:
-            child.set_formatter_on_handlers(formatter)
+        for child in self.children:
+            child.set_formatter_on_handlers_hier(formatter)
 
     def build_phase(self):
         ...
