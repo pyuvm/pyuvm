@@ -302,6 +302,7 @@ We've opted for the latter.
             child.remove_logging_handler_hier(handler)
 
     def set_formatter_on_handlers_hier(self, formatter):
+        self.set_formatter_on_handlers(formatter)
         for child in self.children:
             child.set_formatter_on_handlers_hier(formatter)
 
