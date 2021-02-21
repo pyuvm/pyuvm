@@ -51,7 +51,7 @@ class s09_phasing_TestCase(pyuvm_unittest.pyuvm_TestCase):
             phase_func = phase_class.__name__[4:]
             s09_phasing_TestCase.phase_list[phase_func] = []
 
-        self.top = self.my_comp("top")
+        self.top = self.my_comp("top", None)
         #
         # top +-> A +-> C
         #           +-> D

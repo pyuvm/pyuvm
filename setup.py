@@ -13,7 +13,7 @@ with open('LICENSE') as f:
 
 setup(
     name='pyuvm',
-    version='1.0a7',
+    version='1.0',
     description='Python Implementation of Universal Verification Methodology',
     long_description=readme,
     long_description_content_type="text/markdown",

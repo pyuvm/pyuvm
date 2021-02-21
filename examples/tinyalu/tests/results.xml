@@ -1,8 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1609888662" />
-    <testcase name="test_alu" classname="tinyalu_cocotb" time="1082877.1632466316" sim_time_ns="156000" ratio_time="0.14406066107469484">
-      <failure />
-    </testcase>
-  </testsuite>
-</testsuites>
