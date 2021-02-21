@@ -19,8 +19,8 @@ setup(
     long_description_content_type="text/markdown",
     author='Ray Salemi',
     author_email='ray@raysalemi.com',
-    url='https://rayboston@bitbucket.org/rayboston/pyuvm.git',
-    license=license,
+    url='https://github.com/pyuvm/pyuvm',
+    license='Apache License',
     packages=find_packages(exclude=('tests', 'docs', 'examples', 'scratch'))
 )
 
