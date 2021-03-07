@@ -1,4 +1,5 @@
 IEEE_UVM.pdf
+*.code-workspace
 *.ipynb
 .idea/*
 .cache

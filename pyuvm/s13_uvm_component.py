@@ -81,16 +81,16 @@ We've opted for the latter.
     def drop_objection(self):
         utility_classes.ObjectionHandler().drop_objection(self)
 
-    def cdb_set(self, label, item, inst_path="*"):
+    def cdb_set(self, label, value, inst_path="*"):
         """
         Store an object in the config_db.
 
-        :param item: The object to store
+        :param value: The object to store
         :param label: The label to use to retrieve it
         :param inst_path: A path with globs or if left blank the get_full_name() path
         """
 
-        ConfigDB().set(self, inst_path, label, item)
+        ConfigDB().set(self, inst_path, label, value)
 
     def cdb_get(self, label, inst_path=""):
         """
@@ -98,7 +98,7 @@ We've opted for the latter.
         get_full_name() path. Can find objects stored with wildcards
 
         :param inst_path: The path below this component
-        :param label: The label used to store the item
+        :param label: The label used to store the value
         :return: The object at this path stored at the label
         """
         datum = ConfigDB().get(self, inst_path, label)
@@ -469,6 +469,11 @@ class ConfigDB(metaclass=utility_classes.Singleton):
             inst_name = context.get_full_name() + "." + inst_name
         return context, inst_name
 
+    def trace(self, method,  context, inst_name, field_name, value):
+        if self.is_tracing:
+            # noinspection SpellCheckingInspection
+                print(f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}")
+
     def set(self, context, inst_name, field_name, value):
         """
         Stores an object in the db using the context and
@@ -498,20 +503,19 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
         self._path_dict[inst_name][field_name][precedence] = value
 
-        if self.is_tracing:
-            # noinspection SpellCheckingInspection
-            print(f"CFGDB/SET Configuration set {context} {inst_name} {field_name} {value}")
+        self.trace("SET", context, inst_name, field_name, value)
+                
 
     def get(self, context, inst_name, field_name):
         """
         The component path matches against the paths in the ConfigDB. The path
         cannot have wildcards, but can match against keys with wildcards.
-        Return the item stored at key or raise UVMConfigError if there is no key.
+        Return the value stored at key or raise UVMConfigError if there is no key.
 
         :param inst_name: component full path with no wildcards
         :param field_name: the field_name being retrieved
         :param context: The component making the call
-        :return: item found at location
+        :return: value found at location
         """
         if not set(inst_name).issubset(self.legal_chars):
             raise error_classes.UVMError(f'"{inst_name}" is illegal: '
@@ -553,18 +557,19 @@ class ConfigDB(metaclass=utility_classes.Singleton):
                     break
             if not inserted:
                 sorted_paths.append(path)
-        item = None
+        value = None
         for path in sorted_paths:
             try:
                 component_fields = self._path_dict[path]
                 matching_path_fields = component_fields[field_name]
                 max_precedence = max(matching_path_fields.keys())
-                item = matching_path_fields[max_precedence]
+                value = matching_path_fields[max_precedence]
                 break
             except KeyError:
                 pass
-        if item is not None:
-            return item
+        if value is not None:
+            self.trace("GET", context, inst_name, field_name, value)
+            return value
         else:
             raise error_classes.UVMConfigItemNotFound(f'"Component {inst_name} has no field: {field_name}')
 
