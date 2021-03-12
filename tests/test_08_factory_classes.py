@@ -9,21 +9,29 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     8.0 Factory Class Testing
     """
 
-    class original_comp(uvm_component): ...
+    class original_comp(uvm_component):
+        ...
 
-    class comp_1(uvm_component): ...
+    class comp_1(uvm_component):
+        ...
 
-    class comp_2(uvm_component): ...
+    class comp_2(uvm_component):
+        ...
 
-    class comp_3(uvm_component): ...
+    class comp_3(uvm_component):
+        ...
 
-    class original_object(uvm_object): ...
+    class original_object(uvm_object):
+        ...
 
-    class object_1(uvm_object): ...
+    class object_1(uvm_object):
+        ...
 
-    class object_2(uvm_object): ...
+    class object_2(uvm_object):
+        ...
 
-    class object_3(uvm_object): ...
+    class object_3(uvm_object):
+        ...
 
     def setUp(self):
         self.fd = utility_classes.FactoryData()
@@ -87,7 +95,7 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_set_type_override_by_name_8_3_1_4_2(self):
         """
         8.3.1.4.2
-        Check that name override is setting correct informmation.
+        Check that name override is setting correct information.
         """
         self.factory.set_type_override_by_name("original_comp", "comp_1")
         self.assertEqual(self.comp_1, self.fd.overrides[self.original_comp].type_override)
@@ -96,8 +104,8 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.factory.set_type_override_by_name("original_comp", "comp_2", True)
         self.assertEqual(self.comp_2, self.fd.overrides[self.original_comp].type_override)
         # Test adding an override with an arbitrary string
-        self.factory.set_type_override_by_name("xyzzy", "comp_2")
-        self.assertEqual(self.comp_2, self.fd.overrides['xyzzy'].type_override)
+        self.factory.set_type_override_by_name("any_str", "comp_2")
+        self.assertEqual(self.comp_2, self.fd.overrides['any_str'].type_override)
 
     def test_override_str(self):
         self.factory.set_type_override_by_type(self.original_comp, self.comp_1)
@@ -106,9 +114,8 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         # using name because less typing
         self.factory.set_inst_override_by_name("original_comp", "comp_2", "top.sib.orig")
         self.factory.set_inst_override_by_name("original_comp", "comp_3", "top.mid.orig")
-        ovr = self.fd.overrides[self.original_comp]
-        ss = str(self.fd.overrides[self.original_comp])
-        self.assertEqual('Type Override: comp_1     || Instance Overrides: top.sib.orig => comp_2 | top.mid.orig => comp_3',
+        self.assertEqual('Type Override: comp_1     || Instance Overrides: '
+                         'top.sib.orig => comp_2 | top.mid.orig => comp_3',
                          str(self.fd.overrides[self.original_comp]))
 
     def test_find_type_override(self):
@@ -120,8 +127,8 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.assertEqual(self.comp_1, self.fd.find_override(self.original_comp))
 
     def test_find_override_by_name(self):
-        self.factory.set_type_override_by_name("xyzzy", "comp_2")
-        new_obj = self.fd.find_override("xyzzy")
+        self.factory.set_type_override_by_name("any_str", "comp_2")
+        new_obj = self.fd.find_override("any_str")
         self.assertEqual(self.comp_2, new_obj)
 
     def test_find_recursive_override_8_3_1_5(self):
@@ -213,7 +220,7 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.factory.set_type_override_by_type(self.original_comp, self.comp_3)
         self.factory.set_inst_override_by_type(self.original_comp, self.comp_1, "top.sib.orig")
         self.factory.set_inst_override_by_type(self.original_comp, self.comp_2, "top.mid.orig")
-        overridden = self.fd.find_override(self.original_comp, "top.notthere.orig")
+        overridden = self.fd.find_override(self.original_comp, "top.not_there.orig")
         self.assertEqual(self.comp_3, overridden)
 
     def test_not_finding_inst_override_at_all_8_3_1_5(self):
@@ -224,7 +231,7 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         """
         self.factory.set_inst_override_by_type(self.original_comp, self.comp_1, "top.sib.orig")
         self.factory.set_inst_override_by_type(self.original_comp, self.comp_2, "top.mid.orig")
-        overridden = self.fd.find_override(self.original_comp, "top.notthere.orig")
+        overridden = self.fd.find_override(self.original_comp, "top.not_there.orig")
         self.assertEqual(self.original_comp, overridden)
 
     def test_create_object_by_type_and_name_8_3_1_5(self):
@@ -260,7 +267,7 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.assertTrue(isinstance(new_obj, self.object_2))
         self.assertEqual("orig2b", new_obj.get_name())
         with self.assertLogs(self.factory.logger):
-            not_an_instance = self.factory.create_object_by_name("not_an_object", name="badname")
+            not_an_instance = self.factory.create_object_by_name("not_an_object", name="bad_name")
             self.assertIsNone(not_an_instance)
 
     def test_create_component_by_type_and_name_override_8_3_1_5(self):
@@ -287,20 +294,20 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_set_type_alias_8_3_1_6_1(self):
         """
         8.3.1.6.1
-        This is not implemeneted in SystemVerilog or here
+        This is not implemented in SystemVerilog or here
         :return: None
         """
         with self.assertRaises(error_classes.UVMNotImplemented):
-            self.factory.set_type_alias("xyzzy", self.original_comp)
+            self.factory.set_type_alias("any_str", self.original_comp)
 
     def test_set_inst_alias_8_3_1_6_2(self):
         """
         8.3.1.6.2
-        This is not implemeneted in SystemVerilog or here
+        This is not implemented in SystemVerilog or here
         :return: None
         """
         with self.assertRaises(error_classes.UVMNotImplemented):
-            self.factory.set_inst_alias("xyzzy", self.original_comp, "instpath")
+            self.factory.set_inst_alias("any_str", self.original_comp, "inst_path")
 
     def test_find_override_by_type_and_name_8_3_1_7_1(self):
         """
@@ -315,7 +322,7 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         override = self.factory.find_override_by_name("original_object", "top.sib.orig_2")
         self.assertEqual(self.object_2, override)
         with self.assertRaises(AssertionError):
-            override = self.factory.find_override_by_name(self.original_object, "top.sib.orig_2")
+            _ = self.factory.find_override_by_name(self.original_object, "top.sib.orig_2")
 
     def test_find_wrapper_by_name_8_3_1_7_2(self):
         """
@@ -341,7 +348,9 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         """
         self.assertTrue(self.factory.is_type_registered(self.original_comp))
 
-        class uvm_fake(uvm_object):...
+        class uvm_fake(uvm_object):
+            ...
+
         del self.factory.fd.classes["uvm_fake"]
 
         self.assertFalse(self.factory.is_type_registered(uvm_fake))
@@ -354,9 +363,12 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.factory.set_inst_override_by_name("original_comp", "comp_2", "top.sib.orig")
         self.factory.set_inst_override_by_name("original_comp", "comp_3", "top.mid.orig")
         self.factory.set_inst_override_by_type(self.original_object, self.object_1, "label")
-        ss0 = self.factory.__str__(0)
-        ss1 = self.factory.__str__(1)
-        ss2 = self.factory.__str__(2)
+        self.factory.all_types = 0
+        ss0 = self.factory.__str__()
+        self.factory.all_types = 1
+        ss1 = self.factory.__str__()
+        self.factory.all_types = 2
+        ss2 = self.factory.__str__()
         # Testing for the actual strings will cause errors as classes change due to
         # other tests being run. This catches the basic functionality.
         self.assertTrue(len(ss2) > len(ss1) > len(ss0))
@@ -369,6 +381,7 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_class_creation(self):
         class Foo(uvm_object):
             ...
+
         new_obj = Foo.create("foobar")
         self.assertTrue(isinstance(new_obj, Foo))
         self.assertEqual("foobar", new_obj.get_name())
@@ -381,6 +394,7 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_ext_comp_creation(self):
         class FooComp(uvm_component):
             ...
+
         new_comp = FooComp.create("Foo", None)
         self.assertEqual("Foo", new_comp.get_name())
         self.assertTrue(isinstance(new_comp, FooComp))
@@ -388,12 +402,16 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_type_override_by_type(self):
         class Comp(uvm_component):
             ...
+
         class Other(Comp):
             ...
+
+        # noinspection PyUnusedLocal
         class Test(uvm_test):
             def build_phase(self):
                 uvm_factory().set_type_override_by_type(Comp, Other)
                 self.cc = Comp.create("cc", self)
+
         uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         self.assertTrue(isinstance(utt.cc, Other))
@@ -401,13 +419,17 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_inst_override_by_type(self):
         class Comp(uvm_component):
             ...
+
         class Other(Comp):
             ...
+
+        # noinspection PyUnusedLocal
         class Test(uvm_test):
             def build_phase(self):
-                uvm_factory().set_inst_override_by_type(Comp, Other, self.get_full_name()+".cc2")
+                uvm_factory().set_inst_override_by_type(Comp, Other, self.get_full_name() + ".cc2")
                 self.cc1 = Comp.create("cc1", self)
                 self.cc2 = Comp.create("cc2", self)
+
         uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         self.assertTrue(isinstance(utt.cc1, Comp))
@@ -416,13 +438,17 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_inst_override_by_name(self):
         class Comp(uvm_component):
             ...
+
         class Other(Comp):
             ...
+
+        # noinspection PyUnusedLocal
         class Test(uvm_test):
             def build_phase(self):
-                uvm_factory().set_inst_override_by_name("Comp", "Other", self.get_full_name()+".cc2")
+                uvm_factory().set_inst_override_by_name("Comp", "Other", self.get_full_name() + ".cc2")
                 self.cc1 = Comp.create("cc1", self)
                 self.cc2 = Comp.create("cc2", self)
+
         uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         self.assertTrue(isinstance(utt.cc1, Comp))
@@ -431,13 +457,17 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_type_override_by_name(self):
         class Comp(uvm_component):
             ...
+
         class Other(Comp):
             ...
+
+        # noinspection PyUnusedLocal
         class Test(uvm_test):
             def build_phase(self):
                 uvm_factory().set_type_override_by_name("Comp", "Other")
                 self.cc1 = Comp.create("cc1", self)
                 self.cc2 = Comp.create("cc2", self)
+
         uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         self.assertTrue(isinstance(utt.cc1, Other))
@@ -446,12 +476,16 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_obj_type_override_by_type(self):
         class Obj(uvm_object):
             ...
+
         class OtherObj(Obj):
             ...
+
+        # noinspection PyUnusedLocal
         class Test(uvm_test):
             def build_phase(self):
                 uvm_factory().set_type_override_by_type(Obj, OtherObj)
                 self.cc1 = Obj.create("cc1")
+
         uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         self.assertTrue(isinstance(utt.cc1, OtherObj))
@@ -459,12 +493,16 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_obj_type_override_by_name(self):
         class Obj(uvm_object):
             ...
+
         class OtherObj(Obj):
             ...
+
+        # noinspection PyUnusedLocal
         class Test(uvm_test):
             def build_phase(self):
                 uvm_factory().set_type_override_by_name("Obj", "OtherObj")
                 self.cc1 = Obj.create("cc1")
+
         uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         self.assertTrue(isinstance(utt.cc1, OtherObj))
@@ -472,13 +510,16 @@ class s08_factory_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def test_obj_inst_override_by_type(self):
         class Obj(uvm_object):
             ...
+
         class OtherObj(Obj):
             ...
+
+        # noinspection PyUnusedLocal
         class Test(uvm_test):
             def build_phase(self):
                 uvm_factory().set_inst_override_by_type(Obj, OtherObj, self.get_full_name())
                 self.cc1 = Obj.create("cc1")
+
         uvm_root().run_test("Test")
         utt = uvm_root()._utt()
-        self.assertTrue(isinstance(utt.cc1, Obj)) #Cant inst override objects
-
+        self.assertTrue(isinstance(utt.cc1, Obj))  # Cant inst override objects

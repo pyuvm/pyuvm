@@ -53,17 +53,17 @@ class s09_phasing_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
         self.top = self.my_comp("top", None)
         #
-        # top +-> A +-> C
-        #           +-> D
-        #     +-> B +-> E
-        #           +-> F
+        # top +-> aa +-> cc
+        #            +-> dd
+        #     +-> bb +-> ee
+        #            +-> ff
         #
-        A = self.my_comp("A", self.top)
-        B = self.my_comp("B", self.top)
-        self.my_comp("C", A)
-        self.my_comp("D", A)
-        self.my_comp("E", B)
-        self.my_comp("F", B)
+        aa = self.my_comp("aa", self.top)
+        bb = self.my_comp("bb", self.top)
+        self.my_comp("cc", aa)
+        self.my_comp("dd", aa)
+        self.my_comp("ee", bb)
+        self.my_comp("ff", bb)
 
     def tearDown(self):
         uvm_root().clear_hierarchy()
@@ -75,8 +75,8 @@ class s09_phasing_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.assertEqual("top", s09_phasing_TestCase.phase_list["build_phase"][0])
 
     def test_traverse(self):
-        top_down = ['top', 'A', 'C', 'D', 'B', 'E', 'F']
-        bottom_up = ['C', 'D', 'A', 'E', 'F', 'B', 'top']
+        top_down = ['top', 'aa', 'cc', 'dd', 'bb', 'ee', 'ff']
+        bottom_up = ['cc', 'dd', 'aa', 'ee', 'ff', 'bb', 'top']
         sorted_list = sorted(top_down)
         for phase_class in uvm_common_phases:
             phase = phase_class()

@@ -12,77 +12,75 @@ from pyuvm.s12_uvm_tlm_interfaces import *
 import threading
 
 
-"""
-The sequence system allows users to create and populate sequence items and then send them to a driver. The driver 
-loops through getting the next sequence item, processing it, and sending the result back.
-
-Remembering that all run_phases run in their own thread we see this code in the driver.
-
-def run_phase(phase):
-    while True:
-       req = self.seq_item_port.get_next_item()
-       # send the req to the tinyalu and get rsp
-       self.seq_item_port.item_done(rsp)
-
-or
-   while True:
-       req = self.seq_item_port.get_next_item()
-       # do stuff   
-       self.seq_item_port.item_done()
-       self.seq_item_port.put(rsp)
-       
-Either way the sequence in this case does:
-
-start_item(req)
-finish_item(req)
-rsp = get_response()
-
-We see above that the driver is a simple uvm_component with a special port. The port
-does all the synchronization.  It blocks until there is a req and then it sends the response
-back and notifies the sequencer that the transaction is done.  we have:
-
-
-From the other side, the sequence side we get this:
-
-First someone starts the sequence:
-
-test_seq.start(seqr)
-
-This puts a handle to the sequencer (seqr) in the sequence. Then this happens.
-
-def body():
-   req = Req()
-   self.start_item(req) # Request the sequencer
-   # The above puts this sequence in a queue and blocks until the sequence's turn comes up.
-   req.A = 1
-   req.B = 5
-   req.op = operators.ADD
-   self.finish_item(req) # Send and wait for item_done
-   rsp = self.get_response()
-
-So the sequence contains:
-start()
-start_item()
-finish_item()
-get_response()
-
-The seq_item_port (and export) contain:
-get_next_item()
-item_done()
-put()
-
-The sequencer that connects them contains:
-A fifo that holds sequences in order
-A mechanism to notify start_item that it's turn has arrived
-A mechanism to notify finish_item that the item is done
-A mechanism to return responses
-a seq_item_export
-
-The driver contains
-a seq_item_port
-
-We'll build from the seq_item_port out. 
-"""
+# The sequence system allows users to create and populate sequence items and then send them to a driver. The driver
+# loops through getting the next sequence item, processing it, and sending the result back.
+#
+# Remembering that all run_phases run in their own thread we see this code in the driver.
+#
+# def run_phase(phase):
+#     while True:
+#        req = self.seq_item_port.get_next_item()
+#        # send the req to the tinyALU and get rsp
+#        self.seq_item_port.item_done(rsp)
+#
+# or
+#    while True:
+#        req = self.seq_item_port.get_next_item()
+#        # do stuff
+#        self.seq_item_port.item_done()
+#        self.seq_item_port.put(rsp)
+#
+# Either way the sequence in this case does:
+#
+# start_item(req)
+# finish_item(req)
+# rsp = get_response()
+#
+# We see above that the driver is a simple uvm_component with a special port. The port
+# does all the synchronization.  It blocks until there is a req and then it sends the response
+# back and notifies the sequencer that the transaction is done.  we have:
+#
+#
+# From the other side, the sequence side we get this:
+#
+# First someone starts the sequence:
+#
+# test_seq.start(seqr)
+#
+# This puts a handle to the sequencer (seqr) in the sequence. Then this happens.
+#
+# def body():
+#    req = Req()
+#    self.start_item(req) # Request the sequencer
+#    # The above puts this sequence in a queue and blocks until the sequence's turn comes up.
+#    req.A = 1
+#    req.B = 5
+#    req.op = operators.ADD
+#    self.finish_item(req) # Send and wait for item_done
+#    rsp = self.get_response()
+#
+# So the sequence contains:
+# start()
+# start_item()
+# finish_item()
+# get_response()
+#
+# The seq_item_port (and export) contain:
+# get_next_item()
+# item_done()
+# put()
+#
+# The sequencer that connects them contains:
+# A fifo that holds sequences in order
+# A mechanism to notify start_item that it's turn has arrived
+# A mechanism to notify finish_item that the item is done
+# A mechanism to return responses
+# a seq_item_export
+#
+# The driver contains
+# a seq_item_port
+#
+# We'll build from the seq_item_port out.
 
 
 # uvm_seq_item_port
@@ -129,9 +127,6 @@ class uvm_sequence_item(uvm_transaction):
         self.finish_condition = threading.Condition()
         self.parent_sequence_id = None
         self.response_id = None
-
-
-
 
     def set_context(self, item):
         """
@@ -206,7 +201,8 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         """
         If transaction_id is not none, block until a response with the transaction
         id becomes available.
-        :param transaction_id:
+        :param transaction_id: The transaction ID of the response
+        :param timeout: Time until we raise queue.Empty
         :return:
         """
         datum = self.rsp_q.get_response(transaction_id, timeout)
@@ -245,6 +241,7 @@ class uvm_seq_item_port(uvm_blocking_put_port):
         datum = self.export.get_response(transaction_id)
         return datum
 
+
 # The UVM sequence is really just a holder for the seq_item_export that does all
 # the work.
 
@@ -256,6 +253,7 @@ class uvm_sequencer(uvm_component):
     get_response from the export. The sequence will use these to coordinate
     items with the sequencer.
     """
+
     def __init__(self, name, parent):
         super().__init__(name, parent)
         self.seq_item_export = uvm_seq_item_export("seq_item_export", self)
@@ -295,13 +293,12 @@ class uvm_sequence(uvm_object):
     using start_item() and finish_item(). It can also get back results with get_response()
     body() gets launched in a thread at start.
     """
+
     @staticmethod
     def fork(seq, seqr):
         thread = threading.Thread(target=seq.start, args=(seqr,), name=seq.get_name())
         thread.start()
         return thread
-
-
 
     def __init__(self, name):
         super().__init__(name)
@@ -321,8 +318,6 @@ class uvm_sequence(uvm_object):
             assert (isinstance(seqr, uvm_sequencer)), "Tried to start a sequence with a non-sequencer"
         self.sequencer = seqr
         self.body()
-
-
 
     def start_item(self, item):
         """

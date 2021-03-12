@@ -2,13 +2,13 @@ import pyuvm_unittest
 from pyuvm import *
 import threading
 import time
-import random
+
 
 class DataHolder(metaclass=Singleton):
     def __init__(self):
         self.datum = None
         self.dict_ = {}
-
+        self.virtual_seq_error = None
 
 
 class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
@@ -74,14 +74,16 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         send_list = []
         for ii in range(5):
             send_list.append(self.ItemClass(txn_id=ii))
-        get_thread = threading.Thread(target=self.response_getter, args=(get_response_method, [4, 2]), name="run_get_response")
+        get_thread = threading.Thread(target=self.response_getter, args=(get_response_method, [4, 2]),
+                                      name="run_get_response")
         get_thread.start()
         self.putter(put_method, send_list)
         get_thread.join()
         result = [xx.transaction_id for xx in self.result_list]
         self.assertEqual([4, 2], result)
         self.result_list = []
-        get_thread2 = threading.Thread(target=self.response_getter, args=(get_response_method, [5]), name="run_get_response_2")
+        get_thread2 = threading.Thread(target=self.response_getter, args=(get_response_method, [5]),
+                                       name="run_get_response_2")
         get_thread2.start()
         self.putter(put_method, [self.ItemClass(txn_id=10), self.ItemClass(txn_id=11)])
         time.sleep(0.01)
@@ -291,6 +293,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
     def test_run_sequence(self):
         ObjectionHandler().run_phase_done_flag = None
+
         class SeqItem(uvm_sequence_item):
             def __init__(self, name):
                 super().__init__(name)
@@ -315,21 +318,23 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.drvr = SeqDriver("drvr", self)
+                self.driver = SeqDriver("driver", self)
 
             def connect_phase(self):
-                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
             def run_phase(self):
                 self.raise_objection()
                 seq = Seq("seq")
                 seq.start(self.seqr)
                 self.drop_objection()
+
         uvm_root().run_test("SeqTest")
         self.assertTrue(DataHolder().datum)
 
     def test_put_response(self):
         ObjectionHandler().run_phase_done_flag = None
+
         class SeqItem(uvm_sequence_item):
             def __init__(self, name):
                 super().__init__(name)
@@ -355,21 +360,23 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.drvr = SeqDriver("drvr", self)
+                self.driver = SeqDriver("driver", self)
 
             def connect_phase(self):
-                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
             def run_phase(self):
                 self.raise_objection()
                 seq = Seq("seq")
                 seq.start(self.seqr)
                 self.drop_objection()
+
         uvm_root().run_test("SeqTest")
         self.assertTrue(DataHolder().datum)
 
     def test_item_done_response(self):
         ObjectionHandler().run_phase_done_flag = None
+
         class SeqItem(uvm_sequence_item):
             def __init__(self, name):
                 super().__init__(name)
@@ -394,21 +401,23 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.drvr = SeqDriver("drvr", self)
+                self.driver = SeqDriver("driver", self)
 
             def connect_phase(self):
-                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
             def run_phase(self):
                 self.raise_objection()
                 seq = Seq("seq")
                 seq.start(self.seqr)
                 self.drop_objection()
+
         uvm_root().run_test("SeqTest")
         self.assertTrue(DataHolder().datum)
 
     def test_multiple_seq_runs(self):
         ObjectionHandler().run_phase_done_flag = None
+
         class SeqItem(uvm_sequence_item):
             def __init__(self, name):
                 super().__init__(name)
@@ -422,6 +431,10 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                     self.seq_item_port.item_done(op_item.data + 1)
 
         class Seq(uvm_sequence):
+            def __init__(self, name):
+                super().__init__(name)
+                self.runner_name = None  # pleasing the linter
+
             def body(self):
                 op = SeqItem("op")
                 self.start_item(op)
@@ -432,11 +445,11 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqAgent(uvm_agent):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.drvr = SeqDriver("drvr", self)
+                self.driver = SeqDriver("driver", self)
                 ConfigDB().set(None, "*", "SEQR", self.seqr)
 
             def connect_phase(self):
-                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
         class SeqRunner(uvm_component):
 
@@ -459,13 +472,12 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.run1 = SeqRunner("run1", self)
                 self.run2 = SeqRunner("run2", self)
 
-
         uvm_root().run_test("SeqTest")
         self.assertEqual(26, DataHolder().dict_["run2"])
         self.assertEqual(6, DataHolder().dict_["run1"])
 
     def test_virtual_sequence(self):
-        DataHolder().vseq_error = False
+        DataHolder().virtual_seq_error = False
 
         class SeqItem(uvm_sequence_item):
             def __init__(self, name):
@@ -491,10 +503,8 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                     self.finish_item(op)
                     error = op.numb + 1 != op.result
                     if error:
-                        DataHolder().vseq_error = error
+                        DataHolder().virtual_seq_error = error
                         break
-
-
 
         class DecSeq(uvm_sequence):
             def body(self):
@@ -505,7 +515,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                     self.finish_item(op)
                     error = op.numb + 1 != op.result
                     if error:
-                        DataHolder().vseq_error = error
+                        DataHolder().virtual_seq_error = error
                         break
 
         class TopSeq(uvm_sequence):
@@ -513,7 +523,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 seqr = ConfigDB().get(None, "", "SEQR")
                 inc = IncSeq("inc")
                 inc.start(seqr)
-                if DataHolder().vseq_error:
+                if DataHolder().virtual_seq_error:
                     return
                 dec = DecSeq("dec")
                 dec.start(seqr)
@@ -521,11 +531,11 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.drvr = SeqDriver("drvr", self)
+                self.driver = SeqDriver("driver", self)
                 ConfigDB().set(None, "*", "SEQR", self.seqr)
 
             def connect_phase(self):
-                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
             def run_phase(self):
                 self.raise_objection()
@@ -534,10 +544,10 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.drop_objection()
 
         uvm_root().run_test("SeqTest")
-        self.assertFalse(DataHolder().vseq_error)
+        self.assertFalse(DataHolder().virtual_seq_error)
 
     def test_fork_sequence(self):
-        DataHolder().vseq_error = False
+        DataHolder().virtual_seq_error = False
 
         class SeqItem(uvm_sequence_item):
             def __init__(self, name):
@@ -563,10 +573,8 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                     self.finish_item(op)
                     error = op.numb + 1 != op.result
                     if error:
-                        DataHolder().vseq_error = error
+                        DataHolder().virtual_seq_error = error
                         break
-
-
 
         class DecSeq(uvm_sequence):
             def body(self):
@@ -577,7 +585,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                     self.finish_item(op)
                     error = op.numb + 1 != op.result
                     if error:
-                        DataHolder().vseq_error = error
+                        DataHolder().virtual_seq_error = error
                         break
 
         class TopSeq(uvm_sequence):
@@ -593,11 +601,11 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.drvr = SeqDriver("drvr", self)
+                self.driver = SeqDriver("driver", self)
                 ConfigDB().set(None, "*", "SEQR", self.seqr)
 
             def connect_phase(self):
-                self.drvr.seq_item_port.connect(self.seqr.seq_item_export)
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
             def run_phase(self):
                 self.raise_objection()
@@ -606,4 +614,4 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.drop_objection()
 
         uvm_root().run_test("SeqTest")
-        self.assertFalse(DataHolder().vseq_error)
+        self.assertFalse(DataHolder().virtual_seq_error)

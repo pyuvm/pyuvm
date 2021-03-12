@@ -9,6 +9,7 @@ import sys
 FIFO_DEBUG = 5
 logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
 
+
 class Singleton(type):
     _instances = {}
 
@@ -35,7 +36,7 @@ class RunningThreads(metaclass=Singleton):
             thread.join()
 
 
-class Override():
+class Override:
     """
     This class stores an override and an optional path.
     It is intended to be stored in a dict with the original class
@@ -96,13 +97,14 @@ class FactoryData(metaclass=Singleton):
     def clear_classes(self):
         self.classes = {}
 
+    # From 8.3.1.5
     def find_override(self, requested_type, inst_path=None, overridden_list=None):
         """
         :param requested_type: The type we're overriding
         :param inst_path: The inst_path we're using to override if any
         :param overridden_list: A list of previously found overrides
         :return: overriding_type
-        From 8.3.1.5
+
         Override searches are recursively applied, with instance overrides taking precedence
         over type overrides.  If foo overrides bar, and xyz overrides foo, then a request for bar
         returns xyx.
@@ -128,6 +130,7 @@ class FactoryData(metaclass=Singleton):
         #
 
         # Is there an override loop?
+        # noinspection PyShadowingNames
         def check_override(override, overridden_list):
             if overridden_list is None:
                 overridden_list = []
@@ -164,9 +167,9 @@ class FactoryMeta(type):
     This is the metaclass that causes all uvm_void classes to register themselves
     """
 
-    def __init__(cls, name, bases, clsdict):
+    def __init__(cls, name, bases, cls_dict):
         FactoryData().classes[cls.__name__] = cls
-        super().__init__(name, bases, clsdict)
+        super().__init__(name, bases, cls_dict)
 
 
 class uvm_void(metaclass=FactoryMeta):
@@ -176,7 +179,7 @@ class uvm_void(metaclass=FactoryMeta):
     uvm objects to be stored in a uvm_void variable through
     polymorphism.
 
-    In pyuvm, we're using uvm_void() as a meteaclass so
+    In pyuvm, we're using uvm_void() as a metaclass so
     that all UVM classes can be stored in a factory.
 """
 
@@ -206,7 +209,7 @@ class ObjectionHandler(metaclass=Singleton):
         self.__objections = {}
         self.run_condition = threading.Condition()
         self.objection_raised = False
-        self.run_phase_done_flag=None # used in test suites
+        self.run_phase_done_flag = None  # used in test suites
         self.first_check_time = None
         self.monitor_finish_thread = None
         self.printed_warning = False
@@ -217,7 +220,6 @@ class ObjectionHandler(metaclass=Singleton):
         for cc in self.__objections:
             ss += f"{self.__objections[cc]}\n"
         return ss
-
 
     def monitor_run_phase(self):
         while not self.run_phase_complete():
@@ -242,7 +244,7 @@ class ObjectionHandler(metaclass=Singleton):
 
     def run_phase_complete(self):
         if self.monitor_finish_thread is None:
-            self.monitor_finish_thread = threading.Thread(target = self.monitor_run_phase, name='run_phase_monitor_loop')
+            self.monitor_finish_thread = threading.Thread(target=self.monitor_run_phase, name='run_phase_monitor_loop')
             self.monitor_finish_thread.start()
         if self.first_check_time is None:
             self.first_check_time = time.time()
@@ -253,7 +255,7 @@ class ObjectionHandler(metaclass=Singleton):
                 return False
             else:
                 if not self.printed_warning:
-                    self.printed_warning=True
+                    self.printed_warning = True
                     print("Warning: No run_phase() objections raised. Finished run_phase after timeout")
                 return True
         else:
@@ -268,6 +270,7 @@ class UVMQueue(queue.Queue):
     to die is set to the dropping of all run_phase objections
     by default.
     """
+
     def __init__(self, maxsize=0, time_to_die=None, sleep_time=0.01):
         super().__init__(maxsize=maxsize)
         self.sleep_time = sleep_time
@@ -291,16 +294,16 @@ class UVMQueue(queue.Queue):
         available, else raise the Empty exception ('timeout' is ignored
         in that case). Default sleep time is a tenth of a second.
         """
-        if not block  or timeout is not None:
+        if not block or timeout is not None:
             self._peek(block, timeout)
-        else: # We would normally have blocking behavior
+        else:  # We would normally have blocking behavior
             while not self.end_while_predicate():
                 try:
-                    datum = self._peek(block=True,timeout=self.sleep_time)
+                    datum = self._peek(block=True, timeout=self.sleep_time)
                     return datum
                 except queue.Empty:
                     pass
-            sys.exit() # Kill therad if it's time to die
+            sys.exit()  # Kill thread if it's time to die
 
     def get(self, block=True, timeout=None):
         """
@@ -317,10 +320,10 @@ class UVMQueue(queue.Queue):
                 return super().get(block, timeout)
             except queue.Empty:
                 raise
-        else: # create block that can die
+        else:  # create block that can die
             while not self.end_while_predicate():
                 try:
-                    datum = super().get(block=True,timeout=self.sleep_time)
+                    datum = super().get(block=True, timeout=self.sleep_time)
                     return datum
                 except queue.Empty:
                     pass
@@ -365,5 +368,3 @@ class UVMQueue(queue.Queue):
             item = self.queue[0]
             self.not_full.notify()
             return item
-
-

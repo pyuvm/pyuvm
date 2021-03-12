@@ -40,6 +40,6 @@ class UVMConfigError(UVMError):
 class UVMConfigItemNotFound(UVMError):
     """Couldn't find something in config_db"""
 
+
 class UVMFatalError(UVMError):
     """ Used to dump out of the testbench"""
-

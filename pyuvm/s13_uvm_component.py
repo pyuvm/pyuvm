@@ -469,10 +469,10 @@ class ConfigDB(metaclass=utility_classes.Singleton):
             inst_name = context.get_full_name() + "." + inst_name
         return context, inst_name
 
-    def trace(self, method,  context, inst_name, field_name, value):
+    def trace(self, method, context, inst_name, field_name, value):
         if self.is_tracing:
             # noinspection SpellCheckingInspection
-                print(f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}")
+            print(f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}")
 
     def set(self, context, inst_name, field_name, value):
         """
@@ -504,7 +504,6 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         self._path_dict[inst_name][field_name][precedence] = value
 
         self.trace("SET", context, inst_name, field_name, value)
-                
 
     def get(self, context, inst_name, field_name):
         """

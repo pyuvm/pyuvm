@@ -3,16 +3,19 @@ from pyuvm import *
 
 
 class my_object(uvm_object):
-    def __init__(self, name = ""):
+    def __init__(self, name=""):
         super().__init__(name)
         self.val = 5
+
     def __eq__(self, other):
         if type(other) is type(self):
             return self.val == other.val
 
+    def __str__(self):
+        return "Hello"
 
 
-class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
+class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     """Basic test cases."""
 
     def test_basic_creation(self):
@@ -21,8 +24,8 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         Tests whether the factory gets populated and whether it can be used.
         """
         uvf = uvm_factory()
-        mof= uvf.fd.classes["my_object"]("factory")
-        moi=my_object("myinst")
+        mof = uvf.fd.classes["my_object"]("factory")
+        moi = my_object("name")
         self.assertEqual(type(mof), type(moi))
 
     # Testing specification
@@ -37,7 +40,7 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.get_uvm_seeding()
         with self.assertRaises(error_classes.UVMNotImplemented):
-            seeding = mo.set_uvm_seeding(1)
+            _ = mo.set_uvm_seeding(1)
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.reseed()
 
@@ -51,7 +54,7 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         moe = my_object("moe")
         # 5.3.4.2
         name = moe.get_name()
-        self.assertEqual("moe",name)
+        self.assertEqual("moe", name)
         # 5.3.4.1
         moe.set_name("curly")
         name = moe.get_name()
@@ -99,9 +102,8 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         # 5.3.6.2
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.sprint()
-        # 5.3.6.3 Use __str__(
-        with self.assertRaises(error_classes.UsePythonMethod):
-            mo.convert2string()
+        self.assertEqual("Hello", mo.convert2string())
+
     def test_recording(self):
         """
         5.3.7
@@ -121,12 +123,13 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         :return:
         """
         mo = my_object("mo")
+        rhs = my_object("rhs")
         # 5.3.8.1
         with self.assertRaises(error_classes.UsePythonMethod):
-            mo.copy()
+            mo.copy(rhs)
         # 5.3.8.2
         with self.assertRaises(error_classes.UsePythonMethod):
-            mo.do_copy()
+            mo.do_copy(rhs)
 
     def test_comparing(self):
         """
@@ -134,12 +137,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         :return:
         """
         mo = my_object("mo")
+        rhs = my_object("rhs")
         # 5.3.9.1
-        with self.assertRaises(error_classes.UsePythonMethod):
-            mo.compare()
+        self.assertTrue(mo.compare(rhs))
         # 5.3.9.2
-        with self.assertRaises(error_classes.UsePythonMethod):
-            mo.do_compare()
+        self.assertTrue(mo.do_compare(rhs))
 
     def test_packing(self):
         """
@@ -205,11 +207,11 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         :return:
         """
         mo = my_object("mo")
-        with self.assertRaises(error_classes.UsePythonMethod):
+        with self.assertRaises(error_classes.UVMNotImplemented):
             mo.push_active_policy()
-        with self.assertRaises(error_classes.UsePythonMethod):
+        with self.assertRaises(error_classes.UVMNotImplemented):
             mo.pop_active_policy()
-        with self.assertRaises(error_classes.UsePythonMethod):
+        with self.assertRaises(error_classes.UVMNotImplemented):
             mo.get_active_policy()
 
     def test_create(self):
@@ -233,7 +235,6 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
         uc = uvm_component("uc", None)
         tr.set_initiator(uc)
         self.assertEqual(uc, tr.get_initiator())
-
 
     def test_transaction_recording(self):
         """
@@ -271,4 +272,3 @@ class s05_base_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
             tr.get_begin_time()
         with self.assertRaises(error_classes.UVMNotImplemented):
             tr.get_end_time()
-

@@ -83,6 +83,7 @@ class uvm_port_base(uvm_component):
     def connect(self, export):
         """
         Attach this port to the associated export.
+
         :param export:
         :return:
         """
@@ -101,9 +102,9 @@ class uvm_port_base(uvm_component):
 
 # put
 
+# 12.2.5.1
 class uvm_blocking_put_port(uvm_port_base):
     """
-    12.2.5.1
     Access the blocking put interfaces
     """
 
@@ -111,23 +112,24 @@ class uvm_blocking_put_port(uvm_port_base):
         self.check_export(export, uvm_blocking_put_port)
         super().connect(export)
 
-    def put(self, data, timeout=None):
+    # 12.2.4.2.1
+    def put(self, datum, timeout=None):
         """
-        12.2.4.2.1
-        A blocking put that calls the export.put
-        :param timeout: Timeout
-        :param data:
+         A blocking put that calls the export.put
+
+        :param timeout: Timeout before throwing queue.Full
+        :param datum: Datum to put
         :return: None
         """
         try:
-            self.export.put(data)
+            self.export.put(datum)
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
 
+# 12.2.5.1
 class uvm_nonblocking_put_port(uvm_port_base):
     """
-    12.2.5.1
     Access the non_blocking put interface
     """
 
@@ -135,11 +137,12 @@ class uvm_nonblocking_put_port(uvm_port_base):
         self.check_export(export, uvm_nonblocking_put_port)
         super().connect(export)
 
+    # 12.2.4.2.4
     def try_put(self, data):
         """
-        12.2.4.2.4
         Tries to put data on a port, but if the
         port is full it returns False
+
         :param data: data to deliver
         :return: True = success
         """
@@ -149,11 +152,12 @@ class uvm_nonblocking_put_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
+    # 12.2.4.2.5
     def can_put(self):
         """
-        12.2.4.2.5
         Returns true if there is room for data to
         be put on the port
+
         :return: bool
         """
         try:
@@ -170,20 +174,20 @@ class uvm_put_port(uvm_blocking_put_port, uvm_nonblocking_put_port):
     ...
 
 
-# get
+# 12.2.5.1
 class uvm_blocking_get_port(uvm_port_base):
     """
-    12.2.5.1
-    Access the blocking get export methods
+        Access the blocking get export methods
     """
 
     def connect(self, export):
         self.check_export(export, uvm_blocking_get_port)
         super().connect(export)
 
+    # 12.2.4.2.2
     def get(self, timeout=None):
         """
-        12.2.4.2.2
+
         A blocking get that returns the data got
         :return: data
         """
@@ -192,13 +196,11 @@ class uvm_blocking_get_port(uvm_port_base):
             return data
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
-        except :
-            raise
 
 
+# 12.2.5.1
 class uvm_nonblocking_get_port(uvm_port_base):
     """
-    12.2.5.1
     Access the non_blocking methods in export
     """
 
@@ -222,10 +224,11 @@ class uvm_nonblocking_get_port(uvm_port_base):
 
         return success, data
 
+    # 12.2.4.2.7
     def can_get(self):
         """
-        12.2.4.2.7
         Returns true if there is data to get
+
         :return: bool
         """
         try:
@@ -240,33 +243,35 @@ class uvm_get_port(uvm_blocking_get_port, uvm_nonblocking_get_port):
     ...
 
 
-# peek
+#
+# 12.2.5.1
 class uvm_blocking_peek_port(uvm_port_base):
     """
-    12.2.5.1
+    Provides access to the peek methods
     """
 
     def connect(self, export):
         self.check_export(export, uvm_blocking_peek_port)
         super().connect(export)
 
+    # 12.2.4.2.3
     def peek(self):
         """
-        12.2.4.2.3
         A blocking peek that returns data without
         consuming it.
-        :return: data
+
+        :return: datum
         """
         try:
-            data = self.export.peek()
-            return data
+            datum = self.export.peek()
+            return datum
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
 
+# 12.2.5.1
 class uvm_nonblocking_peek_port(uvm_port_base):
     """
-    12.2.5.1
     Try a peek
     """
 
@@ -274,9 +279,10 @@ class uvm_nonblocking_peek_port(uvm_port_base):
         self.check_export(export, uvm_nonblocking_peek_port)
         super().connect(export)
 
+    # 12.2.4.2.8
     def try_peek(self):
         """
-        12.2.4.2.8
+
         Tries to peek for data and returns
         a tuple with success and the data
         :return: (success, data)
@@ -287,11 +293,12 @@ class uvm_nonblocking_peek_port(uvm_port_base):
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
         return success, data
 
+    # 12.2.4.2.9
     def can_peek(self):
         """
-        12.2.4.2.9
         Checks if peeking will be successful
-        :return: bool
+
+        :return: True if can peek
         """
         can = self.export.can_peek()
         return can
@@ -328,7 +335,6 @@ class uvm_get_peek_port(uvm_blocking_get_peek_port, uvm_nonblocking_get_peek_por
         super().connect(export)
 
 
-# transport
 class uvm_blocking_transport_port(uvm_port_base):
     def __init__(self, name, parent):
         super().__init__(name, parent)
@@ -401,17 +407,16 @@ class uvm_analysis_port(uvm_port_base):
         self.check_export(export, uvm_analysis_port)
         self.subscribers.append(export)
 
-    def write(self, data):
+    # 12.2.8.1
+    def write(self, datum):
         """
-        12.2.8.1
-        :param data: data to send
+        :param datum: data to send
         :return: None
         """
         for export in self.subscribers:
             if not hasattr(export, "write"):
                 raise UVMTLMConnectionError(f"No write() method in {export}. Did you connect it?")
-            export.write(data)
-
+            export.write(datum)
 
 
 # THE UNNECESSARY EXPORTS
@@ -520,37 +525,37 @@ class uvm_slave_export(uvm_blocking_slave_export, uvm_nonblocking_slave_export):
 
 class uvm_analysis_export(uvm_analysis_port):
     """
-    The analysis export overrides the port's write method and forces otherse
+    The analysis export overrides the port's write method and forces others
     to override its write method.
     """
+
     def write(self, data):
         raise error_classes.UVMTLMConnectionError("If you extend uvm_analysis_export, or uvm_subscriber, you must"
                                                   " override the write method")
 
-'''
-12.2.8 FIFO Classes
 
-These classes provide synchronization control between
-threads using the Queue class.
-
-One note.  The RLM has only 12.2.8.1.3 and 12.2.8.1.4, put_export
-and get_peek_export, but the UVM code has all the variants
-of exports. 
-
-The SystemVerilog UVM relies upon static type checking
-and polymorphism to make sure that users connect the
-correct ports to these exports, but we don't have
-static checking, so we implement classes for all the
-port variants. This creates the runtime assertion checking
-that we need.
-'''
+# 12.2.8 FIFO Classes
+#
+# These classes provide synchronization control between
+# threads using the Queue class.
+#
+# One note.  The RLM has only 12.2.8.1.3 and 12.2.8.1.4, put_export
+# and get_peek_export, but the UVM code has all the variants
+# of exports.
+#
+# The SystemVerilog UVM relies upon static type checking
+# and polymorphism to make sure that users connect the
+# correct ports to these exports, but we don't have
+# static checking, so we implement classes for all the
+# port variants. This creates the runtime assertion checking
+# that we need.
 
 
 class QueueAccessor:
-    def __init__(self, name, parent, queue, ap):
+    def __init__(self, name, parent, uvm_queue, ap):
         super(QueueAccessor, self).__init__(name, parent)
-        assert (isinstance(queue, UVMQueue)), "Tried to pass a non-UVMQueue to QueueAccessor constructor"
-        self.queue = queue
+        assert (isinstance(uvm_queue, UVMQueue)), "Tried to pass a non-UVMQueue to QueueAccessor constructor"
+        self.queue = uvm_queue
         self.ap = ap
 
 
@@ -559,6 +564,7 @@ class uvm_tlm_fifo_base(uvm_component):
     Declares and instantiate the exports needed to communicate
     through the Queue.
     """
+
     class BlockingPutExport(QueueAccessor, uvm_blocking_put_export):
         def put(self, item, timeout=None):
             self.logger.log(FIFO_DEBUG, f"blocking put: {item}")
@@ -672,56 +678,63 @@ class uvm_tlm_fifo_base(uvm_component):
         formatter = logging.Formatter("%(levelname)s: [%(name)s]: %(message)s")
         self.set_formatter_on_handlers_hier(formatter)
 
+
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
+    #  12.2.8.2.1
     def __init__(self, name=None, parent=None, size=1):
-        """
-        12.2.8.2.1
-        :param name:
-        :param parent:
-        :param size:
-        """
+        """ uvm_tlm_fifo is a uvm_component"""
         super().__init__(name, parent, size)
 
+    # 12.2.8.2.2
     def size(self):
         """
-        12.2.8.2.2
-        :return:
+        Return the size of the fifo
+
+        :return: size of FIFO
         """
         return self.queue.maxsize
 
+    # 12.2.8.2.3
     def used(self):
         """
-        12.2.8.2.3
-        :return:
+        How much of the FIFO is being used?
+
+        :return: Size of the FIFO
         """
         return self.queue.qsize()
 
+    # 12.2.8.2.4
     def is_empty(self):
         """
-        12.2.8.2.4
-        :return:
+        Returns true if FIFO is empty
+
+        :return: True if empty
         """
         return self.queue.empty()
 
+    # 12.2.8.2.5
     def is_full(self):
         """
-        12.2.8.2.5
-        :return:
+        Test for full FIFO
+
+        :return: True if full
         """
         return self.queue.full()
 
     #  12.2.8.2.6
+    #     The SystemVerilog UVM flushes the Queue
+    #     using a while loop and counting the number
+    #     of threads waiting for a get. If there are
+    #     still threads waiting after the loop runs
+    #     it issues an error.
+    #
+    #     In pyuvm we just flush the loop and clear
+    #     all the unfinished tasks.
+
     def flush(self):
         """
-        The SystemVerilog UVM flushes the Queue
-        using a while loop and counting the number
-        of threads waiting for a get. If there are
-        still threads waiting after the loop runs
-        it issues an error.
-
-        In pyuvm we just flush the loop and clear
-        all the unfinished tasks.
+        Flush out the FIFO
         """
         self.queue.mutex.acquire()
         self.queue.queue.clear()
@@ -741,7 +754,7 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 0)
         self.analysis_export = self.AnalysisExport(name="analysis_export", parent=self,
-                                                   queue=self.queue, ap=None)
+                                                   uvm_queue=self.queue, ap=None)
 
 
 #    12.2.9.1

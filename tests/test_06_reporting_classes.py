@@ -1,7 +1,8 @@
 import pyuvm_unittest
 from pyuvm import *
 
-class s06_reporting_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
+
+class s06_reporting_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
     """Basic test cases."""
 
     def test_object_creation(self):
@@ -19,10 +20,3 @@ class s06_reporting_classes_TestCase (pyuvm_unittest.pyuvm_TestCase):
                                          'INFO:ro:info',
                                          'ERROR:ro:error',
                                          'CRITICAL:ro:critical'])
-
-
-
-
-
-
-
