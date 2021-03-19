@@ -15,3 +15,5 @@ build
 dist
 pyuvm.egg-info
 .tox
+examples/*/modelsim.ini
+examples/*/transcript
