@@ -5,7 +5,7 @@
 
 # In[1]:
 
-from tb_pkg import *
+from PythonProxy import *
 from pyuvm import *
 
 
