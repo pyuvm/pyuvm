@@ -1,0 +1,64 @@
+name: Regression Tests
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+
+  lint-flake8:
+    runs-on: ubuntu-latest
+    name: flake8
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{matrix.python-version}}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{matrix.python-version}}
+    - name: flake8
+      continue-on-error: true
+      run: |
+        pip install flake8
+        flake8
+
+  tests:
+
+    name: Python ${{matrix.python-version}} | ${{matrix.sim}} 
+    runs-on: ubuntu-20.04
+    env:
+      SIM: ${{matrix.sim}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sim: icarus
+            python-version: 3.8
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{matrix.python-version}}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{matrix.python-version}}
+
+    - name: Install Python testing dependencies
+      run: |
+        pip install tox tox-gh-actions
+
+    - name: Install Icarus Verilog
+      if: matrix.sim == 'icarus'
+      run: |
+        sudo apt install -y --no-install-recommends iverilog
+
+    - name: Test
+      run: |
+        tox
