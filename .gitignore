@@ -18,3 +18,5 @@ pyuvm.egg-info
 examples/*/modelsim.ini
 examples/*/transcript
 .vscode
+results.xml
+sim_build

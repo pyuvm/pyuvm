@@ -28,6 +28,7 @@ import queue
 from pyuvm.error_classes import UVMTLMConnectionError
 from pyuvm.utility_classes import UVMQueue, FIFO_DEBUG
 from pyuvm import error_classes
+from cocotb.queue import QueueEmpty, QueueFull 
 import logging
 
 
@@ -566,9 +567,9 @@ class uvm_tlm_fifo_base(uvm_component):
     """
 
     class BlockingPutExport(QueueAccessor, uvm_blocking_put_export):
-        def put(self, item, timeout=None):
+        async def put(self, item, timeout=None):
             self.logger.log(FIFO_DEBUG, f"blocking put: {item}")
-            self.queue.put(item, timeout=timeout)
+            await self.queue.put(item)
             self.logger.log(FIFO_DEBUG, f"success put {item}")
             self.ap.write(item)
 
@@ -583,16 +584,16 @@ class uvm_tlm_fifo_base(uvm_component):
                 self.queue.put_nowait(item)
                 self.ap.write(item)
                 return True
-            except queue.Full:
+            except QueueFull:
                 return False
 
     class PutExport(BlockingPutExport, NonBlockingPutExport):
         ...
 
     class BlockingGetExport(QueueAccessor, uvm_blocking_get_export):
-        def get(self, timeout=None):
+        async def get(self, timeout=None):
             self.logger.log(FIFO_DEBUG, "Attempting blocking get")
-            item = self.queue.get(timeout=timeout)
+            item = await self.queue.get()
             self.logger.log(FIFO_DEBUG, f"got {item}")
             self.ap.write(item)
             return item
@@ -606,16 +607,16 @@ class uvm_tlm_fifo_base(uvm_component):
                 item = self.queue.get_nowait()
                 self.ap.write(item)
                 return True, item
-            except queue.Empty:
+            except QueueEmpty:
                 return False, None
 
     class GetExport(BlockingGetExport, NonBlockingGetExport):
         ...
 
     class BlockingPeekExport(QueueAccessor, uvm_blocking_peek_export):
-        def peek(self):
+        async def peek(self):
             self.logger.log(FIFO_DEBUG, "Attempting blocking peek")
-            peek_data = self.queue.peek()
+            peek_data = await self.queue.peek()
             self.logger.log(FIFO_DEBUG, f"peeked at {peek_data}")
             return peek_data
 
@@ -624,10 +625,11 @@ class uvm_tlm_fifo_base(uvm_component):
             return not self.queue.empty()
 
         def try_peek(self):
-            if self.queue.empty():
+            try:
+                datum = self.queue.peek_nowait()
+                return True, datum
+            except QueueEmpty:
                 return False, None
-            else:
-                return True, self.queue.peek()
 
     class PeekExport(BlockingPeekExport, NonBlockingPeekExport):
         ...
