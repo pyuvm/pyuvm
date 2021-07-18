@@ -5,6 +5,9 @@ import queue
 import time
 import threading
 import sys
+import cocotb.queue
+from cocotb.triggers import Event
+from asyncio import QueueEmpty, QueueFull
 
 FIFO_DEBUG = 5
 logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
@@ -262,7 +265,7 @@ class ObjectionHandler(metaclass=Singleton):
             return not self.__objections
 
 
-class UVMQueue(queue.Queue):
+class UVMQueue(cocotb.queue.Queue):
     """
     The UVMQueue provides a peek function as well as the
     ability to break out of a blocking operation if
@@ -270,101 +273,29 @@ class UVMQueue(queue.Queue):
     to die is set to the dropping of all run_phase objections
     by default.
     """
+    def __str__(self):
+        return str(self._queue)
 
-    def __init__(self, maxsize=0, time_to_die=None, sleep_time=0.01):
-        super().__init__(maxsize=maxsize)
-        self.sleep_time = sleep_time
-        if time_to_die is None:
-            self.end_while_predicate = ObjectionHandler().run_phase_complete
-        else:
-            self.end_while_predicate = time_to_die
+    def _peek(self):
+        return self._queue[0]
+
+    async def peek(self):
+        """Remove and return an item from the queue.
+        If the queue is empty, wait until an item is available.
+        """
+        while self.empty():
+            event = Event('{} get'.format(type(self).__name__))
+            self._getters.append((event, cocotb.scheduler._current_task))
+            await event.wait()
+        return self.peek_nowait()
 
     def peek_nowait(self):
-        return self.peek(block=False)
-
-    def peek(self, block=True, timeout=None):
+        """Remove and return an item from the queue.
+        Return an item if one is immediately available, else raise
+        :exc:`asyncio.QueueEmpty`.
         """
-        Return first item from queue without removing it
-
-        If optional args 'block' is true and 'timeout' is None (the default),
-        block if necessary until an item is available. If 'timeout' is
-        a non-negative number, it blocks at most 'timeout' seconds and raises
-        the Empty exception if no item was available within that time.
-        Otherwise ('block' is false), return an item if one is immediately
-        available, else raise the Empty exception ('timeout' is ignored
-        in that case). Default sleep time is a tenth of a second.
-        """
-        if not block or timeout is not None:
-            self._peek(block, timeout)
-        else:  # We would normally have blocking behavior
-            while not self.end_while_predicate():
-                try:
-                    datum = self._peek(block=True, timeout=self.sleep_time)
-                    return datum
-                except queue.Empty:
-                    pass
-            sys.exit()  # Kill thread if it's time to die
-
-    def get(self, block=True, timeout=None):
-        """
-        THe blocking thread does not block. Instead it checks the
-        time_to_die predicate and if it is time to die then it kills
-        the thread
-
-        :param block: Blocking get
-        :param timeout: user-defined timeout
-        :return: datum from queue
-        """
-        if not block or timeout is not None:
-            try:
-                return super().get(block, timeout)
-            except queue.Empty:
-                raise
-        else:  # create block that can die
-            while not self.end_while_predicate():
-                try:
-                    datum = super().get(block=True, timeout=self.sleep_time)
-                    return datum
-                except queue.Empty:
-                    pass
-            sys.exit()  # Kill thread if it's time to die
-
-    def put(self, item, block=True, timeout=None):
-        """
-        Does a blocking put, but the put will kill the thread
-        when it is time to die.
-        """
-        if not block or timeout is not None:
-            try:
-                super().put(item, block, timeout)
-            except queue.Full:
-                raise
-        else:
-            while not self.end_while_predicate():
-                try:
-                    super().put(item, timeout=self.sleep_time)
-                    return
-                except queue.Full:
-                    pass
-            sys.exit()
-
-    def _peek(self, block=True, timeout=None):
-        with self.not_empty:
-            if not block:
-                if not self._qsize():
-                    raise queue.Empty
-            elif timeout is None:
-                while not self._qsize():
-                    self.not_empty.wait()
-            elif timeout < 0:
-                raise ValueError("'timeout' must be a non-negative number")
-            else:
-                end_time = time.monotonic() + timeout
-                while not self._qsize():
-                    remaining = end_time - time.monotonic()
-                    if remaining <= 0.0:
-                        raise queue.Empty
-                    self.not_empty.wait(remaining)
-            item = self.queue[0]
-            self.not_full.notify()
-            return item
+        if self.empty():
+            raise QueueEmpty()
+        item = self._peek()
+        self._wakeup_next(self._putters)
+        return item

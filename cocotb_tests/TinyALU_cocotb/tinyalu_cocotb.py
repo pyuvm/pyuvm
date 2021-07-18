@@ -2,7 +2,9 @@ from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 import cocotb
 from tinyalu_uvm import *
-
+import pyuvm.utility_classes as utility_classes
+import time
+import asyncio.queues
 
 class CocotbProxy:
     def __init__(self, dut, label):
@@ -82,12 +84,12 @@ def run_uvm_test(test_name):
     root.run_test(test_name)
 
 
-async def sleep():
-    time.sleep(3)
+async def sleep(delay):
+    time.sleep(delay)
 
 
-# noinspection PyArgumentList
-@cocotb.test()
+# noinspection PyArgumentList,PyAsyncCall
+# @cocotb.test()
 async def test_alu(dut):
     clock = Clock(dut.clk, 2, units="us")
     cocotb.fork(clock.start())
@@ -101,5 +103,96 @@ async def test_alu(dut):
     test_thread.start()
     await proxy.done.wait()
     await FallingEdge(dut.clk)
+
+# noinspection PyArgumentList,PyAsyncCall
+@cocotb.test()
+async def test_queue(dut):
+    "Test basic QUEUE functions"
+    qq = utility_classes.UVMQueue(maxsize=1)
+    await qq.put(5)
+    got = await qq.get()
+    assert got == 5
+    await qq.put("x")
+    peeked = await qq.peek()
+    assert "x" == peeked
+    print(qq)
+    got = await qq.get()
+    qq.put_nowait(5)
+    got = qq.get_nowait()
+    assert got == 5
+    qq.put_nowait("x")
+    peeked = qq.peek_nowait()
+    assert "x" == peeked
+    got = qq.get_nowait()
+    assert got == peeked
+
+async def delay_put(qq, delay, data):
+    for dd in data:
+        await sleep(delay)
+        await qq.put(dd)
+
+async def delay_get(qq, delay):
+    ret_dat = []
+    await sleep(delay)
+    datum = await qq.get()
+    ret_dat.append(datum)
+    while datum is not None:
+        await sleep(delay)
+        datum = await qq.get()
+        ret_dat.append(datum)
+    return ret_dat
+
+async def delay_peek(qq, delay):
+    ret_dat = []
+    await sleep(delay)
+    return await qq.peek()
+
+@cocotb.test()
+async def wait_on_queue(dut):
+    """Test put and get with waits"""
+    clock = Clock(dut.clk, 2, units="us") #make the simualtor wait
+    cocotb.fork(clock.start())
+    qq = utility_classes.UVMQueue(maxsize=1)
+    send_data = [.01,"two", 3, None]
+    cocotb.fork(delay_put(qq, .01, send_data))
+    got_data = await delay_peek(qq, .01)
+    assert got_data == .01
+    got_data = await delay_get(qq, .01)
+
+@cocotb.test()
+async def nowait_tests(dut):
+    """Test the various nowait flavors"""
+    qq = utility_classes.UVMQueue(maxsize=1)
+    await qq.put(5)
+    try:
+        qq.put_nowait(6)
+        assert False
+    except asyncio.queues.QueueFull:
+        pass
+    try:
+        xx = qq.peek_nowait()
+        assert xx == 5
+    except asyncio.queues.QueueEmpty:
+        assert False
+    try:
+        xx = qq.get_nowait()
+        assert xx == 5
+    except asyncio.queues.QueueEmpty:
+        assert False
+    try:
+        xx = qq.peek_nowait()
+        assert False
+    except asyncio.queues.QueueEmpty:
+        pass
+    try:
+        xx = qq.get_nowait()
+        assert False
+    except asyncio.queues.QueueEmpty:
+        pass
+
+
+
+
+
 
 
