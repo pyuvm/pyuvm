@@ -210,11 +210,9 @@ class ObjectionHandler(metaclass=Singleton):
 
     def __init__(self):
         self.__objections = {}
-        self.run_condition = threading.Condition()
+        self._objection_event = Event("objection changed")
         self.objection_raised = False
         self.run_phase_done_flag = None  # used in test suites
-        self.first_check_time = None
-        self.monitor_finish_thread = None
         self.printed_warning = False
 
     def __str__(self):
@@ -224,17 +222,11 @@ class ObjectionHandler(metaclass=Singleton):
             ss += f"{self.__objections[cc]}\n"
         return ss
 
-    def monitor_run_phase(self):
-        while not self.run_phase_complete():
-            time.sleep(0.1)
-            with self.run_condition:
-                self.run_condition.notify_all()
 
     def raise_objection(self, raiser):
         self.__objections[raiser] = raiser.get_full_name()
         self.objection_raised = True
-        with self.run_condition:
-            self.run_condition.notify_all()
+        self._objection_event.set()
 
     def drop_objection(self, dropper):
         try:
@@ -242,27 +234,14 @@ class ObjectionHandler(metaclass=Singleton):
         except KeyError:
             self.objection_raised = True
             pass
-        with self.run_condition:
-            self.run_condition.notify_all()
+        self._objection_event.set()
 
-    def run_phase_complete(self):
-        if self.monitor_finish_thread is None:
-            self.monitor_finish_thread = threading.Thread(target=self.monitor_run_phase, name='run_phase_monitor_loop')
-            self.monitor_finish_thread.start()
-        if self.first_check_time is None:
-            self.first_check_time = time.time()
-        if self.run_phase_done_flag is not None:
-            return self.run_phase_done_flag
+    async def run_phase_complete(self):
+        while len(self.__objections) > 0:
+            await self._objection_event.wait()
         if not self.objection_raised:
-            if time.time() - self.first_check_time < 1:
-                return False
-            else:
-                if not self.printed_warning:
-                    self.printed_warning = True
-                    print("Warning: No run_phase() objections raised. Finished run_phase after timeout")
-                return True
-        else:
-            return not self.__objections
+            print ("Warning: No objections raised")
+        
 
 
 class UVMQueue(cocotb.queue.Queue):
@@ -284,7 +263,7 @@ class UVMQueue(cocotb.queue.Queue):
         If the queue is empty, wait until an item is available.
         """
         while self.empty():
-            event = Event('{} get'.format(type(self).__name__))
+            event = Event('{} peek'.format(type(self).__name__))
             self._getters.append((event, cocotb.scheduler._current_task))
             await event.wait()
         return self.peek_nowait()
@@ -297,5 +276,4 @@ class UVMQueue(cocotb.queue.Queue):
         if self.empty():
             raise QueueEmpty()
         item = self._peek()
-        self._wakeup_next(self._putters)
         return item

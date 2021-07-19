@@ -1,8 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1626628474" />
-    <testcase name="test_queue" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb/tinyalu_cocotb.py" lineno="110" time="0.00034308433532714844" sim_time_ns="1000" ratio_time="2914735.232800556" />
-    <testcase name="wait_on_queue" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb/tinyalu_cocotb.py" lineno="151" time="0.11001920700073242" sim_time_ns="1000" ratio_time="9089.322012594972" />
-    <testcase name="nowait_tests" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb/tinyalu_cocotb.py" lineno="163" time="0.00014519691467285156" sim_time_ns="1000" ratio_time="6887198.6863711" />
-  </testsuite>
-</testsuites>

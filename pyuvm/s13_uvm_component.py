@@ -318,7 +318,7 @@ We've opted for the latter.
     def start_of_simulation_phase(self):
         ...
 
-    def run_phase(self):
+    async def run_phase(self):
         ...
 
     def extract_phase(self):
@@ -376,7 +376,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """Used in testing"""
         return self.get_child("uvm_test_top")
 
-    def run_test(self, test_name=""):
+    async def run_test(self, test_name=""):
         """
         This implementation skips much of the state-setting and
         what not in the LRM and focuses on building the
@@ -398,11 +398,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
             for self.running_phase in uvm_common_phases:
                 self.running_phase.traverse(self.uvm_test_top)
                 if self.running_phase == uvm_run_phase:
-                    time.sleep(.1)
-                    run_cond = utility_classes.ObjectionHandler().run_condition
-                    run_over = utility_classes.ObjectionHandler().run_phase_complete
-                    with run_cond:
-                        run_cond.wait_for(run_over)
+                    await utility_classes.ObjectionHandler().run_phase_complete()
         except error_classes.UVMError as uve:
             self.logger.error(uve)
 

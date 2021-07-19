@@ -1,7 +1,7 @@
 from pyuvm.s05_base_classes import uvm_object
 import pyuvm.error_classes as error_classes
-import threading
 import pyuvm.utility_classes as utility_classes
+import cocotb
 
 # 9.1
 #
@@ -91,9 +91,7 @@ class uvm_threaded_execute_phase(uvm_phase):
             method = getattr(comp, method_name)
         except AttributeError:
             raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
-        fork = threading.Thread(target=method, name=comp.get_full_name())
-        fork.start()
-        utility_classes.RunningThreads().add_thread(fork)
+        cocotb.fork(method())
 
 
 # 9.8 Predefined Phases
