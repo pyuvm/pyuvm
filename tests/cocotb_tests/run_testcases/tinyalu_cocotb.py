@@ -4,16 +4,23 @@ import cocotb
 import pyuvm.utility_classes as utility_classes
 import time
 import asyncio.queues
-from pyuvm import *
+import inspect
 import test_08_factory_classes as t08
 
 
-
 @cocotb.test()
-async def factory_tests(dut):
+async def test_08_factory(dut):
     """Tests different aspects of the factory"""
-    try:
-        run_test(test_set_inst_override_by_type_8_3_1_4_1)
-    except AssertionError:
-        assert False
+    print("HEY WHAT IS GOING ON")
+    tc08 = t08.s08_factory_classes_TestCase()
+    methods = inspect.getmembers(t08.s08_factory_classes_TestCase)#, predicate=inspect.ismethod)
+    for mm in methods:
+        (name,function) = mm
+        if name.startswith("test_"):
+            test = getattr(tc08, name)
+            tc08.setUp()
+            test()
+            tc08.tearDown()
     assert True
+
+
