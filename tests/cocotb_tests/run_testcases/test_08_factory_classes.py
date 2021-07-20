@@ -1,4 +1,3 @@
-import pyuvm_unittest
 from pyuvm import *
 import logging
 
