@@ -14,8 +14,10 @@ class uvm_report_object(uvm_object):
 
     def __init__(self, name):
         super().__init__(name)
-        full_name = self.get_full_name()
-        self.logger = logging.getLogger(full_name)  # Every object gets its own logger
+        log_name = self.get_full_name()
+        if len(log_name) == 0:
+            log_name = "uvm_log_root"
+        self.logger = logging.getLogger(log_name)  # Every object gets its own logger
         self.logger.setLevel(level=logging.INFO)  # Default is to print INFO
         self.logger.propagate = False  # We are not sending log messages up the hierarchy
         handler = logging.StreamHandler()
