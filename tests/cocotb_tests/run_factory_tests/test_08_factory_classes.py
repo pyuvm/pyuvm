@@ -1,6 +1,7 @@
+# pylint: disable=unused-wildcard-import
 from pyuvm import *
 import logging
-
+import asyncio
 
 class s08_factory_classes_TestCase():
     # class s08_factory_classes_TestCase (unittest.TestCase):
@@ -150,7 +151,12 @@ class s08_factory_classes_TestCase():
         self.factory.set_type_override_by_type(self.comp_1, self.comp_2)
         self.factory.set_type_override_by_type(self.comp_2, self.comp_3)
         self.factory.set_type_override_by_type(self.comp_3, self.original_comp)
+        logger = logging.getLogger("Factory")
+        level = logger.level
+        logger.setLevel(logging.CRITICAL)
         overridden_orig = self.fd.find_override(self.original_comp)
+        logger.setLevel(level)
+
         assert self.comp_3 == overridden_orig
 
     def test_no_type_override(self):
@@ -263,9 +269,13 @@ class s08_factory_classes_TestCase():
         new_obj = self.factory.create_object_by_name("original_object", parent_inst_path="top.noway", name="orig2b")
         assert isinstance(new_obj, self.object_2)
         assert "orig2b" == new_obj.get_name()
+        logger = logging.getLogger("Factory")
+        level = logger.level
+        logger.setLevel(logging.CRITICAL)
         not_an_instance = self.factory.create_object_by_name("not_an_object", name="bad_name")
         assert not_an_instance is None
-
+        logger.setLevel(level)
+        
     def test_create_component_by_type_and_name_override_8_3_1_5(self):
         """
         8.3.1.5
@@ -389,7 +399,7 @@ class s08_factory_classes_TestCase():
         assert "Foo" == new_comp.get_name()
         assert isinstance(new_comp, FooComp)
 
-    def test_type_override_by_type(self):
+    async def test_type_override_by_type(self):
         class Comp(uvm_component):
             ...
 
@@ -397,16 +407,21 @@ class s08_factory_classes_TestCase():
             ...
 
         # noinspection PyUnusedLocal
-        class Test(uvm_test):
+        class Test(uvm_test):     # pylint: disable=unused-variable
+
             def build_phase(self):
                 uvm_factory().set_type_override_by_type(Comp, Other)
                 self.cc = Comp.create("cc", self)
 
-        uvm_root().run_test("Test")
+            async def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        await uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         assert isinstance(utt.cc, Other)
 
-    def test_inst_override_by_type(self):
+    async def test_inst_override_by_type(self):
         class Comp(uvm_component):
             ...
 
@@ -414,18 +429,23 @@ class s08_factory_classes_TestCase():
             ...
 
         # noinspection PyUnusedLocal
-        class Test(uvm_test):
+        class Test(uvm_test):     # pylint: disable=unused-variable
+
             def build_phase(self):
                 uvm_factory().set_inst_override_by_type(Comp, Other, self.get_full_name() + ".cc2")
                 self.cc1 = Comp.create("cc1", self)
                 self.cc2 = Comp.create("cc2", self)
 
-        uvm_root().run_test("Test")
+            async def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        await uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Comp)
         assert isinstance(utt.cc2, Other)
 
-    def test_inst_override_by_name(self):
+    async def test_async_inst_override_by_name(self):
         class Comp(uvm_component):
             ...
 
@@ -433,18 +453,22 @@ class s08_factory_classes_TestCase():
             ...
 
         # noinspection PyUnusedLocal
-        class Test(uvm_test):
+        class Test(uvm_test):     # pylint: disable=unused-variable
             def build_phase(self):
                 uvm_factory().set_inst_override_by_name("Comp", "Other", self.get_full_name() + ".cc2")
                 self.cc1 = Comp.create("cc1", self)
                 self.cc2 = Comp.create("cc2", self)
 
-        uvm_root().run_test("Test")
+            async def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        await uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Comp)
         assert isinstance(utt.cc2, Other)
 
-    def test_type_override_by_name(self):
+    async def test_type_override_by_name(self):
         class Comp(uvm_component):
             ...
 
@@ -452,18 +476,22 @@ class s08_factory_classes_TestCase():
             ...
 
         # noinspection PyUnusedLocal
-        class Test(uvm_test):
+        class Test(uvm_test): # pylint: disable=unused-variable
             def build_phase(self):
                 uvm_factory().set_type_override_by_name("Comp", "Other")
                 self.cc1 = Comp.create("cc1", self)
                 self.cc2 = Comp.create("cc2", self)
 
-        uvm_root().run_test("Test")
+            async def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        await uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Other)
         assert isinstance(utt.cc2, Other)
 
-    def test_obj_type_override_by_type(self):
+    async def test_obj_type_override_by_type(self):
         class Obj(uvm_object):
             ...
 
@@ -471,16 +499,20 @@ class s08_factory_classes_TestCase():
             ...
 
         # noinspection PyUnusedLocal
-        class Test(uvm_test):
+        class Test(uvm_test): # pylint: disable=unused-variable
             def build_phase(self):
                 uvm_factory().set_type_override_by_type(Obj, OtherObj)
                 self.cc1 = Obj.create("cc1")
 
-        uvm_root().run_test("Test")
+            async def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        await uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, OtherObj)
 
-    def test_obj_type_override_by_name(self):
+    async def test_obj_type_override_by_name(self):
         class Obj(uvm_object):
             ...
 
@@ -488,16 +520,21 @@ class s08_factory_classes_TestCase():
             ...
 
         # noinspection PyUnusedLocal
+        # pylint: disable=unused-variable
         class Test(uvm_test):
             def build_phase(self):
                 uvm_factory().set_type_override_by_name("Obj", "OtherObj")
                 self.cc1 = Obj.create("cc1")
 
-        uvm_root().run_test("Test")
+            async def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        await uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, OtherObj)
 
-    def test_obj_inst_override_by_type(self):
+    async def test_obj_inst_override_by_type(self):
         class Obj(uvm_object):
             ...
 
@@ -505,11 +542,15 @@ class s08_factory_classes_TestCase():
             ...
 
         # noinspection PyUnusedLocal
-        class Test(uvm_test):
+        class Test(uvm_test): # pylint: disable=unused-variable
             def build_phase(self):
                 uvm_factory().set_inst_override_by_type(Obj, OtherObj, self.get_full_name())
                 self.cc1 = Obj.create("cc1")
 
-        uvm_root().run_test("Test")
+            async def run_phase(self):
+                self.raise_objection()
+                self.drop_objection()
+
+        await uvm_root().run_test("Test")
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Obj)  # Cant inst override object

@@ -1,4 +1,4 @@
-from pyuvm import *
+from pyuvm import *  # pylint: disable=unused-wildcard-import
 import pyuvm.utility_classes as utility_classes
 
 
