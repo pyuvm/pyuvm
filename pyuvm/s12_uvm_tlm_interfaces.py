@@ -114,7 +114,7 @@ class uvm_blocking_put_port(uvm_port_base):
         super().connect(export)
 
     # 12.2.4.2.1
-    def put(self, datum, timeout=None):
+    async def put(self, datum, timeout=None):
         """
          A blocking put that calls the export.put
 
@@ -123,7 +123,7 @@ class uvm_blocking_put_port(uvm_port_base):
         :return: None
         """
         try:
-            self.export.put(datum)
+            await self.export.put(datum)
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
 
@@ -186,14 +186,14 @@ class uvm_blocking_get_port(uvm_port_base):
         super().connect(export)
 
     # 12.2.4.2.2
-    def get(self, timeout=None):
+    async def get(self, timeout=None):
         """
 
         A blocking get that returns the data got
         :return: data
         """
         try:
-            data = self.export.get(timeout=timeout)
+            data = await self.export.get(timeout=timeout)
             return data
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
@@ -256,7 +256,7 @@ class uvm_blocking_peek_port(uvm_port_base):
         super().connect(export)
 
     # 12.2.4.2.3
-    def peek(self):
+    async def peek(self):
         """
         A blocking peek that returns data without
         consuming it.
@@ -264,7 +264,7 @@ class uvm_blocking_peek_port(uvm_port_base):
         :return: datum
         """
         try:
-            datum = self.export.peek()
+            datum = await self.export.peek()
             return datum
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
@@ -567,8 +567,9 @@ class uvm_tlm_fifo_base(uvm_component):
     """
 
     class BlockingPutExport(QueueAccessor, uvm_blocking_put_export):
-        async def put(self, item, timeout=None):
+        async def put(self, item):
             self.logger.log(FIFO_DEBUG, f"blocking put: {item}")
+            print(f"********** PUTTING {item}")
             await self.queue.put(item)
             self.logger.log(FIFO_DEBUG, f"success put {item}")
             self.ap.write(item)
