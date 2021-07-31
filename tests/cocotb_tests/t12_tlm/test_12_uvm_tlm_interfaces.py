@@ -1,5 +1,5 @@
 import pyuvm_unittest
-from pyuvm import *
+from pyuvm import * # pylint: disable=unused-wildcard-import
 import threading
 import time
 
