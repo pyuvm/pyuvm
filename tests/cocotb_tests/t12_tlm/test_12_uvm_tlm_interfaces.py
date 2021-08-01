@@ -6,6 +6,7 @@ import time
 import cocotb
 from cocotb.triggers import Timer
 
+
 async def waitabit(abit=5):
     await Timer(1, units="us")
 class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
