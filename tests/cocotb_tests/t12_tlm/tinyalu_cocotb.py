@@ -11,6 +11,7 @@ import test_12_uvm_tlm_interfaces as test_mod
 async def run_tlm(dut):
     tests_pass = {}
     t12 = test_mod.s12_uvm_tlm_interfaces_TestCase()
+    t12.dut = dut
     methods = inspect.getmembers(test_mod.s12_uvm_tlm_interfaces_TestCase)#, predicate=inspect.ismethod)
     for mm in methods:
         (name,_) = mm
