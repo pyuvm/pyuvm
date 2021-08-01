@@ -528,35 +528,37 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         gp.connect(fifo.blocking_get_export)
         pk.connect(fifo.blocking_peek_export)
         gpp.connect(fifo.blocking_get_peek_export)
-        put_data = [1, 2, 3, 'c', None]
-        get_data = []
+        put_data = [1, 'f', 3, 'c', None]
         peek_data = []
+        get_data = []
         cocotb.fork(self.do_blocking_put(pp, put_data))
-        """
-        await self.do_blocking_get(gp, get_data)
-        await self.do_blocking_peek(pk, peek_data)
+        await self.do_blocking_peek(gpp, peek_data)
+        await self.do_blocking_get(gpp, get_data)
         self.assertEqual(put_data[:-1], get_data)
         self.assertEqual(put_data[0], peek_data[0])
         peek_data = []
         get_data = []
-        await self.do_blocking_put(pp,put_data)
+        fifo.flush()
+        cocotb.fork(self.do_blocking_put(pp,put_data))
         await self.do_blocking_peek(gpp, peek_data)
         await self.do_blocking_get(gpp, get_data)
         self.assertTrue(put_data[0], peek_data[0])
         self.assertEqual(put_data[:-1], get_data)
-        """
         pass
 
     @staticmethod
-    def do_nonblocking_put(put_port, data_list):
+    async def do_nonblocking_put(put_port, data_list):
         for data in data_list:
             while not put_port.try_put(data):
+                print(data, put_port)
                 time.sleep(0.1)
 
     @staticmethod
-    def do_nonblocking_get(get_port, data_list):
+    async def do_nonblocking_get(get_port, data_list):
         while True:
+            print("IN GET")
             success, datum = get_port.try_get()
+            print(success, datum)
             if success:
                 if datum is not None:
                     data_list.append(datum)
@@ -566,10 +568,10 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 time.sleep(0.1)
 
     @staticmethod
-    def do_nonblocking_peek(peek_port, data_list):
+    async def do_nonblocking_peek(peek_port, data_list):
         data_list.append(peek_port.try_peek())
 
-    def tqst_fifo_nonblocking(self):
+    async def test_fifo_nonblocking(self):
         fifo = self.make_fifo(uvm_tlm_fifo)
         pp = uvm_nonblocking_put_port("pp", self.my_root)
         gp = uvm_nonblocking_get_port("gp", self.my_root)
@@ -580,56 +582,41 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         put_data = [1, 2, 3, 'c', None]
         get_data = []
         peek_data = []
-        pt = threading.Thread(target=self.do_nonblocking_put, args=(pp, put_data), name="pt")
-        gt = threading.Thread(target=self.do_nonblocking_get, args=(gp, get_data), name="gt")
-        pkt = threading.Thread(target=self.do_nonblocking_peek, args=(pk, peek_data), name="pkt")
-        current_time = self.get_deciseconds()
         self.assertFalse(pk.can_peek())
-        pkt.start()
-        pkt.join()
+        await self.do_nonblocking_peek(pk, peek_data)
         success, data = peek_data.pop()
         self.assertFalse(success)
         self.assertIsNone(data)
-        pkt = threading.Thread(target=self.do_nonblocking_peek, args=(pk, peek_data))
-        pt.start()
-        time.sleep(0.1)
+        cocotb.fork(self.do_nonblocking_put(pp, put_data))
+        print("PAST FORK")
+        await self.do_nonblocking_get(gp, get_data)
+        print("MADE IT")
+        time.sleep(.1)
         self.assertTrue(pk.can_peek())
-        pkt.start()
-        pkt.join()
+        await self.do_nonblocking_peek(pk, peek_data)
         success, data = peek_data.pop()
         self.assertTrue(success)
         self.assertEqual(data, put_data[0])
-        gt.start()
-        time.sleep(0.1)
-        gt.join()
-        new_time = self.get_deciseconds()
-        self.assertTrue(new_time >= current_time + len(put_data[:-1]))
+        """
         self.assertEqual(put_data[:-1], get_data)
         # now with get_peek
         gpp = uvm_nonblocking_get_peek_port("gpp", self.my_root)
         gpp.connect(fifo.nonblocking_get_peek_export)
         get_data = []
         peek_data = []
-        pt = threading.Thread(target=self.do_nonblocking_put, args=(pp, put_data))
-        gpt = threading.Thread(target=self.do_nonblocking_get, args=(gpp, get_data))
-        pkt = threading.Thread(target=self.do_nonblocking_peek, args=(gpp, peek_data))
         self.assertFalse(pk.can_peek())
-        pkt.start()
-        pkt.join()
+        await self.do_nonblocking_peek(gpp, peek_data)
         success, data = peek_data.pop()
         self.assertFalse(success)
         self.assertIsNone(data)
         pkt = threading.Thread(target=self.do_nonblocking_peek, args=(gpp, peek_data))
-        pt.start()
+        cocotb.fork(self.do_nonblocking_put(pp, put_data))
         time.sleep(0.1)
         self.assertTrue(pk.can_peek())
-        pkt.start()
-        pkt.join()
+        await self.nonblocking_peek(gpp, peek_data)
         success, data = peek_data.pop()
         self.assertTrue(success)
         self.assertEqual(data, put_data[0])
-        gpt.start()
-        gpt.join()
-        new_time = self.get_deciseconds()
-        self.assertTrue(new_time >= current_time + len(put_data[:-1]))
+        await self.nonblocking_get(gpp, get_data)
         self.assertEqual(put_data[:-1], get_data)
+        """

@@ -28,7 +28,7 @@ import queue
 from pyuvm.error_classes import UVMTLMConnectionError
 from pyuvm.utility_classes import UVMQueue, FIFO_DEBUG
 from pyuvm import error_classes
-from cocotb.queue import QueueEmpty, QueueFull 
+from asyncio.queues import QueueEmpty, QueueFull 
 import logging
 
 
@@ -569,7 +569,6 @@ class uvm_tlm_fifo_base(uvm_component):
     class BlockingPutExport(QueueAccessor, uvm_blocking_put_export):
         async def put(self, item):
             self.logger.log(FIFO_DEBUG, f"blocking put: {item}")
-            print(f"********** PUTTING {item}")
             await self.queue.put(item)
             self.logger.log(FIFO_DEBUG, f"success put {item}")
             self.ap.write(item)
@@ -739,11 +738,7 @@ class uvm_tlm_fifo(uvm_tlm_fifo_base):
         """
         Flush out the FIFO
         """
-        self.queue.mutex.acquire()
-        self.queue.queue.clear()
-        self.queue.all_tasks_done.notify_all()
-        self.queue.unfinished_tasks = 0
-        self.queue.mutex.release()
+        self.queue._queue.clear()
 
 
 class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
