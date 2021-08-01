@@ -1,10 +1,12 @@
+from sys import abiflags
 import pyuvm_unittest
 from pyuvm import * # pylint: disable=unused-wildcard-import
 import threading
 import time
 import cocotb
 
-
+async def waitabit():
+    time.sleep(.1)
 class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -515,8 +517,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         current_time = int(time.time_ns() / 1e8)
         return current_time
 
-    async def wait1(self):
-        time.sleep(1)
+
 
     async def test_fifo_blocking(self):
         fifo = self.make_fifo(uvm_tlm_fifo)
@@ -551,7 +552,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         for data in data_list:
             while not put_port.try_put(data):
                 print(data, put_port)
-                time.sleep(0.1)
+                await waitabit()
 
     @staticmethod
     async def do_nonblocking_get(get_port, data_list):
@@ -565,7 +566,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 else:
                     break
             else:
-                time.sleep(0.1)
+                await waitabit()
 
     @staticmethod
     async def do_nonblocking_peek(peek_port, data_list):
