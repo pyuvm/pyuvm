@@ -38,7 +38,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
             self.data = None
 
     class TestBlockingPutExport(TestPutExportBase, uvm_blocking_put_export):
-        def put(self, data, timeout=None):
+        async def put(self, data):
             self.data = data
 
     class TestNonBlockingPutExport(TestPutExportBase, uvm_nonblocking_put_export):
@@ -65,7 +65,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
             self.empty = None
 
     class TestBlockingGetExport(TestGetExportBase, uvm_blocking_get_export):
-        def get(self, timeout=None):
+        async def get(self, timeout=None):
             return self.data
 
     class TestNonBlockingGetExport(TestGetExportBase, uvm_nonblocking_get_export):
@@ -83,7 +83,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
     # Peek
     class TestBlockingPeekExport(TestGetExportBase, uvm_blocking_peek_export):
-        def peek(self, timeout=None):
+        async def peek(self, timeout=None):
             return self.data
 
     class TestNonBlockingPeekExport(TestGetExportBase, uvm_nonblocking_peek_export):
@@ -178,19 +178,22 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         invalid = self.TestInvalidExport("invalid", self.my_root)
         return port, port2, export, invalid
 
-    def blocking_put(self, port_cls, export_cls):
+    async def exercise_blocking_put(self, port_cls, export_cls):
         (bpp, bpp2, export, invalid) = self.make_components(port_cls, export_cls)
         with self.assertRaises(UVMTLMConnectionError):
-            bpp.put(0)
+            await bpp.put(0)
         with self.assertRaises(UVMTLMConnectionError):
             bpp.connect(invalid)
+        print("EXPORT: ",export )
         bpp.connect(export)
         bpp2.connect(bpp)
         # test first port
-        bpp.put(5)
+        print("BPP.EXPORT:",bpp.export)
+        print("BPP.EXPORT.PUT:", bpp.export.put)
+        await bpp.put(5)
         self.assertEqual(export.data, 5)
         # test port connected to port
-        bpp2.put(15)
+        await bpp2.put(15)
         self.assertEqual(export.data, 15)
 
     def nonblocking_put(self, port_cls, export_cls):
@@ -368,8 +371,8 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def slave_do(self, port_cls, export_cls):
         pass
 
-    def tqst_uvm_blocking_put_port(self):
-        self.blocking_put(uvm_blocking_put_port, self.TestBlockingPutExport)
+    async def test_uvm_blocking_put_port(self):
+        await self.exercise_blocking_put(uvm_blocking_put_port, self.TestBlockingPutExport)
 
     def tqst_uvm_non_blocking_put_port(self):
         self.nonblocking_put(uvm_nonblocking_put_port, self.TestNonBlockingPutExport)
