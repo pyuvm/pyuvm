@@ -2,6 +2,7 @@ import pyuvm_unittest
 from pyuvm import * # pylint: disable=unused-wildcard-import
 import threading
 import time
+import cocotb
 
 
 class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
@@ -530,7 +531,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
         put_data = [1, 2, 3, 'c', None]
         get_data = []
         peek_data = []
-        await self.do_blocking_put(pp, put_data)
+        cocotb.fork(self.do_blocking_put(pp, put_data))
         """
         await self.do_blocking_get(gp, get_data)
         await self.do_blocking_peek(pk, peek_data)

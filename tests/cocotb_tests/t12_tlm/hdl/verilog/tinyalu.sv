@@ -1,11 +1,3 @@
-module clock();
-	bit clk;
-	initial clk = 0;
-	always #5 clk=~clk;
-	initial
-		$display("******* IN SIMULATOR");
-endmodule
-
 module tinyalu (input [7:0] A,
 		input [7:0] B,
 		input [2:0] op,

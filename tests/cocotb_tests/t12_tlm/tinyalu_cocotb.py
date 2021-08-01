@@ -39,6 +39,8 @@ async def run_tlm(dut):
 @cocotb.test() # pylint: disable=no-value-for-parameter
 async def test_12_tlm(dut):
     """Tests the TLM FIFOS"""
+    clock = Clock(dut.clk, 2, units="us")    
+    cocotb.fork(clock.start())
     await run_tlm(dut)
 
 
