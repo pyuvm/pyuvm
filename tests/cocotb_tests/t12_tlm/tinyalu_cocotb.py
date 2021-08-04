@@ -8,7 +8,7 @@ import inspect
 import test_12_uvm_tlm_interfaces as test_mod
 
 
-async def run_tlm(dut):
+async def run_tests(dut):
     tests_pass = {}
     t12 = test_mod.s12_uvm_tlm_interfaces_TestCase()
     methods = inspect.getmembers(test_mod.s12_uvm_tlm_interfaces_TestCase)#, predicate=inspect.ismethod)
@@ -41,7 +41,7 @@ async def test_12_tlm(dut):
     """Tests the TLM FIFOS"""
     clock = Clock(dut.clk, 2, units="us")    
     cocotb.fork(clock.start())
-    await run_tlm(dut)
+    await run_tests(dut)
 
 
 

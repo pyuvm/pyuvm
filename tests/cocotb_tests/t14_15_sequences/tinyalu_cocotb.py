@@ -1,13 +1,13 @@
 from cocotb.clock import Clock
 import cocotb
 import inspect
-import test_13_predefined_component_classes as test_mod
+import test_14_15_python_sequences as test_mod
 
 
-async def run_tlm(dut):
+async def run_tests(dut):
     tests_pass = {}
-    t12 = test_mod.s13_predefined_component_TestCase()
-    methods = inspect.getmembers(test_mod.s13_predefined_component_TestCase)#, predicate=inspect.ismethod)
+    t12 = test_mod.py1415_sequence_TestCase()
+    methods = inspect.getmembers(test_mod.py1415_sequence_TestCase)#, predicate=inspect.ismethod)
     for mm in methods:
         (name,_) = mm
         if name.startswith("test_"):
@@ -37,7 +37,7 @@ async def test_12_tlm(dut):
     """Tests the TLM FIFOS"""
     clock = Clock(dut.clk, 2, units="us")    
     cocotb.fork(clock.start())
-    await run_tlm(dut)
+    await run_tests(dut)
 
 
 
