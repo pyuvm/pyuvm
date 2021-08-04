@@ -16,7 +16,7 @@ class s06_reporting_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
             ro.logger.info('info')
             ro.logger.error('error')
             ro.logger.critical('critical')
-            self.assertEqual(cm.output, ['DEBUG:ro:debug',
-                                         'INFO:ro:info',
-                                         'ERROR:ro:error',
-                                         'CRITICAL:ro:critical'])
+            self.assertEqual(cm.output, ['DEBUG:uvm.ro:debug',
+                                         'INFO:uvm.ro:info',
+                                         'ERROR:uvm.ro:error',
+                                         'CRITICAL:uvm.ro:critical'])

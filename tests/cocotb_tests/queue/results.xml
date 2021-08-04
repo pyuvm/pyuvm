@@ -1,8 +1,8 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1626691454" />
-    <testcase name="test_queue" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb_tests/queue/tinyalu_cocotb.py" lineno="110" time="0.0003368854522705078" sim_time_ns="1000" ratio_time="2968368.0113234255" />
-    <testcase name="wait_on_queue" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb_tests/queue/tinyalu_cocotb.py" lineno="151" time="0.11203503608703613" sim_time_ns="1000" ratio_time="8925.77924662009" />
-    <testcase name="nowait_tests" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb_tests/queue/tinyalu_cocotb.py" lineno="163" time="0.00016999244689941406" sim_time_ns="1000" ratio_time="5882614.3057503505" />
+    <property name="random_seed" value="1628076156" />
+    <testcase name="test_queue" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb_tests/queue/tinyalu_cocotb.py" lineno="110" time="0.0002551078796386719" sim_time_ns="1000" ratio_time="3919910.2803738317" />
+    <testcase name="wait_on_queue" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb_tests/queue/tinyalu_cocotb.py" lineno="151" time="0.10933876037597656" sim_time_ns="1000" ratio_time="9145.887483645878" />
+    <testcase name="nowait_tests" classname="tinyalu_cocotb" file="/Users/raysalemi/PycharmProjects/pyuvm/tests/cocotb_tests/queue/tinyalu_cocotb.py" lineno="163" time="0.00010180473327636719" sim_time_ns="1000" ratio_time="9822725.995316159" />
   </testsuite>
 </testsuites>
