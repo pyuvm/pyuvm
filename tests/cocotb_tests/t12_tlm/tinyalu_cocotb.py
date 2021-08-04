@@ -29,11 +29,11 @@ async def run_tlm(dut):
     any_failed = False
     for test in tests_pass:
         if tests_pass[test]:
-            pf = "Pass"
+            pf = "Pass   "
         else:
-            pf = "FAILED"
+            pf = "FAILED "
             any_failed = True
-        print (f"{test:<20} {pf} . . . ")
+        print (f"{pf} {test}")
     assert not any_failed
 
 @cocotb.test() # pylint: disable=no-value-for-parameter

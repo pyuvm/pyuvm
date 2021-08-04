@@ -344,9 +344,9 @@ class uvm_blocking_transport_port(uvm_port_base):
         self.check_export(export, uvm_blocking_transport_port)
         super().connect(export)
 
-    def transport(self, put_data):
+    async def transport(self, put_data):
         try:
-            get_data = self.export.transport(put_data)
+            get_data = await self.export.transport(put_data)
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
         return get_data
