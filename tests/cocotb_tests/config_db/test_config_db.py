@@ -47,7 +47,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMConfigItemNotFound):
             cdb.get(None, "B", "LABEL")
 
-    def test_context(self):
+    async def test_context(self):
         class comp(uvm_component):
             def build_phase(self):
                 self.cdb_set("XXC", 93, "")
@@ -55,14 +55,14 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
             def build_phase(self):
                 self.xx = comp("xx", self)
                 self.cdb_set("XXC", 855, "")
-            def run_phase(self):
+            async def run_phase(self):
                 self.raise_objection()
                 time.sleep(0.1)
                 self.drop_objection()
 
         cdb = ConfigDB()
         cdb.is_tracing = True
-        uvm_root().run_test("test")
+        await uvm_root().run_test("test")
         cdb.set(uvm_root(), '*', "LABEL", 55)
         datum = cdb.get(uvm_root(), "tt", "LABEL")
         self.assertEqual(55, datum)
@@ -73,7 +73,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
         datum = utt.xx.cdb_get("XXC", "")
         self.assertEqual(93, datum)
 
-    def test_wildards(self):
+    async def test_wildards(self):
         class comp(uvm_component):
             def build_phase(self):
                 self.numb = ConfigDB().get(self, "", "CONFIG")
@@ -82,16 +82,16 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 ConfigDB().set(self, "*", "CONFIG", 88)
                 self.cc1 = comp("cc1", self)
                 self.cc2 = comp("cc", self)
-            def run_phase(self):
+            async def run_phase(self):
                 self.raise_objection()
                 time.sleep(0.1)
                 self.drop_objection()
-        uvm_root().run_test("test")
+        await uvm_root().run_test("test")
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.numb)
         self.assertEqual(88, utt.cc2.numb)
 
-    def test_one_wildard(self):
+    async def test_one_wildard(self):
         class comp(uvm_component):
             def build_phase(self):
                 self.numb = ConfigDB().get(self, "", "CONFIG")
@@ -103,17 +103,17 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.cc2 = comp("cc2", self)
                 self.cc3 = comp("cc3", self)
 
-            def run_phase(self):
+            async def run_phase(self):
                 self.raise_objection()
                 time.sleep(0.1)
                 self.drop_objection()
-        uvm_root().run_test("test")
+        await uvm_root().run_test("test")
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.numb)
         self.assertEqual(66, utt.cc2.numb)
         self.assertEqual(88, utt.cc3.numb)
 
-    def test_precedence(self):
+    async def test_precedence(self):
         class bottom(uvm_component):
             def build_phase(self):
                 self.numb = ConfigDB().get(self, "", "CONFIG")
@@ -128,16 +128,16 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 ConfigDB().set(self, "cc1.*", "CONFIG", 88)
                 self.cc1 = comp("cc1", self)
 
-            def run_phase(self):
+            async def run_phase(self):
                 self.raise_objection()
                 time.sleep(0.1)
                 self.drop_objection()
 
-        uvm_root().run_test("test")
+        await uvm_root().run_test("test")
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.bot.numb)
 
-    def test_wildcard_hierarchy_in_context(self):
+    async def test_wildcard_hierarchy_in_context(self):
         class Printer(uvm_component):
             def build_phase(self):
                 self.msg = ConfigDB().get(self, "", "MSG")
@@ -154,11 +154,11 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.p2 = Printer("p2", self)
                 self.mediator = Printer("mediator", self)
                 self.reporters = Printer("reporters", self)
-            def run_phase(self):
+            async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
 
-        uvm_root().run_test("PrintTest")
+        await uvm_root().run_test("PrintTest")
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(utt.pmsg, utt.p1.msg)
         self.assertEqual(utt.pmsg, utt.p2.msg)
@@ -166,7 +166,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.assertEqual(utt.rmsg, utt.reporters.msg)
 
 
-    def test_wildcard_hierarchy_at_root(self):
+    async def test_wildcard_hierarchy_at_root(self):
         class Printer(uvm_component):
             def build_phase(self):
                 self.msg = ConfigDB().get(self, "", "MSG")
@@ -183,11 +183,11 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.p2 = Printer("p2", self)
                 self.mediator = Printer("mediator", self)
                 self.reporters = Printer("reporters", self)
-            def run_phase(self):
+            async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
 
-        uvm_root().run_test("PrintTest")
+        await uvm_root().run_test("PrintTest")
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(utt.pmsg, utt.p1.msg)
         self.assertEqual(utt.pmsg, utt.p2.msg)
