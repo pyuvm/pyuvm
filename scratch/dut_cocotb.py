@@ -24,7 +24,7 @@ class CocoTBBFM():
             await RisingEdge(self.dut.clk)
             try:
                 print(f"trying to get from {self.queue}")
-                numb = self.queue.get(timeout=0.5)
+                numb = await self.queue.get()
                 print(f"got: {numb}")
                 self.dut.data_in = numb
             except Empty:

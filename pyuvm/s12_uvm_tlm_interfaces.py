@@ -114,11 +114,9 @@ class uvm_blocking_put_port(uvm_port_base):
         super().connect(export)
 
     # 12.2.4.2.1
-    async def put(self, datum, timeout=None):
+    async def put(self, datum):
         """
          A blocking put that calls the export.put
-
-        :param timeout: Timeout before throwing queue.Full
         :param datum: Datum to put
         :return: None
         """
@@ -186,14 +184,14 @@ class uvm_blocking_get_port(uvm_port_base):
         super().connect(export)
 
     # 12.2.4.2.2
-    async def get(self, timeout=None):
+    async def get(self):
         """
 
         A blocking get that returns the data got
         :return: data
         """
         try:
-            data = await self.export.get(timeout=timeout)
+            data = await self.export.get()
             return data
         except AttributeError:
             raise UVMTLMConnectionError(f"Missing or wrong export in {self.get_full_name()}. Did you connect it?")
@@ -591,7 +589,7 @@ class uvm_tlm_fifo_base(uvm_component):
         ...
 
     class BlockingGetExport(QueueAccessor, uvm_blocking_get_export):
-        async def get(self, timeout=None):
+        async def get(self):
             self.logger.log(FIFO_DEBUG, "Attempting blocking get")
             item = await self.queue.get()
             self.logger.log(FIFO_DEBUG, f"got {item}")
@@ -763,8 +761,8 @@ class uvm_tlm_req_rsp_channel(uvm_component):
             self.put_export = put_export
             self.get_peek_export = get_peek_export
 
-        def put(self, item, timeout=None):
-            self.put_export.put(item)
+        async def put(self, item):
+            await self.put_export.put(item)
 
         def can_put(self):
             return self.put_export.can_put()
@@ -772,8 +770,8 @@ class uvm_tlm_req_rsp_channel(uvm_component):
         def try_put(self, item):
             return self.put_export.try_put(item)
 
-        def get(self, timeout=None):
-            return self.get_peek_export.get(timeout=timeout)
+        async def get(self):
+            return await self.get_peek_export.get()
 
         def can_get(self):
             return self.get_peek_export.can_get()
@@ -813,9 +811,9 @@ class uvm_tlm_transport_channel(uvm_tlm_req_rsp_channel):
             self.req_fifo = req_fifo
             self.rsp_fifo = rsp_fifo
 
-        def transport(self, req, timeout=None):
+        async def transport(self, req):
             self.req_fifo.put_export.put(req)
-            return self.rsp_fifo.get_peek_export.get(timeout=timeout)
+            return await self.rsp_fifo.get_peek_export.get()
 
         def nb_transport(self, req):
             if not self.req_fifo.put_export.try_put(req):

@@ -9,7 +9,7 @@
 
 from pyuvm.s05_base_classes import *
 from pyuvm.s12_uvm_tlm_interfaces import *
-import threading
+from cocotb.triggers import Event as CocotbEvent
 
 
 # The sequence system allows users to create and populate sequence items and then send them to a driver. The driver
@@ -91,25 +91,35 @@ class ResponseQueue(UVMQueue):
     Returns either the next response or the item with the id.
     """
 
-    def get_response(self, txn_id=None, timeout=None):
+    def __init__(self, maxsize: int = 0):
+        super().__init__(maxsize=maxsize)
+        self.put_event = CocotbEvent("put event")
+    
+    def put_nowait(self, item):
+        super().put_nowait(item)
+        self.put_event.set()
+        self.put_event.clear()
+
+    async def get_response(self, txn_id=None):
 
         if txn_id is None:
-            return self.get(timeout=timeout)
+            return await self.get()
         else:
             plucked = None
-            with self.not_empty:
-                while plucked is None:
-                    pluck_list = list(self.queue)
-                    try:
-                        plucked = next(xx for xx in pluck_list if xx.transaction_id == txn_id)
-                    except StopIteration:
-                        plucked = None
-                    if plucked is None:
-                        self.not_empty.wait()
-                    else:
-                        index = pluck_list.index(plucked)
-                        self.queue.remove(pluck_list[index])
-                return plucked
+            while plucked is None:
+                if self.empty:
+                    await self.put_event.wait()
+                pluck_list = list(self._queue)
+                try:
+                    plucked = next(xx for xx in pluck_list if xx.transaction_id == txn_id)
+                except StopIteration:
+                    plucked = None
+                if plucked is None:
+                    continue
+                else:
+                    index = pluck_list.index(plucked)
+                    self._queue.remove(pluck_list[index])
+            return plucked
 
     def __str__(self):
         return str([str(xx) for xx in self.queue])
@@ -123,8 +133,8 @@ class uvm_sequence_item(uvm_transaction):
 
     def __init__(self, name):
         super().__init__(name)
-        self.start_condition = threading.Condition()
-        self.finish_condition = threading.Condition()
+        self.start_condition = CocotbEvent()
+        self.finish_condition = CocotbEvent()
         self.parent_sequence_id = None
         self.response_id = None
 
@@ -151,37 +161,35 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         self.rsp_q = ResponseQueue()
         self.current_item = None
 
-    def put_req(self, item):
+    async def put_req(self, item):
         """
         put request into request queue
 
         :param item: request item
         :return:
         """
-        self.req_q.put(item)
+        await self.req_q.put(item)
 
-    def put_response(self, item, timeout=None):
+    async def put_response(self, item):
         """
         Put response into response queue
 
-        :param timeout:
         :param item: response item
         :return:
         """
-        self.rsp_q.put(item, timeout=timeout)
+        await self.rsp_q.put(item)
 
-    def get_next_item(self, timeout=None):
+    async def get_next_item(self):
         """
         Get the next item out of the item queue
-        :param timeout:
         :return: item to process
         """
         if self.current_item is not None:
             raise error_classes.UVMSequenceError("You must call item_done() before calling get_next_item again")
-        self.current_item = self.req_q.get(timeout=timeout)
+        self.current_item = await self.req_q.get()
         return self.current_item
 
-    def item_done(self, rsp=None):
+    async def item_done(self, rsp=None):
         """
         Signal that the item has been completed. If item is not none
         put it into the response queue.
@@ -192,20 +200,20 @@ class uvm_seq_item_export(uvm_blocking_put_export):
             raise error_classes.UVMSequenceError("You must call get_next_item before calling item_done")
 
         with self.current_item.finish_condition:
-            self.current_item.finish_condition.notify_all()
+            self.current_item.finish_condition.set()
+            self.current_item.finish_condition.clear()
         self.current_item = None
         if rsp is not None:
             self.put_response(rsp)
 
-    def get_response(self, transaction_id=None, timeout=None):
+    async def get_response(self, transaction_id=None):
         """
         If transaction_id is not none, block until a response with the transaction
         id becomes available.
         :param transaction_id: The transaction ID of the response
-        :param timeout: Time until we raise queue.Empty
         :return:
         """
-        datum = self.rsp_q.get_response(transaction_id, timeout)
+        datum = await self.rsp_q.get_response(transaction_id)
         return datum
 
 
@@ -214,31 +222,30 @@ class uvm_seq_item_port(uvm_blocking_put_port):
         self.check_export(export, uvm_seq_item_export)
         super().connect(export)
 
-    def put_req(self, item):
+    async def put_req(self, item):
         """Put a request item in the request queue"""
-        self.export.put_req(item)
+        await self.export.put_req(item)
 
-    def put_response(self, item):
+    async def put_response(self, item):
         """Put a response back in the queue. aka put_response"""
-        self.export.put_response(item)
+        await self.export.put_response(item)
 
-    def get_next_item(self, timeout=None):
+    async def get_next_item(self):
         """get the next sequence item from the request queue
-        :param timeout:
         """
-        return self.export.get_next_item(timeout=timeout)
+        return await self.export.get_next_item()
 
-    def item_done(self, rsp=None):
+    async def item_done(self, rsp=None):
         """Notify finish_item that the item is complete"""
-        self.export.item_done(rsp)
+        await self.export.item_done(rsp)
 
-    def get_response(self, transaction_id=None):
+    async def get_response(self, transaction_id=None):
         """
         Either get a response item with the given transaction_id, or get the first one in the queue.
         Removes the found transaction.
         If there is no transaction in the queue with transaction_id, block until it appears.
         """
-        datum = self.export.get_response(transaction_id)
+        datum = await self.export.get_response(transaction_id)
         return datum
 
 
@@ -259,31 +266,32 @@ class uvm_sequencer(uvm_component):
         self.seq_item_export = uvm_seq_item_export("seq_item_export", self)
         self.seq_q = UVMQueue(0)
 
-    def run_phase(self):
+    async def run_phase(self):
         while True:
-            next_item = self.seq_q.get()
+            next_item = await self.seq_q.get()
             with next_item.start_condition:
-                next_item.start_condition.notify_all()
+                next_item.start_condition.set()
+                next_item.staart_condition.clear()
 
-    def start_item(self, item):
+    async def start_item(self, item):
         self.seq_q.put(item)
         with item.start_condition:
-            item.start_condition.wait()
+            await item.start_condition.wait()
 
-    def finish_item(self, item):
+    async def finish_item(self, item):
         self.seq_item_export.put_req(item)
         with item.finish_condition:
-            item.finish_condition.wait()
+            await item.finish_condition.wait()
 
-    def put_req(self, req):
-        self.seq_item_export.put_req(req)
+    async def put_req(self, req):
+        await self.seq_item_export.put_req(req)
 
-    def get_response(self, txn_id=None):
-        datum = self.seq_item_export.get_response(txn_id)
+    async def get_response(self, txn_id=None):
+        datum = await self.seq_item_export.get_response(txn_id)
         return datum
 
-    def get_next_item(self, timeout=None):
-        next_item = self.seq_item_export.get_next_item(timeout)
+    async def get_next_item(self):
+        next_item = await self.seq_item_export.get_next_item()
         return next_item
 
 
@@ -294,12 +302,6 @@ class uvm_sequence(uvm_object):
     body() gets launched in a thread at start.
     """
 
-    @staticmethod
-    def fork(seq, seqr):
-        thread = threading.Thread(target=seq.start, args=(seqr,), name=seq.get_name())
-        thread.start()
-        return thread
-
     def __init__(self, name):
         super().__init__(name)
         self.sequencer = None
@@ -307,19 +309,19 @@ class uvm_sequence(uvm_object):
         self.body_thread = None
         self.sequence_id = id(self)
 
-    def body(self):
+    async def body(self):
         """
         This function gets launched in a thread when you run start()
         You generally override it in any extension.
         """
 
-    def start(self, seqr=None):
+    async def start(self, seqr=None):
         if seqr is not None:
             assert (isinstance(seqr, uvm_sequencer)), "Tried to start a sequence with a non-sequencer"
         self.sequencer = seqr
-        self.body()
+        await self.body()
 
-    def start_item(self, item):
+    async def start_item(self, item):
         """
         Sends an item to the sequencer and waits to be notified
         when the item has been selected to be run.
@@ -330,16 +332,16 @@ class uvm_sequence(uvm_object):
             raise error_classes.UVMSequenceError(f"Tried start_item in a virtual sequence {self.get_full_name()}")
         item.parent_sequence_id = self.sequence_id
         self.running_item = item
-        self.sequencer.start_item(item)
+        await self.sequencer.start_item(item)
 
-    def finish_item(self, item):
+    async def finish_item(self, item):
         if self.sequencer is None:
             raise error_classes.UVMSequenceError(f"Tried finish_item in virtual sequence: {self.get_full_name()}")
-        self.sequencer.finish_item(item)
+        await self.sequencer.finish_item(item)
 
-    def get_response(self):
+    async def get_response(self):
         if self.sequencer is None:
             raise error_classes.UVMSequenceError(
                 f"Tried to do get_response in a virtual sequence: {self.get_full_name()}")
-        datum = self.sequencer.get_response(self.running_item.response_id)
+        datum = await self.sequencer.get_response(self.running_item.response_id)
         return datum
