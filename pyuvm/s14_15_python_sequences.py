@@ -101,25 +101,19 @@ class ResponseQueue(UVMQueue):
         self.put_event.clear()
 
     async def get_response(self, txn_id=None):
-
         if txn_id is None:
             return await self.get()
         else:
-            plucked = None
-            while plucked is None:
-                if self.empty:
+            while True:
+                item_list = list(self._queue)
+                txn_list = [xx for xx in item_list if xx.transaction_id == txn_id]
+                if len(txn_list) == 0:
                     await self.put_event.wait()
-                pluck_list = list(self._queue)
-                try:
-                    plucked = next(xx for xx in pluck_list if xx.transaction_id == txn_id)
-                except StopIteration:
-                    plucked = None
-                if plucked is None:
-                    continue
                 else:
-                    index = pluck_list.index(plucked)
-                    self._queue.remove(pluck_list[index])
-            return plucked
+                    assert len(txn_list) == 1, f"Multiple transactionsn have the same ID: {txn_id}"
+                    index = self._queue.index(txn_list[0])
+                    self._queue.remove(txn_list[0])
+                    return txn_list[0]
 
     def __str__(self):
         return str([str(xx) for xx in self.queue])
@@ -199,9 +193,9 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         if self.current_item is None:
             raise error_classes.UVMSequenceError("You must call get_next_item before calling item_done")
 
-        with self.current_item.finish_condition:
-            self.current_item.finish_condition.set()
-            self.current_item.finish_condition.clear()
+
+        self.current_item.finish_condition.set()
+        self.current_item.finish_condition.clear()
         self.current_item = None
         if rsp is not None:
             self.put_response(rsp)

@@ -25,12 +25,13 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         ObjectionHandler().run_phase_done_flag = False
         self.my_root.clear_children()
         uvm_root().clear_hierarchy()
+        self.result_list = []
         ObjectionHandler.clear_singletons()
 
     def tearDown(self):
         ObjectionHandler().run_phase_done_flag = None
         uvm_factory.clear_singletons()
-        time.sleep(0.2)
+
 
     @staticmethod
     async def putter(put_method, data):
@@ -42,15 +43,15 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
             datum = await get_method()
             if datum.get_name() == 'end':
                 break
-            if done_method:
-                done_method()
+            if done_method is not None:
+                await done_method()
             self.result_list.append(datum)
 
     async def response_getter(self, get_response_method, txn_id_list):
         for txn_id in txn_id_list:
             datum = await get_response_method(txn_id)
             self.result_list.append(datum)
-        pass
+
 
     class ItemClass(uvm_sequence_item):
         def __init__(self, name="seq_item", txn_id=0):
@@ -99,19 +100,20 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         except AssertionError as ae:
             print("ERROR: ",ae)
             raise
-    async def tqst_uvm_item_export_check(self):
+
+    async def test_uvm_item_export_check(self):
         sip = uvm_seq_item_port("sip", self.my_root)
         bpe = uvm_blocking_put_export("bpe", self.my_root)
         with self.assertRaises(error_classes.UVMTLMConnectionError):
             sip.connect(bpe)
 
-    async def tqst_uvm_item_port_put_get(self):
+    async def test_uvm_item_port_put_get(self):
         sip = uvm_seq_item_port("sip", self.my_root)
         sie = uvm_seq_item_export("sie", self.my_root)
         sip.connect(sie)
         await self.run_get_response(sip.put_response, sip.get_response)
 
-    async def tqst_uvm_item_port_put_req_get_next_item(self):
+    async def test_uvm_item_port_put_req_get_next_item(self):
         sip = uvm_seq_item_port("sip", self.my_root)
         sie = uvm_seq_item_export("sie", self.my_root)
         sip.connect(sie)
