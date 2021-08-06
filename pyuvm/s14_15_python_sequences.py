@@ -11,7 +11,6 @@ from pyuvm.s05_base_classes import *
 from pyuvm.s12_uvm_tlm_interfaces import *
 from cocotb.triggers import Event as CocotbEvent
 
-
 # The sequence system allows users to create and populate sequence items and then send them to a driver. The driver
 # loops through getting the next sequence item, processing it, and sending the result back.
 #
@@ -198,7 +197,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         self.current_item.finish_condition.clear()
         self.current_item = None
         if rsp is not None:
-            self.put_response(rsp)
+            await self.put_response(rsp)
 
     async def get_response(self, transaction_id=None):
         """
@@ -268,14 +267,12 @@ class uvm_sequencer(uvm_component):
                 next_item.staart_condition.clear()
 
     async def start_item(self, item):
-        self.seq_q.put(item)
-        with item.start_condition:
-            await item.start_condition.wait()
+        await self.seq_q.put(item)
+        await item.start_condition.wait()
 
     async def finish_item(self, item):
-        self.seq_item_export.put_req(item)
-        with item.finish_condition:
-            await item.finish_condition.wait()
+        await self.seq_item_export.put_req(item)
+        await item.finish_condition.wait()
 
     async def put_req(self, req):
         await self.seq_item_export.put_req(req)
@@ -300,7 +297,6 @@ class uvm_sequence(uvm_object):
         super().__init__(name)
         self.sequencer = None
         self.running_item = None
-        self.body_thread = None
         self.sequence_id = id(self)
 
     async def body(self):
@@ -313,6 +309,7 @@ class uvm_sequence(uvm_object):
         if seqr is not None:
             assert (isinstance(seqr, uvm_sequencer)), "Tried to start a sequence with a non-sequencer"
         self.sequencer = seqr
+        print("BODY TYPE", type(self.body()))
         await self.body()
 
     async def start_item(self, item):
