@@ -163,14 +163,14 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         """
         await self.req_q.put(item)
 
-    async def put_response(self, item):
+    def put_response(self, item):
         """
         Put response into response queue
 
         :param item: response item
         :return:
         """
-        await self.rsp_q.put(item)
+        self.rsp_q.put_nowait(item)
 
     async def get_next_item(self):
         """
@@ -182,7 +182,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         self.current_item = await self.req_q.get()
         return self.current_item
 
-    async def item_done(self, rsp=None):
+    def item_done(self, rsp=None):
         """
         Signal that the item has been completed. If item is not none
         put it into the response queue.
@@ -197,7 +197,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         self.current_item.finish_condition.clear()
         self.current_item = None
         if rsp is not None:
-            await self.put_response(rsp)
+            self.put_response(rsp)
 
     async def get_response(self, transaction_id=None):
         """
@@ -219,18 +219,18 @@ class uvm_seq_item_port(uvm_blocking_put_port):
         """Put a request item in the request queue"""
         await self.export.put_req(item)
 
-    async def put_response(self, item):
+    def put_response(self, item):
         """Put a response back in the queue. aka put_response"""
-        await self.export.put_response(item)
+        self.export.put_response(item)
 
     async def get_next_item(self):
         """get the next sequence item from the request queue
         """
         return await self.export.get_next_item()
 
-    async def item_done(self, rsp=None):
+    def item_done(self, rsp=None):
         """Notify finish_item that the item is complete"""
-        await self.export.item_done(rsp)
+        self.export.item_done(rsp)
 
     async def get_response(self, transaction_id=None):
         """
@@ -262,9 +262,8 @@ class uvm_sequencer(uvm_component):
     async def run_phase(self):
         while True:
             next_item = await self.seq_q.get()
-            with next_item.start_condition:
-                next_item.start_condition.set()
-                next_item.staart_condition.clear()
+            next_item.start_condition.set()
+            next_item.start_condition.clear()
 
     async def start_item(self, item):
         await self.seq_q.put(item)
@@ -309,7 +308,6 @@ class uvm_sequence(uvm_object):
         if seqr is not None:
             assert (isinstance(seqr, uvm_sequencer)), "Tried to start a sequence with a non-sequencer"
         self.sequencer = seqr
-        print("BODY TYPE", type(self.body()))
         await self.body()
 
     async def start_item(self, item):

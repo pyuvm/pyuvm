@@ -65,7 +65,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
             self.empty = None
 
     class TestBlockingGetExport(TestGetExportBase, uvm_blocking_get_export):
-        async def get(self)
+        async def get(self):
             return self.data
 
     class TestNonBlockingGetExport(TestGetExportBase, uvm_nonblocking_get_export):
@@ -83,7 +83,7 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
     # Peek
     class TestBlockingPeekExport(TestGetExportBase, uvm_blocking_peek_export):
-        async def peek(self)
+        async def peek(self):
             return self.data
 
     class TestNonBlockingPeekExport(TestGetExportBase, uvm_nonblocking_peek_export):

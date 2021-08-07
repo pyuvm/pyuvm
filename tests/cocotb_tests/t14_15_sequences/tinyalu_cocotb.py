@@ -19,8 +19,9 @@ async def run_tests(dut):
                 else:
                     test()
                 tests_pass[name] = True
-            except (AssertionError , RuntimeWarning):
+            except (AssertionError , RuntimeWarning) as doh:
                 tests_pass[name] = False
+                print("ERROR", doh)
             t14.tearDown()
     any_failed = False
     for test in tests_pass:
