@@ -1,7 +1,7 @@
 module tinyalu (input [7:0] A,
 		input [7:0] B,
 		input [2:0] op,
-		input clk,
+//		input clk,
 		input reset_n,
 		input start,
 		output done,
@@ -9,6 +9,10 @@ module tinyalu (input [7:0] A,
 
    wire [15:0] 		      result_aax, result_mult;
    wire 		      start_single, start_mult;
+	bit clk;
+
+	initial clk = 0;
+	always #5 clk = ~clk;
 
        
    assign start_single = start & ~op[2];
@@ -25,6 +29,8 @@ module tinyalu (input [7:0] A,
 
    assign result = (op[2]) ? result_mult :  result_aax;
 
+	initial $monitor("reset_n: %0b  clk: %0b A: %0h B:%0h, op: %0h start: %0b, done %0b",
+					reset_n, clk, A, B, op, start, done);
 endmodule // tinyalu
 
 
