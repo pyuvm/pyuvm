@@ -18,12 +18,17 @@ class ProdCon():
             print("start clock wait")
             await FallingEdge(self.dut.clk)
             print("saw falling edge")
-            datum = await self.qq.get()
-            print(datum)
+            try:
+                datum = self.qq.get_nowait()
+                print(datum)
+            except QueueEmpty:
+                continue
+
 
 @cocotb.test()
 async def stuck(dut):
     """ test clock hang"""
     pc = ProdCon(dut)
+    cocotb.fork(pc.consumer())
     await pc.producer()
-    await pc.consumer()
+
