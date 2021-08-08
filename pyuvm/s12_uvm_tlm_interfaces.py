@@ -743,8 +743,8 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
     class AnalysisExport(QueueAccessor, uvm_analysis_port):
         def write(self, item):
             try:
-                self.queue.put(item, block=False)
-            except queue.Full:
+                self.queue.put_nowait(item)
+            except QueueFull:
                 raise queue.Full(f"Full analysis fifo: {self.__name__}. This should never happen")
 
     def __init__(self, name, parent=None):
