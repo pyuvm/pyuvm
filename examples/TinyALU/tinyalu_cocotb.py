@@ -104,7 +104,6 @@ async def test_alu(dut):
     cocotb.fork(proxy.driver_bfm())
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
-    await FallingEdge(dut.clk)
     await uvm_root().run_test("AluTest")
     print("Back from test")
 

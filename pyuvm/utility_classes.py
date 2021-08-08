@@ -1,10 +1,6 @@
 from collections import OrderedDict
 import logging
 import fnmatch
-import queue
-import time
-import threading
-import sys
 import cocotb.queue
 from cocotb.triggers import Event
 from asyncio import QueueEmpty, QueueFull
@@ -26,17 +22,6 @@ class Singleton(type):
         mcs._instances.clear()
         pass
 
-
-class RunningThreads(metaclass=Singleton):
-    def __init__(self):
-        self.__threads = []
-
-    def add_thread(self, thread):
-        self.__threads.append(thread)
-
-    def join_all(self):
-        for thread in self.__threads:
-            thread.join()
 
 
 class Override:

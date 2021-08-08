@@ -92,8 +92,6 @@ class Scoreboard(uvm_component):
                 else:
                     self.logger.error(f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
                                       f"= 0x{actual_result:04x} expected 0x{predicted_result:04x}")
-
-
 class Monitor(uvm_component):
     def __init__(self, name, parent, method_name):
         super().__init__(name, parent)
@@ -110,7 +108,6 @@ class Monitor(uvm_component):
             get_method = getattr(self.proxy, self.method_name)
             datum = await get_method()
             self.ap.write(datum)    
-
 
 class AluEnv(uvm_env):
 
@@ -130,8 +127,6 @@ class AluEnv(uvm_env):
         self.result_mon.ap.connect(self.scoreboard.result_export)
         self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
-
-
 class AluTest(uvm_test):
     def build_phase(self):
         self.env = AluEnv.create("env", self)
@@ -143,8 +138,7 @@ class AluTest(uvm_test):
         seq = AluSeq("seq")
         await seq.start(seqr)
         print("Counting Clock Cycles")
-        time.sleep(5)
-#        await ClockCycles(dut.clk, 10)
+        await ClockCycles(dut.clk, 10)
         print("ClockCycles done")
         self.drop_objection()
 
