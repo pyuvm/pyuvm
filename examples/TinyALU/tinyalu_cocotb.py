@@ -1,5 +1,6 @@
 from cocotb.clock import Clock
-from cocotb.triggers import FallingEdge
+from cocotb.triggers import FallingEdge, Event
+from cocotb.queue import QueueEmpty
 import cocotb
 from tinyalu_uvm import *
 
@@ -13,7 +14,7 @@ class CocotbProxy:
         self.done = cocotb.triggers.Event(name="Done")
 
     async def send_op(self, aa, bb, op):
-        self.driver_queue.put((aa, bb, op))
+        await self.driver_queue.put((aa, bb, op))
 
     async def get_cmd(self):
         return await self.cmd_mon_queue.get()
@@ -34,7 +35,7 @@ class CocotbProxy:
     async def driver_bfm(self):
         self.dut.start = self.dut.A = self.dut.B = 0
         self.dut.op = 0
-        while  not ObjectionHandler().run_phase_complete():
+        while True:
             await FallingEdge(self.dut.clk)
             if self.dut.start == 0 and self.dut.done == 0:
                 try:
@@ -43,7 +44,7 @@ class CocotbProxy:
                     self.dut.B = bb
                     self.dut.op = op
                     self.dut.start = 1
-                except queue.Empty:
+                except QueueEmpty:
                     pass
             elif self.dut.start == 1:
                 if self.dut.done.value == 1:
@@ -51,7 +52,7 @@ class CocotbProxy:
 
     async def cmd_mon_bfm(self):
         prev_start = 0
-        while not ObjectionHandler().run_phase_complete():
+        while True:
             await FallingEdge(self.dut.clk)
             try:
                 start = int(self.dut.start.value)
@@ -63,7 +64,7 @@ class CocotbProxy:
 
     async def result_mon_bfm(self):
         prev_done = 0
-        while not ObjectionHandler().run_phase_complete():
+        while True:
             await FallingEdge(self.dut.clk)
             try:
                 done = int(self.dut.done)
@@ -92,11 +93,13 @@ async def test_alu(dut):
     cocotb.fork(clock.start())
     proxy = CocotbProxy(dut)
     ConfigDB().set(None, "*", "PROXY", proxy)
+    ConfigDB().set(None, "*", "DUT", dut)
     await proxy.reset()
     cocotb.fork(proxy.driver_bfm())
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
-    await FallingEdge(dut.clk)
-    await uvm_root().run_test("AluTest")
+    cocotb.fork(uvm_root().run_test("AluTest"))
+    await proxy.done.wait()
+    print("TEST DONE")
 
 

@@ -135,13 +135,16 @@ class AluTest(uvm_test):
     async def run_phase(self):
         self.raise_objection()
         seqr = ConfigDB().get(self, "", "SEQR")
+        dut = ConfigDB().get(self, "", "DUT")
         seq = AluSeq("seq")
         await seq.start(seqr)
+        print ("BACK FROM SEQ")
         self.drop_objection()
 
     def end_of_elaboration_phase(self):
         self.set_logging_level_hier(logging.DEBUG)
 
     def final_phase(self):
+        print("IN FINAL PHASE")
         cocotb_proxy = self.cdb_get("PROXY")
         cocotb_proxy.done.set()
