@@ -36,6 +36,7 @@ class CocotbProxy:
         self.dut.start = self.dut.A = self.dut.B = 0
         self.dut.op = 0
         while True:
+            print("IN DRIVER LOOP")
             await FallingEdge(self.dut.clk)
             if self.dut.start == 0 and self.dut.done == 0:
                 try:
@@ -99,7 +100,8 @@ async def test_alu(dut):
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
     cocotb.fork(uvm_root().run_test("AluTest"))
-    await proxy.done.wait()
+    print("Waiting on clocks")
+    await cocotb.triggers.ClockCycles(dut.clk, 100)
     print("TEST DONE")
 
 
