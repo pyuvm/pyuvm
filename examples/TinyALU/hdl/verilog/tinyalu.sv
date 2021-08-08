@@ -29,8 +29,7 @@ module tinyalu (input [7:0] A,
 
    assign result = (op[2]) ? result_mult :  result_aax;
 
-	initial $monitor("reset_n: %0b  clk: %0b A: %0h B:%0h, op: %0h start: %0b, done %0b",
-					reset_n, clk, A, B, op, start, done);
+initial $monitor(clk);
 endmodule // tinyalu
 
 

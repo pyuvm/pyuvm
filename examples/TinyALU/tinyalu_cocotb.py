@@ -1,5 +1,6 @@
 from cocotb.clock import Clock
-from cocotb.triggers import FallingEdge
+from cocotb.triggers import FallingEdge, Event
+from cocotb.queue import QueueEmpty
 import cocotb
 from cocotb.queue import QueueEmpty
 from tinyalu_uvm import *
@@ -14,9 +15,7 @@ class CocotbProxy:
         self.done = cocotb.triggers.Event(name="Done")
 
     async def send_op(self, aa, bb, op):
-        print(f"PUTTING: aa:{aa:x} bb:{bb:x}, op:{op:x}")
         await self.driver_queue.put((aa, bb, op))
-        print("HAVE PUT THE COMMAND")
 
     async def get_cmd(self):
         return await self.cmd_mon_queue.get()
@@ -35,13 +34,10 @@ class CocotbProxy:
         await FallingEdge(self.dut.clk)
 
     async def driver_bfm(self):
-        self.dut.start <= 0
-        self.dut.A <= 0
-        self.dut.B <= 0
-        self.dut.op <= 0
+        self.dut.start = self.dut.A = self.dut.B = 0
+        self.dut.op = 0
         while True:
-            print(f"AWAITING FALLING EDGE {self.dut.clk.value}")
-            await ClockCycles(self.dut.clk, 10)
+            print("IN DRIVER LOOP")
             await FallingEdge(self.dut.clk)
             print("SAW FALLING EDGE")
             print(f"start: {self.dut.start.value} done:{self.dut.done.value}")
@@ -55,7 +51,6 @@ class CocotbProxy:
                     self.dut.op = op
                     self.dut.start = 1
                 except QueueEmpty:
-                    print("QUEUE EMPTY")
                     pass
             elif self.dut.start == 1:
                 if self.dut.done.value == 1:
@@ -104,7 +99,9 @@ async def test_alu(dut):
     cocotb.fork(proxy.driver_bfm())
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
-    await uvm_root().run_test("AluTest")
-    print("Back from test")
+    cocotb.fork(uvm_root().run_test("AluTest"))
+    print("Waiting on clocks")
+    await cocotb.triggers.ClockCycles(dut.clk, 100)
+    print("TEST DONE")
 
 
