@@ -25,14 +25,12 @@ class AluSeqItem(uvm_sequence_item):
 
 class AluSeq(uvm_sequence):
     async def body(self):
-        for op in [Ops.ADD]: # list(Ops):
+        for op in list(Ops): # list(Ops):
             cmd_tr = AluSeqItem("cmd_tr")
             await self.start_item(cmd_tr) 
             cmd_tr.randomize()
             cmd_tr.op = op
-            print(f"finish_item -> {cmd_tr}")
             await self.finish_item(cmd_tr) 
-            print(f"finish_item done -> {cmd_tr}")
             
 
 class Driver(uvm_driver):
@@ -42,11 +40,9 @@ class Driver(uvm_driver):
     async def run_phase(self):
         while True:
             command = await self.seq_item_port.get_next_item()
-            print(f"Sending command: {command}")
             await self.proxy.send_op(command.A, command.B, command.op)
             self.logger.debug(f"Sent command: {command}")
             self.seq_item_port.item_done()
-            print("PAST ITEM DONE")
 
 
 class Coverage(uvm_subscriber):
@@ -107,6 +103,7 @@ class Monitor(uvm_component):
         while True:
             get_method = getattr(self.proxy, self.method_name)
             datum = await get_method()
+            print("WRITING", datum)
             self.ap.write(datum)    
 
 class AluEnv(uvm_env):
@@ -137,13 +134,11 @@ class AluTest(uvm_test):
         dut = ConfigDB().get(self, "", "DUT")
         seq = AluSeq("seq")
         await seq.start(seqr)
-        print ("BACK FROM SEQ")
         self.drop_objection()
 
     def end_of_elaboration_phase(self):
         self.set_logging_level_hier(logging.DEBUG)
 
     def final_phase(self):
-        print("IN FINAL PHASE")
         cocotb_proxy = self.cdb_get("PROXY")
         cocotb_proxy.done.set()

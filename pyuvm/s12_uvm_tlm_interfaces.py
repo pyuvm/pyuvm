@@ -745,7 +745,7 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
             try:
                 self.queue.put_nowait(item)
             except QueueFull:
-                raise queue.Full(f"Full analysis fifo: {self.__name__}. This should never happen")
+                raise QueueFull(f"Full analysis fifo: {self.__name__}. This should never happen")
 
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 0)

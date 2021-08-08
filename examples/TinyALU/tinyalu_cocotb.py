@@ -37,15 +37,10 @@ class CocotbProxy:
         self.dut.start = self.dut.A = self.dut.B = 0
         self.dut.op = 0
         while True:
-            print("IN DRIVER LOOP")
             await FallingEdge(self.dut.clk)
-            print("SAW FALLING EDGE")
-            print(f"start: {self.dut.start.value} done:{self.dut.done.value}")
             if self.dut.start.value == 0 and self.dut.done.value == 0:
                 try:
-                    print(self.driver_queue._putters)
                     (aa, bb, op) = self.driver_queue.get_nowait()
-                    print("GOT DRIVER_QUEUE", aa, bb, op)
                     self.dut.A = aa
                     self.dut.B = bb
                     self.dut.op = op
@@ -78,7 +73,6 @@ class CocotbProxy:
                 done = 0
 
             if done == 1 and prev_done == 0:
-                print("** RESULT", self.dut.result.value)
                 self.result_mon_queue.put_nowait(int(self.dut.result))
             prev_done = done
 
@@ -100,8 +94,7 @@ async def test_alu(dut):
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
     cocotb.fork(uvm_root().run_test("AluTest"))
-    print("Waiting on clocks")
-    await cocotb.triggers.ClockCycles(dut.clk, 100)
-    print("TEST DONE")
+    await proxy.done.wait()
+    
 
 
