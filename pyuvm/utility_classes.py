@@ -2,7 +2,7 @@ from collections import OrderedDict
 import logging
 import fnmatch
 import cocotb.queue
-from cocotb.triggers import Event
+from cocotb.triggers import Event, FallingEdge,Timer
 from asyncio import QueueEmpty, QueueFull
 
 FIFO_DEBUG = 5
@@ -185,7 +185,20 @@ class UVM_ROOT_Singleton(FactoryMeta):
         cls.singleton = None
         pass
 
+class UVMEvent(Event):
 
+    def __init__(self, name, clock):
+        super().__init__(name=name)
+        self.trigger = Timer(10, units="step")
+    
+    async def wait(self):
+        while True:
+            await self.trigger
+            if self.is_set:
+                return self.fired
+            else:
+                continue
+        
 class ObjectionHandler(metaclass=Singleton):
     """
     This singleton accepts objections and then allows
@@ -193,9 +206,9 @@ class ObjectionHandler(metaclass=Singleton):
     when there are no objections left.
     """
 
-    def __init__(self):
+    def __init__(self, clock):
         self.__objections = {}
-        self._objection_event = Event("objection changed")
+        self._objection_event = UVMEvent("objection changed",clock)
         self.objection_raised = False
         self.run_phase_done_flag = None  # used in test suites
         self.printed_warning = False
@@ -222,8 +235,8 @@ class ObjectionHandler(metaclass=Singleton):
         self._objection_event.set()
 
     async def run_phase_complete(self):
-#        while len(self.__objections) > 0:
-#            await self._objection_event.wait()
+        while len(self.__objections) > 0:
+            await self._objection_event.wait()
         if not self.objection_raised:
             print ("Warning: No objections raised")
         
@@ -237,9 +250,9 @@ class UVMQueue(cocotb.queue.Queue):
     to die is set to the dropping of all run_phase objections
     by default.
     """
-    def __init__(self, maxsize: int, trigger):
+    def __init__(self, maxsize: int, clock):
         super().__init__(maxsize=maxsize)
-        self.trigger = trigger
+        self.trigger = FallingEdge(clock)
 
     def __str__(self):
         return str(self._queue)
@@ -290,3 +303,5 @@ class UVMQueue(cocotb.queue.Queue):
             raise QueueEmpty()
         item = self._peek()
         return item
+
+    

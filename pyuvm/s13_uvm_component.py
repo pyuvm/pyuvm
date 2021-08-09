@@ -376,7 +376,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """Used in testing"""
         return self.get_child("uvm_test_top")
 
-    async def run_test(self, test_name, trigger):
+    async def run_test(self, test_name, clock):
         """
         This implementation skips much of the state-setting and
         what not in the LRM and focuses on building the
@@ -392,14 +392,14 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         :return: none
         """
 
-        ConfigDB().set(None, "*", "UVM_QUEUE_TRIGGER", trigger)
+        ConfigDB().set(None, "*", "UVM_DUT_CLOCK", clock)
         factory = uvm_factory()
         self.uvm_test_top = factory.create_component_by_name(test_name, "", "uvm_test_top", self)
         try:
             for self.running_phase in uvm_common_phases:
                 self.running_phase.traverse(self.uvm_test_top)
                 if self.running_phase == uvm_run_phase:
-                    await utility_classes.ObjectionHandler().run_phase_complete()
+                    await utility_classes.ObjectionHandler(clock).run_phase_complete()
         except error_classes.UVMError as uve:
             self.logger.error(uve)
 

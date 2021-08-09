@@ -9,10 +9,9 @@ from tinyalu_uvm import *
 class CocotbProxy:
     def __init__(self, dut):
         self.dut = dut
-        tr = FallingEdge(dut.clk)
-        self.driver_queue = UVMQueue(maxsize=1, trigger=tr)
-        self.cmd_mon_queue = UVMQueue(maxsize=0, trigger=tr)
-        self.result_mon_queue = UVMQueue(maxsize=0, trigger=tr)
+        self.driver_queue = UVMQueue(maxsize=1, clock=dut.clk)
+        self.cmd_mon_queue = UVMQueue(maxsize=0, clock=dut.clk)
+        self.result_mon_queue = UVMQueue(maxsize=0, clock=dut.clk)
         self.done = cocotb.triggers.Event(name="Done")
 
     async def send_op(self, aa, bb, op):

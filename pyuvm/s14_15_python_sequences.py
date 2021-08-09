@@ -9,7 +9,7 @@
 
 from pyuvm.s05_base_classes import *
 from pyuvm.s12_uvm_tlm_interfaces import *
-from cocotb.triggers import Event as CocotbEvent
+from cocotb.triggers import Event as CocotbEvent, FallingEdge
 
 # The sequence system allows users to create and populate sequence items and then send them to a driver. The driver
 # loops through getting the next sequence item, processing it, and sending the result back.
@@ -260,7 +260,8 @@ class uvm_sequencer(uvm_component):
     def __init__(self, name, parent):
         super().__init__(name, parent)
         self.seq_item_export = uvm_seq_item_export("seq_item_export", self)
-        trigger = ConfigDB().get(self, "", "UVM_QUEUE_TRIGGER")
+        clock = ConfigDB().get(self, "", "UVM_DUT_CLOCK")
+        trigger = FallingEdge(clock)
         self.seq_q = UVMQueue(0, trigger)
 
     async def run_phase(self):
