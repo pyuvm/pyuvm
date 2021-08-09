@@ -1,7 +1,10 @@
+from test_14_15_python_sequences import DataHolder
+from pyuvm.s13_uvm_component import ConfigDB
 from cocotb.clock import Clock
 import cocotb
 import inspect
 import test_14_15_python_sequences as test_mod
+
 
 
 async def run_tests(dut):
@@ -36,8 +39,9 @@ async def run_tests(dut):
 @cocotb.test() # pylint: disable=no-value-for-parameter
 async def test_14_sequences(dut):
     """Tests the Sequences"""
-    clock = Clock(dut.clk, 2, units="us")    
-    cocotb.fork(clock.start())
+    DataHolder.clock = dut.clk
+    ConfigDB().set(None, "*", "UVM_RTL_CLOCK", dut.clk)
+
     await run_tests(dut)
 
 

@@ -120,7 +120,7 @@ async def test_traverse():
 @cocotb.test()
 async def traverse(dut):
     """Testing topdown and bottom up traversal"""
-    ConfigDB().set(None,"","UVM_RTL_CLOCK", dut.clk)
+    ConfigDB().set(None, "*", "UVM_RTL_CLOCK", dut.clk)
     assert await test_traverse()
 
 
