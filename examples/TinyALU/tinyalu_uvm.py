@@ -25,14 +25,12 @@ class AluSeqItem(uvm_sequence_item):
 
 class AluSeq(uvm_sequence):
     async def body(self):
-        for op in [Ops.ADD]: # list(Ops):
+        for op in list(Ops): # list(Ops):
             cmd_tr = AluSeqItem("cmd_tr")
             await self.start_item(cmd_tr) 
             cmd_tr.randomize()
             cmd_tr.op = op
-            print(f"finish_item -> {cmd_tr}")
             await self.finish_item(cmd_tr) 
-            print(f"finish_item done -> {cmd_tr}")
             
 
 class Driver(uvm_driver):
@@ -42,13 +40,9 @@ class Driver(uvm_driver):
     async def run_phase(self):
         while True:
             command = await self.seq_item_port.get_next_item()
-            print(f"Sending command: {command}")
             await self.proxy.send_op(command.A, command.B, command.op)
             self.logger.debug(f"Sent command: {command}")
             self.seq_item_port.item_done()
-            print("PAST ITEM DONE")
-
-
 class Coverage(uvm_subscriber):
     
     def end_of_elaboration_phase(self):
@@ -80,10 +74,11 @@ class Scoreboard(uvm_component):
     def check_phase(self):
         while self.result_get_port.can_get():
             _, actual_result = self.result_get_port.try_get()
-            cmd_success, (A, B, op_numb) = self.cmd_get_port.try_get()
+            cmd_success, cmd = self.cmd_get_port.try_get()
             if not cmd_success:
                 self.logger.critical(f"result {actual_result} had no command")
             else:
+                (A, B, op_numb) = cmd
                 op = Ops(op_numb)
                 predicted_result = PythonProxy.alu_op(A, B, op)
                 if predicted_result == actual_result:
@@ -137,9 +132,7 @@ class AluTest(uvm_test):
         dut = ConfigDB().get(self,"","DUT")
         seq = AluSeq("seq")
         await seq.start(seqr)
-        print("Counting Clock Cycles")
-        await ClockCycles(dut.clk, 10)
-        print("ClockCycles done")
+        await ClockCycles(dut.clk, 500)
         self.drop_objection()
 
     def end_of_elaboration_phase(self):

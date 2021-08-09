@@ -3,8 +3,15 @@ from cocotb.triggers import FallingEdge
 import cocotb
 from cocotb.queue import QueueEmpty
 from tinyalu_uvm import *
-
-
+"""
+import debugpy
+listen_host, listen_port = debugpy.listen(("localhost", 5678))
+cocotb.log.info("Waiting for Python debugger attach on {}:{}".format(listen_host, listen_port))
+# Suspend execution until debugger attaches
+debugpy.wait_for_client()
+# Break into debugger for user control
+breakpoint()  # or debugpy.breakpoint() on 3.6 and below
+"""
 class CocotbProxy:
     def __init__(self, dut):
         self.dut = dut
@@ -14,15 +21,15 @@ class CocotbProxy:
         self.done = cocotb.triggers.Event(name="Done")
 
     async def send_op(self, aa, bb, op):
-        print(f"PUTTING: aa:{aa:x} bb:{bb:x}, op:{op:x}")
         await self.driver_queue.put((aa, bb, op))
-        print("HAVE PUT THE COMMAND")
 
     async def get_cmd(self):
-        return await self.cmd_mon_queue.get()
+        cmd = await self.cmd_mon_queue.get()
+        return cmd
 
     async def get_result(self):
-        return await self.result_mon_queue.get()
+        result = await self.result_mon_queue.get()
+        return result
 
     async def reset(self):
         await FallingEdge(self.dut.clk)
@@ -40,22 +47,15 @@ class CocotbProxy:
         self.dut.B <= 0
         self.dut.op <= 0
         while True:
-            print(f"AWAITING FALLING EDGE {self.dut.clk.value}")
-            await ClockCycles(self.dut.clk, 10)
             await FallingEdge(self.dut.clk)
-            print("SAW FALLING EDGE")
-            print(f"start: {self.dut.start.value} done:{self.dut.done.value}")
             if self.dut.start.value == 0 and self.dut.done.value == 0:
                 try:
-                    print(self.driver_queue._putters)
                     (aa, bb, op) = self.driver_queue.get_nowait()
-                    print("GOT DRIVER_QUEUE", aa, bb, op)
                     self.dut.A = aa
                     self.dut.B = bb
                     self.dut.op = op
                     self.dut.start = 1
                 except QueueEmpty:
-                    print("QUEUE EMPTY")
                     pass
             elif self.dut.start == 1:
                 if self.dut.done.value == 1:
@@ -83,8 +83,8 @@ class CocotbProxy:
                 done = 0
 
             if done == 1 and prev_done == 0:
-                print("** RESULT", self.dut.result.value)
-                self.result_mon_queue.put_nowait(int(self.dut.result))
+                result = int(self.dut.result)
+                self.result_mon_queue.put_nowait(result)
             prev_done = done
 
 
@@ -105,6 +105,6 @@ async def test_alu(dut):
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
     await uvm_root().run_test("AluTest")
-    print("Back from test")
+    await proxy.done.wait()
 
 
