@@ -4,8 +4,16 @@ from cocotb.clock import Clock
 import cocotb
 import inspect
 import test_14_15_python_sequences as test_mod
+"""
+import debugpy
 
-
+listen_host, listen_port = debugpy.listen(("localhost", 5678))
+cocotb.log.info("Waiting for Python debugger attach on {}:{}".format(listen_host, listen_port))
+# Suspend execution until debugger attaches
+debugpy.wait_for_client()
+# Break into debugger for user control
+breakpoint()  # or debugpy.breakpoint() on 3.6 and below
+"""
 
 async def run_tests(dut):
     tests_pass = {}
