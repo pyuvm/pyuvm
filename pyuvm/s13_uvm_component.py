@@ -376,7 +376,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """Used in testing"""
         return self.get_child("uvm_test_top")
 
-    async def run_test(self, test_name=""):
+    async def run_test(self, test_name, trigger):
         """
         This implementation skips much of the state-setting and
         what not in the LRM and focuses on building the
@@ -392,6 +392,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         :return: none
         """
 
+        ConfigDB().set(None, "*", "UVM_QUEUE_TRIGGER", trigger)
         factory = uvm_factory()
         self.uvm_test_top = factory.create_component_by_name(test_name, "", "uvm_test_top", self)
         try:

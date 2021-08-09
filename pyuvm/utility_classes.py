@@ -240,18 +240,38 @@ class UVMQueue(cocotb.queue.Queue):
     def __str__(self):
         return str(self._queue)
 
+    async def put(self, item, trigger):
+        while True:
+            await trigger
+            try:
+                self.put_nowait(item)
+                break
+            except QueueFull:
+                continue        
+
+    async def get(self, trigger):
+        while True:
+            await trigger
+            try:
+                item =  self.get_nowait()
+                return item
+            except QueueEmpty:
+                continue
+
     def _peek(self):
         return self._queue[0]
 
-    async def peek(self):
+    async def peek(self, trigger):
         """Remove and return an item from the queue.
         If the queue is empty, wait until an item is available.
         """
-        while self.empty():
-            event = Event('{} peek'.format(type(self).__name__))
-            self._getters.append((event, cocotb.scheduler._current_task))
-            await event.wait()
-        return self.peek_nowait()
+        while True:
+            await trigger
+            try:
+                item =  self.peek_nowait()
+                return item
+            except QueueEmpty:
+                continue
 
     def peek_nowait(self):
         """Remove and return an item from the queue.
