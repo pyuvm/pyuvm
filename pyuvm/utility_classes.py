@@ -211,7 +211,7 @@ class ObjectionHandler(metaclass=Singleton):
     def raise_objection(self, raiser):
         self.__objections[raiser] = raiser.get_full_name()
         self.objection_raised = True
-        self._objection_event.set()
+        self._objection_event.clear()
 
     def drop_objection(self, dropper):
         try:
@@ -219,11 +219,11 @@ class ObjectionHandler(metaclass=Singleton):
         except KeyError:
             self.objection_raised = True
             pass
-        self._objection_event.set()
+        if len(self.__objections) == 0:
+            self._objection_event.set()
 
     async def run_phase_complete(self):
-        while len(self.__objections) > 0:
-            await self._objection_event.wait()
+        await self._objection_event.wait()
         if not self.objection_raised:
             print ("Warning: No objections raised")
         

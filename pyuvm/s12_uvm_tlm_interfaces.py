@@ -27,8 +27,8 @@ from pyuvm.s13_uvm_component import uvm_component
 import queue
 from pyuvm.error_classes import UVMTLMConnectionError
 from pyuvm.utility_classes import UVMQueue, FIFO_DEBUG
+from cocotb.queue import QueueEmpty, QueueFull
 from pyuvm import error_classes
-from asyncio.queues import QueueEmpty, QueueFull 
 import logging
 
 
@@ -598,8 +598,8 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class NonBlockingGetExport(QueueAccessor, uvm_nonblocking_get_export):
         def can_get(self):
-            return not self.queue.empty()
-
+            get_ok = not self.queue.empty()
+            return get_ok
         def try_get(self):
             try:
                 item = self.queue.get_nowait()
@@ -743,9 +743,9 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
     class AnalysisExport(QueueAccessor, uvm_analysis_port):
         def write(self, item):
             try:
-                self.queue.put(item, block=False)
-            except queue.Full:
-                raise queue.Full(f"Full analysis fifo: {self.__name__}. This should never happen")
+                self.queue.put_nowait(item)
+            except QueueFull:
+                raise QueueFull(f"Full analysis fifo: {self.__name__}. This should never happen")
 
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 0)
