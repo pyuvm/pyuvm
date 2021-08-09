@@ -1,5 +1,5 @@
 from cocotb.clock import Clock
-from cocotb.triggers import FallingEdge, Event
+from cocotb.triggers import FallingEdge, Timer
 from cocotb.queue import QueueEmpty
 import cocotb
 from cocotb.queue import QueueEmpty
@@ -15,13 +15,37 @@ class CocotbProxy:
         self.done = cocotb.triggers.Event(name="Done")
 
     async def send_op(self, aa, bb, op):
-        await self.driver_queue.put((aa, bb, op))
+        print("IN SEND OP")
+        while True:
+            await FallingEdge(self.dut.clk)
+            print("LOOPING ON CLOCK IN SEND_OP")
+            try:
+                print("SENDING ",(aa,bb,op))
+                self.driver_queue.put_nowait((aa, bb, op))
+                print("SENT COMMAND", (aa, bb, op))
+                return
+            except QueueFull:
+                print("QUEUE FULL")
+                continue
 
     async def get_cmd(self):
-        return await self.cmd_mon_queue.get()
+        while True:
+            await FallingEdge(self.dut.clk)
+            try:
+                cmd =  self.cmd_mon_queue.get_nowait()
+                return cmd
+            except QueueEmpty:
+                continue
+
 
     async def get_result(self):
-        return await self.result_mon_queue.get()
+        while True:
+            await FallingEdge(self.dut.clk)
+            try:
+                cmd =  self.result_mon_queue.get_nowait()
+                return cmd
+            except QueueEmpty:
+                continue
 
     async def reset(self):
         await FallingEdge(self.dut.clk)
@@ -41,12 +65,13 @@ class CocotbProxy:
             if self.dut.start.value == 0 and self.dut.done.value == 0:
                 try:
                     (aa, bb, op) = self.driver_queue.get_nowait()
+                    print(f"GOT ITEM: {aa}, {bb}, {op}")
                     self.dut.A = aa
                     self.dut.B = bb
                     self.dut.op = op
                     self.dut.start = 1
                 except QueueEmpty:
-                    pass
+                    continue
             elif self.dut.start == 1:
                 if self.dut.done.value == 1:
                     self.dut.start = 0
@@ -73,19 +98,14 @@ class CocotbProxy:
                 done = 0
 
             if done == 1 and prev_done == 0:
+                print(f"PUT RESULT: {int(self.dut.result)} ")
                 self.result_mon_queue.put_nowait(int(self.dut.result))
             prev_done = done
-
-
-
-
 
 
 # noinspection PyArgumentList
 @cocotb.test()
 async def test_alu(dut):
-#    clock = Clock(dut.clk, 2, units="us")
-#    cocotb.fork(clock.start())
     proxy = CocotbProxy(dut)
     ConfigDB().set(None, "*", "PROXY", proxy)
     ConfigDB().set(None, "*", "DUT", dut)
@@ -94,7 +114,7 @@ async def test_alu(dut):
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
     cocotb.fork(uvm_root().run_test("AluTest"))
-    await proxy.done.wait()
-    
+    await ClockCycles(dut.clk, 100)
+
 
 

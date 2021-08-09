@@ -29,6 +29,7 @@ module tinyalu (input [7:0] A,
 
    assign result = (op[2]) ? result_mult :  result_aax;
 
+	initial $monitor("A: %02h  B: %02h op: %0h result: %04h", A, B, op, result);
 endmodule // tinyalu
 
 

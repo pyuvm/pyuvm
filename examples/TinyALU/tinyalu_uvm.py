@@ -39,7 +39,9 @@ class Driver(uvm_driver):
 
     async def run_phase(self):
         while True:
+            print ("GETTING NEXT ITEM")
             command = await self.seq_item_port.get_next_item()
+            print("GOT NEXT ITEM")
             await self.proxy.send_op(command.A, command.B, command.op)
             self.logger.debug(f"Sent command: {command}")
             self.seq_item_port.item_done()
@@ -74,7 +76,9 @@ class Scoreboard(uvm_component):
         self.result_get_port.connect(self.result_fifo.get_export)
 
     def check_phase(self):
+        print("IN CHECK PHASE")
         while self.result_get_port.can_get():
+            print("GOT RESULTS")
             _, actual_result = self.result_get_port.try_get()
             cmd_success, (A, B, op_numb) = self.cmd_get_port.try_get()
             if not cmd_success:
@@ -103,7 +107,6 @@ class Monitor(uvm_component):
         while True:
             get_method = getattr(self.proxy, self.method_name)
             datum = await get_method()
-            print("WRITING", datum)
             self.ap.write(datum)    
 
 class AluEnv(uvm_env):
@@ -131,13 +134,12 @@ class AluTest(uvm_test):
     async def run_phase(self):
         self.raise_objection()
         seqr = ConfigDB().get(self, "", "SEQR")
-        dut = ConfigDB().get(self, "", "DUT")
         seq = AluSeq("seq")
         await seq.start(seqr)
         self.drop_objection()
 
     def end_of_elaboration_phase(self):
-        self.set_logging_level_hier(logging.DEBUG)
+        self.set_logging_level_hier(FIFO_DEBUG)
 
     def final_phase(self):
         cocotb_proxy = self.cdb_get("PROXY")
