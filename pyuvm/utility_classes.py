@@ -222,8 +222,8 @@ class ObjectionHandler(metaclass=Singleton):
         self._objection_event.set()
 
     async def run_phase_complete(self):
-        while len(self.__objections) > 0:
-            await self._objection_event.wait()
+#        while len(self.__objections) > 0:
+#            await self._objection_event.wait()
         if not self.objection_raised:
             print ("Warning: No objections raised")
         
@@ -245,6 +245,7 @@ class UVMQueue(cocotb.queue.Queue):
         return str(self._queue)
 
     async def put(self, item):
+        print ("IN UVMQUEUE PUT:", item)
         while True:
             await self.trigger
             try:
@@ -254,12 +255,15 @@ class UVMQueue(cocotb.queue.Queue):
                 continue        
 
     async def get(self):
+        print ("IN UVMQUEUE GET")
         while True:
             await self.trigger
             try:
                 item =  self.get_nowait()
+                print("GOT:", item)
                 return item
             except QueueEmpty:
+                print ("QUEUE EMPTY")
                 continue
 
     def _peek(self):

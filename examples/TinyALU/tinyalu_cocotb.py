@@ -17,36 +17,16 @@ class CocotbProxy:
 
     async def send_op(self, aa, bb, op):
         print("IN SEND OP")
-        while True:
-            await FallingEdge(self.dut.clk)
-            print("LOOPING ON CLOCK IN SEND_OP")
-            try:
-                print("SENDING ",(aa,bb,op))
-                self.driver_queue.put_nowait((aa, bb, op))
-                print("SENT COMMAND", (aa, bb, op))
-                return
-            except QueueFull:
-                print("QUEUE FULL")
-                continue
+        await self.driver_queue.put((aa,bb,op))
 
     async def get_cmd(self):
-        while True:
-            await FallingEdge(self.dut.clk)
-            try:
-                cmd =  self.cmd_mon_queue.get_nowait()
-                return cmd
-            except QueueEmpty:
-                continue
-
+        print("IN GET_CMD")
+        return await self.cmd_mon_queue.get()
 
     async def get_result(self):
-        while True:
-            await FallingEdge(self.dut.clk)
-            try:
-                cmd =  self.result_mon_queue.get_nowait()
-                return cmd
-            except QueueEmpty:
-                continue
+        print("IN GET_RESULT")
+        cmd =  await self.result_mon_queue.get()
+        return cmd
 
     async def reset(self):
         await FallingEdge(self.dut.clk)
@@ -114,8 +94,8 @@ async def test_alu(dut):
     cocotb.fork(proxy.driver_bfm())
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
-    cocotb.fork(uvm_root().run_test("AluTest", FallingEdge(dut.clk)))
-    await ClockCycles(dut.clk, 100)
+    await uvm_root().run_test("AluTest", FallingEdge(dut.clk))
+
 
 
 
