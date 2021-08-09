@@ -644,8 +644,8 @@ class uvm_tlm_fifo_base(uvm_component):
 
     def __init__(self, name, parent, maxsize=1):
         super().__init__(name, parent)
-        queue_trigger = ConfigDB().get(self, "", "UVM_DUT_CLOCK")
-        self.queue = UVMQueue(maxsize=maxsize, trigger=queue_trigger)
+        clock = ConfigDB().get(self, "", "UVM_RTL_CLOCK")
+        self.queue = UVMQueue(maxsize=maxsize, clock=clock)
         self.get_ap = uvm_analysis_port("get_ap", self)
         self.put_ap = uvm_analysis_port("put_ap", self)
 

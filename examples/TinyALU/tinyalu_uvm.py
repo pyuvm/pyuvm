@@ -26,6 +26,7 @@ class AluSeqItem(uvm_sequence_item):
 class AluSeq(uvm_sequence):
     async def body(self):
         for op in list(Ops): # list(Ops):
+            print(f"SENDING: {op}")
             cmd_tr = AluSeqItem("cmd_tr")
             await self.start_item(cmd_tr) 
             cmd_tr.randomize()
@@ -39,9 +40,7 @@ class Driver(uvm_driver):
 
     async def run_phase(self):
         while True:
-            print ("GETTING NEXT ITEM")
             command = await self.seq_item_port.get_next_item()
-            print("GOT NEXT ITEM")
             await self.proxy.send_op(command.A, command.B, command.op)
             self.logger.debug(f"Sent command: {command}")
             self.seq_item_port.item_done()
@@ -130,12 +129,14 @@ class AluEnv(uvm_env):
 class AluTest(uvm_test):
     def build_phase(self):
         self.env = AluEnv.create("env", self)
+        self.clock = ConfigDB().get(self,"", "UVM_RTL_CLOCK")
 
     async def run_phase(self):
         self.raise_objection()
         seqr = ConfigDB().get(self, "", "SEQR")
         seq = AluSeq("seq")
         await seq.start(seqr)
+        ClockCycles(self.clock, 100)
         self.drop_objection()
 
     def end_of_elaboration_phase(self):

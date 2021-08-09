@@ -4,7 +4,6 @@ import fnmatch
 import cocotb.queue
 from cocotb.triggers import Event, FallingEdge,Timer
 from asyncio import QueueEmpty, QueueFull
-
 FIFO_DEBUG = 5
 logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
 
@@ -194,54 +193,12 @@ class UVMEvent(Event):
     async def wait(self):
         while True:
             await self.trigger
-            if self.is_set:
+            print(f"is_set: {self.is_set()}")
+            if self.is_set():
                 return self.fired
             else:
                 continue
         
-class ObjectionHandler(metaclass=Singleton):
-    """
-    This singleton accepts objections and then allows
-    them to be removed. It returns True to run_phase_complete()
-    when there are no objections left.
-    """
-
-    def __init__(self, clock):
-        self.__objections = {}
-        self._objection_event = UVMEvent("objection changed",clock)
-        self.objection_raised = False
-        self.run_phase_done_flag = None  # used in test suites
-        self.printed_warning = False
-
-    def __str__(self):
-        ss = f"run_phase complete: {self.run_phase_complete()}\n"
-        ss += "Current Objections:\n"
-        for cc in self.__objections:
-            ss += f"{self.__objections[cc]}\n"
-        return ss
-
-
-    def raise_objection(self, raiser):
-        self.__objections[raiser] = raiser.get_full_name()
-        self.objection_raised = True
-        self._objection_event.set()
-
-    def drop_objection(self, dropper):
-        try:
-            del self.__objections[dropper]
-        except KeyError:
-            self.objection_raised = True
-            pass
-        self._objection_event.set()
-
-    async def run_phase_complete(self):
-        while len(self.__objections) > 0:
-            await self._objection_event.wait()
-        if not self.objection_raised:
-            print ("Warning: No objections raised")
-        
-
-
 class UVMQueue(cocotb.queue.Queue):
     """
     The UVMQueue provides a peek function as well as the
@@ -258,7 +215,6 @@ class UVMQueue(cocotb.queue.Queue):
         return str(self._queue)
 
     async def put(self, item):
-        print ("IN UVMQUEUE PUT:", item)
         while True:
             await self.trigger
             try:
@@ -268,15 +224,12 @@ class UVMQueue(cocotb.queue.Queue):
                 continue        
 
     async def get(self):
-        print ("IN UVMQUEUE GET")
         while True:
             await self.trigger
             try:
                 item =  self.get_nowait()
-                print("GOT:", item)
                 return item
             except QueueEmpty:
-                print ("QUEUE EMPTY")
                 continue
 
     def _peek(self):

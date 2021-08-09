@@ -2,6 +2,7 @@ from pyuvm.s06_reporting_classes import uvm_report_object
 from pyuvm.s08_factory_classes import uvm_factory
 from pyuvm.s09_phasing import uvm_common_phases, uvm_run_phase, uvm_build_phase
 from pyuvm import error_classes
+from pyuvm.error_classes import UVMError
 from pyuvm import utility_classes
 import time
 import logging
@@ -76,10 +77,10 @@ We've opted for the latter.
         return self._parent
 
     def raise_objection(self):
-        utility_classes.ObjectionHandler().raise_objection(self)
+        ObjectionHandler().raise_objection(self)
 
     def drop_objection(self):
-        utility_classes.ObjectionHandler().drop_objection(self)
+        ObjectionHandler().drop_objection(self)
 
     def cdb_set(self, label, value, inst_path="*"):
         """
@@ -346,6 +347,49 @@ We've opted for the latter.
     13.1.7--Other interfaces
     """
 
+class ObjectionHandler(metaclass=utility_classes.Singleton):
+    """
+    This singleton accepts objections and then allows
+    them to be removed. It returns True to run_phase_complete()
+    when there are no objections left.
+    """
+
+    def __init__(self):
+        self.__objections = {}
+        clock = ConfigDB().get(None, "", "UVM_RTL_CLOCK")
+        self._objection_event = utility_classes.UVMEvent("objection changed",clock)
+        self.objection_raised = False
+        self.run_phase_done_flag = None  # used in test suites
+        self.printed_warning = False
+
+    def __str__(self):
+        ss = f"run_phase complete: {self.run_phase_complete()}\n"
+        ss += "Current Objections:\n"
+        for cc in self.__objections:
+            ss += f"{self.__objections[cc]}\n"
+        return ss
+
+
+    def raise_objection(self, raiser):
+        self.__objections[raiser] = raiser.get_full_name()
+        self.objection_raised = True
+
+    def drop_objection(self, dropper):
+        try:
+            del self.__objections[dropper]
+        except KeyError:
+            self.objection_raised = True
+            pass
+        if len(self.__objections) == 0:
+            self._objection_event.set()
+
+    async def run_phase_complete(self):
+        await self._objection_event.wait()
+        if not self.objection_raised:
+            print ("Warning: No objections raised")
+        
+
+
 
 class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     """
@@ -392,15 +436,15 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         :return: none
         """
 
-        ConfigDB().set(None, "*", "UVM_DUT_CLOCK", clock)
+        ConfigDB().set(None, "*", "UVM_RTL_CLOCK", clock)
         factory = uvm_factory()
         self.uvm_test_top = factory.create_component_by_name(test_name, "", "uvm_test_top", self)
         try:
             for self.running_phase in uvm_common_phases:
                 self.running_phase.traverse(self.uvm_test_top)
                 if self.running_phase == uvm_run_phase:
-                    await utility_classes.ObjectionHandler(clock).run_phase_complete()
-        except error_classes.UVMError as uve:
+                    await ObjectionHandler().run_phase_complete()
+        except UVMError as uve:
             self.logger.error(uve)
 
 
