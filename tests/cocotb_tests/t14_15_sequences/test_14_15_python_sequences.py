@@ -388,7 +388,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         await uvm_root().run_test("SeqTest", clock)
         self.assertTrue(DataHolder().datum)
 
-    async def tqst_multiple_seq_runs(self):
+    async def test_multiple_seq_runs(self):
 
         class SeqItem(uvm_sequence_item):
             def __init__(self, name):
@@ -445,16 +445,17 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.run1 = SeqRunner("run1", self)
                 self.run2 = SeqRunner("run2", self)
 
+            def check_phase(self):
+                assert 26 == DataHolder().dict_["run2"]
+                assert 6 ==  DataHolder().dict_["run1"]
+            
             async def run_phase(self):
                 self.raise_objection()
-                Timer(20)
+                await Timer(20)
                 self.drop_objection()
 
         clock=DataHolder().clock
         await uvm_root().run_test("SeqTest", clock)
-        print("******* DATAHOLDER RETURNED *******", DataHolder().dict_)
-        self.assertEqual(26, DataHolder().dict_["run2"])
-        self.assertEqual(6, DataHolder().dict_["run1"])
 
     async def test_virtual_sequence(self):
         DataHolder().virtual_seq_error = False

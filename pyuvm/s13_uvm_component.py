@@ -373,6 +373,7 @@ class ObjectionHandler(metaclass=utility_classes.Singleton):
     def raise_objection(self, raiser):
         self.__objections[raiser] = raiser.get_full_name()
         self.objection_raised = True
+        self._objection_event.clear()
 
     def drop_objection(self, dropper):
         try:
@@ -380,8 +381,10 @@ class ObjectionHandler(metaclass=utility_classes.Singleton):
         except KeyError:
             self.objection_raised = True
             pass
+
         if len(self.__objections) == 0:
             self._objection_event.set()
+
 
     async def run_phase_complete(self):
         await self._objection_event.wait()
