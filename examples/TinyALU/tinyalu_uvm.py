@@ -26,7 +26,6 @@ class AluSeqItem(uvm_sequence_item):
 class AluSeq(uvm_sequence):
     async def body(self):
         for op in list(Ops): # list(Ops):
-            print(f"SENDING: {op}")
             cmd_tr = AluSeqItem("cmd_tr")
             await self.start_item(cmd_tr) 
             cmd_tr.randomize()
@@ -75,9 +74,7 @@ class Scoreboard(uvm_component):
         self.result_get_port.connect(self.result_fifo.get_export)
 
     def check_phase(self):
-        print("IN CHECK PHASE")
         while self.result_get_port.can_get():
-            print("GOT RESULTS")
             _, actual_result = self.result_get_port.try_get()
             cmd_success, (A, B, op_numb) = self.cmd_get_port.try_get()
             if not cmd_success:
@@ -136,7 +133,7 @@ class AluTest(uvm_test):
         seqr = ConfigDB().get(self, "", "SEQR")
         seq = AluSeq("seq")
         await seq.start(seqr)
-        ClockCycles(self.clock, 100)
+        await ClockCycles(self.clock, 100)
         self.drop_objection()
 
     def end_of_elaboration_phase(self):

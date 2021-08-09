@@ -9,6 +9,9 @@ class s08_factory_classes_TestCase():
     8.0 Factory Class Testing
     """
 
+    def __init__(self, clock) -> None:
+        self.clock = clock
+
     class original_comp(uvm_component):
         ...
 
@@ -417,7 +420,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", self.clock)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc, Other)
 
@@ -440,7 +443,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", self.clock)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Comp)
         assert isinstance(utt.cc2, Other)
@@ -463,7 +466,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", self.clock)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Comp)
         assert isinstance(utt.cc2, Other)
@@ -486,7 +489,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", self.clock)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Other)
         assert isinstance(utt.cc2, Other)
@@ -508,7 +511,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", self.clock)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, OtherObj)
 
@@ -530,7 +533,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", self.clock)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, OtherObj)
 
@@ -551,6 +554,6 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", self.clock)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Obj)  # Cant inst override object

@@ -1,3 +1,4 @@
+from pyuvm.s13_uvm_component import ConfigDB
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 import cocotb
@@ -10,6 +11,7 @@ import test_12_uvm_tlm_interfaces as test_mod
 
 async def run_tests(dut):
     tests_pass = {}
+    ConfigDB().set(None, "*", "UVM_RTL_CLOCK", dut.clk)
     t12 = test_mod.s12_uvm_tlm_interfaces_TestCase()
     methods = inspect.getmembers(test_mod.s12_uvm_tlm_interfaces_TestCase)#, predicate=inspect.ismethod)
     for mm in methods:

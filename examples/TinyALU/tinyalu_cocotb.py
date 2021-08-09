@@ -15,15 +15,12 @@ class CocotbProxy:
         self.done = cocotb.triggers.Event(name="Done")
 
     async def send_op(self, aa, bb, op):
-        print("IN SEND OP")
         await self.driver_queue.put((aa,bb,op))
 
     async def get_cmd(self):
-        print("IN GET_CMD")
         return await self.cmd_mon_queue.get()
 
     async def get_result(self):
-        print("IN GET_RESULT")
         cmd =  await self.result_mon_queue.get()
         return cmd
 
@@ -45,7 +42,6 @@ class CocotbProxy:
             if self.dut.start.value == 0 and self.dut.done.value == 0:
                 try:
                     (aa, bb, op) = self.driver_queue.get_nowait()
-                    print(f"GOT ITEM: {aa}, {bb}, {op}")
                     self.dut.A = aa
                     self.dut.B = bb
                     self.dut.op = op
@@ -78,7 +74,6 @@ class CocotbProxy:
                 done = 0
 
             if done == 1 and prev_done == 0:
-                print(f"PUT RESULT: {int(self.dut.result)} ")
                 self.result_mon_queue.put_nowait(int(self.dut.result))
             prev_done = done
 

@@ -39,9 +39,7 @@ class Driver(uvm_driver):
 
     async def run_phase(self):
         while True:
-            print ("GETTING NEXT ITEM")
             command = await self.seq_item_port.get_next_item()
-            print("GOT NEXT ITEM")
             await self.proxy.send_op(command.A, command.B, command.op)
             self.logger.debug(f"Sent command: {command}")
             self.seq_item_port.item_done()
@@ -76,9 +74,7 @@ class Scoreboard(uvm_component):
         self.result_get_port.connect(self.result_fifo.get_export)
 
     def check_phase(self):
-        print("IN CHECK PHASE")
         while self.result_get_port.can_get():
-            print("GOT RESULTS")
             _, actual_result = self.result_get_port.try_get()
             cmd_success, (A, B, op_numb) = self.cmd_get_port.try_get()
             if not cmd_success:

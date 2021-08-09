@@ -3,6 +3,10 @@ from pyuvm import *
 
 class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
+    def __init__(self, clock, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.clock = clock
+
     def tearDown(self) -> None:
         super().tearDown()
         ConfigDB().clear()
@@ -62,7 +66,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
         cdb = ConfigDB()
         cdb.is_tracing = True
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", self.clock)
         cdb.set(uvm_root(), '*', "LABEL", 55)
         datum = cdb.get(uvm_root(), "tt", "LABEL")
         self.assertEqual(55, datum)
@@ -86,7 +90,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 time.sleep(0.1)
                 self.drop_objection()
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", self.clock)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.numb)
         self.assertEqual(88, utt.cc2.numb)
@@ -107,7 +111,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 time.sleep(0.1)
                 self.drop_objection()
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", self.clock)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.numb)
         self.assertEqual(66, utt.cc2.numb)
@@ -133,7 +137,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 time.sleep(0.1)
                 self.drop_objection()
 
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", self.clock)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.bot.numb)
 
@@ -158,7 +162,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("PrintTest")
+        await uvm_root().run_test("PrintTest", self.clock)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(utt.pmsg, utt.p1.msg)
         self.assertEqual(utt.pmsg, utt.p2.msg)
@@ -187,7 +191,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("PrintTest")
+        await uvm_root().run_test("PrintTest", self.clock)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(utt.pmsg, utt.p1.msg)
         self.assertEqual(utt.pmsg, utt.p2.msg)

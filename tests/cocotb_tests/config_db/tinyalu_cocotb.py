@@ -6,7 +6,7 @@ import test_config_db as test_mod
 
 async def run_tests(dut):
     tests_pass = {}
-    tcfgdb = test_mod.config_db_TestCase()
+    tcfgdb = test_mod.config_db_TestCase(dut.clk)
     methods = inspect.getmembers(test_mod.config_db_TestCase)#, predicate=inspect.ismethod)
     for mm in methods:
         (name,_) = mm

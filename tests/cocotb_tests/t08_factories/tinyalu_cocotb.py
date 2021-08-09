@@ -1,3 +1,4 @@
+from pyuvm.s13_uvm_component import ConfigDB
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 import cocotb
@@ -11,8 +12,8 @@ import test_08_factory_classes as t08
 @cocotb.test() # pylint: disable=no-value-for-parameter
 async def test_08_factory(dut):
     """Tests different aspects of the factory"""
-    print("HEY WHAT IS GOING ON")
-    tc08 = t08.s08_factory_classes_TestCase()
+    ConfigDB().set(None, "*", "UVM_RTL_CLOCK", dut.clk)
+    tc08 = t08.s08_factory_classes_TestCase(dut.clk)
     methods = inspect.getmembers(t08.s08_factory_classes_TestCase)#, predicate=inspect.ismethod)
     for mm in methods:
         (name,_) = mm

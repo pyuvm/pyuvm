@@ -180,7 +180,6 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         """
         if self.current_item is not None:
             raise error_classes.UVMSequenceError("You must call item_done() before calling get_next_item again")
-        print("ABOUT TO AWAIT NEXT ITEM")
         self.current_item = await self.req_q.get()
         return self.current_item
 

@@ -10,7 +10,7 @@ from cocotb.triggers import Timer
 async def waitabit(abit=5):
     await Timer(1, units="us")
 class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
-    def __init__(self, *args, **kwargs):
+    def __init__(self,  *args, **kwargs):
         super().__init__(*args, **kwargs)
         if uvm_root().has_child("my_root"):
             self.my_root = uvm_root().get_child("my_root")

@@ -11,11 +11,11 @@ from pyuvm import *
 class CocotbProxy:
     def __init__(self, dut, label):
         self.dut = dut
+        ConfigDB().set(None, "*", "UVM_RTL_CLOCK", dut.clk)
         ConfigDB().set(None, "*", label, self)
-        self.driver_queue = UVMQueue(maxsize=1)
-        self.cmd_mon_queue = UVMQueue(maxsize=0)
-        self.result_mon_queue = UVMQueue(maxsize=0)
-        self.done = cocotb.triggers.Event(name="Done")
+        self.driver_queue = UVMQueue(maxsize=1, clock=self.dut.clk)
+        self.cmd_mon_queue = UVMQueue(maxsize=0, clock=self.dut.clk)
+        self.result_mon_queue = UVMQueue(maxsize=0, clock=self.dut.clk)
 
     def send_op(self, aa, bb, op):
         self.driver_queue.put((aa, bb, op))
@@ -110,7 +110,7 @@ async def test_alu(dut):
 @cocotb.test()
 async def test_queue(dut):
     "Test basic QUEUE functions"
-    qq = utility_classes.UVMQueue(maxsize=1)
+    qq = utility_classes.UVMQueue(maxsize=1, clock=dut.clk)
     await qq.put(5)
     got = await qq.get()
     assert got == 5
@@ -153,7 +153,7 @@ async def wait_on_queue(dut):
     """Test put and get with waits"""
     clock = Clock(dut.clk, 2, units="us") #make the simualtor wait
     cocotb.fork(clock.start())
-    qq = utility_classes.UVMQueue(maxsize=1)
+    qq = utility_classes.UVMQueue(maxsize=1, clock=dut.clk)
     send_data = [.01,"two", 3, None]
     cocotb.fork(delay_put(qq, .01, send_data))
     got_data = await delay_peek(qq, .01)
@@ -163,7 +163,7 @@ async def wait_on_queue(dut):
 @cocotb.test()
 async def nowait_tests(dut):
     """Test the various nowait flavors"""
-    qq = utility_classes.UVMQueue(maxsize=1)
+    qq = utility_classes.UVMQueue(maxsize=1, clock=dut.clk)
     await qq.put(5)
     try:
         qq.put_nowait(6)

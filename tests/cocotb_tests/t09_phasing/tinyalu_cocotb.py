@@ -30,7 +30,9 @@ class my_comp(uvm_component):
             self.log_phase()
 
         async def run_phase(self):
+            self.raise_objection()
             self.log_phase()
+            self.drop_objection()
 
         def extract_phase(self):
             self.log_phase()
@@ -69,12 +71,14 @@ def tearDown():
         
 class my_test(uvm_test):
     async def run_phase(self):
+        self.raise_objection()
         print("Hey, I'm here")
+        self.drop_objection()
 
 @cocotb.test()
 async def run_test(dut):
     """Test the various nowait flavors"""
-    await uvm_root().run_test("my_test")
+    await uvm_root().run_test("my_test", dut.clk)
     assert True
 
 @cocotb.test()
@@ -94,7 +98,7 @@ async def test_traverse():
         phase = phase_class()
         phase.traverse(top)
         if phase_class == uvm_run_phase:
-            await utility_classes.ObjectionHandler().run_phase_complete()
+            await ObjectionHandler().run_phase_complete()
         function_name = phase_class.__name__[4:]
         returned_comps = phase_list[function_name]
         try:
@@ -114,8 +118,9 @@ async def test_traverse():
     return True
 
 @cocotb.test()
-async def traverse(self):
+async def traverse(dut):
     """Testing topdown and bottom up traversal"""
+    ConfigDB().set(None,"","UVM_RTL_CLOCK", dut.clk)
     assert await test_traverse()
 
 

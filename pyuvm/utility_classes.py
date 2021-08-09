@@ -193,7 +193,6 @@ class UVMEvent(Event):
     async def wait(self):
         while True:
             await self.trigger
-            print(f"is_set: {self.is_set()}")
             if self.is_set():
                 return self.fired
             else:
