@@ -90,8 +90,9 @@ class ResponseQueue(UVMQueue):
     Returns either the next response or the item with the id.
     """
 
-    def __init__(self, maxsize: int = 0):
-        super().__init__(maxsize=maxsize)
+    def __init__(self, maxsize: int = 0, trigger=None):
+        assert trigger is not None, "You must give the ResponseQueue a trigger"
+        super().__init__(maxsize=maxsize, trigger=trigger)
         self.put_event = CocotbEvent("put event")
     
     def put_nowait(self, item):
@@ -150,8 +151,9 @@ class uvm_seq_item_export(uvm_blocking_put_export):
 
     def __init__(self, name, parent):
         super().__init__(name, parent)
-        self.req_q = UVMQueue()
-        self.rsp_q = ResponseQueue()
+        uvm_trigger = ConfigDB().get(self, "", "UVM_QUEUE_TRIGGER")
+        self.req_q = UVMQueue(0,uvm_trigger)
+        self.rsp_q = ResponseQueue(maxsize=0, trigger=uvm_trigger)
         self.current_item = None
 
     async def put_req(self, item):
@@ -257,7 +259,8 @@ class uvm_sequencer(uvm_component):
     def __init__(self, name, parent):
         super().__init__(name, parent)
         self.seq_item_export = uvm_seq_item_export("seq_item_export", self)
-        self.seq_q = UVMQueue(0)
+        trigger = ConfigDB().get(self, "", "UVM_QUEUE_TRIGGER")
+        self.seq_q = UVMQueue(0, trigger)
 
     async def run_phase(self):
         while True:

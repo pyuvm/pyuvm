@@ -23,7 +23,7 @@
 # their various flavors through multiple inheritance.
 
 
-from pyuvm.s13_uvm_component import uvm_component
+from pyuvm.s13_uvm_component import ConfigDB, uvm_component
 import queue
 from pyuvm.error_classes import UVMTLMConnectionError
 from pyuvm.utility_classes import UVMQueue, FIFO_DEBUG
@@ -644,7 +644,8 @@ class uvm_tlm_fifo_base(uvm_component):
 
     def __init__(self, name, parent, maxsize=1):
         super().__init__(name, parent)
-        self.queue = UVMQueue(maxsize=maxsize)
+        queue_trigger = ConfigDB().get(self, "", "UVM_QUEUE_TRIGGER")
+        self.queue = UVMQueue(maxsize=maxsize, trigger=queue_trigger)
         self.get_ap = uvm_analysis_port("get_ap", self)
         self.put_ap = uvm_analysis_port("put_ap", self)
 

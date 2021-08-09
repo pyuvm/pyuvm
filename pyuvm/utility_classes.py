@@ -237,21 +237,25 @@ class UVMQueue(cocotb.queue.Queue):
     to die is set to the dropping of all run_phase objections
     by default.
     """
+    def __init__(self, maxsize: int, trigger):
+        super().__init__(maxsize=maxsize)
+        self.trigger = trigger
+
     def __str__(self):
         return str(self._queue)
 
-    async def put(self, item, trigger):
+    async def put(self, item):
         while True:
-            await trigger
+            await self.trigger
             try:
                 self.put_nowait(item)
                 break
             except QueueFull:
                 continue        
 
-    async def get(self, trigger):
+    async def get(self):
         while True:
-            await trigger
+            await self.trigger
             try:
                 item =  self.get_nowait()
                 return item
@@ -261,12 +265,12 @@ class UVMQueue(cocotb.queue.Queue):
     def _peek(self):
         return self._queue[0]
 
-    async def peek(self, trigger):
+    async def peek(self):
         """Remove and return an item from the queue.
         If the queue is empty, wait until an item is available.
         """
         while True:
-            await trigger
+            await self.trigger
             try:
                 item =  self.peek_nowait()
                 return item

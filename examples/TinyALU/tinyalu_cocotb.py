@@ -9,9 +9,10 @@ from tinyalu_uvm import *
 class CocotbProxy:
     def __init__(self, dut):
         self.dut = dut
-        self.driver_queue = UVMQueue(maxsize=1)
-        self.cmd_mon_queue = UVMQueue(maxsize=0)
-        self.result_mon_queue = UVMQueue(maxsize=0)
+        tr = FallingEdge(dut.clk)
+        self.driver_queue = UVMQueue(maxsize=1, trigger=tr)
+        self.cmd_mon_queue = UVMQueue(maxsize=0, trigger=tr)
+        self.result_mon_queue = UVMQueue(maxsize=0, trigger=tr)
         self.done = cocotb.triggers.Event(name="Done")
 
     async def send_op(self, aa, bb, op):
@@ -113,7 +114,7 @@ async def test_alu(dut):
     cocotb.fork(proxy.driver_bfm())
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
-    cocotb.fork(uvm_root().run_test("AluTest"))
+    cocotb.fork(uvm_root().run_test("AluTest", FallingEdge(dut.clk)))
     await ClockCycles(dut.clk, 100)
 
 
