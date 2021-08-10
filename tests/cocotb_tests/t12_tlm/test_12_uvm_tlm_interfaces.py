@@ -1,8 +1,5 @@
-from sys import abiflags
 import pyuvm_unittest
 from pyuvm import * # pylint: disable=unused-wildcard-import
-import threading
-import time
 import cocotb
 from cocotb.triggers import Timer
 
@@ -25,9 +22,6 @@ class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
     def tearDown(self):
         ObjectionHandler().run_phase_done_flag = True
-        time.sleep(0.2)
-
-
     class my_comp(uvm_component):
         ...
 

@@ -2,8 +2,6 @@ from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 import cocotb
 import pyuvm.utility_classes as utility_classes
-import time
-import asyncio.queues
 from pyuvm import *
 
 phase_list = {}
@@ -69,7 +67,10 @@ def tearDown():
         
 class my_test(uvm_test):
     async def run_phase(self):
+        self.raise_objection()
         print("Hey, I'm here")
+        self.drop_objection()
+
 
 @cocotb.test()
 async def run_test(dut):

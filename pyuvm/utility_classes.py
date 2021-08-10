@@ -223,9 +223,10 @@ class ObjectionHandler(metaclass=Singleton):
             self._objection_event.set()
 
     async def run_phase_complete(self):
-        await self._objection_event.wait()
-        if not self.objection_raised:
-            print ("Warning: No objections raised")
+        if self.objection_raised:
+            await self._objection_event.wait()
+        else:
+            logging.warning("You did not call self.raise_objection() in any run_phase")
         
 
 

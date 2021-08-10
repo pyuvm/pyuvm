@@ -1,9 +1,5 @@
 from cocotb.clock import Clock
-from cocotb.triggers import FallingEdge
 import cocotb
-import pyuvm.utility_classes as utility_classes
-import time
-import asyncio.queues
 import inspect
 import test_12_uvm_tlm_interfaces as test_mod
 
@@ -39,8 +35,6 @@ async def run_tests(dut):
 @cocotb.test() # pylint: disable=no-value-for-parameter
 async def test_12_tlm(dut):
     """Tests the TLM FIFOS"""
-    clock = Clock(dut.clk, 2, units="us")    
-    cocotb.fork(clock.start())
     await run_tests(dut)
 
 

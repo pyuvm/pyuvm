@@ -1,10 +1,8 @@
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 import cocotb
-from tinyalu_uvm import *
+
 import pyuvm.utility_classes as utility_classes
-import time
-import asyncio.queues
 from pyuvm import *
 
 
@@ -168,27 +166,27 @@ async def nowait_tests(dut):
     try:
         qq.put_nowait(6)
         assert False
-    except asyncio.queues.QueueFull:
+    except cocotb.queue.QueueFull:
         pass
     try:
         xx = qq.peek_nowait()
         assert xx == 5
-    except asyncio.queues.QueueEmpty:
+    except cocotb.queue.QueueEmpty:
         assert False
     try:
         xx = qq.get_nowait()
         assert xx == 5
-    except asyncio.queues.QueueEmpty:
+    except cocotb.queue.QueueEmpty:
         assert False
     try:
         xx = qq.peek_nowait()
         assert False
-    except asyncio.queues.QueueEmpty:
+    except cocotb.queue.QueueEmpty:
         pass
     try:
         xx = qq.get_nowait()
         assert False
-    except asyncio.queues.QueueEmpty:
+    except cocotb.queue.QueueEmpty:
         pass
 
 
