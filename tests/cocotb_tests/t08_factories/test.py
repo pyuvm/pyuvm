@@ -1,11 +1,6 @@
-from cocotb.clock import Clock
-from cocotb.triggers import FallingEdge
 import cocotb
-import pyuvm.utility_classes as utility_classes
-import time
-import asyncio.queues
 import inspect
-import test_08_factory_classes as t08
+import factory_tests as t08
 
 
 @cocotb.test() # pylint: disable=no-value-for-parameter
