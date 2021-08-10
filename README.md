@@ -18,7 +18,7 @@ The following sections have been implemented:
 |9|Phasing|Simplified to only common phases. Supports objection system|
 |12|UVM TLM Interfaces|Fully implemented|
 |13|Predefined Component Classes|Implements uvm_component with hierarchy, uvm_root singleton,run_test(), simplified ConfigDB, uvm_driver, etc|
-|14 &  15|Sequences, sequencer, sequence_item|Refactored sequencer functionality leveraging Python language capabilities. Simpler and more direct implementation|
+|14 & 15|Sequences, sequencer, sequence_item|Refactored sequencer functionality leveraging Python language capabilities. Simpler and more direct implementation|
 
 
 ## Installation
