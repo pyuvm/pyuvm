@@ -6,4 +6,4 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tox]
-isolated_build = True
+isolated_build = true
