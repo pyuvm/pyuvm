@@ -4,6 +4,3 @@ requires = [
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
-
-[tox]
-isolated_build = true
