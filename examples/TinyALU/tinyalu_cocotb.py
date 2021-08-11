@@ -1,4 +1,3 @@
-from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 import cocotb
 from cocotb.queue import QueueEmpty
@@ -6,12 +5,15 @@ from tinyalu_uvm import *
 """
 import debugpy
 listen_host, listen_port = debugpy.listen(("localhost", 5678))
-cocotb.log.info("Waiting for Python debugger attach on {}:{}".format(listen_host, listen_port))
+cocotb.log.info("Waiting for Python debugger attach"
+" on {}:{}".format(listen_host, listen_port))
 # Suspend execution until debugger attaches
 debugpy.wait_for_client()
 # Break into debugger for user control
 breakpoint()  # or debugpy.breakpoint() on 3.6 and below
 """
+
+
 class CocotbProxy:
     def __init__(self, dut):
         self.dut = dut
@@ -69,7 +71,9 @@ class CocotbProxy:
             except ValueError:
                 start = 0
             if start == 1 and prev_start == 0:
-                self.cmd_mon_queue.put_nowait((int(self.dut.A), int(self.dut.B), int(self.dut.op)))
+                self.cmd_mon_queue.put_nowait((int(self.dut.A),
+                                               int(self.dut.B),
+                                               int(self.dut.op)))
             prev_start = start
 
     async def result_mon_bfm(self):
@@ -87,11 +91,6 @@ class CocotbProxy:
             prev_done = done
 
 
-
-
-
-
-# noinspection PyArgumentList
 @cocotb.test()
 async def test_alu(dut):
     proxy = CocotbProxy(dut)
@@ -102,6 +101,3 @@ async def test_alu(dut):
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
     await uvm_root().run_test("AluTest")
-
-
-

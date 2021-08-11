@@ -4,8 +4,6 @@ This file defines the UVM base classes
 import sys
 
 try:
-    import logging
-    import inspect
     import copy
     import pyuvm.error_classes as error_classes
     import pyuvm.utility_classes as utility_classes
