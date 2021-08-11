@@ -125,7 +125,7 @@ prefix is not defining functionality that works like a property.
 
 ## `uvm_object_wrapper` and Factories
 
-SystemVerilog has relatively poor class manipulation mechansims.  Most of
+SystemVerilog has relatively poor class manipulation mechanisms.  Most of
 the class information has already been determined at compile time and dynamically
 creating objects of different classes, or overriding one class with another, requires
 considerable gymnastics.

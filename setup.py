@@ -4,10 +4,10 @@
 
 from setuptools import setup, find_packages
 
-
-
 readme = """
 # Description
+
+Note: **pyuvm** 2.0 is incompatible with previous versions in that it replaces all references to the `threading` package with courtines from **cocotb**.  **cocotb** is now a requirement.
 
 **pyuvm** implements the most often-used parts of the UVM while taking advantage of the fact that Python does not have strict typing and does not require parameterized classes. The project refactors pieces of the UVM that were either overly complicated due to typing or legacy code.
 
@@ -19,7 +19,7 @@ with open('LICENSE') as f:
 
 setup(
     name='pyuvm',
-    version='1.0.1',
+    version='2.0a',
     description='Python Implementation of Universal Verification Methodology',
     long_description=readme,
     long_description_content_type="text/markdown",
