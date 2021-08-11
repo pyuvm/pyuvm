@@ -13,7 +13,7 @@ venv
 *~
 build
 dist
-pyuvm.egg-info
+*.egg-info
 .tox
 examples/*/modelsim.ini
 examples/*/transcript
