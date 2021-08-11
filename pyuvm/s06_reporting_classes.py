@@ -1,8 +1,10 @@
-# pyuvm uses the Python logging system to do reporting.  Still, we need this base class
-# to be true to the hierarchy.  Every instance of a child class has its own logger.
+# pyuvm uses the Python logging system to do reporting.
+# Still, we need this base class to be true to the hierarchy.
+# Every instance of a child class has its own logger.
 #
-# There may be a need to implement uvm_info, uvm_error, uvm_warning, and uvm_fatal, but
-# it would be best to first see how the native Python logging system does the job.
+# There may be a need to implement uvm_info, uvm_error,
+# uvm_warning, and uvm_fatal, but it would be best to
+# first see how the native Python logging system does the job.
 
 from pyuvm.s05_base_classes import uvm_object
 import logging
@@ -15,13 +17,17 @@ class uvm_report_object(uvm_object):
     def __init__(self, name):
         super().__init__(name)
         uvm_root_logger = logging.getLogger('uvm')
-        self.logger = uvm_root_logger.getChild(self.get_full_name())  # Every object gets its own logger
+        # Every object gets its own logger
+        self.logger = uvm_root_logger.getChild(self.get_full_name())
         self.logger.setLevel(level=logging.INFO)  # Default is to print INFO
-        self.logger.propagate = False  # We are not sending log messages up the hierarchy
+        # We are not sending log messages up the hierarchy
+        self.logger.propagate = False
         handler = logging.StreamHandler()
-        handler.setLevel(logging.NOTSET)  # Don't let the handler interfere with logger level
+        # Don't let the handler interfere with logger level
+        handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
-        formatter = logging.Formatter("%(levelname)s: %(filename)s(%(lineno)d)[%(name)s]: %(message)s")
+        formatter = logging.Formatter(
+            "%(levelname)s: %(filename)s(%(lineno)d)[%(name)s]: %(message)s")
         handler.setFormatter(formatter)
         self.add_logging_handler(handler)
         pass

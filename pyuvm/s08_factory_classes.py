@@ -14,9 +14,11 @@ import fnmatch
 # so that any class that extends uvm_void automatically gets registered
 # into the factory.
 
-# Therefore there is no need for 8.2.2 the type_id, that is a SystemVerilog artifact as is 8.2.3
-# There is also no need for 8.2.4, the uvm_object_registry.  The FactoryMeta class causes
-# all classes from uvm_void down to automatically register themselves with the factory
+# Therefore there is no need for 8.2.2 the type_id, that
+# is a SystemVerilog artifact as is 8.2.3
+# There is also no need for 8.2.4, the uvm_object_registry.
+# The FactoryMeta class causes all classes from uvm_void
+# down to automatically register themselves with the factory
 # by copying themselves into a dict.
 
 # However there is a need to provide the methods in 8.
@@ -38,7 +40,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # database through introspection.
 
     def __init__(self):
-        self.fd = utility_classes.FactoryData()  # A singleton that implements overrides
+        self.fd = utility_classes.FactoryData()
         self.logger = logging.getLogger("Factory")
         self.all_types = 1
 
@@ -48,59 +50,70 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         self.fd.overrides[original].add(override, path)
 
     # 8.3.1.3
-    def set_inst_override_by_type(self, original_type, override_type, full_inst_path):
+    def set_inst_override_by_type(self, original_type, override_type,
+                                  full_inst_path):
         """
-        Override an instance with a new type if the original type is at that path
+        Override an instance with a new type if original type is at that path
         :param original_type: The original type being overridden
         :param override_type: The overriding type
         :param full_inst_path: The inst where this happens.
         """
 
-        # The intention here is to only override when a type of original_type is at the
-        # full_inst_path provided. If someone stores a different class at full_inst_path
-        # then the override will not happen.
+        # The intention here is to only override when a type of original_type
+        # is at the full_inst_path provided. If someone stores a different
+        # class at full_inst_path then the override will not happen.
         #
         #
-        # We capture this by storing the original and override types as a tuple at the full
-        # inst path.  Later we'll retrieve the tuple and check the type of the object at
-        # the full_inst_path.
+        # We capture this by storing the original and override types as a
+        # tuple at the full inst path.  Later we'll retrieve the tuple
+        # and check the type of the object at the full_inst_path.
         #
-        # instance_overrides is an OrderedDict, so we will check the paths in the order they
-        # are registered later.
+        # instance_overrides is an OrderedDict, so we will check
+        # the paths in the order they are registered later.
 
-        assert issubclass(original_type, utility_classes.uvm_void), "You tried to override a non-uvm_void class"
+        assert issubclass(original_type, utility_classes.uvm_void),\
+            "You tried to override a non-uvm_void class"
         assert issubclass(override_type,
-                          utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
+                          utility_classes.uvm_void),\
+            "You tried to use a non-uvm_void class as an override"
         self.__set_override(original_type, override_type, full_inst_path)
 
     # 8.3.1.4.1
-    def set_inst_override_by_name(self, original_type_name, override_type_name, full_inst_path):
+    def set_inst_override_by_name(self, original_type_name,
+                                  override_type_name, full_inst_path):
         """
-        Override a specific instance  using strings that contain the names of the types.
+        Override a specific instance  using strings that contain
+        the names of the types.
         :param original_type_name: the name of type being replaced
         :param override_type_name: the name of the substitute type
         :param full_inst_path: The path to the instance
         :return:
         """
 
-        # Here we use the names of classes instead of the classes.  The original_name
-        # doesn't need to be the name of a class, it can be an arbitrary string. The
-        # override_name must be the name of a class.
+        # Here we use the names of classes instead of the classes.
+        # The original_name doesn't need to be the name of a class,
+        # it can be an arbitrary string. The override_name must
+        # be the name of a class.
         #
-        # Later we will retrieve this by searching through the keys for a match to
-        # a path and then checking that the name given in the search matches the
-        # original_name
+        # Later we will retrieve this by searching through the
+        # keys for a match to a path and then checking that
+        # the name given in the search matches the original_name
 
-        assert isinstance(full_inst_path, str), "The inst_path must be a string"
-        assert isinstance(original_type_name, str), "Original_name must be a string"
-        assert isinstance(override_type_name, str), "Override_name must be a string"
+        assert isinstance(full_inst_path, str), \
+            "The inst_path must be a string"
+        assert isinstance(original_type_name, str), \
+            "Original_name must be a string"
+        assert isinstance(override_type_name, str), \
+            "Override_name must be a string"
         try:
             override_type = self.fd.classes[override_type_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(f"{override_type_name}" + " has not been defined.")
+            raise error_classes.UVMFactoryError(
+                f"{override_type_name}" + " has not been defined.")
 
-        # Set type override by name can use an arbitrary string as a key instead of a type
-        # Fortunately Python dicts don't care about the type of the key.
+        # Set type override by name can use an arbitrary string as a key
+        # instead of a type. Fortunately Python dicts don't care about
+        # the type of the key.
         try:
             original_type = self.fd.classes[original_type_name]
         except KeyError:
@@ -109,37 +122,50 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         self.__set_override(original_type, override_type, full_inst_path)
 
     # 8.3.1.4.2
-    def set_type_override_by_type(self, original_type, override_type, replace=True):
+    def set_type_override_by_type(self, original_type, override_type,
+                                  replace=True):
         """
         Override one type with another type globally
         :param original_type: The original type to be overridden
         :param override_type: The new type that will override it
         :param replace: If the override exists, only replace it if this is True
         """
-        assert issubclass(original_type, utility_classes.uvm_void), "You tried to override a non-uvm_void class"
+        assert issubclass(original_type, utility_classes.uvm_void),\
+            "You tried to override a non-uvm_void class"
         assert issubclass(override_type,
-                          utility_classes.uvm_void), "You tried to use a non-uvm_void class as an override"
+                          utility_classes.uvm_void),\
+            "You tried to use a non-uvm_void class as an override"
         if (original_type not in self.fd.overrides) or replace:
             self.__set_override(original_type, override_type)
 
     # 8.3.1.4.2
-    def set_type_override_by_name(self, original_type_name, override_type_name, replace=True):
+    def set_type_override_by_name(self, original_type_name,
+                                  override_type_name, replace=True):
         """
-        Override one type with another type globally using strings containing the type names.
+        Override one type with another type globally using strings
+        containing the type names.
 
-        :param original_type_name: The name of the type to be overridden or an arbitrary string.
-        :param override_type_name: The name of the overriding type. It must have been declared.
-        :param replace: If the override already exists only replace if this is True
+        :param original_type_name: The name of the type to be
+        overridden or an arbitrary string.
+        :param override_type_name: The name of the overriding type.
+        It must have been declared.
+        :param replace: If the override already exists only
+        replace if this is True
         :return:
         """
-        assert isinstance(original_type_name, str), "Original_name must be a string"
-        assert isinstance(override_type_name, str), "Override_name must be a string"
+        assert isinstance(original_type_name, str),\
+            "Original_name must be a string"
+        assert isinstance(override_type_name, str),\
+            "Override_name must be a string"
         try:
             override_type = self.fd.classes[override_type_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(f"{override_type_name}" + " has not been defined.")
+            raise error_classes.UVMFactoryError(
+                f"{override_type_name}" + " has not been defined.")
 
-        # Set type override by name can use an arbitrary string as a key instead of a type
+        # Set type override by name can use an arbitrary string as a key
+        # instead of a type
+
         # Fortunately Python dicts don't care about the type of the key.
         try:
             original_type = self.fd.classes[original_type_name]
@@ -155,12 +181,13 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
         :param requested_type: The type that could be overridden
         :param parent_inst_path: The parent inst path for an override
-        :param name: The name of the object, concatenated with parent inst path for override
+        :param name: The name of the object, concatenated with parent
+        inst path for override
         :return: either the requested_type or its override
         """
         if not isinstance(requested_type, str):
             assert (issubclass(requested_type, utility_classes.uvm_void)), \
-                f"You can only create uvm_void descendants not {requested_type}"
+                f"You must create uvm_void descendants not {requested_type}"
 
         if parent_inst_path == "":
             inst_path = name
@@ -171,19 +198,23 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
         new_cls = self.fd.find_override(requested_type, inst_path)
         if isinstance(new_cls, str):
-            self.logger.error(f'"{new_cls}" is not declared and is not an override string')
+            self.logger.error(
+                f'"{new_cls}" is not declared and is not an override string')
             return None
         else:
             return new_cls
 
-    def create_object_by_type(self, requested_type, parent_inst_path="", name=""):
+    def create_object_by_type(self, requested_type, parent_inst_path="",
+                              name=""):
         """
         8.3.1.5 Creation
-        :param requested_type: The type that we request but that can be overridden
+        :param requested_type: The type that we request but that can be
+        overridden
         :param parent_inst_path: The get_full_name path of the parent
         :param name: The name of the instance requested_type("name")
         :return: Type that is child of uvm_object.
-        Python does not create zero-length strings as defaults. It puts the None object there. That's
+        Python does not create zero-length strings as defaults.
+        It puts the None object there. That's
         what we're going to do.
         """
         new_type = self.__find_override(requested_type, parent_inst_path, name)
@@ -192,7 +223,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         return new_type(name)
 
     # 8.3.1.5
-    def create_object_by_name(self, requested_type_name, parent_inst_path="", name=""):
+    def create_object_by_name(self, requested_type_name,
+                              parent_inst_path="", name=""):
         """
         Create an object using a string to define its uvm_object type.
 
@@ -202,27 +234,32 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :return: A uvm_object with the name given
         """
         try:
-            requested_type = utility_classes.FactoryData().classes[requested_type_name]
+            requested_type = utility_classes.FactoryData().classes[requested_type_name] # noqa
         except KeyError:
             requested_type = requested_type_name
 
-        new_obj = self.create_object_by_type(requested_type, parent_inst_path, name)
+        new_obj = self.create_object_by_type(requested_type, parent_inst_path,
+                                             name)
         return new_obj
 
     # 8.3.1.5
-    def create_component_by_type(self, requested_type, parent_inst_path="", name="", parent=None):
+    def create_component_by_type(self, requested_type, parent_inst_path="",
+                                 name="", parent=None):
         """
         Create a component of the requested uvm_component type.
 
         :param requested_type: Type type to be overridden
-        :param parent_inst_path: The inst path if ew are looking for inst overrides
-        :param name: Concatenated with parent_inst_path if it exists for inst overrides
+        :param parent_inst_path: The inst path if we are looking
+        for inst overrides
+        :param name: Concatenated with parent_inst_path if it
+        exists for inst overrides
         :param parent: The parent component
         :return: a uvm_component with the name an parent given.
         """
 
         if name is None:
-            raise error_classes.UVMFactoryError("Parameter name must be specified in function call.")
+            raise error_classes.UVMFactoryError(
+                "Parameter name must be specified in function call.")
 
         new_type = self.__find_override(requested_type, parent_inst_path, name)
 
@@ -233,7 +270,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         return new_comp
 
     # 8.3.1.5
-    def create_component_by_name(self, requested_type_name, parent_inst_path="", name="", parent=None):
+    def create_component_by_name(self, requested_type_name,
+                                 parent_inst_path="", name="", parent=None):
         """
         Create a components using the name of the requested uvm_component type
 
@@ -244,14 +282,17 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :return: A uvm_object with the name given
         """
         if name is None:
-            raise error_classes.UVMFactoryError("Parameter name must be specified in create_component_by_name.")
+            raise error_classes.UVMFactoryError(
+                "Parameter name must be specified in create_component_by_name")
 
         try:
-            requested_type = utility_classes.FactoryData().classes[requested_type_name]
+            requested_type = utility_classes.FactoryData().classes[requested_type_name]  # noqa
         except KeyError:
             requested_type = requested_type_name
 
-        new_obj = self.create_component_by_type(requested_type, parent_inst_path, name, parent)
+        new_obj = self.create_component_by_type(requested_type,
+                                                parent_inst_path,
+                                                name, parent)
         return new_obj
 
     # 8.3.1.6.1
@@ -265,7 +306,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         # This method does not seem to be implemented in SystemVerilog
         # so I'm skipping it now.
-        raise error_classes.UVMNotImplemented("set_type_alias is not implemented in SystemVerilog")
+        raise error_classes.UVMNotImplemented(
+            "set_type_alias is not implemented in SystemVerilog")
 
     # 8.3.1.6.2
     def set_inst_alias(self, alias_type_name, original_type, full_inst_path):
@@ -279,7 +321,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         # This method does not seem to be implemented in SystemVerilog
         # so I'm skipping it now.
-        raise error_classes.UVMNotImplemented("set_type_inst is not implemented in SystemVerilog")
+        raise error_classes.UVMNotImplemented(
+            "set_type_inst is not implemented in SystemVerilog")
 
     # 8.3.1.7 Introspection
 
@@ -298,19 +341,20 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.7.1
     def find_override_by_name(self, requested_type_name, full_inst_path):
         """
-        Given a path and the name of a class return its overriding class object.
+        Given a path and the name of a class return its overriding class object
 
         :param requested_type_name:
         :param full_inst_path:
         :return: class object
         """
-        assert (isinstance(requested_type_name,
-                           str)), f"requested_type_name must be a string not a {type(requested_type_name)}"
+        assert (isinstance(requested_type_name, str)), \
+            f"requested_type_name must be a string not a {type(requested_type_name)}"  # noqa
         requested_type = None  # Appeasing the linter
         try:
             requested_type = self.fd.classes[requested_type_name]
         except KeyError:
-            error_classes.UVMFactoryError(f"{requested_type_name} is not a defined class name")
+            error_classes.UVMFactoryError(
+                f"{requested_type_name} is not a defined class name")
         return self.find_override_by_type(requested_type, full_inst_path)
 
     # 8.3.1.7.2
@@ -319,7 +363,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         There are no wrappers in pyuvm so this is not implemented.
         """
         raise error_classes.UVMNotImplemented(
-            "There are no wrappers in pyuvm. So find_wrapper_by_name is not implemented")
+            "There are no wrappers in pyuvm. "
+            "So find_wrapper_by_name is not implemented")
 
     # 8.3.1.7.3
     def is_type_name_registered(self, type_name):
@@ -330,7 +375,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :return: boolean
         """
         assert (isinstance(type_name,
-                           str)), "is_type_name_registered() takes a string as its argument not {type(type_name)}"
+                           str)), "is_type_name_registered() takes a"
+        " string as its argument not {type(type_name)}"
         return type_name in self.fd.classes
 
     # 8.3.1.7.4
@@ -343,13 +389,15 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :return: boolean
         """
         assert (issubclass(uvm_type, utility_classes.uvm_void)), \
-            "is_type_registered() takes a subclass of uvm_void as its argument not {type(uvm_type)}"
+            "is_type_registered() takes a subclass of uvm_void "
+        "as its argument not {type(uvm_type)}"
         return uvm_type in self.fd.classes.values()
 
     def __str__(self):
         """
         Returns the Pythonic string
-        Set uvm_factory().all_types to a value to control the string. The default is 1
+        Set uvm_factory().all_types to a value to control the string.
+        The default is 1
 
         uvm_factory().all_types = 0 : overrides
         uvm_factory().all_types = 1 : user defined types + above
@@ -357,7 +405,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
         :return: String containing factory data
         """
-        assert (0 <= self.all_types <= 2), "uvm_factory().all_type must be 0, 1, or 2"
+        assert (0 <= self.all_types <= 2), \
+            "uvm_factory().all_type must be 0, 1, or 2"
         factory_str = "--- overrides "
         if self.all_types != 0:
             factory_str += "+ user defined types "
@@ -368,12 +417,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         if len(self.fd.overrides) > 0:
             factory_str += "Overrides:\n"
             for inst in self.fd.overrides:
-                factory_str += f"{inst.__name__:25}" + ": " + str(self.fd.overrides[inst])
+                factory_str += f"{inst.__name__:25}" + ": " + str(self.fd.overrides[inst])  # noqa
                 factory_str += "\n"
         # Need to add 1 and 2
         user_list = [self.fd.classes[cls].__name__
                      for cls in self.fd.classes
-                     if not fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]
+                     if not fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]  # noqa
         uvm_list = [self.fd.classes[cls].__name__
                     for cls in self.fd.classes
                     if fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")]
@@ -390,8 +439,9 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.7.5
     def print(self, all_types=1):
         """
-        Prints the factory data using all_types to control the amount of output.
-        The uvm_factory().all_types variable can control this for __str__()
+        Prints the factory data using all_types to
+        control the amount of output. The uvm_factory().all_types
+        variable can control this for __str__()
 
         all_types = 0 : overrides
         all_types = 1 : user defined types + above
@@ -410,5 +460,6 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 # with the factory automatically.
 
 # 8.3.2
-# Not implemented.  There is no need for a uvm_object_wrapper in Python. The user will never notice
+# Not implemented.  There is no need for a uvm_object_wrapper
+# in Python. The user will never notice
 # the difference

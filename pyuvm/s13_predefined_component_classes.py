@@ -6,18 +6,24 @@ from pyuvm import error_classes
 from enum import IntEnum
 
 
-# This section and sequences are the crux of pyuvm. The classes here allow us to build classic UVM
+# This section and sequences are the crux of pyuvm.
+# The classes here allow us to build classic UVM
 # testbenches in Python.
 #
-# Section 13 of the IEEE-UVM Reference Manual (1800.2-2017) lists five pieces of uvm_component functionality.
+# Section 13 of the IEEE-UVM Reference Manual (1800.2-2017)
+# lists five pieces of uvm_component functionality.
 # pyuvm implements much of this functionality using Python:
 #
 # a: Hierarchy---This is implemented in pyuvm
-# b: Phasing---This is also implemented in pyuvm, but is hardcoded to the standard UVM phases.
-# c: Hierarchical Reporting---We manage this with the logging module. It is orthogonal to the components.
-# d: Transaction Recording---We do not record transactions since pyuvm does not run in the simulator. This
+# b: Phasing---This is also implemented in pyuvm, but is hardcoded
+#              to the standard UVM phases.
+# c: Hierarchical Reporting---We manage this with the logging module. It is
+#              orthogonal to the components.
+# d: Transaction Recording---We do not record transactions since pyuvm does
+#              not run in the simulator. This
 # could be added later if we see a need or way to do it.
-# e: Factory---pyuvm manages the factory through the create() method without all the SystemVerilog typing overhead.
+# e: Factory---pyuvm manages the factory through the create() method without
+#              all the SystemVerilog typing overhead.
 #
 
 
@@ -61,8 +67,10 @@ class uvm_agent(uvm_component):
             self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 
         if self.is_active not in list(uvm_active_passive_enum):
-            self.logger.warning(f"{self.get_full_name()} has illegal is_active "
-                                f"value: {self.is_active}. Setting to UVM_ACTIVE")
+            self.logger.warning(f"{self.get_full_name()}"
+                                "has illegal is_active"
+                                f" value: {self.is_active}."
+                                "Setting to UVM_ACTIVE")
             self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 
     def get_is_active(self):

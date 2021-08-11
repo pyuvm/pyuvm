@@ -3,7 +3,7 @@ import logging
 import fnmatch
 import cocotb.queue
 from cocotb.triggers import Event
-from asyncio import QueueEmpty, QueueFull
+from cocotb.queue import QueueEmpty
 
 FIFO_DEBUG = 5
 logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
@@ -14,14 +14,13 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)  # noqa: E501
         return cls._instances[cls]
 
     @classmethod
     def clear_singletons(mcs):
         mcs._instances.clear()
         pass
-
 
 
 class Override:
@@ -86,15 +85,17 @@ class FactoryData(metaclass=Singleton):
         self.classes = {}
 
     # From 8.3.1.5
-    def find_override(self, requested_type, inst_path=None, overridden_list=None):
+    def find_override(self, requested_type,
+                      inst_path=None, overridden_list=None):
         """
         :param requested_type: The type we're overriding
         :param inst_path: The inst_path we're using to override if any
         :param overridden_list: A list of previously found overrides
         :return: overriding_type
 
-        Override searches are recursively applied, with instance overrides taking precedence
-        over type overrides.  If foo overrides bar, and xyz overrides foo, then a request for bar
+        Override searches are recursively applied, with instance
+        overrides taking precedence over type overrides.
+        If foo overrides bar, and xyz overrides foo, then a request for bar
         returns xyx.
         """
 
@@ -102,17 +103,20 @@ class FactoryData(metaclass=Singleton):
         #
         # So if find_override is fo:
         #     fo(xyz) -> fo(foo) -> fo(bar) <-- no override returns bar.
-        # Recursive loops result ina n error in which case the type returned is the one that
-        # formed the loop.
-        #     xyz -> foo -> bar -> xyz
+        # Recursive loops result ina n error in which case the
+        # type returned is the one that formed the loop:
+        # xyz -> foo -> bar -> xyz
         #
-        # fo(xyz) -> fo(foo) -> fo(bar) -> fo(xyz) -- xyz is in list of overrides so return bar
+        # fo(xyz) -> fo(foo) -> fo(bar) -> fo(xyz) -- xyz is in
+        # list of overrides so return bar
         # bar is returned with a printed error.
         #
-        # We use the Override class which contains both the type override if there is one or
+        # We use the Override class which contains both the type override if
+        # there is one or
         # a list of instance overrides in the order the were added.
         # If inst_path is None we return the type_override or its override
-        # If inst_path is given, but we don't find a match we return type_override if it exists
+        # If inst_path is given, but we don't find a match we return
+        # type_override if it exists
 
         # Keep track of what classes have been overridden
         #
@@ -123,11 +127,14 @@ class FactoryData(metaclass=Singleton):
             if overridden_list is None:
                 overridden_list = []
             if override in overridden_list:
-                self.logger.error(f"{requested_type} already overridden: {overridden_list}")
+                self.logger.error(
+                    f"{requested_type} already overridden: {overridden_list}")
                 return requested_type
             else:
                 overridden_list.append(requested_type)
-                rec_override = self.find_override(override, inst_path, overridden_list)
+                rec_override = self.find_override(override,
+                                                  inst_path,
+                                                  overridden_list)
                 return rec_override
 
         # Save the type for a later check
@@ -152,7 +159,8 @@ class FactoryData(metaclass=Singleton):
 
 class FactoryMeta(type):
     """
-    This is the metaclass that causes all uvm_void classes to register themselves
+    This is the metaclass that causes all uvm_void classes
+    to register themselves
     """
 
     def __init__(cls, name, bases, cls_dict):
@@ -177,7 +185,7 @@ class UVM_ROOT_Singleton(FactoryMeta):
 
     def __call__(cls, *args, **kwargs):
         if cls.singleton is None:
-            cls.singleton = super(UVM_ROOT_Singleton, cls).__call__(*args, **kwargs)
+            cls.singleton = super(UVM_ROOT_Singleton, cls).__call__(*args, **kwargs)  # noqa : E501
         return cls.singleton
 
     @classmethod
@@ -207,7 +215,6 @@ class ObjectionHandler(metaclass=Singleton):
             ss += f"{self.__objections[cc]}\n"
         return ss
 
-
     def raise_objection(self, raiser):
         self.__objections[raiser] = raiser.get_full_name()
         self.objection_raised = True
@@ -226,8 +233,8 @@ class ObjectionHandler(metaclass=Singleton):
         if self.objection_raised:
             await self._objection_event.wait()
         else:
-            logging.warning("You did not call self.raise_objection() in any run_phase")
-        
+            logging.warning(
+                "You did not call self.raise_objection() in any run_phase")
 
 
 class UVMQueue(cocotb.queue.Queue):

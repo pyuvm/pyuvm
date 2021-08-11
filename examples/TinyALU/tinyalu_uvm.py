@@ -24,7 +24,6 @@ def alu_prediction(A, B, op):
         result = A ^ B
     elif op == Ops.MUL:
         result = A * B
-    time.sleep(0.1)  # Takes time as a simulation would.
     return result
 
 

@@ -19,18 +19,21 @@ class uvm_object(utility_classes.uvm_void):
 
     # 5.3.2
     def __init__(self, name=''):
-        assert (isinstance(name, str)), f"{name} is not a string it is a {type(name)}"
+        assert (isinstance(name, str)), \
+            f"{name} is not a string it is a {type(name)}"
         self.set_name(name)
 
     # 5.3.3.1
     def get_uvm_seeding(self):
         """Not implemented"""
-        raise error_classes.UVMNotImplemented('get_uvm_seeding not implemented')
+        raise error_classes.UVMNotImplemented(
+            'get_uvm_seeding not implemented')
 
     # 5.3.3.2
     def set_uvm_seeding(self, enable):
         """ Not implemented """
-        raise error_classes.UVMNotImplemented('set_uvm_seeding not implemented')
+        raise error_classes.UVMNotImplemented(
+            'set_uvm_seeding not implemented')
 
     # 5.3.3.3
     def reseed(self):
@@ -42,7 +45,8 @@ class uvm_object(utility_classes.uvm_void):
         """
         Return the name of this object as passed by the constructor
         """
-        assert (self._obj_name is not None), f"Internal error. {str(self)} has no name"
+        assert (self._obj_name is not None), \
+            f"Internal error. {str(self)} has no name"
         return self._obj_name
 
     # 5.3.4.1
@@ -50,7 +54,7 @@ class uvm_object(utility_classes.uvm_void):
         """
         Set the name
         """
-        assert (isinstance(name, str)), f"Must set the name to a string"
+        assert (isinstance(name, str)), "Must set the name to a string"
         self._obj_name = name
 
     # 5.3.4.3
@@ -62,7 +66,10 @@ class uvm_object(utility_classes.uvm_void):
 
     # 5.3.4.4
     def get_inst_id(self):
-        """ Returns the python ID which fits the bill for what the ID is supposed to be. """
+        """
+        Returns the python ID which fits the bill
+        for what the ID is supposed to be.
+        """
         return id(self)
 
     # 5.3.4.5
@@ -71,8 +78,9 @@ class uvm_object(utility_classes.uvm_void):
         Not implemented because Python can implement the factory without
         these shenanigans.
         """
-        raise error_classes.UVMNotImplemented('Python provides better ways to do this '
-                                              'so the uvm_object_wrapper is unimplemented')
+        raise error_classes.UVMNotImplemented(
+            'Python provides better ways to do this '
+            'so the uvm_object_wrapper is unimplemented')
 
     # 5.3.4.6
     def get_object_type(self):
@@ -80,8 +88,9 @@ class uvm_object(utility_classes.uvm_void):
         Not implemented because Python can implement the factory without
         these shenanigans.
         """
-        raise error_classes.UVMNotImplemented('Python provides better ways to do this '
-                                              'so the uvm_object_wrapper is unimplemented')
+        raise error_classes.UVMNotImplemented(
+            'Python provides better ways to do this '
+            'so the uvm_object_wrapper is unimplemented')
 
     # 5.3.4.7
     def get_type_name(self):
@@ -113,17 +122,20 @@ class uvm_object(utility_classes.uvm_void):
         """
         Not implemented. Use __str__() and print()
         """
-        raise error_classes.UVMNotImplemented('There are better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented(
+            'There are better ways to do printing in Python')
 
     # 5.3.6.2
     def sprint(self):
         """ Not implemented. use __str__() and print()"""
-        raise error_classes.UVMNotImplemented('There are better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented(
+            'There are better ways to do printing in Python')
 
     # 5.3.6.3
     def do_print(self):
         """ not implemented. Use __str__() and print()"""
-        raise error_classes.UVMNotImplemented('There are better ways to do printing in Python')
+        raise error_classes.UVMNotImplemented(
+            'There are better ways to do printing in Python')
 
     # 5.3.6.4
     def convert2string(self):
@@ -139,14 +151,16 @@ class uvm_object(utility_classes.uvm_void):
         """
         Not implemented as we are not in a simulator.
         """
-        raise error_classes.UVMNotImplemented('Python does not run in the simulator, so no recording')
+        raise error_classes.UVMNotImplemented(
+            'Python does not run in the simulator, so no recording')
 
     # 5.3.7.2
     def do_record(self):
         """
         Not implemented as we are not in a simulator
         """
-        raise error_classes.UVMNotImplemented('Python does not run in the simulator, so no recording')
+        raise error_classes.UVMNotImplemented(
+            'Python does not run in the simulator, so no recording')
 
     # 5.3.8.1
     def copy(self, rhs):
@@ -163,7 +177,8 @@ class uvm_object(utility_classes.uvm_void):
         """
         raise error_classes.UsePythonMethod('Use the copy.deepcopy() '
                                             'method to implement this to '
-                                            'support the copy module or override this method.')
+                                            'support the copy module or '
+                                            'override this method.')
 
     # 5.3.9.1
     def compare(self, rhs):
@@ -184,49 +199,56 @@ class uvm_object(utility_classes.uvm_void):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.10.1
     def pack_bytes(self):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.10.1
     def pack_ints(self):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.10.1
     def pack_longints(self):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.10.2
     def do_pack(self):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.11.1
     def unpack(self):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use pickle, json, or yaml.")
 
     # 5.3.14.1
     def push_active_policy(self):
         """
         Not implemented yet.
         """
-        raise error_classes.UVMNotImplemented("policies not implemented yet")
+        raise error_classes.UVMNotImplemented(
+            "policies not implemented yet")
 
     # 5.3.14.2
     def pop_active_policy(self):
@@ -247,65 +269,75 @@ class uvm_object(utility_classes.uvm_void):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.11.1
     def unpack_ints(self):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.11.1
     def unpack_longints(self):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.11.2
     def do_unpack(self):
         """
         Not implemented yet. There are Pythonic solutions to this.
         """
-        raise error_classes.UsePythonMethod("use struct, pickle, json, or yaml.")
+        raise error_classes.UsePythonMethod(
+            "use struct, pickle, json, or yaml.")
 
     # 5.3.12
     def set_local(self):
         """
         Not implemented use Python getattr and setattr.
         """
-        raise error_classes.UsePythonMethod('The getattr and setattr functions handle this')
+        raise error_classes.UsePythonMethod(
+            'The getattr and setattr functions handle this')
 
     # 5.3.13.1
     def do_execute_op(self, op):
         """
         Not implemented.
         """
-        raise error_classes.UsePythonMethod('Not needed in Python')
+        raise error_classes.UsePythonMethod(
+            'Not needed in Python')
 
 
 # 5.3.13
 class uvm_field_op:
     """
-    We do not implement the UVM field op as this is a UVM way of providing field-based
-    functionality that can better be implemented using Python functionality.
+    We do not implement the UVM field op as this is a
+    UVM way of providing field-based functionality
+    that can better be implemented using Python functionality.
     """
 
     def __new__(cls, *args, **kwargs):
-        raise error_classes.UsePythonMethod('Python has simpler ways of handling field function.')
+        raise error_classes.UsePythonMethod(
+            'Python has simpler ways of handling field function.')
 
 
 # 5.3.14
 class uvm_policy:
     """
-    The uvm_policy is used to add functionality to SystemVerilog that already exists
+    The uvm_policy is used to add functionality to
+    SystemVerilog that already exists
     in Python. It is not needed in pyuvm.
     """
 
     def __new__(cls, *args, **kwargs):
-        raise error_classes.UsePythonMethod('Python has simpler ways of handling '
-                                            'functionality provided by policies.')
+        raise error_classes.UsePythonMethod(
+            'Python has simpler ways of handling '
+            'functionality provided by policies.')
 
 
 # 5.4.1
@@ -348,7 +380,8 @@ class uvm_transaction(uvm_object):
         return self._initiator
 
     def __not_implemented(self):
-        raise error_classes.UVMNotImplemented('This method is not implemented at this time.')
+        raise error_classes.UVMNotImplemented(
+            'This method is not implemented at this time.')
 
     # 5.4.2.2
     def accept_tr(self, time):

@@ -1,6 +1,5 @@
 from pyuvm.s05_base_classes import uvm_object
 import pyuvm.error_classes as error_classes
-import pyuvm.utility_classes as utility_classes
 import cocotb
 
 # 9.1
@@ -41,10 +40,9 @@ class uvm_phase(uvm_object):
         try:
             method = getattr(comp, method_name)
         except AttributeError:
-            raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
+            raise error_classes.UVMBadPhase(
+                f"{comp.get_name()} is missing {method_name} function")
         method()
-
-
 
 
 class uvm_topdown_phase(uvm_phase):
@@ -85,12 +83,14 @@ class uvm_threaded_execute_phase(uvm_phase):
     @classmethod
     def execute(cls, comp):
         phase_name = cls.__name__
-        assert phase_name.startswith("uvm_"), "We only support phases whose names start with uvm_"
+        assert phase_name.startswith("uvm_"), \
+            "We only support phases whose names start with uvm_"
         method_name = cls.__name__[4:]
         try:
             method = getattr(comp, method_name)
         except AttributeError:
-            raise error_classes.UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
+            raise error_classes.UVMBadPhase(
+                f"{comp.get_name()} is missing {method_name} function")
         cocotb.fork(method())
 
 
@@ -149,7 +149,12 @@ class uvm_final_phase(uvm_topdown_phase):
 # or uvm_bottom_up phase with a new phase named 'uvm_my_phase' and adding
 # the my_phase() method to a uvm component with setattr.
 
-uvm_common_phases = [uvm_build_phase, uvm_connect_phase,
-                     uvm_end_of_elaboration_phase, uvm_start_of_simulation_phase,
-                     uvm_run_phase, uvm_extract_phase, uvm_check_phase,
-                     uvm_report_phase, uvm_final_phase]
+uvm_common_phases = [uvm_build_phase,
+                     uvm_connect_phase,
+                     uvm_end_of_elaboration_phase,
+                     uvm_start_of_simulation_phase,
+                     uvm_run_phase,
+                     uvm_extract_phase,
+                     uvm_check_phase,
+                     uvm_report_phase,
+                     uvm_final_phase]

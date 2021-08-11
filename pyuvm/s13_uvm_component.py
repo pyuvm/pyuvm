@@ -3,24 +3,26 @@ from pyuvm.s08_factory_classes import uvm_factory
 from pyuvm.s09_phasing import uvm_common_phases, uvm_run_phase, uvm_build_phase
 from pyuvm import error_classes
 from pyuvm import utility_classes
-import time
 import logging
 import fnmatch
 import string
 
 
 class uvm_component(uvm_report_object):
-    """
-    13.1.1 Class Declaration
+    """13.1.1 Class Declaration
 
-The specification calls for uvm_component to extend uvm_report_object. However, pyuvm
-uses the logging module orthogonally to class structure. It may be that in future
-we find a reason to wrap the basic logging package in the uvm code, but at this point
-we are better off leaving logging to itself.
+The specification calls for uvm_component to extend
+uvm_report_object. However, pyuvm uses the logging
+module orthogonally to class structure. It may be
+that in future we find a reason to wrap the basic
+logging package in the uvm code, but at this point we are
+better off leaving logging to itself.
 
-The choice then becomes whether to create a uvm_report_object class as a placeholder
-to preserve the UVM reference manual hierarchy or to code what is really going on.
-We've opted for the latter.
+The choice then becomes whether to create a
+uvm_report_object class as a placeholder to preserve
+the UVM reference manual hierarchy or to code what
+is really going on.  We've opted for the latter.
+
     """
     component_dict = {}
 
@@ -64,8 +66,9 @@ We've opted for the latter.
         else:
             parent_inst_path = parent.get_full_name()
 
-        new_comp = uvm_factory().create_component_by_type(cls, parent_inst_path=parent_inst_path,
-                                                          name=name, parent=parent)
+        new_comp = uvm_factory().create_component_by_type(
+            cls, parent_inst_path=parent_inst_path,
+            name=name, parent=parent)
         return new_comp
 
     def get_parent(self):
@@ -87,7 +90,8 @@ We've opted for the latter.
 
         :param value: The object to store
         :param label: The label to use to retrieve it
-        :param inst_path: A path with globs or if left blank the get_full_name() path
+        :param inst_path: A path with globs or if left blank
+                          the get_full_name() path
         """
 
         ConfigDB().set(self, inst_path, label, value)
@@ -111,8 +115,10 @@ We've opted for the latter.
     @parent.setter
     def parent(self, parent):
         if parent is not None:
-            assert (isinstance(parent, uvm_component)), f" {parent} is of type {type(parent)}"
-        assert (parent != self), f'Cannot make a {self.get_name()} its own parent.  That is incest.'
+            assert (isinstance(parent, uvm_component)), \
+                f" {parent} is of type {type(parent)}"
+        assert (parent != self), \
+            f'Cannot make a {self.get_name()} its own parent.  That is incest.'
         self._parent = parent
 
     def get_full_name(self):
@@ -140,7 +146,7 @@ We've opted for the latter.
     the UVM accesses those children in an unPythonic
     way.  Instead of asking for an iterator of children,
     which is what Python does and what we'll do here, the
-    UVM uses `get_child()`, `get_first_child()`, and 
+    UVM uses `get_child()`, `get_first_child()`, and
     `get_next_child()` to create iterative-like behavior,
     but there is no sense in recreating this if we're
     in a language like Python with powerful iterative
@@ -161,15 +167,16 @@ We've opted for the latter.
         return list(self.children)
 
     def add_child(self, name, child):
-        assert (name not in self.__children), f"{self.get_full_name()} already has a child named {name}"
+        assert (name not in self.__children), \
+            f"{self.get_full_name()} already has a child named {name}"
         self.__children[name] = child
         pass
 
     @property
     def hierarchy(self):
         """
-        We return a generator to find the children. This is more pythonic and saves memory
-        for large hierarchies.
+        We return a generator to find the children.
+        This is more pythonic and saves memory for large hierarchies.
         :return: An ordered list of components top to bottom.
         """
         yield self
@@ -285,7 +292,8 @@ We've opted for the latter.
         :param handler: A logging.Handler object
         :return: None
         """
-        assert isinstance(handler, logging.Handler), f"You can only add logging.Handler objects not {type(handler)}"
+        assert isinstance(handler, logging.Handler), \
+            f"You can only add logging.Handler objects not {type(handler)}"
         self.add_logging_handler(handler)
         for child in self.children:
             child.add_logging_handler_hier(handler)
@@ -296,7 +304,8 @@ We've opted for the latter.
         :param handler: logging handler
         :return: None
         """
-        assert isinstance(handler, logging.Handler), f"You must pass a logging.Handler not {type(handler)}"
+        assert isinstance(handler, logging.Handler), \
+            f"You must pass a logging.Handler not {type(handler)}"
         self.logger.removeHandler(handler)
         for child in self.children:
             child.remove_logging_handler_hier(handler)
@@ -393,12 +402,13 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """
 
         factory = uvm_factory()
-        self.uvm_test_top = factory.create_component_by_name(test_name, "", "uvm_test_top", self)
+        self.uvm_test_top = factory.create_component_by_name(
+            test_name, "", "uvm_test_top", self)
         try:
             for self.running_phase in uvm_common_phases:
                 self.running_phase.traverse(self.uvm_test_top)
                 if self.running_phase == uvm_run_phase:
-                    await utility_classes.ObjectionHandler().run_phase_complete()
+                    await utility_classes.ObjectionHandler().run_phase_complete()  # noqa: E501
         except error_classes.UVMError as uve:
             self.logger.error(uve)
 
@@ -453,9 +463,9 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         :param inst_name: string that can be a glob
         :return: string that is the key
         """
-        assert context is None or isinstance(context, uvm_component), "config_db context " \
-                                                                      "must be None or a uvm_component. " \
-                                                                      f"Not {type(context)}"
+        assert context is None or isinstance(context, uvm_component), \
+            "config_db context must be None or a uvm_component. "
+        f"Not {type(context)}"
         if context is None:
             context = uvm_root()
 
@@ -468,7 +478,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
     def trace(self, method, context, inst_name, field_name, value):
         if self.is_tracing:
             # noinspection SpellCheckingInspection
-            print(f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}")
+            print(f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}")  # noqa: E501
 
     def set(self, context, inst_name, field_name, value):
         """
@@ -483,7 +493,9 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         """
 
         if not set(field_name).issubset(self.legal_chars):
-            raise error_classes.UVMNotImplemented(f"pyuvm does not allow wildcards in field names ({field_name})")
+            raise error_classes.UVMNotImplemented(
+                f"pyuvm does not allow wildcards in field names ({field_name})"
+            )
 
         context, inst_name = self._get_context_inst_name(context, inst_name)
 
@@ -505,7 +517,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         """
         The component path matches against the paths in the ConfigDB. The path
         cannot have wildcards, but can match against keys with wildcards.
-        Return the value stored at key or raise UVMConfigError if there is no key.
+        Return the value stored at key. Raise UVMConfigError if there is no key
 
         :param inst_name: component full path with no wildcards
         :param field_name: the field_name being retrieved
@@ -513,8 +525,9 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         :return: value found at location
         """
         if not set(inst_name).issubset(self.legal_chars):
-            raise error_classes.UVMError(f'"{inst_name}" is illegal: '
-                                         f'inst_name wildcards only allowed when storing.')
+            raise error_classes.UVMError(
+                f'"{inst_name}" is illegal: '
+                f'inst_name wildcards only allowed when storing.')
 
         context, inst_name = self._get_context_inst_name(context, inst_name)
 
@@ -527,10 +540,12 @@ class ConfigDB(metaclass=utility_classes.Singleton):
                     key_matches.append(dk)
 
         except TypeError:
-            raise error_classes.UVMConfigItemNotFound(f'"{inst_name}" is not a in ConfigDB().')
+            raise error_classes.UVMConfigItemNotFound(
+                f'"{inst_name}" is not a in ConfigDB().')
         finally:
             if len(key_matches) == 0:
-                raise error_classes.UVMConfigItemNotFound(f'"{inst_name}" is not a in ConfigDB().')
+                raise error_classes.UVMConfigItemNotFound(
+                    f'"{inst_name}" is not a in ConfigDB().')
         # Here we sort the list of paths by which paths are "in" other
         # paths. That is A comes before '*'  A.B comes before A.*, etc.
         # We use an insertion sort. A path is inserted in front of the
@@ -539,7 +554,8 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         try:
             sorted_paths.append(key_matches.pop())
         except IndexError:
-            raise error_classes.UVMConfigItemNotFound(f"{inst_name} not in ConfigDB()")
+            raise error_classes.UVMConfigItemNotFound(
+                f"{inst_name} not in ConfigDB()")
 
         # Sort the matching keys from most specific to
         # most greedy. A.B.C before A.B.* before A.* before *
@@ -566,7 +582,8 @@ class ConfigDB(metaclass=utility_classes.Singleton):
             self.trace("GET", context, inst_name, field_name, value)
             return value
         else:
-            raise error_classes.UVMConfigItemNotFound(f'"Component {inst_name} has no field: {field_name}')
+            raise error_classes.UVMConfigItemNotFound(
+                f'"Component {inst_name} has no field: {field_name}')
 
     def exists(self, context, inst_name, field_name):
         """
@@ -583,11 +600,12 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         return True
 
     def wait_modified(self):
-        raise error_classes.UVMNotImplemented("wait_modified not implemented pending requests for it.")
+        raise error_classes.UVMNotImplemented(
+            "wait_modified not implemented pending requests for it.")
 
     def __str__(self):
         str_list = [f"\n{'PATH':20}: {'FIELD':10}: {'DATA':30}"]
         for inst_path in self._path_dict:
             for field in self._path_dict[inst_path]:
-                str_list.append(f"{inst_path:20}: {field:10}: {self._path_dict[inst_path][field]}")
+                str_list.append(f"{inst_path:20}: {field:10}: {self._path_dict[inst_path][field]}")  # noqa: E501
         return "\n".join(str_list)
