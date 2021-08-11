@@ -18,7 +18,6 @@ class CocotbProxy:
         self.driver_queue = UVMQueue(maxsize=1)
         self.cmd_mon_queue = UVMQueue(maxsize=0)
         self.result_mon_queue = UVMQueue(maxsize=0)
-        self.done = cocotb.triggers.Event(name="Done")
 
     async def send_op(self, aa, bb, op):
         await self.driver_queue.put((aa, bb, op))
@@ -95,8 +94,6 @@ class CocotbProxy:
 # noinspection PyArgumentList
 @cocotb.test()
 async def test_alu(dut):
-#    clock = Clock(dut.clk, 2, units="us")
-#    cocotb.fork(clock.start())
     proxy = CocotbProxy(dut)
     ConfigDB().set(None, "*", "PROXY", proxy)
     ConfigDB().set(None, "*", "DUT", dut)
@@ -105,6 +102,6 @@ async def test_alu(dut):
     cocotb.fork(proxy.cmd_mon_bfm())
     cocotb.fork(proxy.result_mon_bfm())
     await uvm_root().run_test("AluTest")
-    await proxy.done.wait()
+
 
 

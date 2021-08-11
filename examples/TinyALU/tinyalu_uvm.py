@@ -1,7 +1,28 @@
-from proxy_pkg import *
 from pyuvm import *
 from cocotb.triggers import ClockCycles
-import time
+import enum
+import random
+@enum.unique
+class Ops(enum.IntEnum):
+    """Legal ops for the TinyALU"""
+    ADD = 1
+    AND = 2
+    XOR = 3
+    MUL = 4
+
+def alu_prediction(A, B, op):
+    result = None # Make the linter happy
+    assert op in list(Ops), "The tinyalu op must be of type ops"
+    if op == Ops.ADD:
+        result = A + B
+    elif op == Ops.AND:
+        result = A & B
+    elif op == Ops.XOR:
+        result = A ^ B
+    elif op == Ops.MUL:
+        result = A * B
+    time.sleep(0.1)  # Takes time as a simulation would.
+    return result
 class AluSeqItem(uvm_sequence_item):
 
     def __init__(self, name, aa=0, bb=0, op=Ops.ADD):
@@ -80,7 +101,7 @@ class Scoreboard(uvm_component):
             else:
                 (A, B, op_numb) = cmd
                 op = Ops(op_numb)
-                predicted_result = PythonProxy.alu_op(A, B, op)
+                predicted_result = alu_prediction(A, B, op)
                 if predicted_result == actual_result:
                     self.logger.info(f"PASSED: 0x{A:02x} {op.name} 0x{B:02x} ="
                                      f" 0x{actual_result:04x}")
@@ -114,8 +135,7 @@ class AluEnv(uvm_env):
         self.driver = Driver("driver", self)
         self.seqr = uvm_sequencer("seqr", self)
         ConfigDB().set(None, "*", "SEQR", self.seqr)
-        ConfigDB().set(None, "*", "CVG", self.coverage)
-        
+
     def connect_phase(self):
         self.cmd_mon.ap.connect(self.scoreboard.cmd_export)
         self.cmd_mon.ap.connect(self.coverage)
@@ -132,12 +152,8 @@ class AluTest(uvm_test):
         dut = ConfigDB().get(self,"","DUT")
         seq = AluSeq("seq")
         await seq.start(seqr)
-        await ClockCycles(dut.clk, 500)
+        await ClockCycles(dut.clk, 50)  # to do last transaction
         self.drop_objection()
 
     def end_of_elaboration_phase(self):
         self.set_logging_level_hier(logging.DEBUG)
-
-    def final_phase(self):
-        cocotb_proxy = self.cdb_get("PROXY")
-        cocotb_proxy.done.set()
