@@ -42,7 +42,6 @@ class CocotbProxy:
             if self.dut.start == 0 and self.dut.done == 0:
                 try:
                     (aa, bb, op) = self.driver_queue.get_nowait()
-                    time.sleep(0.1)
                     self.dut.A = aa
                     self.dut.B = bb
                     self.dut.op = op
@@ -84,9 +83,6 @@ def run_uvm_test(test_name):
     root.run_test(test_name)
 
 
-async def sleep(delay):
-    time.sleep(delay)
-
 
 # noinspection PyArgumentList,PyAsyncCall
 # @cocotb.test()
@@ -125,26 +121,25 @@ async def test_queue(dut):
     got = qq.get_nowait()
     assert got == peeked
 
+
 async def delay_put(qq, delay, data):
     for dd in data:
-        await sleep(delay)
         await qq.put(dd)
+
 
 async def delay_get(qq, delay):
     ret_dat = []
-    await sleep(delay)
     datum = await qq.get()
     ret_dat.append(datum)
     while datum is not None:
-        await sleep(delay)
         datum = await qq.get()
         ret_dat.append(datum)
     return ret_dat
 
+
 async def delay_peek(qq, delay):
-    ret_dat = []
-    await sleep(delay)
     return await qq.peek()
+
 
 @cocotb.test()
 async def wait_on_queue(dut):
@@ -152,7 +147,8 @@ async def wait_on_queue(dut):
     clock = Clock(dut.clk, 2, units="us") #make the simualtor wait
     cocotb.fork(clock.start())
     qq = utility_classes.UVMQueue(maxsize=1)
-    send_data = [.01,"two", 3, None]
+    send_data = [
+        .01, "two", 3, None]
     cocotb.fork(delay_put(qq, .01, send_data))
     got_data = await delay_peek(qq, .01)
     assert got_data == .01

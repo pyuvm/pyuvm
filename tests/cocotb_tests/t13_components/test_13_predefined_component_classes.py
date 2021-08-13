@@ -280,7 +280,6 @@ class s13_predefined_component_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
             async def run_phase(self):
                 self.raise_objection()
-                time.sleep(0.1)
                 self.drop_objection()
 
         await uvm_root().run_test("test")
@@ -306,7 +305,6 @@ class s13_predefined_component_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
             async def run_phase(self):
                 self.raise_objection()
-                time.sleep(0.1)
                 self.drop_objection()
 
         await uvm_root().run_test("test")

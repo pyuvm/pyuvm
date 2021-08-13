@@ -1,8 +1,7 @@
-from cocotb.clock import Clock
-from cocotb.triggers import FallingEdge
 import cocotb
 import pyuvm.utility_classes as utility_classes
 from pyuvm import *
+import inspect
 
 phase_list = {}
 class my_comp(uvm_component):

@@ -57,7 +57,6 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.cdb_set("XXC", 855, "")
             async def run_phase(self):
                 self.raise_objection()
-                time.sleep(0.1)
                 self.drop_objection()
 
         cdb = ConfigDB()
@@ -84,7 +83,6 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.cc2 = comp("cc", self)
             async def run_phase(self):
                 self.raise_objection()
-                time.sleep(0.1)
                 self.drop_objection()
         await uvm_root().run_test("test")
         utt = uvm_root().get_child("uvm_test_top")
@@ -105,7 +103,6 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
             async def run_phase(self):
                 self.raise_objection()
-                time.sleep(0.1)
                 self.drop_objection()
         await uvm_root().run_test("test")
         utt = uvm_root().get_child("uvm_test_top")
@@ -130,7 +127,6 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
             async def run_phase(self):
                 self.raise_objection()
-                time.sleep(0.1)
                 self.drop_objection()
 
         await uvm_root().run_test("test")
