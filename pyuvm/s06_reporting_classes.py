@@ -28,7 +28,7 @@ class uvm_report_object(uvm_object):
         handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
         formatter = logging.Formatter(
-            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s") # noqa: E501
+            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
         handler.setFormatter(formatter)
         self.add_logging_handler(handler)
         pass
