@@ -18,7 +18,8 @@ class uvm_report_object(uvm_object):
         super().__init__(name)
         uvm_root_logger = logging.getLogger('uvm')
         # Every object gets its own logger
-        self.logger = uvm_root_logger.getChild(self.get_full_name())
+        logger_name = self.get_full_name() + str(id(self))
+        self.logger = uvm_root_logger.getChild(logger_name)
         self.logger.setLevel(level=logging.INFO)  # Default is to print INFO
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
@@ -27,7 +28,7 @@ class uvm_report_object(uvm_object):
         handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
         formatter = logging.Formatter(
-            "%(levelname)s: %(filename)s(%(lineno)d)[%(name)s]: %(message)s")
+            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s") # noqa: E501
         handler.setFormatter(formatter)
         self.add_logging_handler(handler)
         pass

@@ -2,16 +2,19 @@ from cocotb.triggers import FallingEdge
 import cocotb
 from cocotb.queue import QueueEmpty
 from tinyalu_uvm import *
-"""
 import debugpy
-listen_host, listen_port = debugpy.listen(("localhost", 5678))
+
+try:
+    listen_host, listen_port = debugpy.listen(("localhost", 5678))
+except Exception as ex:
+    print("EX = ", ex)
+    raise
 cocotb.log.info("Waiting for Python debugger attach"
-" on {}:{}".format(listen_host, listen_port))
+                " on {}:{}".format(listen_host, listen_port))
 # Suspend execution until debugger attaches
 debugpy.wait_for_client()
 # Break into debugger for user control
 breakpoint()  # or debugpy.breakpoint() on 3.6 and below
-"""
 
 
 class CocotbProxy:

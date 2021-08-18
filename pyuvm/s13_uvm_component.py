@@ -36,7 +36,7 @@ is really going on.  We've opted for the latter.
         the same thing with __init__()
         """
 
-        self.__children = {}
+        self._children = {}
         if parent is None and name != 'uvm_root':
             parent = uvm_root()
         self.parent = parent
@@ -50,7 +50,7 @@ is really going on.  We've opted for the latter.
             uvm_component.component_dict[self.get_full_name()] = self
 
     def clear_children(self):
-        self.__children = {}
+        self._children = {}
 
     def clear_hierarchy(self):
         self._parent = None
@@ -167,9 +167,9 @@ is really going on.  We've opted for the latter.
         return list(self.children)
 
     def add_child(self, name, child):
-        assert (name not in self.__children), \
+        assert (name not in self._children), \
             f"{self.get_full_name()} already has a child named {name}"
-        self.__children[name] = child
+        self._children[name] = child
         pass
 
     @property
@@ -204,8 +204,8 @@ is really going on.  We've opted for the latter.
         Implements the intention of this requirement
         without the approach taken in the UVM
         """
-        for child in self.__children:
-            yield self.__children[child]
+        for child in self._children:
+            yield self._children[child]
 
     def __repr__(self):
         return self.get_full_name()
@@ -219,7 +219,7 @@ is really going on.  We've opted for the latter.
         """
         assert (isinstance(name, str))
         try:
-            return self.__children[name]
+            return self._children[name]
         except KeyError:
             return None
 
@@ -229,7 +229,7 @@ is really going on.  We've opted for the latter.
         :param self:
         :return: Number of children in component
         """
-        return len(self.__children)
+        return len(self._children)
 
     def has_child(self, name):
         """
@@ -239,7 +239,7 @@ is really going on.  We've opted for the latter.
         :return: True if exists, False otherwise
         """
         assert (isinstance(name, str))
-        return name in self.__children
+        return name in self._children
 
     def lookup(self, name):
         """
@@ -402,6 +402,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """
 
         factory = uvm_factory()
+        self.clear_children()
         self.uvm_test_top = factory.create_component_by_name(
             test_name, "", "uvm_test_top", self)
         try:
