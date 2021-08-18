@@ -2,6 +2,8 @@ from cocotb.triggers import FallingEdge
 import cocotb
 from cocotb.queue import QueueEmpty
 from tinyalu_uvm import *
+
+"""
 import debugpy
 
 try:
@@ -15,7 +17,7 @@ cocotb.log.info("Waiting for Python debugger attach"
 debugpy.wait_for_client()
 # Break into debugger for user control
 breakpoint()  # or debugpy.breakpoint() on 3.6 and below
-
+"""
 
 class CocotbProxy:
     def __init__(self, dut):
