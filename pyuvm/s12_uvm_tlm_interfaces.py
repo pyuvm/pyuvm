@@ -100,7 +100,7 @@ class uvm_port_base(uvm_component):
         if not isinstance(export, check_class):
             raise UVMTLMConnectionError(
                 f"{export} must be an instance "
-                "of\n{check_class} not\n{type(export)}")
+                f"of\n{check_class} not\n{type(export)}")
 
 
 # put
