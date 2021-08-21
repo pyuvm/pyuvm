@@ -724,7 +724,8 @@ class uvm_tlm_fifo_base(uvm_component):
         self.get_peek_export = self.GetPeekExport("get_peek_export", self, self.queue, self.get_ap)  # noqa: E501
 
     def end_of_elaboration_phase(self):
-        formatter = logging.Formatter("%(levelname)s: [%(name)s]: %(message)s")
+        formatter = logging.Formatter(
+            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
         self.set_formatter_on_handlers_hier(formatter)
 
 
