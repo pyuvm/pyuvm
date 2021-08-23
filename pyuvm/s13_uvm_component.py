@@ -6,9 +6,6 @@ from pyuvm import utility_classes
 import logging
 import fnmatch
 import string
-import sys
-import traceback
-from cocotb.result import TestError
 
 
 class uvm_component(uvm_report_object):
@@ -412,7 +409,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
             self.running_phase.traverse(self.uvm_test_top)
             if self.running_phase == uvm_run_phase:
                 await utility_classes.ObjectionHandler().run_phase_complete()  # noqa: E501
-            
+
 
 # In the SystemVerilog UVM the uvm_config_db is a
 # convenience layer on top of the much more complicated
