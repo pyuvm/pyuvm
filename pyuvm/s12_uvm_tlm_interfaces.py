@@ -98,9 +98,11 @@ class uvm_port_base(uvm_component):
     @staticmethod
     def check_export(export, check_class):
         if not isinstance(export, check_class):
+            check_class_name = str(check_class).split('.')[-1][:-2]
+            export_name = str(type(export)).split('.')[-1][:-2]
             raise UVMTLMConnectionError(
                 f"{export} must be an instance "
-                f"of\n{check_class} not\n{type(export)}")
+                f"of '{check_class_name}' not '{export_name}'")
 
 
 # put
