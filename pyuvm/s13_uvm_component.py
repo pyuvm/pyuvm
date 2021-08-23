@@ -6,6 +6,8 @@ from pyuvm import utility_classes
 import logging
 import fnmatch
 import string
+import sys
+import traceback
 
 
 class uvm_component(uvm_report_object):
@@ -380,6 +382,9 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         super().__init__("uvm_root", None)
         self.uvm_test_top = None
         self.running_phase = None
+        formatter = logging.Formatter(
+            "UVM Error:\n  %(message)s")  # noqa: E501
+        self.set_formatter_on_handlers(formatter)
 
     def _utt(self):
         """Used in testing"""
@@ -410,9 +415,13 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
                 self.running_phase.traverse(self.uvm_test_top)
                 if self.running_phase == uvm_run_phase:
                     await utility_classes.ObjectionHandler().run_phase_complete()  # noqa: E501
-        except error_classes.UVMError as uve:
-            self.logger.error(uve)
-
+        except error_classes.UVMError:
+            # Find and print the user's stack trace
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            tb = traceback.extract_tb(exc_traceback)[-3:-2]
+            error_msg = f"{exc_type}: {exc_value}\n" +\
+                "Traceback:\n" + "".join(traceback.format_list(tb))
+            self.logger.error(error_msg)
 
 # In the SystemVerilog UVM the uvm_config_db is a
 # convenience layer on top of the much more complicated
@@ -428,6 +437,8 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
 #
 # To avoid confusion with the full uvm_config_db
 # our class is named ConfigDB.
+
+
 class ConfigDB(metaclass=utility_classes.Singleton):
     default_precedence = 1000
     legal_chars = set(string.ascii_letters) | set(string.digits) | set("_.")
