@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pyuvm",
-    version="2.0rc0",
+    version="2.0",
     author="Ray Salemi",
     author_email="ray@raysalemi.com",
     description="A Python implementation of the UVM using cocotb",
@@ -20,6 +20,7 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+        "Framework :: cocotb",
     ],
     packages=setuptools.find_packages(),
     python_requires=">=3.6",
