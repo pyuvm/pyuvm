@@ -50,13 +50,12 @@ object name: my_object
 
 ## Running from the repository
 
-You can run pyuvm from a cloned repository by adding the repository path to `PYTHONPATH`
+You can run pyuvm from a cloned repository by installing the cloned repository using pip.  
 
 ```bash
-% export PYTHONPATH=$PYTHONPATH:<path to repository>
+% cd <pyuvm repo directory>
+% pip install -e .
 ```
-
-If you also cloned **cocotb** you'll need to add that to the `PYTHONPATH` as well.
 
 # Usage
 

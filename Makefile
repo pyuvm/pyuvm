@@ -6,6 +6,7 @@ run_questa:
 
 init:
 	pip install -r requirements.txt
+	pip install -e .
 
 test:
 	nosetests tests/nosetests
