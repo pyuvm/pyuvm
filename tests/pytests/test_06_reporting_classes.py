@@ -11,6 +11,7 @@ class s06_reporting_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         """
         ro = uvm_report_object('ro')
         assert hasattr(ro, "logger")
+        assert not ro.logger.propagate
         with self.assertLogs(ro.logger, level='DEBUG') as cm:
             ro.logger.debug('debug')
             ro.logger.info('info')
