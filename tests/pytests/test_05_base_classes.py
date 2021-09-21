@@ -26,7 +26,7 @@ class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         uvf = uvm_factory()
         mof = uvf.fd.classes["my_object"]("factory")
         moi = my_object("name")
-        self.assertEqual(type(mof), type(moi))
+        assert type(mof) == type(moi)
 
     # Testing specification
 
@@ -50,22 +50,22 @@ class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         :return:
         """
         nameless = my_object()
-        self.assertTrue(len(nameless.get_name()) == 0)
+        assert len(nameless.get_name()) == 0
         moe = my_object("moe")
         # 5.3.4.2
         name = moe.get_name()
-        self.assertEqual("moe", name)
+        assert "moe" == name
         # 5.3.4.1
         moe.set_name("curly")
         name = moe.get_name()
-        self.assertEqual("curly", name)
+        assert "curly" == name
         moe.set_name("larry")
         # 5.3.4.3
         name = moe.get_full_name()
-        self.assertEqual("larry", name)
+        assert "larry" == name
         # 5.3.4.4
         moe_id = moe.get_inst_id()
-        self.assertEqual(id(moe), moe_id)
+        assert id(moe) == moe_id
         # 5.3.4.5 not implemented
         with self.assertRaises(error_classes.UVMNotImplemented):
             moe.get_type()
@@ -73,7 +73,7 @@ class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMNotImplemented):
             moe.get_object_type()
         # 5.3.4.7
-        self.assertEqual("my_object", moe.get_type_name())
+        assert "my_object" == moe.get_type_name()
 
     def test_creation(self):
         """
@@ -83,12 +83,12 @@ class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         mo = my_object('mo')
         # 5.3.5.1
         new_mo = mo.create('new_mo')
-        self.assertEqual('new_mo', new_mo.get_name())
-        self.assertEqual(type(new_mo), type(mo))
+        assert 'new_mo' == new_mo.get_name()
+        assert type(new_mo) == type(mo)
         # 5.3.5.2
         mo.val = 5
         cln_mo = mo.clone()
-        self.assertTrue(mo.__eq__(cln_mo))
+        assert mo.__eq__(cln_mo)
 
     def test_printing(self):
         """
@@ -102,7 +102,7 @@ class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         # 5.3.6.2
         with self.assertRaises(error_classes.UVMNotImplemented):
             mo.sprint()
-        self.assertEqual("Hello", mo.convert2string())
+        assert "Hello", mo.convert2string()
 
     def test_recording(self):
         """
@@ -139,9 +139,9 @@ class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         mo = my_object("mo")
         rhs = my_object("rhs")
         # 5.3.9.1
-        self.assertTrue(mo.compare(rhs))
+        assert mo.compare(rhs)
         # 5.3.9.2
-        self.assertTrue(mo.do_compare(rhs))
+        assert mo.do_compare(rhs)
 
     def test_packing(self):
         """
@@ -220,7 +220,7 @@ class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         """
         mo = my_object("first")
         mo2 = mo.create("second")
-        self.assertEqual(mo, mo2)
+        assert mo == mo2
 
     def test_uvm_transaction_creation(self):
         """
@@ -230,11 +230,11 @@ class s05_base_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         :return:
         """
         tr = uvm_transaction()
-        self.assertEqual(0, len(tr.get_name()))
-        self.assertIsNone(tr.get_initiator())
+        assert 0 == len(tr.get_name())
+        assert not tr.get_initiator()
         uc = uvm_component("uc", None)
         tr.set_initiator(uc)
-        self.assertEqual(uc, tr.get_initiator())
+        assert uc == tr.get_initiator()
 
     def test_transaction_recording(self):
         """
