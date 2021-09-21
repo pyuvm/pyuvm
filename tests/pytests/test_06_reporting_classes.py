@@ -10,13 +10,13 @@ class s06_reporting_classes_TestCase(pyuvm_unittest.pyuvm_TestCase):
         Test that we actually get a logger in our object.
         """
         ro = uvm_report_object('ro')
-        self.assertTrue(hasattr(ro, "logger"))
+        assert hasattr(ro, "logger")
         with self.assertLogs(ro.logger, level='DEBUG') as cm:
             ro.logger.debug('debug')
             ro.logger.info('info')
             ro.logger.error('error')
             ro.logger.critical('critical')
-            self.assertEqual(cm.output, [f'DEBUG:uvm.ro{id(ro)}:debug',
-                                         f'INFO:uvm.ro{id(ro)}:info',
-                                         f'ERROR:uvm.ro{id(ro)}:error',
-                                         f'CRITICAL:uvm.ro{id(ro)}:critical'])
+            assert cm.output == [f'DEBUG:uvm.ro{id(ro)}:debug',
+                                 f'INFO:uvm.ro{id(ro)}:info',
+                                 f'ERROR:uvm.ro{id(ro)}:error',
+                                 f'CRITICAL:uvm.ro{id(ro)}:critical']
