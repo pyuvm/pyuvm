@@ -9,5 +9,5 @@ init:
 	pip install -e .
 
 test:
-	nosetests tests/nosetests
+	pytest tests/nosetests
 
