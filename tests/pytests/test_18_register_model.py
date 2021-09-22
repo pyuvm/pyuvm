@@ -13,5 +13,8 @@ def test_reg():
     assert uvm_reg()
 
 
-def test_reg_field():
-    assert uvm_reg_field()
+def test_reg_field_configure():
+    field = uvm_reg_field()
+    parent = uvm_reg()
+    field.configure(parent)
+    assert field.get_parent() == parent

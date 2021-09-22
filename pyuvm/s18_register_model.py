@@ -18,4 +18,17 @@ class uvm_reg(uvm_object):
 
 # 18.5.1 Class declaration
 class uvm_reg_field(uvm_object):
-    pass
+
+    # 18.5.3.1
+    # TODO Fix signature
+    def __init__(self):
+        self._parent = None
+
+    # 18.5.3.2
+    # TODO Fix signature
+    def configure(self, parent):
+        self._parent = parent
+
+    # 18.5.4.1
+    def get_parent(self):
+        return self._parent
