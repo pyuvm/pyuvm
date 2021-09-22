@@ -3,6 +3,7 @@ from pyuvm import *
 
 pytestmark = pytest.mark.usefixtures("initialize_pyuvm")
 
+
 class my_object(uvm_object):
     def __init__(self, name=""):
         super().__init__(name)
@@ -28,6 +29,7 @@ def test_basic_creation():
 
 # Testing specification
 
+
 def test_seeding():
     """
     5.3.3.1 get_uvm_seeding
@@ -41,6 +43,7 @@ def test_seeding():
         _ = mo.set_uvm_seeding(1)
     with pytest.raises(error_classes.UVMNotImplemented):
         mo.reseed()
+
 
 def test_identification():
     """
@@ -73,6 +76,7 @@ def test_identification():
     # 5.3.4.7
     assert "my_object" == moe.get_type_name()
 
+
 def test_creation():
     """
     5.3.5
@@ -88,6 +92,7 @@ def test_creation():
     cln_mo = mo.clone()
     assert mo.__eq__(cln_mo)
 
+
 def test_printing():
     """
     5.3.6
@@ -102,6 +107,7 @@ def test_printing():
         mo.sprint()
     assert "Hello", mo.convert2string()
 
+
 def test_recording():
     """
     5.3.7
@@ -114,6 +120,7 @@ def test_recording():
     # 5.3.7.2
     with pytest.raises(error_classes.UVMNotImplemented):
         mo.do_record()
+
 
 def test_copying():
     """
@@ -129,6 +136,7 @@ def test_copying():
     with pytest.raises(error_classes.UsePythonMethod):
         mo.do_copy(rhs)
 
+
 def test_comparing():
     """
     5.3.9
@@ -140,6 +148,7 @@ def test_comparing():
     assert mo.compare(rhs)
     # 5.3.9.2
     assert mo.do_compare(rhs)
+
 
 def test_packing():
     """
@@ -159,6 +168,7 @@ def test_packing():
     # 5.3.10.2
     with pytest.raises(error_classes.UsePythonMethod):
         mo.do_pack()
+
 
 def test_unpacking():
     """
@@ -180,6 +190,7 @@ def test_unpacking():
     with pytest.raises(error_classes.UsePythonMethod):
         mo.do_unpack()
 
+
 def test_configuration():
     """
     5.3.12
@@ -190,6 +201,7 @@ def test_configuration():
     with pytest.raises(error_classes.UsePythonMethod):
         mo.set_local()
 
+
 def test_field_operations():
     """
     5.3.13
@@ -198,6 +210,7 @@ def test_field_operations():
     mo = my_object("mo")
     with pytest.raises(error_classes.UsePythonMethod):
         mo.do_execute_op(None)
+
 
 def test_active_policy():
     """
@@ -212,6 +225,7 @@ def test_active_policy():
     with pytest.raises(error_classes.UVMNotImplemented):
         mo.get_active_policy()
 
+
 def test_create():
     """
     5.3.5 This needs to be further implemented to include the factory
@@ -219,6 +233,7 @@ def test_create():
     mo = my_object("first")
     mo2 = mo.create("second")
     assert mo == mo2
+
 
 def test_uvm_transaction_creation():
     """
@@ -233,6 +248,7 @@ def test_uvm_transaction_creation():
     uc = uvm_component("uc", None)
     tr.set_initiator(uc)
     assert uc == tr.get_initiator()
+
 
 def test_transaction_recording():
     """
