@@ -14,3 +14,8 @@ class uvm_reg_map(uvm_object):
 # 18.4.1 Class declaration
 class uvm_reg(uvm_object):
     pass
+
+
+# 18.5.1 Class declaration
+class uvm_reg_field(uvm_object):
+    pass

@@ -11,3 +11,7 @@ def test_reg_map():
 
 def test_reg():
     assert uvm_reg()
+
+
+def test_reg_field():
+    assert uvm_reg_field()
