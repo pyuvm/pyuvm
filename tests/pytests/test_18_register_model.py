@@ -13,6 +13,13 @@ def test_reg():
     assert uvm_reg()
 
 
+def test_reg_field_get_name():
+    field_with_explicit_name = uvm_reg_field('some_field')
+    assert field_with_explicit_name.get_name() == 'some_field'
+    field_with_implicit_name = uvm_reg_field()
+    assert field_with_implicit_name.get_name() == 'uvm_reg_field'
+
+
 def test_reg_field_configure():
     field = uvm_reg_field()
     parent = uvm_reg()

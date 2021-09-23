@@ -20,8 +20,8 @@ class uvm_reg(uvm_object):
 class uvm_reg_field(uvm_object):
 
     # 18.5.3.1
-    # TODO Fix signature
-    def __init__(self):
+    def __init__(self, name='uvm_reg_field'):
+        super().__init__(name)
         self._parent = None
         self._size = None
         self._lsb_pos = None
