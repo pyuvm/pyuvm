@@ -9,6 +9,11 @@ def test_reg_map():
     assert uvm_reg_map()
 
 
+def test_reg_get_name():
+    reg = uvm_reg('some_reg')
+    assert reg.get_name() == 'some_reg'
+
+
 def test_reg_configure():
     reg = uvm_reg()
     parent = uvm_reg_block()

@@ -16,7 +16,8 @@ class uvm_reg(uvm_object):
 
     # 18.3.2.1
     # TODO Fix signature
-    def __init__(self):
+    def __init__(self, name=""):
+        super().__init__(name)
         self._parent = None
 
     # 18.4.2.2
