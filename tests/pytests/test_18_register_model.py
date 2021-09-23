@@ -16,7 +16,8 @@ def test_reg():
 def test_reg_field_configure():
     field = uvm_reg_field()
     parent = uvm_reg()
-    field.configure(parent, 8, 16)
+    field.configure(parent, 8, 16, 'RW')
     assert field.get_parent() == parent
     assert field.get_n_bits() == 8
     assert field.get_lsb_pos() == 16
+    assert field.get_access() == 'RW'

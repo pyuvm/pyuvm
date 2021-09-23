@@ -25,14 +25,16 @@ class uvm_reg_field(uvm_object):
         self._parent = None
         self._size = None
         self._lsb_pos = None
+        self._access = None
 
     # 18.5.3.2
     # TODO Fix signature
-    def configure(self, parent, size, lsb_pos):
+    def configure(self, parent, size, lsb_pos, access):
         # TODO Add validation of arguments
         self._parent = parent
         self._size = size
         self._lsb_pos = lsb_pos
+        self._access = access
 
     # 18.5.4.1
     def get_parent(self):
@@ -48,3 +50,8 @@ class uvm_reg_field(uvm_object):
     def get_n_bits(self):
         # TODO Check that 'configure' was called
         return self._size
+
+    # 18.5.4.5
+    def get_access(self):
+        # TODO Check that 'configure' was called
+        return self._access
