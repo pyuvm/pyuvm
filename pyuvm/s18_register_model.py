@@ -27,16 +27,19 @@ class uvm_reg_field(uvm_object):
         self._lsb_pos = None
         self._access = None
         self._is_volatile = None
+        self._reset = None
 
     # 18.5.3.2
     # TODO Fix signature
-    def configure(self, parent, size, lsb_pos, access, is_volatile):
+    def configure(self, parent, size, lsb_pos, access, is_volatile, reset):
         # TODO Add validation of arguments
+        # TODO Support binary and hex values for 'reset'
         self._parent = parent
         self._size = size
         self._lsb_pos = lsb_pos
         self._access = access
         self._is_volatile = is_volatile
+        self._reset = reset
 
     # 18.5.4.1
     def get_parent(self):
@@ -62,3 +65,8 @@ class uvm_reg_field(uvm_object):
     def is_volatile(self):
         # TODO Check that 'configure' was called
         return self._is_volatile
+
+    # 18.5.5.6
+    def get_reset(self):
+        # TODO Check that 'configure' was called
+        return self._reset
