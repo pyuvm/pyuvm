@@ -28,13 +28,16 @@ class uvm_reg_field(uvm_object):
     # 18.5.3.2
     # TODO Fix signature
     def configure(self, parent, size):
+        # TODO Add validation of arguments
         self._parent = parent
         self._size = size
 
     # 18.5.4.1
     def get_parent(self):
+        # TODO Check that 'configure' was called
         return self._parent
 
     # 18.5.4.3
     def get_n_bits(self):
+        # TODO Check that 'configure' was called
         return self._size
