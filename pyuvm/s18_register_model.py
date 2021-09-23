@@ -23,12 +23,18 @@ class uvm_reg_field(uvm_object):
     # TODO Fix signature
     def __init__(self):
         self._parent = None
+        self._size = None
 
     # 18.5.3.2
     # TODO Fix signature
-    def configure(self, parent):
+    def configure(self, parent, size):
         self._parent = parent
+        self._size = size
 
     # 18.5.4.1
     def get_parent(self):
         return self._parent
+
+    # 18.5.4.3
+    def get_n_bits(self):
+        return self._size
