@@ -22,8 +22,11 @@ def test_reg_block_with_multiple_regs():
     assert block.get_registers() == [reg0, reg1]
 
 
-def test_reg_map():
-    assert uvm_reg_map()
+def test_reg_map_configure():
+    reg_map = uvm_reg_map()
+    parent = uvm_reg_block()
+    reg_map.configure(parent)
+    assert reg_map.get_parent() == parent
 
 
 def test_reg_get_name():
