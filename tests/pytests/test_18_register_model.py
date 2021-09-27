@@ -37,6 +37,22 @@ def test_reg_map_configure():
     assert reg_map.get_base_addr() == 1024
 
 
+def test_reg_map_with_single_reg():
+    reg_map = uvm_reg_map()
+    reg = uvm_reg()
+    reg_map.add_reg(reg)
+    assert reg_map.get_registers() == [reg]
+
+
+def test_reg_map_with_multiple_regs():
+    reg_map = uvm_reg_map()
+    reg0 = uvm_reg()
+    reg_map.add_reg(reg0)
+    reg1 = uvm_reg()
+    reg_map.add_reg(reg1)
+    assert reg_map.get_registers() == [reg0, reg1]
+
+
 def test_reg_get_name():
     reg = uvm_reg('some_reg')
     assert reg.get_name() == 'some_reg'
