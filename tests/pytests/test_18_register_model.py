@@ -1,6 +1,11 @@
 from pyuvm import *
 
 
+def test_reg_block_get_name():
+    block = uvm_reg_block('some_block')
+    assert block.get_name() == 'some_block'
+
+
 def test_reg_block_with_single_reg():
     block = uvm_reg_block()
     reg = uvm_reg()
