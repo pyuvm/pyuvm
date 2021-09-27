@@ -23,8 +23,8 @@ class uvm_reg_block(uvm_object):
 class uvm_reg_map(uvm_object):
 
     # 18.2.3.1
-    # TODO Fix signature
-    def __init__(self):
+    def __init__(self, name="uvm_reg_map"):
+        super().__init__(name)
         self._parent = None
         self._base_addr = None
 
