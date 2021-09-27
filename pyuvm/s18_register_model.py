@@ -6,7 +6,8 @@ class uvm_reg_block(uvm_object):
 
     # 18.1.2.1
     # TODO Fix signature
-    def __init__(self):
+    def __init__(self, name=""):
+        super().__init__(name)
         self._regs = []
 
     # 18.1.3.7
