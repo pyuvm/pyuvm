@@ -1,8 +1,20 @@
 from pyuvm import *
 
 
-def test_reg_block():
-    assert uvm_reg_block()
+def test_reg_block_with_single_reg():
+    block = uvm_reg_block()
+    reg = uvm_reg()
+    reg.configure(block)
+    assert block.get_registers() == [reg]
+
+
+def test_reg_block_with_multiple_regs():
+    block = uvm_reg_block()
+    reg0 = uvm_reg()
+    reg0.configure(block)
+    reg1 = uvm_reg()
+    reg1.configure(block)
+    assert block.get_registers() == [reg0, reg1]
 
 
 def test_reg_map():
