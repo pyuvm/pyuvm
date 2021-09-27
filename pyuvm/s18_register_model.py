@@ -26,15 +26,23 @@ class uvm_reg_map(uvm_object):
     # TODO Fix signature
     def __init__(self):
         self._parent = None
+        self._base_addr = None
 
     # 18.2.3.2
     # TODO Fix signature
-    def configure(self, parent):
+    # TODO Support binary and hex values for 'base_addr'
+    def configure(self, parent, base_addr):
         self._parent = parent
+        self._base_addr = base_addr
 
     # 18.2.4.2
     def get_parent(self):
         return self._parent
+
+    # 18.2.4.4
+    # TODO Fix signature
+    def get_base_addr(self):
+        return self._base_addr
 
 
 # 18.4.1 Class declaration

@@ -25,8 +25,9 @@ def test_reg_block_with_multiple_regs():
 def test_reg_map_configure():
     reg_map = uvm_reg_map()
     parent = uvm_reg_block()
-    reg_map.configure(parent)
+    reg_map.configure(parent, 1024)
     assert reg_map.get_parent() == parent
+    assert reg_map.get_base_addr() == 1024
 
 
 def test_reg_get_name():
