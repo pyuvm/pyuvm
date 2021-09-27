@@ -21,6 +21,22 @@ def test_reg_configure():
     assert reg.get_parent() == parent
 
 
+def test_reg_with_single_field():
+    reg = uvm_reg()
+    field = uvm_reg_field()
+    field.configure(reg, 8, 0, 'RW', 0, 0)
+    assert reg.get_fields() == [field]
+
+
+def test_reg_with_multiple_fields():
+    reg = uvm_reg()
+    field0 = uvm_reg_field()
+    field0.configure(reg, 8, 0, 'RW', 0, 0)
+    field1 = uvm_reg_field()
+    field1.configure(reg, 8, 0, 'RW', 0, 0)
+    assert reg.get_fields() == [field0, field1]
+
+
 def test_reg_field_get_name():
     field_with_explicit_name = uvm_reg_field('some_field')
     assert field_with_explicit_name.get_name() == 'some_field'
