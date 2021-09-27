@@ -19,6 +19,7 @@ class uvm_reg(uvm_object):
     def __init__(self, name=""):
         super().__init__(name)
         self._parent = None
+        self._fields = []
 
     # 18.4.2.2
     def configure(self, parent):
@@ -27,6 +28,20 @@ class uvm_reg(uvm_object):
     # 18.4.3.1
     def get_parent(self):
         return self._parent
+
+    # 18.4.3.11
+    # TODO Return fields in canonical order (LSB to MSB)
+    def get_fields(self):
+        return self._fields
+
+    # TODO Add validation
+    # - field not None
+    # - field not already added
+    # - field fits in reg
+    # - field doesn't overlap with any other field
+    # - etc.
+    def _add_field(self, field):
+        self._fields.append(field)
 
 
 # 18.5.1 Class declaration
@@ -48,6 +63,7 @@ class uvm_reg_field(uvm_object):
         # TODO Add validation of arguments
         # TODO Support binary and hex values for 'reset'
         self._parent = parent
+        parent._add_field(self)
         self._size = size
         self._lsb_pos = lsb_pos
         self._access = access
