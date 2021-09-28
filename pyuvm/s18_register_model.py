@@ -27,7 +27,7 @@ class uvm_reg_map(uvm_object):
         super().__init__(name)
         self._parent = None
         self._base_addr = None
-        self._regs = []
+        self._regs = {}
 
     # 18.2.3.2
     # TODO Fix signature
@@ -48,12 +48,18 @@ class uvm_reg_map(uvm_object):
     # 18.2.3.3
     # TODO Fix signature
     # TODO Perform validation (e.g. reg not already added)
-    def add_reg(self, reg):
-        self._regs.append(reg)
+    def add_reg(self, reg, offset):
+        self._regs[offset] = reg
 
     # 18.2.4.11
     def get_registers(self):
-        return self._regs
+        return list(self._regs.values())
+
+    # 18.2.4.17
+    # TODO Fix signature
+    # TODO Handle case where no register exists at offset
+    def get_reg_by_offset(self, offset):
+        return self._regs[offset]
 
 
 # 18.4.1 Class declaration
