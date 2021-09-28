@@ -38,17 +38,14 @@ class uvm_active_passive_enum(IntEnum):
 # 13.2
 class uvm_test(uvm_component):
     """
-    The base class for all user-defined tests
-
-    Python does not require that we override new() for every
-    UVM class, so we don't do that (same for __init__).
+    The base class for all tests
     """
 
 
 # 13.3
 class uvm_env(uvm_component):
     """
-    The user's contains for agents and what-not
+    A container for agents and what-not
     """
 
 

@@ -8,6 +8,7 @@
 
 from pyuvm.s05_base_classes import uvm_object
 import logging
+from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET  # noqa: F401
 
 
 # 6.2.1
