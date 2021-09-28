@@ -24,15 +24,13 @@ class uvm_report_object(uvm_object):
         self.logger.setLevel(level=logging.INFO)  # Default is to print INFO
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
-        handler = logging.StreamHandler()
+        self._streaming_handler = logging.StreamHandler()
         # Don't let the handler interfere with logger level
-        handler.setLevel(logging.NOTSET)
+        self._streaming_handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
-        formatter = logging.Formatter(
+        self._uvm_formatter = logging.Formatter(
             "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
-        handler.setFormatter(formatter)
-        self.add_logging_handler(handler)
-        pass
+        self.add_logging_handler(self._streaming_handler)
 
     def set_logging_level(self, logging_level):
         """ Sets the logger level """
@@ -42,6 +40,8 @@ class uvm_report_object(uvm_object):
         """ Adds a handler """
         assert isinstance(handler, logging.Handler), \
             f"You must pass a logging.Handler not {type(handler)}"
+        if handler.formatter is None:
+            handler.setFormatter(self._uvm_formatter)
         self.logger.addHandler(handler)
 
     def remove_logging_handler(self, handler):
@@ -50,6 +50,9 @@ class uvm_report_object(uvm_object):
             f"You must pass a logging.Handler not {type(handler)}"
         self.logger.removeHandler(handler)
 
+    def remove_streaming_handler(self):
+        self.logger.removeHandler(self._streaming_handler)
+        
     def set_formatter_on_handlers(self, formatter):
         """ Set an identical formatter on all handlers """
         assert isinstance(formatter, logging.Formatter), \

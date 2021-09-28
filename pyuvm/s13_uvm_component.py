@@ -310,6 +310,12 @@ is really going on.  We've opted for the latter.
         for child in self.children:
             child.remove_logging_handler_hier(handler)
 
+    def remove_streaming_handler_hier(self):
+        self.remove_streaming_handler()
+        for child in self.children:
+            child.remove_streaming_handler()
+            
+
     def set_formatter_on_handlers_hier(self, formatter):
         self.set_formatter_on_handlers(formatter)
         for child in self.children:
