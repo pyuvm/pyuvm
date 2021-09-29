@@ -1,3 +1,4 @@
+import itertools
 from pyuvm import *
 
 
@@ -168,9 +169,14 @@ def test_simple_reg_model():
             continue
         assert field.get_n_bits() == 1
 
+    def pairwise(iterable):
+        "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+        a, b = itertools.tee(iterable)
+        next(b, None)
+        return zip(a, b)
+
     assert LCR.get_fields()[0].get_lsb_pos() == 0
-    for i, field in enumerate(LCR.get_fields()[1:]):
-        prev_field = LCR.get_fields()[i]  # i starts from 1
+    for prev_field, field in pairwise(LCR.get_fields()):
         assert field.get_lsb_pos() == prev_field.get_lsb_pos() + prev_field.get_n_bits()
 
     for field in LCR.get_fields():
@@ -191,6 +197,5 @@ def test_simple_reg_model():
         assert field.get_reset() == 0
 
     assert LSR.get_fields()[0].get_lsb_pos() == 0
-    for i, field in enumerate(LSR.get_fields()[1:]):
-        prev_field = LSR.get_fields()[i]  # i starts from 1
+    for prev_field, field in pairwise(LSR.get_fields()):
         assert field.get_lsb_pos() == prev_field.get_lsb_pos() + prev_field.get_n_bits()
