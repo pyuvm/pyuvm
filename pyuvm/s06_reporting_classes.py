@@ -52,10 +52,3 @@ class uvm_report_object(uvm_object):
 
     def remove_streaming_handler(self):
         self.logger.removeHandler(self._streaming_handler)
-
-    def set_formatter_on_handlers(self, formatter):
-        """ Set an identical formatter on all handlers """
-        assert isinstance(formatter, logging.Formatter), \
-            f"You must pass a logging.Formatter not {type(formatter)}"
-        for handler in self.logger.handlers:
-            handler.setFormatter(formatter)

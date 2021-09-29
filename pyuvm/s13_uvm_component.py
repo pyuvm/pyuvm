@@ -315,11 +315,6 @@ is really going on.  We've opted for the latter.
         for child in self.children:
             child.remove_streaming_handler()
 
-    def set_formatter_on_handlers_hier(self, formatter):
-        self.set_formatter_on_handlers(formatter)
-        for child in self.children:
-            child.set_formatter_on_handlers_hier(formatter)
-
     def build_phase(self):
         ...
 
