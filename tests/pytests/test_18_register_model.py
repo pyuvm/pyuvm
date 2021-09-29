@@ -168,7 +168,7 @@ def test_simple_reg_model():
         assert field.get_n_bits() == 1
 
     def pairwise(iterable):
-        "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+        """s -> (s0,s1), (s1,s2), (s2, s3), ..."""
         a, b = itertools.tee(iterable)
         next(b, None)
         return zip(a, b)
