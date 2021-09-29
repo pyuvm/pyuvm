@@ -164,9 +164,7 @@ def test_simple_reg_model():
     assert LCR.EPS.get_name() == 'EPS'
 
     assert LCR.WLS.get_n_bits() == 2
-    for field in LCR.get_fields():
-        if field == LCR.WLS:
-            continue
+    for field in [field for field in LCR.get_fields() if field != LCR.WLS]:
         assert field.get_n_bits() == 1
 
     def pairwise(iterable):
