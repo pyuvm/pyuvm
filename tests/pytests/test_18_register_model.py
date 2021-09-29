@@ -108,3 +108,89 @@ def test_reg_field_is_volatile():
     assert field.is_volatile()
     field.configure(uvm_reg(), 8, 16, 'RW', False, 15)
     assert not field.is_volatile()
+
+
+def test_simple_reg_model():
+    """
+    A more realistic register model based on the venerable UART 16550 design
+    """
+    class LineControlRegister(uvm_reg):
+        def __init__(self, name):
+            super().__init__(name)
+            self.WLS = uvm_reg_field('WLS')
+            self.WLS.configure(self, 2, 0, 'RW', 0, 0)
+            self.STB = uvm_reg_field('STB')
+            self.STB.configure(self, 1, 2, 'RW', 0, 0)
+            self.PEN = uvm_reg_field('PEN')
+            self.PEN.configure(self, 1, 3, 'RW', 0, 0)
+            self.EPS = uvm_reg_field('EPS')
+            self.EPS.configure(self, 1, 4, 'RW', 0, 0)
+
+    class LineStatusRegister(uvm_reg):
+        def __init__(self, name):
+            super().__init__(name)
+            self.DR = uvm_reg_field('DR')
+            self.DR.configure(self, 1, 0, 'RW', 1, 0)
+            self.OE = uvm_reg_field('OE')
+            self.OE.configure(self, 1, 1, 'RW', 1, 0)
+            self.PE = uvm_reg_field('PE')
+            self.PE.configure(self, 1, 2, 'RW', 1, 0)
+            self.FE = uvm_reg_field('FE')
+            self.FE.configure(self, 1, 3, 'RW', 1, 0)
+
+    class Regs(uvm_reg_block):
+        def __init__(self, name):
+            super().__init__(name)
+            self.map = uvm_reg_map('map')
+            self.map.configure(self, 0)
+            self.LCR = LineControlRegister('LCR')
+            self.LCR.configure(self)
+            self.map.add_reg(self.LCR, int('0x100c', 0))
+            self.LSR = LineStatusRegister('LSR')
+            self.LSR.configure(self)
+            self.map.add_reg(self.LSR, int('0x1014', 0))
+
+    regs = Regs('regs')
+    assert regs.get_name() == 'regs'
+    assert regs.map.get_reg_by_offset(int('0x100c', 0)) == regs.LCR
+    assert regs.map.get_reg_by_offset(int('0x1014', 0)) == regs.LSR
+
+    LCR = regs.LCR
+    assert LCR.get_name() == 'LCR'
+    assert LCR.WLS.get_name() == 'WLS'
+    assert LCR.STB.get_name() == 'STB'
+    assert LCR.PEN.get_name() == 'PEN'
+    assert LCR.EPS.get_name() == 'EPS'
+
+    assert LCR.WLS.get_n_bits() == 2
+    for field in LCR.get_fields():
+        if field == LCR.WLS:
+            continue
+        assert field.get_n_bits() == 1
+
+    assert LCR.get_fields()[0].get_lsb_pos() == 0
+    for i, field in enumerate(LCR.get_fields()[1:]):
+        prev_field = LCR.get_fields()[i]  # i starts from 1
+        assert field.get_lsb_pos() == prev_field.get_lsb_pos() + prev_field.get_n_bits()
+
+    for field in LCR.get_fields():
+        assert field.get_access() == 'RW'
+        assert not field.is_volatile()
+        assert field.get_reset() == 0
+
+    LSR = regs.LSR
+    assert LSR.DR.get_name() == 'DR'
+    assert LSR.OE.get_name() == 'OE'
+    assert LSR.PE.get_name() == 'PE'
+    assert LSR.FE.get_name() == 'FE'
+
+    for field in LSR.get_fields():
+        assert field.get_n_bits() == 1
+        assert field.get_access() == 'RW'
+        assert field.is_volatile()
+        assert field.get_reset() == 0
+
+    assert LSR.get_fields()[0].get_lsb_pos() == 0
+    for i, field in enumerate(LSR.get_fields()[1:]):
+        prev_field = LSR.get_fields()[i]  # i starts from 1
+        assert field.get_lsb_pos() == prev_field.get_lsb_pos() + prev_field.get_n_bits()
