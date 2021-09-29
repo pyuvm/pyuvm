@@ -175,7 +175,8 @@ def test_simple_reg_model():
 
     assert LCR.get_fields()[0].get_lsb_pos() == 0
     for prev_field, field in pairwise(LCR.get_fields()):
-        assert field.get_lsb_pos() == prev_field.get_lsb_pos() + prev_field.get_n_bits()
+        assert (field.get_lsb_pos()
+               == prev_field.get_lsb_pos() + prev_field.get_n_bits())
 
     for field in LCR.get_fields():
         assert field.get_access() == 'RW'
@@ -196,4 +197,5 @@ def test_simple_reg_model():
 
     assert LSR.get_fields()[0].get_lsb_pos() == 0
     for prev_field, field in pairwise(LSR.get_fields()):
-        assert field.get_lsb_pos() == prev_field.get_lsb_pos() + prev_field.get_n_bits()
+        assert (field.get_lsb_pos()
+                == prev_field.get_lsb_pos() + prev_field.get_n_bits())
