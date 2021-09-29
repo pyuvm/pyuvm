@@ -8,7 +8,8 @@
 
 from pyuvm.s05_base_classes import uvm_object
 import logging
-from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET, NullHandler  # noqa: F401
+from logging import DEBUG, CRITICAL, ERROR, \
+    WARNING, INFO, NOTSET, NullHandler  # noqa: F401
 
 
 # 6.2.1
@@ -56,4 +57,3 @@ class uvm_report_object(uvm_object):
     def disable_logging(self):
         self.remove_streaming_handler()
         self.add_logging_handler(NullHandler())
-        
