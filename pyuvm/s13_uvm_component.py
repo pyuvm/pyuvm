@@ -313,7 +313,12 @@ is really going on.  We've opted for the latter.
     def remove_streaming_handler_hier(self):
         self.remove_streaming_handler()
         for child in self.children:
-            child.remove_streaming_handler()
+            child.remove_streaming_handler_hier()
+
+    def disable_logging_hier(self):
+        self.disable_logging()
+        for child in self.children:
+            child.disable_logging_hier()
 
     def build_phase(self):
         ...
