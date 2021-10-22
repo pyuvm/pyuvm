@@ -452,6 +452,16 @@ class ConfigDB(metaclass=utility_classes.Singleton):
     # at this time.
 
     def __init__(self):
+        self.logger_holder = uvm_report_object("logger_holder")
+        self.logger_holder.remove_streaming_handler()
+        configdb_handler = logging.StreamHandler()
+        # Don't let the handler interfere with logger level
+        configdb_handler.setLevel(logging.NOTSET)
+        # Make log messages look like UVM messages
+        configdb_formatter = logging.Formatter("%(message)s")  # noqa: E501
+        configdb_handler.setFormatter(configdb_formatter)
+        self.logger_holder.add_logging_handler(configdb_handler)
+        self.logger_holder.logger.propagate = False
         self._path_dict = {}
         self.is_tracing = False
         self._cond_dict = {}
@@ -483,7 +493,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
     def trace(self, method, context, inst_name, field_name, value):
         if self.is_tracing:
             # noinspection SpellCheckingInspection
-            print(f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}")  # noqa: E501
+            self.logger_holder.logger.info(f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}")  # noqa: E501
 
     def set(self, context, inst_name, field_name, value):
         """

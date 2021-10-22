@@ -28,7 +28,6 @@ from pyuvm.error_classes import UVMTLMConnectionError
 from pyuvm.utility_classes import UVMQueue, FIFO_DEBUG
 from cocotb.queue import QueueEmpty, QueueFull
 from pyuvm import error_classes
-import logging
 
 
 # 12.2.2
@@ -724,11 +723,6 @@ class uvm_tlm_fifo_base(uvm_component):
         self.nonblocking_get_peek_export = self.NonBlockingGetPeekExport("nonblocking_get_peek_export", self,  # noqa: E501
                                                                          self.queue, self.get_ap)  # noqa: E501
         self.get_peek_export = self.GetPeekExport("get_peek_export", self, self.queue, self.get_ap)  # noqa: E501
-
-    def end_of_elaboration_phase(self):
-        formatter = logging.Formatter(
-            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
-        self.set_formatter_on_handlers_hier(formatter)
 
 
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
