@@ -6,6 +6,7 @@ from pyuvm import utility_classes
 import logging
 import fnmatch
 import string
+from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
 
 
 class uvm_component(uvm_report_object):
@@ -455,10 +456,11 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         self.logger_holder = uvm_report_object("logger_holder")
         self.logger_holder.remove_streaming_handler()
         configdb_handler = logging.StreamHandler()
+        configdb_handler.addFilter(SimTimeContextFilter())
         # Don't let the handler interfere with logger level
         configdb_handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
-        configdb_formatter = logging.Formatter("%(message)s")  # noqa: E501
+        configdb_formatter = SimColourLogFormatter()
         configdb_handler.setFormatter(configdb_formatter)
         self.logger_holder.add_logging_handler(configdb_handler)
         self.logger_holder.logger.propagate = False
@@ -498,18 +500,18 @@ class ConfigDB(metaclass=utility_classes.Singleton):
     def set(self, context, inst_name, field_name, value):
         """
         Stores an object in the db using the context and
-        inst_name to create a retrieval path, and the field
+        inst_name to create a retrieval path, and the key
         name.
         :param context: A handle to a component
         :param inst_name: The instance name within the component
-        :param field_name: The field we're setting
+        :param field_name: The key we're setting
         :param value: The object to be stored
         :return: None
         """
 
         if not set(field_name).issubset(self.legal_chars):
             raise error_classes.UVMNotImplemented(
-                f"pyuvm does not allow wildcards in field names ({field_name})"
+                f"pyuvm does not allow wildcards in key names ({field_name})"
             )
 
         context, inst_name = self._get_context_inst_name(context, inst_name)
@@ -598,14 +600,14 @@ class ConfigDB(metaclass=utility_classes.Singleton):
             return value
         else:
             raise error_classes.UVMConfigItemNotFound(
-                f'"Component {inst_name} has no field: {field_name}')
+                f'"Component {inst_name} has no key: {field_name}')
 
     def exists(self, context, inst_name, field_name):
         """
         Returns true if there is data in the database at this location
         :param context: None or uvm_component
         :param inst_name: instance name string in context
-        :param field_name: field name for location
+        :param field_name: key name for location
         :return: True if exists
         """
         try:
@@ -619,8 +621,8 @@ class ConfigDB(metaclass=utility_classes.Singleton):
             "wait_modified not implemented pending requests for it.")
 
     def __str__(self):
-        str_list = [f"\n{'PATH':20}: {'FIELD':10}: {'DATA':30}"]
+        str_list = [f"\n{'PATH':20}: {'KEY':10}: {'DATA':30}"]
         for inst_path in self._path_dict:
-            for field in self._path_dict[inst_path]:
-                str_list.append(f"{inst_path:20}: {field:10}: {self._path_dict[inst_path][field]}")  # noqa: E501
+            for key in self._path_dict[inst_path]:
+                str_list.append(f"{inst_path:20}: {key:10}: {self._path_dict[inst_path][key]}")  # noqa: E501
         return "\n".join(str_list)
