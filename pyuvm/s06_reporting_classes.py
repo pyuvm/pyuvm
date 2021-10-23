@@ -8,6 +8,7 @@
 
 from pyuvm.s05_base_classes import uvm_object
 import logging
+from cocotb.log import SimLogFormatter, SimColourLogFormatter, SimTimeContextFilter
 from logging import DEBUG, CRITICAL, ERROR, \
     WARNING, INFO, NOTSET, NullHandler  # noqa: F401
 
@@ -26,11 +27,13 @@ class uvm_report_object(uvm_object):
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
         self._streaming_handler = logging.StreamHandler()
+        self._streaming_handler.addFilter(SimTimeContextFilter())
         # Don't let the handler interfere with logger level
         self._streaming_handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
-        self._uvm_formatter = logging.Formatter(
-            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
+        self._uvm_formatter = SimColourLogFormatter()
+#        self._uvm_formatter = logging.Formatter(
+#            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
         self.add_logging_handler(self._streaming_handler)
 
     def set_logging_level(self, logging_level):
