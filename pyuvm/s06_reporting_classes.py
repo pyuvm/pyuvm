@@ -8,7 +8,7 @@
 
 from pyuvm.s05_base_classes import uvm_object
 import logging
-from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
+from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
 from logging import DEBUG, CRITICAL, ERROR, \
     WARNING, INFO, NOTSET, NullHandler  # noqa: F401
 
@@ -57,6 +57,7 @@ class uvm_report_object(uvm_object):
         assert isinstance(handler, logging.Handler), \
             f"You must pass a logging.Handler not {type(handler)}"
         if handler.formatter is None:
+            handler.addFilter(SimTimeContextFilter())
             handler.setFormatter(self._uvm_formatter)
         self.logger.addHandler(handler)
 
