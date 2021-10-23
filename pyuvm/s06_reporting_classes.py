@@ -8,9 +8,21 @@
 
 from pyuvm.s05_base_classes import uvm_object
 import logging
-from cocotb.log import SimLogFormatter, SimColourLogFormatter, SimTimeContextFilter
+from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
 from logging import DEBUG, CRITICAL, ERROR, \
     WARNING, INFO, NOTSET, NullHandler  # noqa: F401
+
+
+class PyuvmFormatter(SimColourLogFormatter):
+    def __init__(self, full_name):
+        self.full_name = full_name
+        super().__init__()
+
+    def format(self, record):
+        new_msg = f"{record.filename}({record.lineno})"
+        new_msg += f"[{self.full_name}]: " + record.msg
+        record.msg = new_msg
+        return super().format(record)
 
 
 # 6.2.1
@@ -31,7 +43,7 @@ class uvm_report_object(uvm_object):
         # Don't let the handler interfere with logger level
         self._streaming_handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
-        self._uvm_formatter = SimColourLogFormatter()
+        self._uvm_formatter = PyuvmFormatter(self.get_full_name())
 #        self._uvm_formatter = logging.Formatter(
 #            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
         self.add_logging_handler(self._streaming_handler)
