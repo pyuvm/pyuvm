@@ -213,13 +213,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param parent_inst_path: The get_full_name path of the parent
         :param name: The name of the instance requested_type("name")
         :return: Type that is child of uvm_object.
-        Python does not create zero-length strings as defaults.
-        It puts the None object there. That's
-        what we're going to do.
+        If the type is is not in the factory we raise UVMFactoryError
         """
         new_type = self.__find_override(requested_type, parent_inst_path, name)
         if new_type is None:
-            return None
+            raise error_classes.UVMFactoryError(
+                f"{requested_type} not in uvm_factory()")
         return new_type(name)
 
     # 8.3.1.5
@@ -255,6 +254,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         exists for inst overrides
         :param parent: The parent component
         :return: a uvm_component with the name an parent given.
+
+        If the type is is not in the factory we raise UVMFactoryError
         """
 
         if name is None:
@@ -264,7 +265,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         new_type = self.__find_override(requested_type, parent_inst_path, name)
 
         if new_type is None:
-            return None
+            raise error_classes.UVMFactoryError(
+                f"{requested_type} not in uvm_factory()")
 
         new_comp = new_type(name, parent)
         return new_comp
