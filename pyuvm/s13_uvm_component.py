@@ -470,6 +470,8 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
     def clear(self):
         """Reset the ConfigDB. Used for testing."""
+        if self.is_tracing:
+            self.logger_holder.logger.info("CFGDB/CLEAR: Clearing ConfigDB()")
         self._path_dict = {}
 
     @staticmethod
