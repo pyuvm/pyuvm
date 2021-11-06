@@ -13,6 +13,7 @@ class s13_predefined_component_TestCase(pyuvm_unittest.pyuvm_TestCase):
     def setUp(self):
         super().setUp()
         ConfigDB().clear()
+        uvm_root().clear_children()
 
     def test_uvm_component_no_parent(self):
         """
@@ -38,7 +39,7 @@ class s13_predefined_component_TestCase(pyuvm_unittest.pyuvm_TestCase):
         parent = uvm_component('parent', None)
         child = uvm_component('child', parent)
         self.assertTrue('parent' in uvm_component.component_dict)
-        self.assertTrue(f'parent.child' in uvm_component.component_dict)
+        self.assertTrue('parent.child' in uvm_component.component_dict)
         self.assertTrue(parent.parent == uvm_root())
         self.assertTrue(child.parent == parent)
         self.assertEqual(list(parent.hierarchy), [parent, child])
