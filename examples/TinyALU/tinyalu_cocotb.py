@@ -19,6 +19,7 @@ debugpy.wait_for_client()
 breakpoint()  # or debugpy.breakpoint() on 3.6 and below
 """
 
+
 class CocotbProxy:
     def __init__(self, dut):
         self.dut = dut
@@ -39,28 +40,28 @@ class CocotbProxy:
 
     async def reset(self):
         await FallingEdge(self.dut.clk)
-        self.dut.reset_n <= 0
-        self.dut.A <= 0
-        self.dut.B <= 0
-        self.dut.op <= 0
+        self.dut.reset_n.value = 0
+        self.dut.A.value = 0
+        self.dut.B.value = 0
+        self.dut.op.value = 0
         await FallingEdge(self.dut.clk)
-        self.dut.reset_n <= 1
+        self.dut.reset_n.value = 1
         await FallingEdge(self.dut.clk)
 
     async def driver_bfm(self):
-        self.dut.start <= 0
-        self.dut.A <= 0
-        self.dut.B <= 0
-        self.dut.op <= 0
+        self.dut.start.value = 0
+        self.dut.A.value = 0
+        self.dut.B.value = 0
+        self.dut.op.value = 0
         while True:
             await FallingEdge(self.dut.clk)
             if self.dut.start.value == 0 and self.dut.done.value == 0:
                 try:
                     (aa, bb, op) = self.driver_queue.get_nowait()
-                    self.dut.A = aa
-                    self.dut.B = bb
-                    self.dut.op = op
-                    self.dut.start = 1
+                    self.dut.A.value = aa
+                    self.dut.B.value = bb
+                    self.dut.op.value = op
+                    self.dut.start.value = 1
                 except QueueEmpty:
                     pass
             elif self.dut.start == 1:

@@ -272,10 +272,14 @@ class s08_factory_classes_TestCase():
         logger = logging.getLogger("Factory")
         level = logger.level
         logger.setLevel(logging.CRITICAL)
-        not_an_instance = self.factory.create_object_by_name("not_an_object", name="bad_name")
-        assert not_an_instance is None
+        saw_error = False
+        try:
+            _ = self.factory.create_object_by_name("not_an_object", name="bad_name")
+        except UVMFactoryError:
+            saw_error = True
+        assert saw_error
         logger.setLevel(level)
-        
+
     def test_create_component_by_type_and_name_override_8_3_1_5(self):
         """
         8.3.1.5
@@ -363,11 +367,11 @@ class s08_factory_classes_TestCase():
         self.factory.set_inst_override_by_name("original_comp", "comp_2", "top.sib.orig")
         self.factory.set_inst_override_by_name("original_comp", "comp_3", "top.mid.orig")
         self.factory.set_inst_override_by_type(self.original_object, self.object_1, "label")
-        self.factory.all_types = 0
+        self.factory.debug_level = 0
         ss0 = self.factory.__str__()
-        self.factory.all_types = 1
+        self.factory.debug_level = 1
         ss1 = self.factory.__str__()
-        self.factory.all_types = 2
+        self.factory.debug_level = 2
         ss2 = self.factory.__str__()
         # Testing for the actual strings will cause errors as classes change due to
         # other tests being run. This catches the basic functionality.

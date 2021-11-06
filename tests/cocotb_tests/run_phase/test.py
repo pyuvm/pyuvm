@@ -22,7 +22,7 @@ async def run_test(dut):
     assert True
 
 
-@cocotb.test(expect_error=True)
+@cocotb.test(expect_error=UVMError)
 async def error(dut):
     """Test that raising exceptions creates cocotb errors"""
     await uvm_root().run_test("my_error")

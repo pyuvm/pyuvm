@@ -29,13 +29,13 @@ async def run_tests(dut):
         else:
             pf = "FAILED "
             any_failed = True
-        print (f"{pf}{test:<20}")
+        print(f"{pf}{test:<20}")
     assert not any_failed
 
-@cocotb.test() # pylint: disable=no-value-for-parameter
+@cocotb.test()  # pylint: disable=no-value-for-parameter
 async def test_12_tlm(dut):
     """Tests the TLM FIFOS"""
-    clock = Clock(dut.clk, 2, units="us")    
+    clock = Clock(dut.clk, 2, units="us")
     cocotb.fork(clock.start())
     await run_tests(dut)
 

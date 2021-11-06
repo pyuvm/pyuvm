@@ -150,7 +150,7 @@ class AluEnv(uvm_env):
 
     def connect_phase(self):
         self.cmd_mon.ap.connect(self.scoreboard.cmd_export)
-        self.cmd_mon.ap.connect(self.coverage)
+        self.cmd_mon.ap.connect(self.coverage.analysis_export)
         self.result_mon.ap.connect(self.scoreboard.result_export)
         self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
