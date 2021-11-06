@@ -1,4 +1,4 @@
-# Important Note about pyuvm 2.0
+# Important Note about pyuvm 2.0+
 **Release 2.0 breaks release 1.0 code.**
 
 **pyuvm** originally used threads to manage concurrent simulation events. While this provided flexiblity to use **pyuvm** with any DPI interface to the simulator, it was much more difficult to use and it didn't take advantage of the excellent work done in **cocotb**.
@@ -50,7 +50,7 @@ object name: my_object
 
 ## Running from the repository
 
-You can run pyuvm from a cloned repository by installing the cloned repository using pip.  
+You can run pyuvm from a cloned repository by installing the cloned repository using pip.
 
 ```bash
 % cd <pyuvm repo directory>
@@ -59,7 +59,7 @@ You can run pyuvm from a cloned repository by installing the cloned repository u
 
 # Usage
 
-This section demonstrates running an example simulation and then shows how the example has been put together demonstrating what the UVM looks like in Python. 
+This section demonstrates running an example simulation and then shows how the example has been put together demonstrating what the UVM looks like in Python.
 
 ## Running the simulation
 
@@ -79,7 +79,7 @@ COCOTB_HDL_TIMEPRECISION=1us
 include $(shell cocotb-config --makefiles)/Makefile.sim
 ```
 
-You can learn more about the Makefile targets at [cocotb.org](https://docs.cocotb.org/en/stable/building.html).  The `cocotb-config` command on the last line points to the **cocotb** Makefile locations and launches the `sim` target. 
+You can learn more about the Makefile targets at [cocotb.org](https://docs.cocotb.org/en/stable/building.html).  The `cocotb-config` command on the last line points to the **cocotb** Makefile locations and launches the `sim` target.
 
 Modify the `SIM` variable to match your simulator. All the simulator types are in `cocotb/share/makefiles/simulators/makefile.$(SIM)`.
 
@@ -115,7 +115,7 @@ Testbenches written in the SystemVerilog UVM usually import the package like thi
 import uvm_pkg::*;
 ```
 
-This gives you access to the class names without needing a package path.  To get 
+This gives you access to the class names without needing a package path.  To get
 similar behavior with `pyuvm` us the `from` import syntax.
 
 ```python
@@ -131,11 +131,11 @@ We extend `uvm_test` to create the `AluTest`, using camel-casing in our code eve
 
 You'll see the following in the test:
 
-* We define a class that extends `uvm_test`. 
+* We define a class that extends `uvm_test`.
 
 * There is no `uvm_component_utils()` macro. **pyuvm** automatically registers classes that extend `uvm_void` with the factory.
 
-* The phases do not have a `phase` variable. Phasing has been refactored to support only the *common phases* as described in the specification. 
+* The phases do not have a `phase` variable. Phasing has been refactored to support only the *common phases* as described in the specification.
 
 * We create the environment using the `create()` method and the factory. Notice that `create()` is now a simple class method. There is no typing-driven incantation.
 
@@ -191,7 +191,7 @@ class AluEnv(uvm_env):
         self.seqr = uvm_sequencer("seqr", self)
         ConfigDB().set(None, "*", "SEQR", self.seqr)
         ConfigDB().set(None, "*", "CVG", self.coverage)
-        
+
     def connect_phase(self):
         self.cmd_mon.ap.connect(self.scoreboard.cmd_export)
         self.cmd_mon.ap.connect(self.coverage)
@@ -199,7 +199,7 @@ class AluEnv(uvm_env):
         self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 ```
 ## The Monitor
-The `Monitor` extends `uvm_component`. Takes the name of a `CocotProxy` method name as an argument.  It uses the name to find the method in the proxy and then calls the method. You cannot do this in SystemVerilog as there is no introspection. 
+The `Monitor` extends `uvm_component`. Takes the name of a `CocotProxy` method name as an argument.  It uses the name to find the method in the proxy and then calls the method. You cannot do this in SystemVerilog as there is no introspection.
 
 The `Monitor` creates an analysis port and writes the data it gets into the analysis port.
 
@@ -209,7 +209,7 @@ lass Monitor(uvm_component):
     def __init__(self, name, parent, method_name):
         super().__init__(name, parent)
         self.method_name = method_name
-    
+
     def build_phase(self):
         self.ap = uvm_analysis_port("ap", self)
 
@@ -220,7 +220,7 @@ lass Monitor(uvm_component):
         while True:
             get_method = getattr(self.proxy, self.method_name)
             datum = await get_method()
-            self.ap.write(datum)  
+            self.ap.write(datum)
 ```
 ## The Scoreboard
 The scoreboard receives commands from the command monitor and results from the results monitor in the same order.  It uses the commands to predict the results and compares them.
@@ -231,12 +231,12 @@ The scoreboard receives commands from the command monitor and results from the r
 * The `check_phase() runs after the `run_phase()`.  At this point the scoreboard has all operations and results. It loops through the operations and predicts the result, then it compares the predicted and actual result.
 * Notice that we do not use UVM reporting. Instead we us the Python `logging` module. Every `uvm_report_object` and its children has its own logger stored in `self.logger.`
 ```python
-class Scoreboard(uvm_component):  
+class Scoreboard(uvm_component):
 
     def build_phase(self):
         self.cmd_fifo = uvm_tlm_analysis_fifo("cmd_fifo", self)
         self.result_fifo = uvm_tlm_analysis_fifo("result_fifo", self)
-        self.cmd_get_port = uvm_get_port("cmd_get_port", self)    
+        self.cmd_get_port = uvm_get_port("cmd_get_port", self)
         self.result_get_port = uvm_get_port("result_get_port", self)
         self.cmd_export = self.cmd_fifo.analysis_export
         self.result_export = self.result_fifo.analysis_export
@@ -272,10 +272,10 @@ Since this tesbench loops through all the operations you will not see this error
 
 ```python
 class Coverage(uvm_subscriber):
-    
+
     def end_of_elaboration_phase(self):
         self.cvg = set()
-    
+
     def write(self, cmd):
         (_, _, op) = cmd
         self.cvg.add(op)
@@ -314,11 +314,11 @@ class AluSeq(uvm_sequence):
     async def body(self):
         for op in list(Ops): # list(Ops):
             cmd_tr = AluSeqItem("cmd_tr")
-            await self.start_item(cmd_tr) 
+            await self.start_item(cmd_tr)
             cmd_tr.randomize()
             cmd_tr.op = op
-            await self.finish_item(cmd_tr) 
-            
+            await self.finish_item(cmd_tr)
+
 ```
 
 ## ALU Sequence Item
@@ -345,7 +345,7 @@ class AluSeqItem(uvm_sequence_item):
 
     def __str__(self):
         return f"{self.get_name()} : A: 0x{self.A:02x} OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"
-    
+
     def randomize(self):
         self.A = random.randint(0, 255)
         self.B = random.randint(0, 255)
@@ -363,7 +363,7 @@ Now that we've got the UVM testbench we can call it from a **cocotb** test.
 * It resets the DUT using the `reset()` coroutine.
 * It forks off the three BFMs so that the proxy can send operations, read commands, and read results.
 * It awaits `uvm_root().run_test("AluTest")`.  This creates an object of type `AluTest` and launches the phases.
-  
+
 ```python
 @cocotb.test()
 async def test_alu(dut):
@@ -381,11 +381,11 @@ async def test_alu(dut):
 
 # Contributing
 
-As people use **pyuvm** they will certainly find features of the UVM that they wish had been implemented, such as the register layer. 
+As people use **pyuvm** they will certainly find features of the UVM that they wish had been implemented, such as the register layer.
 
 I'm currently building the testing and contribution system, and am looking forward to working with contributors.
 
-Credits: 
+Credits:
 
 * Ray Salemi—Original author, created as an employee of Siemens.
 * IEEE 1800.2 Specification

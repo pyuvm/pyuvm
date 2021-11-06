@@ -19,7 +19,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+        "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",  # noqa: E501
         "Framework :: cocotb",
     ],
     packages=setuptools.find_packages(),
