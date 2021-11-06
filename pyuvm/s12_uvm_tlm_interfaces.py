@@ -574,8 +574,8 @@ class uvm_analysis_export(uvm_analysis_port):
 
     def write(self, data):
         raise error_classes.UVMTLMConnectionError(
-            "If you extend uvm_analysis_export, or uvm_subscriber, you must"
-            " override the write method")
+            "If you extend uvm_analysis_export, you must"
+            " override the write method.")
 
 
 # 12.2.8 FIFO Classes
