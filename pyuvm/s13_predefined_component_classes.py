@@ -102,5 +102,22 @@ class uvm_driver(uvm_component):
 
 
 # 13.9
-class uvm_subscriber(uvm_analysis_export):
-    ...
+class uvm_subscriber(uvm_component):
+    class uvm_AnalysisImp(uvm_analysis_export):
+        def __init__(self, name, parent, write_fn):
+            super().__init__(name, parent)
+            self.write_fn = write_fn
+
+        def write(self, tt):
+            self.write_fn(tt)
+
+    def __init__(self, name, parent):
+        super().__init__(name, parent)
+        self.analysis_export = self.uvm_AnalysisImp("analysis_export",
+                                                    self,
+                                                    self.write)
+
+    def write(self, tt):
+        raise error_classes.UVMFatalError(
+            "You must override the write() method in"
+            f"uvm_subscriber {self.get_full_name()}")
