@@ -8,9 +8,9 @@
 
 from pyuvm.s05_base_classes import uvm_object
 import logging
+import sys
 from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
-from logging import DEBUG, CRITICAL, ERROR, \
-    WARNING, INFO, NOTSET, NullHandler  # noqa: F401
+from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET, NullHandler   # noqa: F401, E501
 
 
 class PyuvmFormatter(SimColourLogFormatter):
@@ -38,7 +38,7 @@ class uvm_report_object(uvm_object):
         self.logger.setLevel(level=logging.INFO)  # Default is to print INFO
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
-        self._streaming_handler = logging.StreamHandler()
+        self._streaming_handler = logging.StreamHandler(sys.stdout)
         self._streaming_handler.addFilter(SimTimeContextFilter())
         # Don't let the handler interfere with logger level
         self._streaming_handler.setLevel(logging.NOTSET)
