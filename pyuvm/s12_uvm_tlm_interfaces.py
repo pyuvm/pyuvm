@@ -27,7 +27,6 @@ from pyuvm.s13_uvm_component import uvm_component
 from pyuvm.error_classes import UVMTLMConnectionError
 from pyuvm.utility_classes import UVMQueue, FIFO_DEBUG
 from cocotb.queue import QueueEmpty, QueueFull
-from pyuvm import error_classes
 
 
 # 12.2.2
@@ -567,15 +566,7 @@ class uvm_slave_export(uvm_blocking_slave_export,
 
 
 class uvm_analysis_export(uvm_analysis_port):
-    """
-    The analysis export overrides the port's write method and forces others
-    to override its write method.
-    """
-
-    def write(self, data):
-        raise error_classes.UVMTLMConnectionError(
-            "If you extend uvm_analysis_export, you must"
-            " override the write method.")
+    ...
 
 
 # 12.2.8 FIFO Classes
