@@ -383,9 +383,9 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param type_name: string that is name of a type
         :return: boolean
         """
-        assert (isinstance(type_name,
-                           str)), "is_type_name_registered() takes a"
-        " string as its argument not {type(type_name)}"
+        assert (isinstance(type_name, str)), \
+            ("is_type_name_registered() takes a"
+             " string as its argument not {type(type_name)}")
         return type_name in self.fd.classes
 
     # 8.3.1.7.4
@@ -398,8 +398,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :return: boolean
         """
         assert (issubclass(uvm_type, utility_classes.uvm_void)), \
-            "is_type_registered() takes a subclass of uvm_void "
-        "as its argument not {type(uvm_type)}"
+            ("is_type_registered() takes a subclass of uvm_void "
+             "as its argument not {type(uvm_type)}")
         return uvm_type in self.fd.classes.values()
 
     @property
