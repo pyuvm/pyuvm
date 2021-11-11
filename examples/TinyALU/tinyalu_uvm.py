@@ -1,7 +1,10 @@
-from pyuvm import *
-from cocotb.triggers import ClockCycles
 import enum
+import logging
 import random
+
+from cocotb.triggers import ClockCycles
+
+from pyuvm import *
 
 
 @enum.unique
@@ -40,8 +43,8 @@ class AluSeqItem(uvm_sequence_item):
         return same
 
     def __str__(self):
-        return f"{self.get_name()} : A: 0x{self.A:02x} "
-        f"OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"
+        return (f"{self.get_name()} : A: 0x{self.A:02x} "
+                f"OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}")
 
     def randomize(self):
         self.A = random.randint(0, 255)
