@@ -14,20 +14,20 @@ module tinyalu (input [7:0] A,
 	initial clk = 0;
 	always #5 clk = ~clk;
 
-       
+
    assign start_single = start & ~op[2];
    assign start_mult   = start & op[2];
 
    single_cycle and_add_xor (.A, .B, .op, .clk, .reset_n, .start(start_single),
 			     .done(done_aax), .result(result_aax));
-   
+
    three_cycle mult (.A, .B, .op, .clk, .reset_n, .start(start_mult),
 		    .done(done_mult), .result(result_mult));
 
 
    assign done = (op[2]) ? done_mult : done_aax;
 
-   assign result = (op[2]) ? result_mult :  result_aax;
+   assign result = (op[2]) ? result_mult : result_aax;
 
 endmodule // tinyalu
 
@@ -55,7 +55,7 @@ module single_cycle(input [7:0] A,
      if (!reset_n)
        done <= 0;
      else
-       done =  ((start == 1'b1) && (op != 3'b000));
+       done <= ((start == 1'b1) && (op != 3'b000));
 
 endmodule : single_cycle
 
