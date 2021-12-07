@@ -44,7 +44,7 @@ is really going on.  We've opted for the latter.
         if parent is not None:
             parent.add_child(name, self)
         self.print_enabled = True  # 13.1.2.2
-        super().__init__(name)
+        super().__init__(name, parent)
 
         # Cache the hierarchy for easy access
         if name != 'uvm_root':

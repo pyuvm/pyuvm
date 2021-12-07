@@ -29,13 +29,17 @@ class PyuvmFormatter(SimColourLogFormatter):
 class uvm_report_object(uvm_object):
     """ The basis of all classes that can report """
 
-    def __init__(self, name):
+    def __init__(self, name, parent=None):
         super().__init__(name)
         uvm_root_logger = logging.getLogger('uvm')
         # Every object gets its own logger
         logger_name = self.get_full_name() + str(id(self))
         self.logger = uvm_root_logger.getChild(logger_name)
-        self.logger.setLevel(level=logging.INFO)  # Default is to print INFO
+        # Default to parent's logging level, else INFO
+        if parent is not None:
+            self.logger.setLevel(level=parent.logger.level)
+        else:
+            self.logger.setLevel(level=logging.INFO)
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
         self._streaming_handler = logging.StreamHandler(sys.stdout)
