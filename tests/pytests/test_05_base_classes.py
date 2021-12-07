@@ -1,5 +1,6 @@
 import pytest
 from pyuvm import *
+import copy
 
 pytestmark = pytest.mark.usefixtures("initialize_pyuvm")
 
@@ -89,7 +90,7 @@ def test_creation():
     assert type(new_mo) == type(mo)
     # 5.3.5.2
     mo.val = 5
-    cln_mo = mo.clone()
+    cln_mo = copy.deepcopy(mo)
     assert mo.__eq__(cln_mo)
 
 
@@ -130,10 +131,10 @@ def test_copying():
     mo = my_object("mo")
     rhs = my_object("rhs")
     # 5.3.8.1
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(error_classes.UVMError):
         mo.copy(rhs)
     # 5.3.8.2
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(error_classes.UVMError):
         mo.do_copy(rhs)
 
 
