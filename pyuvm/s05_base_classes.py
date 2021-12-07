@@ -4,7 +4,6 @@ This file defines the UVM base classes
 import sys
 
 try:
-    import copy
     import pyuvm.error_classes as error_classes
     import pyuvm.utility_classes as utility_classes
     from pyuvm.s08_factory_classes import uvm_factory
@@ -115,7 +114,7 @@ class uvm_object(utility_classes.uvm_void):
         uses copy.deepcopy so the user does not need to override
         do_copy()
         """
-        return copy.deepcopy(self)
+        raise error_classes.UVMNotImplemented("Use copy.deepcopy()")
 
     # 5.3.6.1
     def print(self):
@@ -123,7 +122,8 @@ class uvm_object(utility_classes.uvm_void):
         Not implemented. Use __str__() and print()
         """
         raise error_classes.UVMNotImplemented(
-            'There are better ways to do printing in Python')
+            'There are better ways to do printing in Python using'
+            'print() or str()')
 
     # 5.3.6.2
     def sprint(self):
@@ -165,20 +165,20 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.8.1
     def copy(self, rhs):
         """
-        Returns do_copy() though that just calls copy.deepcopy()
+        Copy fields from rhs to this object
         """
-        return self.do_copy(rhs)
+        self.do_copy(rhs)
 
     # 5.3.8.2
     def do_copy(self, rhs):
         """
-        Must be overridden, though copy.deepcopy() does the equivalent
-        and is a more Pythonic solution
+        Must be overridden to implement UVM copy().
         """
-        raise error_classes.UsePythonMethod('Use the copy.deepcopy() '
-                                            'method to implement this to '
-                                            'support the copy module or '
-                                            'override this method.')
+        raise error_classes.UVMError("Implement do_copy to copy "
+                                     "fields from rhs into self. This is "
+                                     "not really needed in Python in which "
+                                     "copy.copy() and copy.deepcopy() return a"
+                                     " new object with copied data.")
 
     # 5.3.9.1
     def compare(self, rhs):
