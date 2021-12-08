@@ -12,6 +12,9 @@ import sys
 from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
 from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET, NullHandler   # noqa: F401, E501
 
+pyuvm_logging_config = {
+    'default_level': logging.INFO,
+}
 
 class PyuvmFormatter(SimColourLogFormatter):
     def __init__(self, full_name):
@@ -27,7 +30,6 @@ class PyuvmFormatter(SimColourLogFormatter):
 
 # 6.2.1
 class uvm_report_object(uvm_object):
-    default_logging_level = logging.INFO
     """ The basis of all classes that can report """
     def __init__(self, name):
         super().__init__(name)
@@ -35,7 +37,7 @@ class uvm_report_object(uvm_object):
         # Every object gets its own logger
         logger_name = self.get_full_name() + str(id(self))
         self.logger = uvm_root_logger.getChild(logger_name)
-        self.logger.setLevel(level=self.default_logging_level)
+        self.logger.setLevel(level=pyuvm_logging_config['default_level'])
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
         self._streaming_handler = logging.StreamHandler(sys.stdout)
@@ -48,9 +50,6 @@ class uvm_report_object(uvm_object):
 #            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
         self.add_logging_handler(self._streaming_handler)
 
-    @classmethod
-    def set_default_logging_level(cls, default_logging_level):
-        cls.default_logging_level = default_logging_level
 
     def set_logging_level(self, logging_level):
         """ Sets the logger level """
