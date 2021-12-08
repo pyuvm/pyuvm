@@ -27,7 +27,7 @@ class PyuvmFormatter(SimColourLogFormatter):
 
 # 6.2.1
 class uvm_report_object(uvm_object):
-    default_logging_level = logging.INFO
+    __default_logging_level = logging.INFO
     """ The basis of all classes that can report """
     def __init__(self, name):
         super().__init__(name)
@@ -35,7 +35,7 @@ class uvm_report_object(uvm_object):
         # Every object gets its own logger
         logger_name = self.get_full_name() + str(id(self))
         self.logger = uvm_root_logger.getChild(logger_name)
-        self.logger.setLevel(level=self.default_logging_level)
+        self.logger.setLevel(level=uvm_report_object.__default_logging_level)
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
         self._streaming_handler = logging.StreamHandler(sys.stdout)
@@ -44,13 +44,15 @@ class uvm_report_object(uvm_object):
         self._streaming_handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
         self._uvm_formatter = PyuvmFormatter(self.get_full_name())
-#        self._uvm_formatter = logging.Formatter(
-#            "%(levelname)s: %(filename)s(%(lineno)d)[" + self.get_full_name() + "]: %(message)s")  # noqa: E501
         self.add_logging_handler(self._streaming_handler)
 
-    @classmethod
-    def set_default_logging_level(cls, default_logging_level):
-        cls.default_logging_level = default_logging_level
+    @staticmethod
+    def set_default_logging_level(default_logging_level):
+        uvm_report_object.__default_logging_level = default_logging_level
+
+    @staticmethod
+    def get_default_logging_level():
+        return uvm_report_object.__default_logging_level
 
     def set_logging_level(self, logging_level):
         """ Sets the logger level """
