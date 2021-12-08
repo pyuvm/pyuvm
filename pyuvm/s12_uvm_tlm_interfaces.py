@@ -104,6 +104,9 @@ class uvm_port_base(uvm_export_base):
 
     def check_export(self, export):
         """Check that the export implements needed methods"""
+        if not isinstance(export, uvm_export_base):
+            raise UVMTLMConnectionError(
+                f"{export} must be a subclass of uvm_export_base")
         for needed in self.needed_methods:
             if not hasattr(export, needed):
                 raise UVMTLMConnectionError(
