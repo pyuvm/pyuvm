@@ -205,7 +205,7 @@ The `Monitor` creates an analysis port and writes the data it gets into the anal
 
 Notice in the `run_phase()` we use the `await` keyword to wait for the `get_cmd` or `get_result` coroutine.  Unlike SystemVerilog, Python makes it clear when you are calling a time-consuming task vs a function. Also notice that the `run_phase()` has the `async` keyword to designate that it is a coroutine. (A task in SystemVerilog.)
 ```python
-lass Monitor(uvm_component):
+class Monitor(uvm_component):
     def __init__(self, name, parent, method_name):
         super().__init__(name, parent)
         self.method_name = method_name

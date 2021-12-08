@@ -1,8 +1,3 @@
-from cocotb.triggers import FallingEdge
-import cocotb
-from cocotb.queue import QueueEmpty
-from tinyalu_uvm import *
-
 """
 import debugpy
 
@@ -18,6 +13,15 @@ debugpy.wait_for_client()
 # Break into debugger for user control
 breakpoint()  # or debugpy.breakpoint() on 3.6 and below
 """
+
+
+import cocotb
+from cocotb.queue import QueueEmpty
+from cocotb.triggers import FallingEdge
+
+from pyuvm import *
+
+from tinyalu_uvm import AluTest
 
 
 class CocotbProxy:
@@ -66,7 +70,7 @@ class CocotbProxy:
                     pass
             elif self.dut.start == 1:
                 if self.dut.done.value == 1:
-                    self.dut.start = 0
+                    self.dut.start.value = 0
 
     async def cmd_mon_bfm(self):
         prev_start = 0
