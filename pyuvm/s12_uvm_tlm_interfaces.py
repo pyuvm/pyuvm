@@ -53,8 +53,15 @@ from cocotb.queue import QueueEmpty, QueueFull
 # We use these classes to check the connect phase
 # to avoid illegal connections
 
+# uvm_export_base provides the provided_to
+# associative array.
+class uvm_export_base(uvm_component):
+    def __init__(self, name, parent):
+        super().__init__(name, parent)
+        self.provided_to = {}
 
-class uvm_port_base(uvm_component):
+
+class uvm_port_base(uvm_export_base):
     """
     A uvm_port_base is a uvm_component with a connect() function.
     The connect function creates an __export data member that
@@ -71,12 +78,37 @@ class uvm_port_base(uvm_component):
     Unlike the SV implementation of UVM we return results from get and peek
     as function call returns. This is more pythonic.
     """
+    # This is the list of all TLM functions. Each port class
+    # uses this to create a list of methods that an export
+    # must support.
+    __tlm_method_list = ["put", "get", "peek",
+                         "try_put", "try_get", "try_peek",
+                         "can_put", "can_get", "can_peek",
+                         "transport", "nb_transport",
+                         "write",
+                         "put_req", "put_response", "get_next_item",
+                         "item_done", "get_response"]
 
     def __init__(self, name, parent):
         super().__init__(name, parent)
         self.connected_to = {}
-        self.provided_to = {}
         self.export = None
+        self.needed_methods = []
+
+        # Compare the list of all tlm methods to the
+        # methods in this class to create a list of
+        # needed
+        for method in self.__tlm_method_list:
+            if hasattr(self, method):
+                self.needed_methods.append(method)
+
+    def check_export(self, export):
+        """Check that the export implements needed methods"""
+        for needed in self.needed_methods:
+            if not hasattr(export, needed):
+                raise UVMTLMConnectionError(
+                    f"{export} must implement '{needed}()'"
+                    f" to connect to a {self.__class__}")
 
     def connect(self, export):
         """
@@ -85,6 +117,7 @@ class uvm_port_base(uvm_component):
         :param export:
         :return:
         """
+        self.check_export(export)
         try:
             self.export = export
             self.connected_to[export.get_full_name()] = export
@@ -93,27 +126,15 @@ class uvm_port_base(uvm_component):
             raise UVMTLMConnectionError(
                 f"Error connecting {self.get_name()} using {export}")
 
-    @staticmethod
-    def check_export(export, check_class):
-        if not isinstance(export, check_class):
-            check_class_name = str(check_class).split('.')[-1][:-2]
-            export_name = str(type(export)).split('.')[-1][:-2]
-            raise UVMTLMConnectionError(
-                f"{export} must be an instance "
-                f"of '{check_class_name}' not '{export_name}'")
-
-
 # put
 
 # 12.2.5.1
+
+
 class uvm_blocking_put_port(uvm_port_base):
     """
     Access the blocking put interfaces
     """
-
-    def connect(self, export):
-        self.check_export(export, uvm_blocking_put_port)
-        super().connect(export)
 
     # 12.2.4.2.1
     async def put(self, datum):
@@ -135,10 +156,6 @@ class uvm_nonblocking_put_port(uvm_port_base):
     """
     Access the non_blocking put interface
     """
-
-    def connect(self, export):
-        self.check_export(export, uvm_nonblocking_put_port)
-        super().connect(export)
 
     # 12.2.4.2.4
     def try_put(self, data):
@@ -187,10 +204,6 @@ class uvm_blocking_get_port(uvm_port_base):
         Access the blocking get export methods
     """
 
-    def connect(self, export):
-        self.check_export(export, uvm_blocking_get_port)
-        super().connect(export)
-
     # 12.2.4.2.2
     async def get(self):
         """
@@ -212,10 +225,6 @@ class uvm_nonblocking_get_port(uvm_port_base):
     """
     Access the non_blocking methods in export
     """
-
-    def connect(self, export):
-        self.check_export(export, uvm_nonblocking_get_port)
-        super().connect(export)
 
     def try_get(self):
         """
@@ -263,10 +272,6 @@ class uvm_blocking_peek_port(uvm_port_base):
     Provides access to the peek methods
     """
 
-    def connect(self, export):
-        self.check_export(export, uvm_blocking_peek_port)
-        super().connect(export)
-
     # 12.2.4.2.3
     async def peek(self):
         """
@@ -289,10 +294,6 @@ class uvm_nonblocking_peek_port(uvm_port_base):
     """
     Try a peek
     """
-
-    def connect(self, export):
-        self.check_export(export, uvm_nonblocking_peek_port)
-        super().connect(export)
 
     # 12.2.4.2.8
     def try_peek(self):
@@ -329,42 +330,22 @@ class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port):
 
 class uvm_blocking_get_peek_port(uvm_blocking_get_port,
                                  uvm_blocking_peek_port):
-    def connect(self, export):
-        if not (isinstance(export, uvm_blocking_get_port) or isinstance(export, uvm_blocking_peek_port)):  # noqa: E501
-            raise UVMTLMConnectionError(
-                f"Tried to connect {type(export)} to "
-                f"uvm_blocking_get_peek {self.get_full_name()}")
-        super().connect(export)
+    ...
 
 
 class uvm_nonblocking_get_peek_port(uvm_nonblocking_get_port,
                                     uvm_nonblocking_peek_port):
-    def connect(self, export):
-        if not (isinstance(export, uvm_nonblocking_get_port) or isinstance(export, uvm_nonblocking_peek_port)):  # noqa: E501
-            raise UVMTLMConnectionError(
-                f"Tried to connect an {export} to "
-                f"uvm_blocking_get_peek {self.get_full_name()}")
-        super().connect(export)
+    ...
 
 
 class uvm_get_peek_port(uvm_blocking_get_peek_port,
                         uvm_nonblocking_get_peek_port):
-    def connect(self, export):
-        if not (isinstance(export, uvm_nonblocking_get_port) or isinstance(export, uvm_nonblocking_peek_port)  # noqa: E501
-                or isinstance(export, uvm_blocking_get_port) or isinstance(export, uvm_blocking_peek_port)):  # noqa: E501, W503
-            raise UVMTLMConnectionError(
-                "Tried to connect an illegal "
-                f"export to uvm_blocking_get_peek {self.get_full_name()}")
-        super().connect(export)
+    ...
 
 
 class uvm_blocking_transport_port(uvm_port_base):
     def __init__(self, name, parent):
         super().__init__(name, parent)
-
-    def connect(self, export):
-        self.check_export(export, uvm_blocking_transport_port)
-        super().connect(export)
 
     async def transport(self, put_data):
         try:
@@ -380,10 +361,6 @@ class uvm_nonblocking_transport_port(uvm_port_base):
 
     def __init__(self, name, parent):
         super().__init__(name, parent)
-
-    def connect(self, export):
-        self.check_export(export, uvm_nonblocking_transport_port)
-        super().connect(export)
 
     def nb_transport(self, put_data):
         try:
@@ -436,10 +413,6 @@ class uvm_analysis_port(uvm_port_base):
 
         self.subscribers = []
 
-    def connect(self, export):
-        self.check_export(export, uvm_analysis_port)
-        self.subscribers.append(export)
-
     # 12.2.8.1
     def write(self, datum):
         """
@@ -453,25 +426,11 @@ class uvm_analysis_port(uvm_port_base):
             export.write(datum)
 
 
-# THE UNNECESSARY EXPORTS
-# It turns out the entire export class is unnecessary in Python
-# Since the port's connect() method can connect to either a port
-# or export (they both provided the needed methods) it means
-# that an export is simply a port with the methods filled in.
-#
-# One could have made ports abstract base classes, but that
-# would add complications to the metatypes that implement
-# the factory, so we don't do that.
-
-# We provide the export class below to follow the spec
-# and to acknowledge that the name "export" does imply
-# a port with implemented functions.
-
-class uvm_nonblocking_put_export(uvm_nonblocking_put_port):
+class uvm_nonblocking_put_export(uvm_export_base):
     ...
 
 
-class uvm_blocking_put_export(uvm_blocking_put_port):
+class uvm_blocking_put_export(uvm_export_base):
     ...
 
 
@@ -480,11 +439,11 @@ class uvm_put_export(uvm_nonblocking_put_export, uvm_blocking_put_export):
 
 
 # get
-class uvm_nonblocking_get_export(uvm_nonblocking_get_port):
+class uvm_nonblocking_get_export(uvm_export_base):
     ...
 
 
-class uvm_blocking_get_export(uvm_blocking_get_port):
+class uvm_blocking_get_export(uvm_export_base):
     ...
 
 
@@ -493,11 +452,11 @@ class uvm_get_export(uvm_blocking_get_export, uvm_nonblocking_get_export):
 
 
 # peek
-class uvm_nonblocking_peek_export(uvm_nonblocking_peek_port):
+class uvm_nonblocking_peek_export(uvm_export_base):
     ...
 
 
-class uvm_blocking_peek_export(uvm_blocking_peek_port):
+class uvm_blocking_peek_export(uvm_export_base):
     ...
 
 
@@ -506,11 +465,11 @@ class uvm_peek_export(uvm_nonblocking_peek_export, uvm_blocking_peek_export):
 
 
 # get_peek
-class uvm_blocking_get_peek_export(uvm_blocking_get_peek_port):
+class uvm_blocking_get_peek_export(uvm_export_base):
     ...
 
 
-class uvm_nonblocking_get_peek_export(uvm_nonblocking_get_peek_port):
+class uvm_nonblocking_get_peek_export(uvm_export_base):
     ...
 
 
@@ -520,11 +479,11 @@ class uvm_get_peek_export(uvm_nonblocking_get_peek_export,
 
 
 # transport
-class uvm_blocking_transport_export(uvm_blocking_transport_port):
+class uvm_blocking_transport_export(uvm_export_base):
     ...
 
 
-class uvm_nonblocking_transport_export(uvm_nonblocking_transport_port):
+class uvm_nonblocking_transport_export(uvm_export_base):
     ...
 
 
@@ -565,7 +524,7 @@ class uvm_slave_export(uvm_blocking_slave_export,
     ...
 
 
-class uvm_analysis_export(uvm_analysis_port):
+class uvm_analysis_export(uvm_export_base):
     ...
 
 
