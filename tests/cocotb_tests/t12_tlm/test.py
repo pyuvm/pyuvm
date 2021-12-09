@@ -2,6 +2,7 @@ from cocotb.clock import Clock
 import cocotb
 import inspect
 import test_12_uvm_tlm_interfaces as test_mod
+from pyuvm import *
 
 
 async def run_tests(dut):
@@ -32,11 +33,75 @@ async def run_tests(dut):
         print (f"{pf} {test}")
     assert not any_failed
 
-@cocotb.test() # pylint: disable=no-value-for-parameter
+
+class FIFO(uvm_component):
+    def build_phase(self):
+        self.fifo = uvm_tlm_analysis_fifo("fifo", self)
+        self.gp = uvm_get_port("gp", self)
+
+    def connect_phase(self):
+        self.gp.connect(self.fifo.get_export)
+
+    def start_of_simulation_phase(self):
+        self.data = []
+
+    async def run_phase(self):
+        while True:
+            datum = await self.gp.get()
+            self.data.append(datum)
+
+class Subscriber(uvm_subscriber):
+    def start_of_simulation_phase(self):
+        self.data = []
+
+    def write(self, datum):
+        self.data.append(datum)
+
+
+class Export(uvm_analysis_export):
+    def start_of_simulation_phase(self):
+        self.data = []
+
+    def write(self, datum):
+        self.data.append(datum)
+
+
+class AnalysisTest(uvm_test):
+    def build_phase(self):
+        self.gp = uvm_get_port("gp", self)
+        self.ap1 = uvm_analysis_port("ap1", self)
+        self.ap2 = uvm_analysis_port("ap2", self)
+        self.export = Export("export", self)
+        self.fifo = FIFO("fifo", self)
+        self.subscriber = Subscriber("subscriber", self)
+
+    def connect_phase(self):
+        self.ap1.connect(self.ap2)
+        self.ap2.connect(self.export)
+        self.ap2.connect(self.subscriber.analysis_export)
+        self.ap2.connect(self.fifo.fifo.analysis_export)
+
+    async def run_phase(self):
+        self.raise_objection()
+        self.data_list = [1, '1', 2, 'two']
+        for datum in self.data_list:
+            self.ap1.write(datum)
+        self.drop_objection()
+
+    def check_phase(self):
+        print(self.data_list, self.subscriber.data)
+        assert self.data_list == self.subscriber.data
+        assert self.data_list == self.export.data
+        assert self.data_list == self.fifo.data
+
+
+@cocotb.test()  # pylint: disable=no-value-for-parameter
 async def test_12_tlm(dut):
     """Tests the TLM FIFOS"""
     await run_tests(dut)
 
 
-
-
+@cocotb.test()
+async def analysis_test(_):
+    """Test analysis ports"""
+    await uvm_root().run_test("AnalysisTest")
