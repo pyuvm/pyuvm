@@ -428,6 +428,10 @@ class uvm_analysis_port(uvm_port_base):
                     f"No write() method in {export}. Did you connect it?")
             export.write(datum)
 
+    def connect(self, export):
+        self.check_export(export)
+        self.subscribers.append(export)
+
 
 class uvm_nonblocking_put_export(uvm_export_base):
     ...
