@@ -24,5 +24,5 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     python_requires=">=3.6",
-    install_requires="cocotb>=1.5.2",
+    install_requires="cocotb>=1.6.0",
 )
