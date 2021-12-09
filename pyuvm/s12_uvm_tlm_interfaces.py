@@ -432,10 +432,7 @@ class uvm_analysis_port(uvm_port_base):
         self.check_export(export)
         self.subscribers.append(export)
 
-<<<<<<< HEAD
 
-=======
->>>>>>> Refactored uvm_export_base and uvm_port_base
 class uvm_nonblocking_put_export(uvm_export_base):
     ...
 
