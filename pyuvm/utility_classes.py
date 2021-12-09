@@ -2,7 +2,7 @@ from collections import OrderedDict
 import logging
 import fnmatch
 import cocotb.queue
-from cocotb.triggers import Event
+from cocotb.triggers import Event, NullTrigger
 from cocotb.queue import QueueEmpty
 
 FIFO_DEBUG = 5
@@ -230,6 +230,8 @@ class ObjectionHandler(metaclass=Singleton):
             self._objection_event.set()
 
     async def run_phase_complete(self):
+        # Allow the run_phase coros to get scheduled and raise objections:
+        await NullTrigger()
         if self.objection_raised:
             await self._objection_event.wait()
         else:
