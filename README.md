@@ -425,9 +425,17 @@ async def test_alu(dut):
 
 # Contributing
 
-As people use **pyuvm** they will certainly find features of the UVM that they wish had been implemented, such as the register layer.
+You can contribute to `pyuvm` by forking this repository and submitting pull requests.
 
-I'm currently building the testing and contribution system, and am looking forward to working with contributors.
+The repository runs all needed tests using `tox`.  The test runs
+`flake8` and fails if that linter finds any issues.  Visual Studio Code
+can be set up to automatically check `flake8` issues.  The repository
+ignores F403 and F405 issues from `flake8`.
+
+There are three sets of `pytest` tests that test features that
+don't use coroutines.  The rest of the tests are in `tests/cocotb_tests`
+and need a simulator to run.
+
 
 Credits:
 
