@@ -1,3 +1,47 @@
+# New in Pyuvm 2.5
+
+Thanks to the pyuvm contributors for their help with this release!
+
+## Now requires cocotb 1.6
+We now use the `start_soon()` coroutine instead of the deprecated `fork`
+This means we must run with **cocotb** 1.6.0 or greater.
+
+## Default logging level
+You can now set a default logging level before simulating using a
+class method. This allows debug logging in the `build_phase()`
+
+There are two functions:
+
+* `uvm_report_object.set_default_logging_level(<logging level>)
+* `uvm_report_object.get_default_logging_level()
+
+## Fixes to uvm_export_base
+
+Refactored the class hierarchy so that `uvm_export_base` no longer has a
+`connect()` method, a situtation that violated the UVM specification and
+invited bugs.
+
+## Fixes to logging
+
+Logging now uses **cocotb** colorization and provides time stamps.
+Also removed the ability to add formatters to the logger. Now you add
+the formatter to your handler and add the handler.
+
+You can now disable logging and remove the default streaming handler.
+
+## Fixed the `uvm_subscriber`
+
+`uvm_subscriber` now has an `analysis_export` data member as in the UVM spec.
+
+## Removed the ability to call `clone()` on a `uvm_transaction`
+
+The `clone()` method had been implemented by calling `copy.deepcopy(self)`.  This
+hid the actual functionality for no good reason.  Now calls to clone tell the user
+to use `copy.deepcopy()`.
+
+copy() and `do_copy()` remains so the user can make decisions about what will be copied.
+
+
 # Important Note about pyuvm 2.0+
 **Release 2.0 breaks release 1.0 code.**
 
