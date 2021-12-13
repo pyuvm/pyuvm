@@ -217,7 +217,8 @@ class ObjectionHandler(metaclass=Singleton):
 
     def clear(self):
         if len(self.__objections) != 0:
-            logging.warning("Clearing objections raised by %s", ', '.join(self.__objections.values()))
+            logging.warning("Clearing objections raised by %s",
+                            ', '.join(self.__objections.values()))
             self.__objections = {}
         self.objection_raised = False
 
