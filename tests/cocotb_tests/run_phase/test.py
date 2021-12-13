@@ -17,7 +17,7 @@ class my_error(uvm_test):
 
 @cocotb.test()
 async def run_test(dut):
-    """Test the various nowait flavors"""
+    """Test basic run_phase operation with objection"""
     await uvm_root().run_test("my_test")
     assert True
 
@@ -26,3 +26,9 @@ async def run_test(dut):
 async def error(dut):
     """Test that raising exceptions creates cocotb errors"""
     await uvm_root().run_test("my_error")
+
+@cocotb.test()
+async def run_after_error(dut):
+    """Test run_phase operation after previous test raised exception"""
+    await uvm_root().run_test("my_test")
+    assert True
