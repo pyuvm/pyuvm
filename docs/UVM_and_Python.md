@@ -31,7 +31,7 @@ the best of both worlds.
 
 # Pythonizing the UVM
 
-Much of the UVM specification in IEE-1800.2-2017 is driven by elements of
+Much of the UVM specification in IEEE-1800.2-2017 is driven by elements of
 the SystemVerilog programming language.  Blindly implementing all that is in
 the UVM specification is not only impossible (there are no parameters in Class
 declarations, for example) but also unwise.
@@ -163,7 +163,7 @@ There are no field macros and thus no need to implement this class.
 
 ## `uvm_port_base` Class
 
-Python uses the `Queue` class to implement everythign done by the
+Python uses the `Queue` class to implement everything done by the
 port/export system in the UVM. Therefore we do not implement the
 `uvm_port_base` or any of its extensions.
 
