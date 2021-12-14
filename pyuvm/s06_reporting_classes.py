@@ -35,7 +35,8 @@ class uvm_report_object(uvm_object):
         # Every object gets its own logger
         logger_name = self.get_full_name() + str(id(self))
         self.logger = uvm_root_logger.getChild(logger_name)
-        self.logger.setLevel(level=uvm_report_object.__default_logging_level)
+        self.logger.setLevel(
+            level=uvm_report_object.get_default_logging_level())
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
         self._streaming_handler = logging.StreamHandler(sys.stdout)
