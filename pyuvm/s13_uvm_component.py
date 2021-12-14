@@ -391,7 +391,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """Used in testing"""
         return self.get_child("uvm_test_top")
 
-    async def run_test(self, test_name=""):
+    async def run_test(self, test_name, keep_singletons=False):
         """
         This implementation skips much of the state-setting and
         what not in the LRM and focuses on building the
@@ -406,7 +406,8 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         :param test_name: The uvm test name
         :return: none
         """
-
+        if not keep_singletons:
+            self.clear_singletons()
         factory = uvm_factory()
         self.clear_children()
         self.uvm_test_top = factory.create_component_by_name(

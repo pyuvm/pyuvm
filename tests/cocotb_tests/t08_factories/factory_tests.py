@@ -421,7 +421,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", keep_singletons=True)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc, Other)
 
@@ -444,7 +444,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", keep_singletons=True)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Comp)
         assert isinstance(utt.cc2, Other)
@@ -467,7 +467,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", keep_singletons=True)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Comp)
         assert isinstance(utt.cc2, Other)
@@ -490,7 +490,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", keep_singletons=True)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Other)
         assert isinstance(utt.cc2, Other)
@@ -512,7 +512,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", keep_singletons=True)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, OtherObj)
 
@@ -534,7 +534,7 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", keep_singletons=True)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, OtherObj)
 
@@ -555,6 +555,6 @@ class s08_factory_classes_TestCase():
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("Test")
+        await uvm_root().run_test("Test", keep_singletons=True)
         utt = uvm_root()._utt()
         assert isinstance(utt.cc1, Obj)  # Cant inst override object

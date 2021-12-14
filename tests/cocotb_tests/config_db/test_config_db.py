@@ -61,7 +61,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
         cdb = ConfigDB()
         cdb.is_tracing = True
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", keep_singletons=True)
         cdb.set(uvm_root(), '*', "LABEL", 55)
         datum = cdb.get(uvm_root(), "tt", "LABEL")
         self.assertEqual(55, datum)
@@ -84,7 +84,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
             async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.numb)
         self.assertEqual(88, utt.cc2.numb)
@@ -104,7 +104,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
             async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.numb)
         self.assertEqual(66, utt.cc2.numb)
@@ -129,7 +129,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.bot.numb)
 
@@ -154,7 +154,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("PrintTest")
+        await uvm_root().run_test("PrintTest", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(utt.pmsg, utt.p1.msg)
         self.assertEqual(utt.pmsg, utt.p2.msg)
@@ -183,7 +183,7 @@ class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("PrintTest")
+        await uvm_root().run_test("PrintTest", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(utt.pmsg, utt.p1.msg)
         self.assertEqual(utt.pmsg, utt.p2.msg)
