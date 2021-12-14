@@ -410,6 +410,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
             self.clear_singletons()
         factory = uvm_factory()
         self.clear_children()
+        utility_classes.ObjectionHandler().clear()
         self.uvm_test_top = factory.create_component_by_name(
             test_name, "", "uvm_test_top", self)
         for self.running_phase in uvm_common_phases:
