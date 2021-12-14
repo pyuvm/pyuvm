@@ -283,7 +283,7 @@ class s13_predefined_component_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE, utt.agent.get_is_active())
         self.assertEqual(uvm_active_passive_enum.UVM_PASSIVE, utt.agent.bot.get_is_active())
@@ -308,7 +308,7 @@ class s13_predefined_component_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 self.raise_objection()
                 self.drop_objection()
 
-        await uvm_root().run_test("test")
+        await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE, utt.agent.get_is_active())
         self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE, utt.agent.bot.get_is_active())
