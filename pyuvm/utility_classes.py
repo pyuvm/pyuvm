@@ -18,9 +18,12 @@ class Singleton(type):
         return cls._instances[cls]
 
     @classmethod
-    def clear_singletons(mcs):
-        mcs._instances.clear()
-        pass
+    def clear_singletons(cls, keep):
+        classes = list(cls._instances.keys())
+        for del_cls in classes:
+            if del_cls not in keep:
+                print("removing:", del_cls)
+                del(cls._instances[del_cls])
 
 
 class Override:
