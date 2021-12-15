@@ -408,8 +408,6 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         :param test_name: The uvm test name
         :return: none
         """
-        if not keep_singletons:
-            self.clear_singletons()
         factory = uvm_factory()
         if not keep_singletons:
             self.clear_singletons()
