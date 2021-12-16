@@ -1,4 +1,40 @@
-# New in Pyuvm 2.5
+# New in pyuvm 2.6
+
+# 2.6 is potentially a breaking release
+
+This version of pyuvm clears the singletons when you await `uvm_root().run_test()`.
+
+You can disable this behavior with the `keep_singletons=True` argument in `run_test()`.
+
+For example:
+```
+	await uvm_root().run_test("MYTEST", keep_singletons=True)
+```
+
+## `ConfigDB()` empties upon `run_test()`
+
+This means that you cannot store data in the `ConfigDB()` in a `cocotb.test()` and
+then await `run_test()`.  This raises the question of getting the `dut` argument
+into the `pyuvm` testbench.
+
+The solution is to use the `cocotb.top` in pyuvm to get access to the `dut` handle.
+`cocotb.top` has the same handle as `dut` so there is no need to pass the dut
+using `ConfigDB()`
+
+## The `uvm_factory()` clears the overrides
+
+You cannot call `set_override...` before awaiting `run_test()` Instead this must
+happen in the `uvm_test` or in other components.
+
+## Multiple tests run without side effects
+
+This release solves the problem of side effects from `run_test()`.  **pyuvm**
+was original written to have one test per simulation, but **cocotb** can run
+multiple tests in one Python file.  The side effects between tests caused
+unexpected results.
+
+
+# Pyuvm 2.5
 
 Thanks to the pyuvm contributors for their help with this release!
 
@@ -48,7 +84,6 @@ copy() and `do_copy()` remains so the user can make decisions about what will be
 **pyuvm** originally used threads to manage concurrent simulation events. While this provided flexiblity to use **pyuvm** with any DPI interface to the simulator, it was much more difficult to use and it didn't take advantage of the excellent work done in **cocotb**.
 
 You can get the original threaded version on the `threaded` branch in GitHub.  This version is better than the `1.0` tag as it has regression scripts.
-
 
 
 # Description
@@ -116,8 +151,9 @@ CWD=$(shell pwd)
 COCOTB_REDUCED_LOG_FMT = True
 SIM ?= icarus
 VERILOG_SOURCES =$(CWD)/hdl/verilog/tinyalu.sv
-MODULE := tinyalu_cocotb
-TOPLEVEL := tinyalu
+MODULE := testbench
+TOPLEVEL=tinyalu
+TOPLEVEL_LANG=verilog
 COCOTB_HDL_TIMEUNIT=1us
 COCOTB_HDL_TIMEPRECISION=1us
 include $(shell cocotb-config --makefiles)/Makefile.sim
@@ -137,19 +173,25 @@ You should be able to run the simulation like this:
 **cocotb** will present a lot of messages, but in the middle of them you will see these UVM messages. It runs four examples with one for each command with randomized operands.
 
 ```text
-DEBUG: tinyalu_uvm.py(65)[uvm.uvm_test_top.env.driver]: Sent command: cmd_tr : A: 0x42 OP: ADD (1) B: 0x77
-DEBUG: tinyalu_uvm.py(65)[uvm.uvm_test_top.env.driver]: Sent command: cmd_tr : A: 0x9f OP: AND (2) B: 0x03
-DEBUG: tinyalu_uvm.py(65)[uvm.uvm_test_top.env.driver]: Sent command: cmd_tr : A: 0xe1 OP: XOR (3) B: 0x00
-DEBUG: tinyalu_uvm.py(65)[uvm.uvm_test_top.env.driver]: Sent command: cmd_tr : A: 0x99 OP: MUL (4) B: 0xf9
-INFO: tinyalu_uvm.py(106)[uvm.uvm_test_top.env.scoreboard]: PASSED: 0x42 ADD 0x77 = 0x00b9
-INFO: tinyalu_uvm.py(106)[uvm.uvm_test_top.env.scoreboard]: PASSED: 0x9f AND 0x03 = 0x0003
-INFO: tinyalu_uvm.py(106)[uvm.uvm_test_top.env.scoreboard]: PASSED: 0xe1 XOR 0x00 = 0x00e1
-INFO: tinyalu_uvm.py(106)[uvm.uvm_test_top.env.scoreboard]: PASSED: 0x99 MUL 0xf9 = 0x94d1
+250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0x34 ADD 0x23 = 0x0057
+250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xf9 AND 0x29 = 0x0029
+250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0x71 XOR 0x01 = 0x0070
+250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xb8 MUL 0x47 = 0x3308
+250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xff ADD 0xff = 0x01fe
+250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xff AND 0xff = 0x00ff
+250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xff XOR 0xff = 0x0000
+250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xff MUL 0xff = 0xfe01
 ```
+# The `TinyAluBfm` in `tinyalu_utils.py`
 
+The `TinyAluBfm` is a singleton that uses **cocotb** to communicate with the TinyALU.  The BFM exposes three coroutines to the user: `send_op()`, `get_cmd()`, and `get_result()`.
+
+The singleton uses the `cocotb.top` variable to get the handle to the DUT.  This is the handle that we normally pass to a `cocotb.test()` coroutine.
+
+The `TinyAluBfm` is defined in `tinyalu_utils.py` and imported into our testbench.
 # The `pyuvm` testbench
 
-The `tinyalu_uvm.py` contains the entire UVM testbench and connects to the TinyALU through a `CocotbProxy` object defined in `tinyalu_cocotb.py`. This file also contains the **cocotb** test and BFMs.  We'll examine the `tinyalu_uvm.py` file and enough of the **cocotb** test too run the simlation
+The `testbench.py` contains the entire UVM testbench and connects to the TinyALU through a `TinyAluBfm` object defined in `tinyalu_utils.py`.  We'll examine the `testbench.py` file and enough of the **cocotb** test too run the simlation
 
 ## Importing `pyuvm`
 
@@ -165,7 +207,7 @@ similar behavior with `pyuvm` us the `from` import syntax.
 ```python
 from pyuvm import *
 ```
-## The AluTest class
+## The AluTest classes
 
 We're going to examine the UVM classes from the top, the test, to the bottom, the sequences.
 
@@ -194,19 +236,30 @@ You'll see the following in the test:
 ```python
 class AluTest(uvm_test):
     def build_phase(self):
-        self.env = AluEnv.create("env", self)
+        self.env = AluEnv("env", self)
 
     def end_of_elaboration_phase(self):
-        self.set_logging_level_hier(logging.DEBUG)
+        self.test_all = TestAllSeq.create("test_all")
 
     async def run_phase(self):
         self.raise_objection()
-        seqr = ConfigDB().get(self, "", "SEQR")
-        dut = ConfigDB().get(self,"","DUT")
-        seq = AluSeq("seq")
-        await seq.start(seqr)
-        await ClockCycles(dut.clk, 50)  # to do last transaction
+        await self.test_all.start()
         self.drop_objection()
+```
+We extend the `AluTest` class to create a parallel version of the test and a Fibonacci program. You can find these sequences in `testbench.py`
+```
+class ParallelTest(AluTest):
+    def build_phase(self):
+        uvm_factory().set_type_override_by_type(TestAllSeq, TestAllForkSeq)
+        super().build_phase()
+
+
+class FibonacciTest(AluTest):
+    def build_phase(self):
+        ConfigDB().set(None, "*", "DISABLE_COVERAGE_ERRORS", True)
+        uvm_factory().set_type_override_by_type(TestAllSeq, FibonacciSeq)
+        return super().build_phase()
+
 
 ```
 All the familiar pieces of a UVM testbench are in **pyuvm**.
@@ -227,27 +280,25 @@ The `AluEnv` creates all these components in `build_phase()` and connects the ex
 class AluEnv(uvm_env):
 
     def build_phase(self):
-        self.cmd_mon = Monitor("cmd_mon", self, "get_cmd")
-        self.result_mon = Monitor("result_mon", self, "get_result")
-        self.scoreboard = Scoreboard("scoreboard", self)
-        self.coverage = Coverage("coverage", self)
-        self.driver = Driver("driver", self)
         self.seqr = uvm_sequencer("seqr", self)
         ConfigDB().set(None, "*", "SEQR", self.seqr)
-        ConfigDB().set(None, "*", "CVG", self.coverage)
+        self.driver = Driver.create("driver", self)
+        self.cmd_mon = Monitor("cmd_mon", self, "get_cmd")
+        self.coverage = Coverage("coverage", self)
+        self.scoreboard = Scoreboard("scoreboard", self)
 
     def connect_phase(self):
+        self.driver.seq_item_port.connect(self.seqr.seq_item_export)
         self.cmd_mon.ap.connect(self.scoreboard.cmd_export)
         self.cmd_mon.ap.connect(self.coverage.analysis_export)
-        self.result_mon.ap.connect(self.scoreboard.result_export)
-        self.driver.seq_item_port.connect(self.seqr.seq_item_export)
+        self.driver.ap.connect(self.scoreboard.result_export)
 ```
 ## The Monitor
 The `Monitor` extends `uvm_component`. Takes the name of a `CocotProxy` method name as an argument.  It uses the name to find the method in the proxy and then calls the method. You cannot do this in SystemVerilog as there is no introspection.
 
 The `Monitor` creates an analysis port and writes the data it gets into the analysis port.
 
-Notice in the `run_phase()` we use the `await` keyword to wait for the `get_cmd` or `get_result` coroutine.  Unlike SystemVerilog, Python makes it clear when you are calling a time-consuming task vs a function. Also notice that the `run_phase()` has the `async` keyword to designate that it is a coroutine. (A task in SystemVerilog.)
+Notice in the `run_phase()` we use the `await` keyword to wait for the `get_cmd` coroutine.  Unlike SystemVerilog, Python makes it clear when you are calling a time-consuming task vs a function. Also notice that the `run_phase()` has the `async` keyword to designate that it is a coroutine. (A task in SystemVerilog.)
 ```python
 class Monitor(uvm_component):
     def __init__(self, name, parent, method_name):
@@ -256,14 +307,13 @@ class Monitor(uvm_component):
 
     def build_phase(self):
         self.ap = uvm_analysis_port("ap", self)
-
-    def connect_phase(self):
-        self.proxy = self.cdb_get("PROXY")
+        self.bfm = TinyAluBfm()
+        self.get_method = getattr(self.bfm, self.method_name)
 
     async def run_phase(self):
         while True:
-            get_method = getattr(self.proxy, self.method_name)
-            datum = await get_method()
+            datum = await self.get_method()
+            self.logger.debug(f"MONITORED {datum}")
             self.ap.write(datum)
 ```
 ## The Scoreboard
@@ -304,7 +354,9 @@ class Scoreboard(uvm_component):
                                      f" 0x{actual_result:04x}")
                 else:
                     self.logger.error(f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
-                                      f"= 0x{actual_result:04x} expected 0x{predicted_result:04x}")
+                                      f"= 0x{actual_result:04x} "
+                                      f"expected 0x{predicted_result:04x}")
+
 ```
 ## Coverage
 
@@ -324,10 +376,20 @@ class Coverage(uvm_subscriber):
         (_, _, op) = cmd
         self.cvg.add(op)
 
-    def check_phase(self):
-        if len(set(Ops) - self.cvg) > 0:
-            self.logger.error(f"Functional coverage error. Missed: {set(Ops)-self.cvg}")
-
+    def report_phase(self):
+        try:
+            disable_errors = ConfigDB().get(
+                self, "", "DISABLE_COVERAGE_ERRORS")
+        except UVMConfigItemNotFound:
+            disable_errors = False
+        if not disable_errors:
+            if len(set(Ops) - self.cvg) > 0:
+                self.logger.error(
+                    f"Functional coverage error. Missed: {set(Ops)-self.cvg}")
+                assert False
+            else:
+                self.logger.info("Covered all operations")
+                assert True
 ```
 
 ## Driver
@@ -338,31 +400,61 @@ The `connect_phase()` gets the proxy from the `ConfigDB()` and the `run_phase()`
 
 ```python
 class Driver(uvm_driver):
-    def connect_phase(self):
-        self.proxy = self.cdb_get("PROXY")
+    def build_phase(self):
+        self.ap = uvm_analysis_port("ap", self)
+
+    def start_of_simulation_phase(self):
+        self.bfm = TinyAluBfm()
+
+    async def launch_tb(self):
+        await self.bfm.reset()
+        await self.bfm.start_bfms()
 
     async def run_phase(self):
+        await self.launch_tb()
         while True:
-            command = await self.seq_item_port.get_next_item()
-            await self.proxy.send_op(command.A, command.B, command.op)
-            self.logger.debug(f"Sent command: {command}")
+            cmd = await self.seq_item_port.get_next_item()
+            await self.bfm.send_op(cmd.A, cmd.B, cmd.op)
+            result = await self.bfm.get_result()
+            self.ap.write(result)
+            cmd.result = result
             self.seq_item_port.item_done()
+
 ```
-## ALU Sequence
+## The ALU Sequence
 The ALU Sequence creates sequence items, randomizes them and sends them to the `Driver`. It inherits `start_item` and `finish_item` from `uvm_sequence`.
 
 It is clear that `start_item` and `finish_item` block because we call them using the `await` keyword.  `start_item` waits for it's turn to use the sequencer, and `finish_item` sends the sequence_item to the driver and returns when the driver calls `item_done()`
 
 ```python
-class AluSeq(uvm_sequence):
-    async def body(self):
-        for op in list(Ops): # list(Ops):
-            cmd_tr = AluSeqItem("cmd_tr")
-            await self.start_item(cmd_tr)
-            cmd_tr.randomize()
-            cmd_tr.op = op
-            await self.finish_item(cmd_tr)
+class TestAllSeq(uvm_sequence):
 
+    async def body(self):
+        seqr = ConfigDB().get(None, "", "SEQR")
+        random = RandomSeq("random")
+        max = MaxSeq("max")
+        await random.start(seqr)
+        await max.start(seqr)
+
+```
+This virtual sequence launches two other sequences: `RandomSeq` and `MaxSeq`. `RandomSeq` randomizes the operands.
+```python
+class RandomSeq(uvm_sequence):
+    async def body(self):
+        for op in list(Ops):
+            cmd_tr = AluSeqItem("cmd_tr", None, None, op)
+            await self.start_item(cmd_tr)
+            cmd_tr.randomize_operands()
+            await self.finish_item(cmd_tr)
+```
+`MaxSeq` sets the operands to `0xff`:
+```python
+class MaxSeq(uvm_sequence):
+    async def body(self):
+        for op in list(Ops):
+            cmd_tr = AluSeqItem("cmd_tr", 0xff, 0xff, op)
+            await self.start_item(cmd_tr)
+            await self.finish_item(cmd_tr)
 ```
 
 ## ALU Sequence Item
@@ -377,48 +469,53 @@ The SystemVerilog `uvm_sequence_item` class uses `convert2string()` to convert t
 ```python
 class AluSeqItem(uvm_sequence_item):
 
-    def __init__(self, name, aa=0, bb=0, op=Ops.ADD):
+    def __init__(self, name, aa, bb, op):
         super().__init__(name)
         self.A = aa
         self.B = bb
         self.op = Ops(op)
+
+    def randomize_operands(self):
+        self.A = random.randint(0, 255)
+        self.B = random.randint(0, 255)
+
+    def randomize(self):
+        self.randomize_operands()
+        self.op = random.choice(list(Ops))
 
     def __eq__(self, other):
         same = self.A == other.A and self.B == other.B and self.op == other.op
         return same
 
     def __str__(self):
-        return f"{self.get_name()} : A: 0x{self.A:02x} OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"
+        return f"{self.get_name()} : A: 0x{self.A:02x} \
+        OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"
 
-    def randomize(self):
-        self.A = random.randint(0, 255)
-        self.B = random.randint(0, 255)
-        self.op = random.choice(list(Ops))
 ```
 
 Now that we've got the UVM testbench we can call it from a **cocotb** test.
-# The Cocotb Test
+# The Cocotb Tests
 
 **cocotb** finds functions identified with the `@cocotb.test()` decorator and launches them as coroutines.  Our test does the following:
 
-* It creates a `CocotbProxy()` object and passes it the DUT. the `CocotbProxy()` defines coroutines that act as the DUT BFMs.
-
-* It puts the proxy and the DUT into the `ConfigDB() so that UVM objects can use them.  For example the `ALUTest` uses the DUT to wait several clock cycles using `dut.clk`.
-* It resets the DUT using the `reset()` coroutine.
-* It forks off the three BFMs so that the proxy can send operations, read commands, and read results.
-* It awaits `uvm_root().run_test("AluTest")`.  This creates an object of type `AluTest` and launches the phases.
-
+Here we see several tests in a single Python file.
 ```python
 @cocotb.test()
-async def test_alu(dut):
-    proxy = CocotbProxy(dut)
-    ConfigDB().set(None, "*", "PROXY", proxy)
-    ConfigDB().set(None, "*", "DUT", dut)
-    await proxy.reset()
-    cocotb.fork(proxy.driver_bfm())
-    cocotb.fork(proxy.cmd_mon_bfm())
-    cocotb.fork(proxy.result_mon_bfm())
+async def alu_test(_):
+    """Test ALU with random and max values"""
     await uvm_root().run_test("AluTest")
+
+
+@cocotb.test()
+async def parallel_alu_test(_):
+    """Test ALU random and max forked"""
+    await uvm_root().run_test("ParallelTest")
+
+
+@cocotb.test()
+async def fibonacci_sim(_):
+    """Run Fibonacci program"""
+    await uvm_root().run_test("FibonacciTest")
 ```
 
 

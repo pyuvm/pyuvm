@@ -139,7 +139,7 @@ class Driver(uvm_driver):
         self.ap = uvm_analysis_port("ap", self)
 
     def start_of_simulation_phase(self):
-        self.bfm = ConfigDB().get(self, "", "BFM")
+        self.bfm = TinyAluBfm()
 
     async def launch_tb(self):
         await self.bfm.reset()
@@ -221,7 +221,7 @@ class Monitor(uvm_component):
 
     def build_phase(self):
         self.ap = uvm_analysis_port("ap", self)
-        self.bfm = ConfigDB().get(self, "", "BFM")
+        self.bfm = TinyAluBfm()
         self.get_method = getattr(self.bfm, self.method_name)
 
     async def run_phase(self):
@@ -250,8 +250,6 @@ class AluEnv(uvm_env):
 
 class AluTest(uvm_test):
     def build_phase(self):
-        bfm = TinyAluBfm(cocotb.top)
-        ConfigDB().set(None, "*", "BFM", bfm)
         self.env = AluEnv("env", self)
 
     def end_of_elaboration_phase(self):
