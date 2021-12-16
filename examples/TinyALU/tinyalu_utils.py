@@ -5,6 +5,8 @@ import enum
 import random
 import logging
 
+from pyuvm import utility_classes
+
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -43,9 +45,9 @@ def get_int(signal):
     return sig
 
 
-class TinyAluBfm:
-    def __init__(self, dut):
-        self.dut = dut
+class TinyAluBfm(metaclass=utility_classes.Singleton):
+    def __init__(self):
+        self.dut = cocotb.top
         self.driver_queue = Queue(maxsize=1)
         self.cmd_mon_queue = Queue(maxsize=0)
         self.result_mon_queue = Queue(maxsize=0)
@@ -64,12 +66,12 @@ class TinyAluBfm:
 
     async def reset(self):
         await FallingEdge(self.dut.clk)
-        self.dut.reset_n <= 0
-        self.dut.A <= 0
-        self.dut.B <= 0
-        self.dut.op <= 0
+        self.dut.reset_n.value = 0
+        self.dut.A.value = 0
+        self.dut.B.value = 0
+        self.dut.op.value = 0
         await FallingEdge(self.dut.clk)
-        self.dut.reset_n <= 1
+        self.dut.reset_n.value = 1
         await FallingEdge(self.dut.clk)
 
     async def driver_bfm(self):
