@@ -22,7 +22,6 @@ class Singleton(type):
         classes = list(cls._instances.keys())
         for del_cls in classes:
             if del_cls not in keep:
-                print("removing:", del_cls)
                 del(cls._instances[del_cls])
 
 
