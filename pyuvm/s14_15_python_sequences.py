@@ -237,7 +237,11 @@ class uvm_seq_item_port(uvm_port_base):
     async def get_next_item(self):
         """get the next sequence item from the request queue
         """
-        return await self.export.get_next_item()
+        try:
+            return await self.export.get_next_item()
+        except AttributeError:
+            assert self.export is not None, "export is not connected"
+            raise
 
     def item_done(self, rsp=None):
         """Notify finish_item that the item is complete"""
