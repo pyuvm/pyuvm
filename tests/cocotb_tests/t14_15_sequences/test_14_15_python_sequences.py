@@ -1,7 +1,10 @@
+
 import pyuvm_unittest
 from pyuvm import *
 import cocotb
 import asyncio
+from cocotb.utils import get_sim_time
+from cocotb.triggers import Timer
 
 
 class DataHolder(metaclass=Singleton):
@@ -9,6 +12,32 @@ class DataHolder(metaclass=Singleton):
         self.datum = None
         self.dict_ = {}
         self.virtual_seq_error = None
+
+
+class SeqItem(uvm_sequence_item):
+    def __init__(self, name):
+        super().__init__(name)
+        self.op = None
+        self.result = None
+        self.data = 0
+
+    def __str__(self):
+        return f"id: {id(self)} data: {self.data}   result: {self.result}"
+
+
+class ItemDoneRespSeqDriver(uvm_driver):
+    async def run_phase(self):
+        while True:
+            op_item = await self.seq_item_port.get_next_item()
+            self.seq_item_port.item_done(op_item.data + 1)
+
+
+class HandleRespSeqDriver(uvm_driver):
+    async def run_phase(self):
+        while True:
+            op_item = await self.seq_item_port.get_next_item()
+            op_item.result = op_item.data + 1
+            self.seq_item_port.item_done()
 
 
 class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
@@ -26,12 +55,9 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         self.my_root.clear_children()
         uvm_root().clear_hierarchy()
         self.result_list = []
-        ObjectionHandler.clear_singletons()
 
     def tearDown(self):
         ObjectionHandler().run_phase_done_flag = None
-        uvm_factory.clear_singletons()
-
 
     @staticmethod
     async def putter(put_method, data):
@@ -58,7 +84,6 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 datum = await get_response_method(txn_id)
                 self.result_list.append(datum)
 
-
     class ItemClass(uvm_sequence_item):
         def __init__(self, name="seq_item", txn_id=0):
             super().__init__(name)
@@ -69,8 +94,9 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
             return str(self.transaction_id)
 
     async def run_put_get(self, put_method, get_method, done_method=None):
-        cocotb.fork(self.getter(get_method, done_method))
-        send_list = [self.ItemClass("5"), self.ItemClass("3"), self.ItemClass('two')]
+        cocotb.start_soon(self.getter(get_method, done_method))
+        send_list = [self.ItemClass("5"),
+                     self.ItemClass("3"), self.ItemClass('two')]
         await self.putter(put_method, send_list + [self.ItemClass('end')])
         await cocotb.triggers.Timer(1)
         self.assertEqual(send_list, self.result_list)
@@ -79,14 +105,16 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         send_list = []
         for ii in range(5):
             send_list.append(self.ItemClass(txn_id=ii))
-        cocotb.fork(self.response_getter(get_response_method, [4, 2]))
+        cocotb.start_soon(self.response_getter(get_response_method, [4, 2]))
         await self.putter(put_method, send_list)
         await cocotb.triggers.Timer(1)
         result = [xx.transaction_id for xx in self.result_list]
         self.assertEqual([4, 2], result)
         self.result_list = []
-        cocotb.fork(self.response_getter(get_response_method, [5]))
-        await self.putter(put_method, [self.ItemClass(txn_id=10), self.ItemClass(txn_id=11)])
+        cocotb.start_soon(self.response_getter(get_response_method, [5]))
+        await self.putter(put_method,
+                          [self.ItemClass(txn_id=10),
+                           self.ItemClass(txn_id=11)])
         await cocotb.triggers.Timer(1)
         await self.putter(put_method, [self.ItemClass(txn_id=5)])
         await cocotb.triggers.Timer(1)
@@ -97,7 +125,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         try:
             await self.run_put_get(rq.put, rq.get)
         except AssertionError as ae:
-            print("ERROR: ",ae)
+            print("ERROR: ", ae)
             raise
 
     async def test_ResponseQueue_get_response(self):
@@ -105,7 +133,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         try:
             await self.run_get_response(rq.put, rq.get_response)
         except AssertionError as ae:
-            print("ERROR: ",ae)
+            print("ERROR: ", ae)
             raise
 
     async def test_uvm_item_export_check(self):
@@ -118,24 +146,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         sip = uvm_seq_item_port("sip", self.my_root)
         sie = uvm_seq_item_export("sie", self.my_root)
         sip.connect(sie)
-        self.run_get_response(sip.put_response, sip.get_response)
-
-    async def test_uvm_item_port_put_req_get_next_item(self):
-        sip = uvm_seq_item_port("sip", self.my_root)
-        sie = uvm_seq_item_export("sie", self.my_root)
-        sip.connect(sie)
-        await self.run_put_get(sip.put_req, sip.get_next_item, sip.item_done)
-
-
-    async def test_too_much_get_item(self):
-        sip = uvm_seq_item_port("sip", self.my_root)
-        sie = uvm_seq_item_export("sie", self.my_root)
-        sip.connect(sie)
-        await sip.put_req(self.ItemClass(txn_id=0))
-        await sip.put_req(self.ItemClass(txn_id=1))
-        await sip.get_next_item()
-        with self.assertRaises(error_classes.UVMSequenceError):
-            await sip.get_next_item()
+        await self.run_get_response(sip.put_response, sip.get_response)
 
     async def test_premature_item_done(self):
         sip = uvm_seq_item_port("sip", self.my_root)
@@ -144,76 +155,6 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         with self.assertRaises(error_classes.UVMSequenceError):
             sip.item_done()
 
-    @staticmethod
-    async def waiter(condition):
-        condition.wait()
-
-    async def test_double_item_done(self):
-        sip = uvm_seq_item_port("sip", self.my_root)
-        sie = uvm_seq_item_export("sie", self.my_root)
-        sip.connect(sie)
-        await sip.put_req(self.ItemClass(txn_id=0))
-        await sip.put_req(self.ItemClass(txn_id=1))
-        item = await sip.get_next_item()
-        sip.item_done()
-        with self.assertRaises(error_classes.UVMSequenceError):
-            sip.item_done()
-
-    async def test_item_done(self):
-        sip = uvm_seq_item_port("sip", self.my_root)
-        sie = uvm_seq_item_export("sie", self.my_root)
-        sip.connect(sie)
-        req = uvm_sequence_item("req")
-        rsp = uvm_sequence_item("rsp")
-        # There are three threads that test item_done
-        # start_item: The thread that is waiting for start_item
-        # finish_item: The thread that is waiting for finish_item
-        # get_response: the thread that is waiting for get_response
-        cocotb.fork(self.waiter(req.finish_condition))
-        await sip.put_req(req)
-        req_back = await sip.get_next_item()
-        # testing start_item
-        self.assertEqual(req, req_back)
-        # testing item_done
-        # Should finish the finish_item thread and the rsp thread.
-        sip.item_done(rsp)
-        await self.response_getter(sip.get_response)
-        self.assertEqual(rsp, self.result_list[0])
-
-    async def test_uvm_sequencer_put_get_response(self):
-        seqr = uvm_sequencer("seqr", self.my_root)
-        sip = uvm_seq_item_port("sip", self.my_root)
-        sip.connect(seqr.seq_item_export)
-        await self.run_get_response(sip.put_response, seqr.get_response)
-
-    async def test_uvm_sequencer_put_req_get_next_item(self):
-        seqr = uvm_sequencer("seqr", self.my_root)
-        sip = uvm_seq_item_port("sip", self.my_root)
-        sip.connect(seqr.seq_item_export)
-        await self.run_put_get(sip.put_req, seqr.get_next_item, sip.item_done)
-
-    async def test_seqr_item_done(self):
-        seqr = uvm_sequencer("seqr", self.my_root)
-        sip = uvm_seq_item_port("sip", self.my_root)
-        sip.connect(seqr.seq_item_export)
-        req = uvm_sequence_item("req")
-        rsp = uvm_sequence_item("rsp")
-        # There are three threads that test item_done
-        # start_item: The thread that is waiting for start_item
-        # finish_item: The thread that is waiting for finish_item
-        # get_response: the thread that is waiting for get_response
-        cocotb.fork(self.waiter(req.finish_condition))
-        await sip.put_req(req)
-        req_back = await sip.get_next_item()
-        # testing start_item
-        self.assertEqual(req, req_back)
-        # testing item_done
-        # Should finish the finish_item thread and the rsp thread.
-        sip.item_done(rsp)
-        await self.response_getter(sip.get_response)
-        self.assertEqual(rsp, self.result_list[0])
-
-    # Time to test the sequence itself.
     async def test_base_virtual_sequence(self):
         class basic_seq(uvm_sequence):
             def __init__(self, name, result_list):
@@ -241,40 +182,8 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         datum = await sip.get_next_item()
         self.result_list.append(datum)
 
-    async def test_simple_get_item(self):
-        class seq(uvm_sequence):
-            async def body(self):
-                txn = uvm_sequence_item("txn")
-                await self.start_item(txn)
-                txn.datum = 55
-                await self.finish_item(txn)
-
-        seqr = uvm_sequencer("seqr", self.my_root)
-        cocotb.fork(seqr.run_phase())
-        sip = uvm_seq_item_port("sip", self.my_root)
-        sip.connect(seqr.seq_item_export)
-        ss = seq("ss")
-        cocotb.fork(ss.start(seqr))
-        item = await sip.get_next_item()
-        sip.item_done()
-        ObjectionHandler().run_phase_done_flag = True
-        self.assertEqual(55, item.datum)
-
     async def test_run_sequence(self):
         ObjectionHandler().run_phase_done_flag = None
-
-        class SeqItem(uvm_sequence_item):
-            def __init__(self, name):
-                super().__init__(name)
-                self.op = None
-                self.result = None
-
-        class SeqDriver(uvm_driver):
-            async def run_phase(self):
-                while True:
-                    op_item = await self.seq_item_port.get_next_item()
-                    op_item.result = op_item.data + 1
-                    self.seq_item_port.item_done()
 
         class Seq(uvm_sequence):
             async def body(self):
@@ -287,10 +196,13 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.driver = SeqDriver("driver", self)
+                self.driver = HandleRespSeqDriver("driver", self)
 
             def connect_phase(self):
                 self.driver.seq_item_port.connect(self.seqr.seq_item_export)
+
+            def end_of_elaboration_phase(self):
+                self.set_logging_level_hier(PYUVM_DEBUG)
 
             async def run_phase(self):
                 self.raise_objection()
@@ -304,13 +216,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
     async def test_put_response(self):
         ObjectionHandler().run_phase_done_flag = None
 
-        class SeqItem(uvm_sequence_item):
-            def __init__(self, name):
-                super().__init__(name)
-                self.op = None
-                self.result = None
-
-        class SeqDriver(uvm_driver):
+        class PutRespSeqDriver(uvm_driver):
             async def run_phase(self):
                 while True:
                     op_item = await self.seq_item_port.get_next_item()
@@ -329,7 +235,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.driver = SeqDriver("driver", self)
+                self.driver = PutRespSeqDriver("driver", self)
 
             def connect_phase(self):
                 self.driver.seq_item_port.connect(self.seqr.seq_item_export)
@@ -346,18 +252,6 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
     async def test_item_done_response(self):
         ObjectionHandler().run_phase_done_flag = None
 
-        class SeqItem(uvm_sequence_item):
-            def __init__(self, name):
-                super().__init__(name)
-                self.op = None
-                self.result = None
-
-        class SeqDriver(uvm_driver):
-            async def run_phase(self):
-                while True:
-                    op_item = await self.seq_item_port.get_next_item()
-                    self.seq_item_port.item_done(op_item.data + 1)
-
         class Seq(uvm_sequence):
             async def body(self):
                 op = SeqItem("op")
@@ -370,7 +264,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.driver = SeqDriver("driver", self)
+                self.driver = ItemDoneRespSeqDriver("driver", self)
 
             def connect_phase(self):
                 self.driver.seq_item_port.connect(self.seqr.seq_item_export)
@@ -387,18 +281,6 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
     async def test_multiple_seq_runs(self):
         ObjectionHandler().run_phase_done_flag = None
 
-        class SeqItem(uvm_sequence_item):
-            def __init__(self, name):
-                super().__init__(name)
-                self.op = None
-                self.result = None
-
-        class SeqDriver(uvm_driver):
-            async def run_phase(self):
-                while True:
-                    op_item = await self.seq_item_port.get_next_item()
-                    self.seq_item_port.item_done(op_item.data + 1)
-
         class Seq(uvm_sequence):
             def __init__(self, name):
                 super().__init__(name)
@@ -414,7 +296,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqAgent(uvm_agent):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.driver = SeqDriver("driver", self)
+                self.driver = ItemDoneRespSeqDriver("driver", self)
                 ConfigDB().set(None, "*", "SEQR", self.seqr)
 
             def connect_phase(self):
@@ -448,30 +330,16 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
     async def test_virtual_sequence(self):
         DataHolder().virtual_seq_error = False
 
-        class SeqItem(uvm_sequence_item):
-            def __init__(self, name):
-                super().__init__(name)
-                self.numb = self.result = None
-
-            def __str__(self):
-                return f"numb: {self.numb}   result: {self.result}"
-
-        class SeqDriver(uvm_driver):
-            async def run_phase(self):
-                while True:
-                    op_item = await self.seq_item_port.get_next_item()
-                    op_item.result = op_item.numb + 1
-                    self.seq_item_port.item_done()
-
         class IncSeq(uvm_sequence):
             async def body(self):
                 for nn in range(5):
                     op = SeqItem("op")
                     await self.start_item(op)
-                    op.numb = nn
+                    op.data = nn
                     await self.finish_item(op)
-                    error = op.numb + 1 != op.result
+                    error = op.data + 1 != op.result
                     if error:
+                        print("!!!!!!INC ERROR!!!!")
                         DataHolder().virtual_seq_error = error
                         break
 
@@ -480,10 +348,11 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 for nn in range(5):
                     op = SeqItem("op")
                     await self.start_item(op)
-                    op.numb = nn
+                    op.data = nn
                     await self.finish_item(op)
-                    error = op.numb + 1 != op.result
+                    error = op.data + 1 != op.result
                     if error:
+                        print("!!!!!!DEC ERROR!!!!")
                         DataHolder().virtual_seq_error = error
                         break
 
@@ -500,7 +369,7 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.driver = SeqDriver("driver", self)
+                self.driver = HandleRespSeqDriver("driver", self)
                 ConfigDB().set(None, "*", "SEQR", self.seqr)
 
             def connect_phase(self):
@@ -515,32 +384,17 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
         await uvm_root().run_test("SeqTest")
         self.assertFalse(DataHolder().virtual_seq_error)
 
-    async def tqst_fork_sequence(self):
+    async def test_start_soon_sequence(self):
         DataHolder().virtual_seq_error = False
-
-        class SeqItem(uvm_sequence_item):
-            def __init__(self, name):
-                super().__init__(name)
-                self.numb = self.result = None
-
-            def __str__(self):
-                return f"numb: {self.numb}   result: {self.result}"
-
-        class SeqDriver(uvm_driver):
-            async def run_phase(self):
-                while True:
-                    op_item = await self.seq_item_port.get_next_item()
-                    op_item.result = op_item.numb + 1
-                    self.seq_item_port.item_done()
 
         class IncSeq(uvm_sequence):
             async def body(self):
                 for nn in range(5):
                     op = SeqItem("op")
                     await self.start_item(op)
-                    op.numb = nn
+                    op.data = nn
                     await self.finish_item(op)
-                    error = op.numb + 1 != op.result
+                    error = op.data + 1 != op.result
                     if error:
                         DataHolder().virtual_seq_error = error
                         break
@@ -550,9 +404,9 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 for nn in range(5):
                     op = SeqItem("op")
                     await self.start_item(op)
-                    op.numb = nn
+                    op.data = nn
                     await self.finish_item(op)
-                    error = op.numb + 1 != op.result
+                    error = op.data + 1 != op.result
                     if error:
                         DataHolder().virtual_seq_error = error
                         break
@@ -562,13 +416,13 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
                 seqr = ConfigDB().get(None, "", "SEQR")
                 inc = IncSeq("inc")
                 dec = DecSeq("dec")
-                cocotb.fork(inc.start(seqr))
-                cocotb.fork(dec.start(seqr))
+                cocotb.start_soon(inc.start(seqr))
+                cocotb.start_soon(dec.start(seqr))
 
         class SeqTest(uvm_test):
             def build_phase(self):
                 self.seqr = uvm_sequencer("seqr", self)
-                self.driver = SeqDriver("driver", self)
+                self.driver = HandleRespSeqDriver("driver", self)
                 ConfigDB().set(None, "*", "SEQR", self.seqr)
 
             def connect_phase(self):
@@ -582,3 +436,64 @@ class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
 
         await uvm_root().run_test("SeqTest")
         self.assertFalse(DataHolder().virtual_seq_error)
+
+    async def test_start_item_timing(self):
+        ObjectionHandler().run_phase_done_flag = None
+
+        class DelaySeqDriver(uvm_driver):
+
+            def __init__(self, name, parent, start_delay_ns, finish_delay_ns):
+                super().__init__(name, parent)
+                self.start_delay_ns = start_delay_ns
+                self.finish_delay_ns = finish_delay_ns
+
+            async def run_phase(self):
+                while True:
+                    await Timer(self.start_delay_ns, units="ns")
+                    op_item = await self.seq_item_port.get_next_item()
+                    op_item.result = op_item.data + 1
+                    await Timer(self.finish_delay_ns, units="ns")
+                    self.seq_item_port.item_done()
+
+        class Seq(uvm_sequence):
+            async def body(self):
+                op = SeqItem("op")
+                DataHolder().start_item_call_time = get_sim_time(units="ns")
+                uvm_root().logger.info("CALLING START_ITEM")
+                await self.start_item(op)
+                uvm_root().logger.info("BACK FROM START_ITEM")
+                DataHolder().start_item_return_time = get_sim_time(units="ns")
+                op.data = 0
+                DataHolder().finish_item_call_time = get_sim_time(units="ns")
+                await self.finish_item(op)
+                DataHolder().finish_item_return_time = get_sim_time(units="ns")
+                DataHolder().datum = (op.result == (op.data + 1))
+
+        class SeqTest(uvm_test):
+            def build_phase(self):
+                self.seqr = uvm_sequencer("seqr", self)
+                self.driver = DelaySeqDriver("driver", self, 5, 7)
+
+            def connect_phase(self):
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
+
+            def end_of_elaboration_phase(self):
+                self.set_logging_level_hier(PYUVM_DEBUG)
+
+            async def run_phase(self):
+                self.raise_objection()
+                seq = Seq("seq")
+                await seq.start(self.seqr)
+                self.drop_objection()
+
+        await uvm_root().run_test("SeqTest")
+        start_item_time = DataHolder().start_item_call_time
+        start_return_time = DataHolder().start_item_return_time
+        finish_item_call_time = DataHolder().finish_item_call_time
+        finish_item_return_time = DataHolder().finish_item_return_time
+
+        self.assertFalse(start_item_time == start_return_time)
+        self.assertFalse(start_return_time == finish_item_return_time)
+        self.assertTrue(start_return_time == finish_item_call_time)
+        self.assertTrue(start_item_time + 5 == start_return_time)
+        self.assertTrue(finish_item_call_time + 7 == finish_item_return_time)
