@@ -93,7 +93,6 @@ class uvm_driver(uvm_component):
     def __init__(self, name, parent):
         super().__init__(name, parent)
         self.seq_item_port = uvm_seq_item_port("seq_item_port", self)
-        pass
 
 
 # 13.8 uvm_push_driver
