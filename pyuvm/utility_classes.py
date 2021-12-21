@@ -6,7 +6,9 @@ from cocotb.triggers import Event, NullTrigger
 from cocotb.queue import QueueEmpty
 
 FIFO_DEBUG = 5
+PYUVM_DEBUG = 4
 logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
+logging.addLevelName(PYUVM_DEBUG, "PYUVM_DEBUG")
 
 
 class Singleton(type):

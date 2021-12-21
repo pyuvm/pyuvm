@@ -138,6 +138,7 @@ class uvm_sequence_item(uvm_transaction):
         super().__init__(name)
         self.start_condition = CocotbEvent()
         self.finish_condition = CocotbEvent()
+        self.item_ready = CocotbEvent()
         self.parent_sequence_id = None
         self.response_id = None
 
@@ -191,6 +192,9 @@ class uvm_seq_item_export(uvm_blocking_put_export):
             raise error_classes.UVMSequenceError(
                 "You must call item_done() before calling get_next_item again")
         self.current_item = await self.req_q.get()
+        self.current_item.start_condition.set()
+        self.current_item.start_condition.clear()
+        await self.current_item.item_ready.wait()
         return self.current_item
 
     def item_done(self, rsp=None):
@@ -203,7 +207,6 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         if self.current_item is None:
             raise error_classes.UVMSequenceError(
                 "You must call get_next_item before calling item_done")
-
         self.current_item.finish_condition.set()
         self.current_item.finish_condition.clear()
         self.current_item = None
@@ -282,15 +285,15 @@ class uvm_sequencer(uvm_component):
     async def run_phase(self):
         while True:
             next_item = await self.seq_q.get()
-            next_item.start_condition.set()
-            next_item.start_condition.clear()
+            await self.seq_item_export.put_req(next_item)
 
     async def start_item(self, item):
         await self.seq_q.put(item)
         await item.start_condition.wait()
 
     async def finish_item(self, item):
-        await self.seq_item_export.put_req(item)
+        item.item_ready.set()
+        item.item_ready.clear()
         await item.finish_condition.wait()
 
     async def put_req(self, req):
