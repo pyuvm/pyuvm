@@ -314,7 +314,7 @@ class uvm_sequence(uvm_object):
     body() gets launched in a thread at start.
     """
 
-    def __init__(self, name):
+    def __init__(self, name="uvm_sequence"):
         super().__init__(name)
         self.sequencer = None
         self.running_item = None
