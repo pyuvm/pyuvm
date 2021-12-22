@@ -9,22 +9,9 @@ import string
 from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
 
 
+# 13.1.1
 class uvm_component(uvm_report_object):
-    """13.1.1 Class Declaration
 
-The specification calls for uvm_component to extend
-uvm_report_object. However, pyuvm uses the logging
-module orthogonally to class structure. It may be
-that in future we find a reason to wrap the basic
-logging package in the uvm code, but at this point we are
-better off leaving logging to itself.
-
-The choice then becomes whether to create a
-uvm_report_object class as a placeholder to preserve
-the UVM reference manual hierarchy or to code what
-is really going on.  We've opted for the latter.
-
-    """
     component_dict = {}
 
     @classmethod
@@ -362,6 +349,13 @@ is really going on.  We've opted for the latter.
     """
 
 
+# 13.2 (rest of 13.2 is in s13_predefined_components)
+class uvm_test(uvm_component):
+    """
+        The base class for all tests
+    """
+
+
 class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     """
     F.7.  We do not use uvm_pkg to hold uvm_root.  Instead it
@@ -379,10 +373,10 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
     """
 
     @classmethod
-    def clear_singletons(cls):
+    def clear_singletons(cls, keep_set={}):
         cls.singleton = None
-        utility_classes.Singleton.clear_singletons(
-            keep={uvm_factory, utility_classes.FactoryData})
+        keepers = {uvm_factory, utility_classes.FactoryData}.union(keep_set)
+        utility_classes.Singleton.clear_singletons(keep=keepers)
 
     def __init__(self):
         super().__init__("uvm_root", None)
@@ -393,24 +387,25 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """Used in testing"""
         return self.get_child("uvm_test_top")
 
-    async def run_test(self, test_name, keep_singletons=False):
+# This implementation skips much of the state-setting and
+# what not in the LRM and focuses on building the
+# hierarchy and running the test.
+
+# At this time pyuvm has not implemented the phasing
+# system described in the LRM.  It's not clear that anyone
+# is using it, and in fact it is recommended that people
+# stick to the basic phases.  So this implementation loops
+# through the hierarchy and runs the phases.
+    async def run_test(self, test_name, keep_singletons=False, keep_set={}):
         """
-        This implementation skips much of the state-setting and
-        what not in the LRM and focuses on building the
-        hierarchy and running the test.
-
-        At this time pyuvm has not implemented the phasing
-        system described in the LRM.  It's not clear that anyone
-        is using it, and in fact it is recommended that people
-        stick to the basic phases.  So this implementation loops
-        through the hierarchy and runs the phases.
-
-        :param test_name: The uvm test name
+        :param test_name: The uvm test name or test class
+        :param keep_singletons: If True do not clear singletons (default False)
+        :param keep_set: Set of singleton classes to keep
         :return: none
         """
         factory = uvm_factory()
         if not keep_singletons:
-            self.clear_singletons()
+            self.clear_singletons(keep_set)
             factory.clear_overrides()
         self.clear_children()
         utility_classes.ObjectionHandler().clear()

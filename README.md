@@ -408,8 +408,7 @@ class Driver(uvm_driver):
 
     async def launch_tb(self):
         await self.bfm.reset()
-        self.bfm.start_bfms()
-        await self.bfm.start_bfms()
+        self.bfm.start_tasks()
 
     async def run_phase(self):
         await self.launch_tb()
