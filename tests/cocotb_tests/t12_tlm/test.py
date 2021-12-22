@@ -30,7 +30,7 @@ async def run_tests(dut):
         else:
             pf = "FAILED "
             any_failed = True
-        print (f"{pf} {test}")
+        print(f"{pf} {test}")
     assert not any_failed
 
 
@@ -89,7 +89,6 @@ class AnalysisTest(uvm_test):
         self.drop_objection()
 
     def check_phase(self):
-        print(self.data_list, self.subscriber.data)
         assert self.data_list == self.subscriber.data
         assert self.data_list == self.export.data
         assert self.data_list == self.fifo.data
