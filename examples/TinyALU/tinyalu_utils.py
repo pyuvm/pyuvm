@@ -2,7 +2,6 @@ import cocotb
 from cocotb.triggers import FallingEdge
 from cocotb.queue import QueueEmpty, Queue
 import enum
-import random
 import logging
 
 from pyuvm import utility_classes
@@ -32,7 +31,7 @@ def alu_prediction(A, B, op, error=False):
         result = A ^ B
     elif op == Ops.MUL:
         result = A * B
-    if error and (random.randint(0, 3) == 0):
+    if error:
         result = result + 1
     return result
 

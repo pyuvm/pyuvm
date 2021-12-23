@@ -196,6 +196,11 @@ class Scoreboard(uvm_component):
         self.result_get_port.connect(self.result_fifo.get_export)
 
     def check_phase(self):
+        passed = True
+        try:
+            self.errors = ConfigDB().get(self, "", "CREATE_ERRORS")
+        except UVMConfigItemNotFound:
+            self.errors = False
         while self.result_get_port.can_get():
             _, actual_result = self.result_get_port.try_get()
             cmd_success, cmd = self.cmd_get_port.try_get()
@@ -204,7 +209,7 @@ class Scoreboard(uvm_component):
             else:
                 (A, B, op_numb) = cmd
                 op = Ops(op_numb)
-                predicted_result = alu_prediction(A, B, op)
+                predicted_result = alu_prediction(A, B, op, self.errors)
                 if predicted_result == actual_result:
                     self.logger.info(f"PASSED: 0x{A:02x} {op.name} 0x{B:02x} ="
                                      f" 0x{actual_result:04x}")
@@ -212,7 +217,8 @@ class Scoreboard(uvm_component):
                     self.logger.error(f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
                                       f"= 0x{actual_result:04x} "
                                       f"expected 0x{predicted_result:04x}")
-
+                    passed = False
+        assert passed
 
 class Monitor(uvm_component):
     def __init__(self, name, parent, method_name):
@@ -274,19 +280,30 @@ class FibonacciTest(AluTest):
         return super().build_phase()
 
 
+class AluTestErrors(AluTest):
+    def start_of_simulation_phase(self):
+        ConfigDB().set(None, "*", "CREATE_ERRORS", True)
+
+
 @cocotb.test()
 async def alu_test(_):
     """Test ALU with random and max values"""
-    await uvm_root().run_test("AluTest")
+    await uvm_root().run_test(AluTest)
+
+
+@cocotb.test(expect_error=AssertionError)
+async def alu_test_with_errors(_):
+    """Test ALU with errors on all operations"""
+    await uvm_root().run_test(AluTestErrors)
 
 
 @cocotb.test()
 async def parallel_alu_test(_):
     """Test ALU random and max forked"""
-    await uvm_root().run_test("ParallelTest")
+    await uvm_root().run_test(ParallelTest)
 
 
 @cocotb.test()
 async def fibonacci_sim(_):
     """Run Fibonacci program"""
-    await uvm_root().run_test("FibonacciTest")
+    await uvm_root().run_test(FibonacciTest)
