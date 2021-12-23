@@ -11,15 +11,20 @@ For example:
 	await uvm_root().run_test("MYTEST", keep_singletons=True)
 ```
 
+You can keep singleton's you've created by passing them as a set to `keep_set={}`. For example if you have a singleton named `MySingleton` you would keep it like this:
+
+```
+    await uvm_root().run_test("MYTEST", keep_set={MySingleton})
+```
+
+# Clearing Singletons
+
+Clearing the singletons upon `run_test()` has the following implications.
 ## `ConfigDB()` empties upon `run_test()`
 
-This means that you cannot store data in the `ConfigDB()` in a `cocotb.test()` and
-then await `run_test()`.  This raises the question of getting the `dut` argument
-into the `pyuvm` testbench.
+This means that you cannot store data in the `ConfigDB()` in a `cocotb.test()` and then await `run_test()`.  This raises the question of getting the `dut` argument into the `pyuvm` testbench.
 
-The solution is to use the `cocotb.top` in pyuvm to get access to the `dut` handle.
-`cocotb.top` has the same handle as `dut` so there is no need to pass the dut
-using `ConfigDB()`
+The solution is to use the `cocotb.top` in pyuvm to get access to the `dut` handle. `cocotb.top` has the same handle as `dut` so there is no need to pass the dut using `ConfigDB()`
 
 ## The `uvm_factory()` clears the overrides
 
@@ -33,6 +38,19 @@ was original written to have one test per simulation, but **cocotb** can run
 multiple tests in one Python file.  The side effects between tests caused
 unexpected results.
 
+# Passing a `uvm_test` class to `run_test()`
+
+The SystemVerilog UVM passes the name of the `uvm_test` class to `run_test()`.  This is not necesary in **pyuvm** as you can pass the class as an object.
+
+The examples in 2.6 now demonstrate this behavior instead of the string-passing behavior.
+
+# The uvm_sequence has a default name.
+
+Now UVM sequences have a default name of `"uvm_sequence"` as per the 1800.2 specification.
+
+# `start_item()` and `finish_item()` work correctly
+
+There was a bug that caused the driver to get your sequence item as soon as you awaited `start_item()`.  This defeated late stimulus-generation, which is the point of these coroutines.  This is now fixed.
 
 # Pyuvm 2.5
 
@@ -503,19 +521,19 @@ Here we see several tests in a single Python file.
 @cocotb.test()
 async def alu_test(_):
     """Test ALU with random and max values"""
-    await uvm_root().run_test("AluTest")
+    await uvm_root().run_test(AluTest)
 
 
 @cocotb.test()
 async def parallel_alu_test(_):
     """Test ALU random and max forked"""
-    await uvm_root().run_test("ParallelTest")
+    await uvm_root().run_test(ParallelTest)
 
 
 @cocotb.test()
 async def fibonacci_sim(_):
     """Run Fibonacci program"""
-    await uvm_root().run_test("FibonacciTest")
+    await uvm_root().run_test(FibonacciTest)
 ```
 
 
