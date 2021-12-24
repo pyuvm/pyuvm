@@ -220,6 +220,7 @@ class Scoreboard(uvm_component):
                     passed = False
         assert passed
 
+
 class Monitor(uvm_component):
     def __init__(self, name, parent, method_name):
         super().__init__(name, parent)
