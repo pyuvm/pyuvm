@@ -412,6 +412,8 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         self.uvm_test_top = factory.create_component_by_name(
             test_name, "", "uvm_test_top", self)
         for self.running_phase in uvm_common_phases:
+            self.logger.log(utility_classes.PYUVM_DEBUG,
+                            str(self.running_phase))
             self.running_phase.traverse(self.uvm_test_top)
             if self.running_phase == uvm_run_phase:
                 await utility_classes.ObjectionHandler().run_phase_complete()  # noqa: E501
