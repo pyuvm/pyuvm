@@ -374,7 +374,6 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
 
     @classmethod
     def clear_singletons(cls, keep_set={}):
-        cls.singleton = None
         keepers = {uvm_factory, utility_classes.FactoryData}.union(keep_set)
         utility_classes.Singleton.clear_singletons(keep=keepers)
 
