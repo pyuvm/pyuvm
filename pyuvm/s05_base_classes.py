@@ -174,13 +174,9 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.8.2
     def do_copy(self, rhs):
         """
-        Must be overridden to implement UVM copy().
+        Copies name. Override to copy additional data members
         """
-        raise error_classes.UVMError("Implement do_copy to copy "
-                                     "fields from rhs into self. This is "
-                                     "not really needed in Python in which "
-                                     "copy.copy() and copy.deepcopy() return a"
-                                     " new object with copied data.")
+        self.set_name(rhs.get_name())
 
     # 5.3.9.1
     def compare(self, rhs):
