@@ -17,6 +17,9 @@ class my_object(uvm_object):
     def __str__(self):
         return "Hello"
 
+    def do_copy(self, other):
+        self.val = other.val
+
 
 def test_basic_creation():
     """
@@ -131,11 +134,9 @@ def test_copying():
     mo = my_object("mo")
     rhs = my_object("rhs")
     # 5.3.8.1
-    with pytest.raises(error_classes.UVMError):
-        mo.copy(rhs)
+    mo.copy(rhs)
     # 5.3.8.2
-    with pytest.raises(error_classes.UVMError):
-        mo.do_copy(rhs)
+    assert mo.val == rhs.val
 
 
 def test_comparing():
@@ -287,3 +288,10 @@ def test_transaction_recording():
         tr.get_begin_time()
     with pytest.raises(error_classes.UVMNotImplemented):
         tr.get_end_time()
+
+
+def test_clone():
+    orig = my_object("orig")
+    clone = orig.clone()
+    assert id(orig) != id(clone)
+    assert orig.val == clone.val

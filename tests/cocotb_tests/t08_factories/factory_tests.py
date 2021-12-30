@@ -35,6 +35,7 @@ class s08_factory_classes_TestCase():
 
     def setUp(self):
         self.fd = utility_classes.FactoryData()
+        uvm_root().clear_children()
         self.top = uvm_component("top", None)
         self.mid = uvm_component("mid", self.top)
         self.sib = uvm_component("sib", self.top)
