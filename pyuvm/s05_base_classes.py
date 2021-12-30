@@ -114,7 +114,9 @@ class uvm_object(utility_classes.uvm_void):
         uses copy.deepcopy so the user does not need to override
         do_copy()
         """
-        raise error_classes.UVMNotImplemented("Use copy.deepcopy()")
+        new = self.__class__(self.get_name())
+        new.copy(self)
+        return new
 
     # 5.3.6.1
     def print(self):
