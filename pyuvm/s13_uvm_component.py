@@ -1,7 +1,7 @@
 from pyuvm.s06_reporting_classes import uvm_report_object
 from pyuvm.s08_factory_classes import uvm_factory
 from pyuvm.s09_phasing import uvm_common_phases, uvm_run_phase, uvm_build_phase
-from pyuvm import error_classes
+from pyuvm import error_classes, INFO
 from pyuvm import utility_classes
 import logging
 import fnmatch
@@ -404,6 +404,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """
         factory = uvm_factory()
         if not keep_singletons:
+            uvm_report_object.set_default_logging_level(INFO)
             self.clear_singletons(keep_set)
             factory.clear_overrides()
         self.clear_children()
