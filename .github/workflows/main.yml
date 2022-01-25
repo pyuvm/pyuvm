@@ -31,17 +31,14 @@ jobs:
 
   tests:
 
-    name: Python ${{matrix.python-version}} | ${{matrix.sim}} 
+    name: Python ${{matrix.python-version}}
     runs-on: ubuntu-20.04
-    env:
-      SIM: ${{matrix.sim}}
 
     strategy:
       fail-fast: false
       matrix:
         include:
-          - sim: icarus
-            python-version: 3.8
+          - python-version: 3.8
 
     steps:
     - uses: actions/checkout@v2
@@ -55,9 +52,12 @@ jobs:
         pip install tox tox-gh-actions
 
     - name: Install Icarus Verilog
-      if: matrix.sim == 'icarus'
       run: |
         sudo apt install -y --no-install-recommends iverilog
+
+    - name: Install GHDL 
+      run: |
+        sudo apt install -y --no-install-recommends ghdl-mcode ghdl
 
     - name: Test
       run: |
