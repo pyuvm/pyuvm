@@ -562,11 +562,11 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
         except TypeError:
             raise error_classes.UVMConfigItemNotFound(
-                f'"{inst_name}" is not a in ConfigDB().')
+                f'"{inst_name}" is not in ConfigDB().')
         finally:
             if len(key_matches) == 0:
                 raise error_classes.UVMConfigItemNotFound(
-                    f'"{inst_name}" is not a in ConfigDB().')
+                    f'"{inst_name}" is not in ConfigDB().')
         # Here we sort the list of paths by which paths are "in" other
         # paths. That is A comes before '*'  A.B comes before A.*, etc.
         # We use an insertion sort. A path is inserted in front of the
