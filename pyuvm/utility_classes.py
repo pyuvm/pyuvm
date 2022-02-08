@@ -227,17 +227,20 @@ class ObjectionHandler(metaclass=Singleton):
         self.objection_raised = False
 
     def raise_objection(self, raiser):
-        self.__objections[raiser] = raiser.get_full_name()
+        name = raiser.get_full_name()
+        self.__objections[name] = self.__objections.setdefault(name, 0) + 1
         self.objection_raised = True
         self._objection_event.clear()
 
     def drop_objection(self, dropper):
+        name = dropper.get_full_name()
         try:
-            del self.__objections[dropper]
+            self.__objections[name] -= 1
         except KeyError:
             self.objection_raised = True
             pass
-        if len(self.__objections) == 0:
+        if self.__objections[name] == 0:
+            del self.__objections[name]
             self._objection_event.set()
 
     async def run_phase_complete(self):
