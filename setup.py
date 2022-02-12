@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="pyuvm",
     version="2.7.0",
-    author="Ray Saemi",
+    author="Ray Salemi",
     author_email="ray@raysalemi.com",
     description="A Python implementation of the UVM using cocotb",
     long_description=long_description,
