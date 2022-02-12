@@ -18,3 +18,5 @@ from pyuvm.s13_predefined_component_classes import *
 from pyuvm.s14_15_python_sequences import *
 # Section 18
 from pyuvm.s18_register_model import *
+# Extension Modules
+from pyuvm.extension_classes import *

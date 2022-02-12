@@ -255,7 +255,10 @@ class AluEnv(uvm_env):
         self.driver.ap.connect(self.scoreboard.result_export)
 
 
+@test()
 class AluTest(uvm_test):
+    """Test ALU with random and max values"""
+
     def build_phase(self):
         self.env = AluEnv("env", self)
 
@@ -268,43 +271,28 @@ class AluTest(uvm_test):
         self.drop_objection()
 
 
+@test()
 class ParallelTest(AluTest):
+    """Test ALU random and max forked"""
+
     def build_phase(self):
         uvm_factory().set_type_override_by_type(TestAllSeq, TestAllForkSeq)
         super().build_phase()
 
 
+@test()
 class FibonacciTest(AluTest):
+    """Run Fibonacci program"""
+
     def build_phase(self):
         ConfigDB().set(None, "*", "DISABLE_COVERAGE_ERRORS", True)
         uvm_factory().set_type_override_by_type(TestAllSeq, FibonacciSeq)
         return super().build_phase()
 
 
+@test(expect_fail=True)
 class AluTestErrors(AluTest):
+    """Test ALU with errors on all operations"""
+
     def start_of_simulation_phase(self):
         ConfigDB().set(None, "*", "CREATE_ERRORS", True)
-
-
-@cocotb.test()
-async def alu_test(_):
-    """Test ALU with random and max values"""
-    await uvm_root().run_test(AluTest)
-
-
-@cocotb.test(expect_error=AssertionError)
-async def alu_test_with_errors(_):
-    """Test ALU with errors on all operations"""
-    await uvm_root().run_test(AluTestErrors)
-
-
-@cocotb.test()
-async def parallel_alu_test(_):
-    """Test ALU random and max forked"""
-    await uvm_root().run_test(ParallelTest)
-
-
-@cocotb.test()
-async def fibonacci_sim(_):
-    """Run Fibonacci program"""
-    await uvm_root().run_test(FibonacciTest)
