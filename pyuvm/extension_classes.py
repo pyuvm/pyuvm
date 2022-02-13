@@ -12,7 +12,7 @@ def test(
     expect_fail=False,
     expect_error=(),
     skip=False,
-    stage=0,
+    stage=None,
 ):
     def decorator(cls):
 
