@@ -65,7 +65,7 @@ class Export(uvm_analysis_export):
     def write(self, datum):
         self.data.append(datum)
 
-
+@test()
 class AnalysisTest(uvm_test):
     def build_phase(self):
         self.gp = uvm_get_port("gp", self)
@@ -100,7 +100,7 @@ async def test_12_tlm(dut):
     await run_tests(dut)
 
 
-@cocotb.test()
-async def analysis_test(_):
-    """Test analysis ports"""
-    await uvm_root().run_test("AnalysisTest")
+#@cocotb.test()
+#async def analysis_test(_):
+#    """Test analysis ports"""
+#    await uvm_root().run_test("AnalysisTest")

@@ -2,6 +2,7 @@ from cocotb.triggers import Join, Combine
 from pyuvm import *
 import random
 import cocotb
+import pyuvm
 # All testbenches use tinyalu_utils, so store it in a central
 # place and add its path to the sys path so we can import it
 import sys
@@ -255,7 +256,7 @@ class AluEnv(uvm_env):
         self.driver.ap.connect(self.scoreboard.result_export)
 
 
-@test()
+@pyuvm.test()
 class AluTest(uvm_test):
     """Test ALU with random and max values"""
 
@@ -271,7 +272,7 @@ class AluTest(uvm_test):
         self.drop_objection()
 
 
-@test()
+@pyuvm.test()
 class ParallelTest(AluTest):
     """Test ALU random and max forked"""
 
@@ -280,7 +281,7 @@ class ParallelTest(AluTest):
         super().build_phase()
 
 
-@test()
+@pyuvm.test()
 class FibonacciTest(AluTest):
     """Run Fibonacci program"""
 
@@ -290,7 +291,7 @@ class FibonacciTest(AluTest):
         return super().build_phase()
 
 
-@test(expect_fail=True)
+@pyuvm.test(expect_fail=True)
 class AluTestErrors(AluTest):
     """Test ALU with errors on all operations"""
 
