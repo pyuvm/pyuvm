@@ -1,109 +1,3 @@
-# New in pyuvm 2.6
-
-# 2.6 is potentially a breaking release
-
-This version of pyuvm clears the singletons when you await `uvm_root().run_test()`.
-
-You can disable this behavior with the `keep_singletons=True` argument in `run_test()`.
-
-For example:
-```
-	await uvm_root().run_test("MYTEST", keep_singletons=True)
-```
-
-You can keep singleton's you've created by passing them as a set to `keep_set={}`. For example if you have a singleton named `MySingleton` you would keep it like this:
-
-```
-    await uvm_root().run_test("MYTEST", keep_set={MySingleton})
-```
-
-# Clearing Singletons
-
-Clearing the singletons upon `run_test()` has the following implications.
-## `ConfigDB()` empties upon `run_test()`
-
-This means that you cannot store data in the `ConfigDB()` in a `cocotb.test()` and then await `run_test()`.  This raises the question of getting the `dut` argument into the `pyuvm` testbench.
-
-The solution is to use the `cocotb.top` in pyuvm to get access to the `dut` handle. `cocotb.top` has the same handle as `dut` so there is no need to pass the dut using `ConfigDB()`
-
-## The `uvm_factory()` clears the overrides
-
-You cannot call `set_override...` before awaiting `run_test()` Instead this must
-happen in the `uvm_test` or in other components.
-
-## Multiple tests run without side effects
-
-This release solves the problem of side effects from `run_test()`.  **pyuvm**
-was original written to have one test per simulation, but **cocotb** can run
-multiple tests in one Python file.  The side effects between tests caused
-unexpected results.
-
-# Passing a `uvm_test` class to `run_test()`
-
-The SystemVerilog UVM passes the name of the `uvm_test` class to `run_test()`.  This is not necesary in **pyuvm** as you can pass the class as an object.
-
-The examples in 2.6 now demonstrate this behavior instead of the string-passing behavior.
-
-# The uvm_sequence has a default name.
-
-Now UVM sequences have a default name of `"uvm_sequence"` as per the 1800.2 specification.
-
-# `start_item()` and `finish_item()` work correctly
-
-There was a bug that caused the driver to get your sequence item as soon as you awaited `start_item()`.  This defeated late stimulus-generation, which is the point of these coroutines.  This is now fixed.
-
-# Pyuvm 2.5
-
-Thanks to the pyuvm contributors for their help with this release!
-
-## Now requires cocotb 1.6
-We now use the `start_soon()` coroutine instead of the deprecated `fork`
-This means we must run with **cocotb** 1.6.0 or greater.
-
-## Default logging level
-You can now set a default logging level before simulating using a
-class method. This allows debug logging in the `build_phase()`
-
-There are two functions:
-
-* `uvm_report_object.set_default_logging_level(<logging level>)
-* `uvm_report_object.get_default_logging_level()
-
-## Fixes to uvm_export_base
-
-Refactored the class hierarchy so that `uvm_export_base` no longer has a
-`connect()` method, a situtation that violated the UVM specification and
-invited bugs.
-
-## Fixes to logging
-
-Logging now uses **cocotb** colorization and provides time stamps.
-Also removed the ability to add formatters to the logger. Now you add
-the formatter to your handler and add the handler.
-
-You can now disable logging and remove the default streaming handler.
-
-## Fixed the `uvm_subscriber`
-
-`uvm_subscriber` now has an `analysis_export` data member as in the UVM spec.
-
-## Removed the ability to call `clone()` on a `uvm_transaction`
-
-The `clone()` method had been implemented by calling `copy.deepcopy(self)`.  This
-hid the actual functionality for no good reason.  Now calls to clone tell the user
-to use `copy.deepcopy()`.
-
-copy() and `do_copy()` remains so the user can make decisions about what will be copied.
-
-
-# Important Note about pyuvm 2.0+
-**Release 2.0 breaks release 1.0 code.**
-
-**pyuvm** originally used threads to manage concurrent simulation events. While this provided flexiblity to use **pyuvm** with any DPI interface to the simulator, it was much more difficult to use and it didn't take advantage of the excellent work done in **cocotb**.
-
-You can get the original threaded version on the `threaded` branch in GitHub.  This version is better than the `1.0` tag as it has regression scripts.
-
-
 # Description
 
 **pyuvm** is the Universal Verification Methodology implemented in Python instead of SystemVerilog. **pyuvm** uses cocotb to interact with the simulator and schedule simulation events.
@@ -220,9 +114,10 @@ import uvm_pkg::*;
 ```
 
 This gives you access to the class names without needing a package path.  To get
-similar behavior with `pyuvm` us the `from` import syntax.
+similar behavior with `pyuvm` us the `from` import syntax. We import `pyuvm` to distinguish the `@pyuvm.test()` decorator from the `@cocotb.test()` decorator:
 
 ```python
+import pyuvm
 from pyuvm import *
 ```
 ## The AluTest classes
@@ -234,6 +129,8 @@ We're going to examine the UVM classes from the top, the test, to the bottom, th
 We extend `uvm_test` to create the `AluTest`, using camel-casing in our code even if **pyuvm** does not use it:
 
 You'll see the following in the test:
+
+* We use the `@pyuvm.test()` decorator to notify **cocotb** that this is a test.
 
 * We define a class that extends `uvm_test`.
 
@@ -252,6 +149,7 @@ You'll see the following in the test:
 * Sequences work as they do in the SystemVerilog UVM.
 
 ```python
+@pyuvm.test()
 class AluTest(uvm_test):
     def build_phase(self):
         self.env = AluEnv("env", self)
@@ -266,12 +164,13 @@ class AluTest(uvm_test):
 ```
 We extend the `AluTest` class to create a parallel version of the test and a Fibonacci program. You can find these sequences in `testbench.py`
 ```
+@pyuvm.test()
 class ParallelTest(AluTest):
     def build_phase(self):
         uvm_factory().set_type_override_by_type(TestAllSeq, TestAllForkSeq)
         super().build_phase()
 
-
+@pyuvm.test()
 class FibonacciTest(AluTest):
     def build_phase(self):
         ConfigDB().set(None, "*", "DISABLE_COVERAGE_ERRORS", True)
@@ -514,29 +413,7 @@ class AluSeqItem(uvm_sequence_item):
 Now that we've got the UVM testbench we can call it from a **cocotb** test.
 # The Cocotb Tests
 
-**cocotb** finds functions identified with the `@cocotb.test()` decorator and launches them as coroutines.  Our test does the following:
-
-Here we see several tests in a single Python file.
-```python
-@cocotb.test()
-async def alu_test(_):
-    """Test ALU with random and max values"""
-    await uvm_root().run_test(AluTest)
-
-
-@cocotb.test()
-async def parallel_alu_test(_):
-    """Test ALU random and max forked"""
-    await uvm_root().run_test(ParallelTest)
-
-
-@cocotb.test()
-async def fibonacci_sim(_):
-    """Run Fibonacci program"""
-    await uvm_root().run_test(FibonacciTest)
-```
-
-
+**cocotb** finds `uvm_test` classes identified with the `@pyuvm.test()` decorator and launches them as coroutines.  Our test does the following:
 
 # Contributing
 
