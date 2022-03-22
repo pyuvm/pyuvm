@@ -130,9 +130,9 @@ We extend `uvm_test` to create the `AluTest`, using camel-casing in our code eve
 
 You'll see the following in the test:
 
-* We use the `@pyuvm.test()` decorator to notify **cocotb** that this is a test.
-
 * We define a class that extends `uvm_test`.
+
+* We use the `@pyuvm.test()` decorator to notify **cocotb** that this is a test.
 
 * There is no `uvm_component_utils()` macro. **pyuvm** automatically registers classes that extend `uvm_void` with the factory.
 
