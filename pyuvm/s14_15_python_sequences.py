@@ -125,7 +125,7 @@ class ResponseQueue(UVMQueue):
                     return txn_list[0]
 
     def __str__(self):
-        return str([str(xx) for xx in self.queue])
+        return str([str(xx) for xx in self._queue])
 
 
 class uvm_sequence_item(uvm_transaction):
