@@ -358,7 +358,7 @@ class uvm_sequence(uvm_object):
                 f" sequence: {self.get_full_name()}")
         await self.sequencer.finish_item(item)
 
-    async def get_response(self, transaction_id = None):
+    async def get_response(self, transaction_id=None):
         if self.sequencer is None:
             raise error_classes.UVMSequenceError(
                 "Tried to do get_response in a virtual "
