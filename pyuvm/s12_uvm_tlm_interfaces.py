@@ -685,6 +685,33 @@ class uvm_tlm_fifo_base(uvm_component):
                                                                              self.queue, self.get_ap)  # noqa: E501
         self.get_peek_export = self.uvm_GetPeekExport("get_peek_export", self, self.queue, self.get_ap)  # noqa: E501
 
+    async def put(self, item):
+        await self.put_export.put(item)
+
+    def can_put(self):
+        return self.put_export.can_put()
+
+    def try_put(self, item):
+        return self.put_export.try_put(item)
+
+    async def get(self):
+        return await self.get_export.get()
+
+    def can_get(self):
+        return self.get_export.can_get()
+
+    def try_get(self):
+        return self.get_export.try_get()
+
+    async def peek(self):
+        return await self.peek_export.peek()
+
+    def can_peek(self):
+        return self.peek_export.can_peek()
+
+    def try_peek(self):
+        return self.peek_export.try_peek()
+
 
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
 
