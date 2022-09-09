@@ -1,6 +1,3 @@
-import functools
-import inspect
-
 import cocotb
 
 from pyuvm import uvm_root
@@ -25,16 +22,16 @@ def test(
             skip=skip,
             stage=stage,
         )
-        @functools.wraps(cls)
         async def test(_):
             await uvm_root().run_test(cls)
 
-        # adds cocotb.test object to caller's module
-        caller_frame = inspect.stack()[1]
-        caller_module = inspect.getmodule(caller_frame[0])
-        setattr(caller_module, f"test_{test._id}", test)
+        test.class_ = cls
+        test.__name__ = cls.__name__
+        test.__qualname__ = cls.__qualname__
+        test.__doc__ = cls.__doc__
+        test.__module__ = cls.__module__
 
         # returns decorator class unmodified
-        return cls
+        return test
 
     return decorator

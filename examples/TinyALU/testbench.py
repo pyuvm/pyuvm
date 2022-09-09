@@ -273,7 +273,7 @@ class AluTest(uvm_test):
 
 
 @pyuvm.test()
-class ParallelTest(AluTest):
+class ParallelTest(AluTest.class_):
     """Test ALU random and max forked"""
 
     def build_phase(self):
@@ -282,7 +282,7 @@ class ParallelTest(AluTest):
 
 
 @pyuvm.test()
-class FibonacciTest(AluTest):
+class FibonacciTest(AluTest.class_):
     """Run Fibonacci program"""
 
     def build_phase(self):
@@ -292,7 +292,7 @@ class FibonacciTest(AluTest):
 
 
 @pyuvm.test(expect_fail=True)
-class AluTestErrors(AluTest):
+class AluTestErrors(AluTest.class_):
     """Test ALU with errors on all operations"""
 
     def start_of_simulation_phase(self):

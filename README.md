@@ -165,13 +165,13 @@ class AluTest(uvm_test):
 We extend the `AluTest` class to create a parallel version of the test and a Fibonacci program. You can find these sequences in `testbench.py`
 ```
 @pyuvm.test()
-class ParallelTest(AluTest):
+class ParallelTest(AluTest.class_):
     def build_phase(self):
         uvm_factory().set_type_override_by_type(TestAllSeq, TestAllForkSeq)
         super().build_phase()
 
 @pyuvm.test()
-class FibonacciTest(AluTest):
+class FibonacciTest(AluTest.class_):
     def build_phase(self):
         ConfigDB().set(None, "*", "DISABLE_COVERAGE_ERRORS", True)
         uvm_factory().set_type_override_by_type(TestAllSeq, FibonacciSeq)
@@ -450,6 +450,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-
-
