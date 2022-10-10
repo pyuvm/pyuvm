@@ -1,22 +1,22 @@
-from cocotb.clock import Clock
 import cocotb
 import inspect
 import test_12_uvm_tlm_interfaces as test_mod
 from pyuvm import *
+import pyuvm
 
 
 async def run_tests(dut):
     tests_pass = {}
     t12 = test_mod.s12_uvm_tlm_interfaces_TestCase()
-    methods = inspect.getmembers(test_mod.s12_uvm_tlm_interfaces_TestCase)#, predicate=inspect.ismethod)
+    methods = inspect.getmembers(test_mod.s12_uvm_tlm_interfaces_TestCase)  # predicate=inspect.ismethod)
     for mm in methods:
-        (name,_) = mm
+        (name, _) = mm
         if name.startswith("test_"):
             test = getattr(t12, name)
             t12.setUp()
             try:
                 if inspect.iscoroutinefunction(test):
-                    await test()
+                    await test(dut)
                 else:
                     test()
                 tests_pass[name] = True
@@ -50,6 +50,7 @@ class FIFO(uvm_component):
             datum = await self.gp.get()
             self.data.append(datum)
 
+
 class Subscriber(uvm_subscriber):
     def start_of_simulation_phase(self):
         self.data = []
@@ -65,7 +66,8 @@ class Export(uvm_analysis_export):
     def write(self, datum):
         self.data.append(datum)
 
-@test()
+
+@pyuvm.test()
 class AnalysisTest(uvm_test):
     def build_phase(self):
         self.gp = uvm_get_port("gp", self)
@@ -94,13 +96,13 @@ class AnalysisTest(uvm_test):
         assert self.data_list == self.fifo.data
 
 
-@cocotb.test()  # pylint: disable=no-value-for-parameter
-async def test_12_tlm(dut):
-    """Tests the TLM FIFOS"""
-    await run_tests(dut)
+# @cocotb.test()  # pylint: disable=no-value-for-parameter
+# async def test_12_tlm(dut):
+#     """Tests the TLM FIFOS"""
+#    await run_tests(dut)
 
 
-#@cocotb.test()
-#async def analysis_test(_):
-#    """Test analysis ports"""
-#    await uvm_root().run_test("AnalysisTest")
+# @cocotb.test()
+# async def analysis_test(_):
+#     """Test analysis ports"""
+#     await uvm_root().run_test("AnalysisTest")
