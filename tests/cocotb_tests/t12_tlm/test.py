@@ -1,4 +1,3 @@
-import cocotb
 import inspect
 import test_12_uvm_tlm_interfaces as test_mod
 from pyuvm import *
@@ -94,15 +93,3 @@ class AnalysisTest(uvm_test):
         assert self.data_list == self.subscriber.data
         assert self.data_list == self.export.data
         assert self.data_list == self.fifo.data
-
-
-# @cocotb.test()  # pylint: disable=no-value-for-parameter
-# async def test_12_tlm(dut):
-#     """Tests the TLM FIFOS"""
-#    await run_tests(dut)
-
-
-# @cocotb.test()
-# async def analysis_test(_):
-#     """Test analysis ports"""
-#     await uvm_root().run_test("AnalysisTest")
