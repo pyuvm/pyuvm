@@ -15,32 +15,32 @@ class my_comp(uvm_component):
         function_name = inspect.stack()[1][3]
         phase_list[function_name].append(comp_name)
 
-        def build_phase(self):
-            self.log_phase()
+    def build_phase(self):
+        self.log_phase()
 
-        def connect_phase(self):
-            self.log_phase()
+    def connect_phase(self):
+        self.log_phase()
 
-        def end_of_elaboration_phase(self):
-            self.log_phase()
+    def end_of_elaboration_phase(self):
+        self.log_phase()
 
-        def start_of_simulation_phase(self):
-            self.log_phase()
+    def start_of_simulation_phase(self):
+        self.log_phase()
 
-        async def run_phase(self):
-            self.log_phase()
+    async def run_phase(self):
+        self.log_phase()
 
-        def extract_phase(self):
-            self.log_phase()
+    def extract_phase(self):
+        self.log_phase()
 
-        def check_phase(self):
-            self.log_phase()
+    def check_phase(self):
+        self.log_phase()
 
-        def report_phase(self):
-            self.log_phase()
+    def report_phase(self):
+        self.log_phase()
 
-        def final_phase(self):
-            self.log_phase()
+    def final_phase(self):
+        self.log_phase()
 
 
 def setUp():
