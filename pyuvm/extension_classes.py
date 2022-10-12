@@ -15,7 +15,6 @@ def test(
     stage=None,
 ):
     version_info = tuple(int(n) for n in cocotb.__version__.split("."))
-    print(version_info)
     if version_info >= (1, 7, 0) and stage is None:
         stage = 0
 
