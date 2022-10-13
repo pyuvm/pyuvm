@@ -241,7 +241,10 @@ class ObjectionHandler(metaclass=Singleton):
             pass
         if self.__objections[name] == 0:
             del self.__objections[name]
-            self._objection_event.set()
+
+            # only signal all objections done if none exist anywhere
+            if len(self.__objections) == 0:
+                self._objection_event.set()
 
     async def run_phase_complete(self):
         # Allow the run_phase coros to get scheduled and raise objections:
