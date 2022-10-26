@@ -72,9 +72,9 @@ class PyuvmSimLogFormatter(logging.Formatter):
 
         if not _suppress:
             prefix += (
-                self.rjust(os.path.split(record.filename)[1], _FILENAME_CHARS) 
-                + ":" 
-                + self.ljust(str(record.lineno), _LINENO_CHARS) + " in " 
+                self.rjust(os.path.split(record.filename)[1], _FILENAME_CHARS)
+                + ":"
+                + self.ljust(str(record.lineno), _LINENO_CHARS) + " in "
                 + self.ljust(str(record.funcName), _FUNCNAME_CHARS) + " "
             )
 
