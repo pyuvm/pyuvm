@@ -72,10 +72,10 @@ class PyuvmSimLogFormatter(logging.Formatter):
 
         if not _suppress:
             prefix += (
-                self.rjust(os.path.split(record.filename)[1], _FILENAME_CHARS) +
-		":" +
-		self.ljust(str(record.lineno), _LINENO_CHARS) + " in " +
-                self.ljust(str(record.funcName), _FUNCNAME_CHARS) + " "
+                self.rjust(os.path.split(record.filename)[1], _FILENAME_CHARS) 
+                + ":" 
+                + self.ljust(str(record.lineno), _LINENO_CHARS) + " in " 
+                + self.ljust(str(record.funcName), _FUNCNAME_CHARS) + " "
             )
 
         # these lines are copied from the builtin logger
@@ -125,7 +125,7 @@ class PyuvmSimColourLogFormatter(PyuvmSimLogFormatter):
         msg = "\n".join(
             [
                 SimColourLogFormatter.loglevel2colour.get(
-                  record.levelno, "%s") % line
+                    record.levelno, "%s") % line
                 for line in msg.split("\n")
             ]
         )
