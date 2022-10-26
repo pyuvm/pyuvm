@@ -13,7 +13,7 @@ import os
 
 from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
 from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET, NullHandler   # noqa: F401, E501
-from cocotb.utils import get_sim_time, get_time_from_sim_steps, want_color_output
+from cocotb.utils import get_time_from_sim_steps
 import cocotb.ANSI as ANSI
 
 try:
@@ -27,6 +27,7 @@ _LEVEL_CHARS = len("UVM_WARNING")
 _FILENAME_CHARS = 200
 _LINENO_CHARS = 5
 _FUNCNAME_CHARS = 100
+
 
 class PyuvmSimLogFormatter(logging.Formatter):
     """Log formatter to provide consistent UVM like log message handling.
@@ -46,19 +47,19 @@ class PyuvmSimLogFormatter(logging.Formatter):
     @staticmethod
     def ljust(string, chars):
         if len(string) > chars:
-            return ".." + string[(chars - 2) * -1 :]
+            return ".." + string[(chars - 2) * -1:]
         return string.ljust(chars)
 
     @staticmethod
     def rjust(string, chars):
         if len(string) > chars:
-            return ".." + string[(chars - 2) * -1 :]
+            return ".." + string[(chars - 2) * -1:]
         return string.rjust(chars)
 
     def _format(self, level, record, msg, coloured=False):
 
         # Wait for Ray Salemi's buy-in uvm_level_str = 'UVM_' + level
-        uvm_level_str =  level
+        uvm_level_str = level
         sim_time = getattr(record, "created_sim_time", None)
         if sim_time is None:
             sim_time_str = "  -.--ns"
@@ -66,20 +67,16 @@ class PyuvmSimLogFormatter(logging.Formatter):
             time_ns = get_time_from_sim_steps(sim_time, "ns")
             sim_time_str = f"{time_ns:6.2f}ns"
         prefix = (
-            sim_time_str.rjust(11)
-            + " "
-            + uvm_level_str
-            + " "
+            sim_time_str.rjust(11) + " " + uvm_level_str + " "
         )
 
         if not _suppress:
             prefix += (
-                self.rjust(os.path.split(record.filename)[1], _FILENAME_CHARS)
-                + ":"
-                + self.ljust(str(record.lineno), _LINENO_CHARS)
-                + " in "
-                + self.ljust(str(record.funcName), _FUNCNAME_CHARS)
-                + " "
+                self.rjust(os.path.split(record.filename)[1], _FILENAME_CHARS) + 
+		":" + 
+		self.ljust(str(record.lineno), _LINENO_CHARS) + 
+		" in " + 
+		self.ljust(str(record.funcName), _FUNCNAME_CHARS) + " "
             )
 
         # these lines are copied from the builtin logger
@@ -107,6 +104,7 @@ class PyuvmSimLogFormatter(logging.Formatter):
 
         return self._format(level, record, msg)
 
+
 class PyuvmSimColourLogFormatter(PyuvmSimLogFormatter):
     """Log formatter to provide consistent log message handling."""
 
@@ -127,7 +125,8 @@ class PyuvmSimColourLogFormatter(PyuvmSimLogFormatter):
         # Need to colour each line in case coloring is applied in the message
         msg = "\n".join(
             [
-                SimColourLogFormatter.loglevel2colour.get(record.levelno, "%s") % line
+                SimColourLogFormatter.loglevel2colour.get(
+			record.levelno, "%s") % line
                 for line in msg.split("\n")
             ]
         )
