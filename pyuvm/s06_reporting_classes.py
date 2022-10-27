@@ -59,7 +59,7 @@ class PyuvmSimLogFormatter(logging.Formatter):
     def _format(self, level, record, msg, coloured=False):
 
         # Wait for Ray Salemi's buy-in uvm_level_str = 'UVM_' + level
-	# Not using UVM_ prefix just yet
+        # Not using UVM_ prefix just yet
         uvm_level_str = level
         sim_time = getattr(record, "created_sim_time", None)
         if sim_time is None:
