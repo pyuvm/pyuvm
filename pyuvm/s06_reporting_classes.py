@@ -19,10 +19,13 @@ class PyuvmFormatter(SimColourLogFormatter):
         super().__init__()
 
     def format(self, record):
-        new_msg = f"{record.filename}({record.lineno})"
-        new_msg += f"[{self.full_name}]: " + record.msg
+        new_msg = f"[{self.full_name}]: " + record.msg
         record.msg = new_msg
-        return super().format(record)
+        name_temp = record.name
+        record.name = f"{record.pathname}({record.lineno})"
+        formatted_msg = super().format(record)
+        record.name = name_temp
+        return formatted_msg
 
 
 # 6.2.1
