@@ -9,7 +9,8 @@
 from pyuvm.s05_base_classes import uvm_object
 import logging
 import sys
-from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
+from cocotb.log import SimLogFormatter, SimColourLogFormatter, SimTimeContextFilter
+from cocotb.utils import want_color_output
 from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET, NullHandler   # noqa: F401, E501
 
 
@@ -23,7 +24,10 @@ class PyuvmFormatter(SimColourLogFormatter):
         record.msg = new_msg
         name_temp = record.name
         record.name = f"{record.pathname}({record.lineno})"
-        formatted_msg = super().format(record)
+        if want_color_output():
+            formatted_msg = super().format(record)
+        else:
+            formatted_msg = SimLogFormatter.format(self, record)
         record.name = name_temp
         return formatted_msg
 
