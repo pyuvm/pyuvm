@@ -9,7 +9,8 @@
 from pyuvm.s05_base_classes import uvm_object
 import logging
 import sys
-from cocotb.log import SimLogFormatter, SimColourLogFormatter, SimTimeContextFilter
+from cocotb.log import SimTimeContextFilter
+from cocotb.log import SimLogFormatter, SimColourLogFormatter
 from cocotb.utils import want_color_output
 from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET, NullHandler   # noqa: F401, E501
 
