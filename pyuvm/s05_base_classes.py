@@ -77,7 +77,7 @@ class uvm_object(utility_classes.uvm_void):
         Not implemented because Python can implement the factory without
         these shenanigans.
         """
-        raise error_classes.UVMNotImplemented(
+        raise error_classes.UsePythonMethod(
             'Python provides better ways to do this '
             'so the uvm_object_wrapper is unimplemented')
 
@@ -87,7 +87,7 @@ class uvm_object(utility_classes.uvm_void):
         Not implemented because Python can implement the factory without
         these shenanigans.
         """
-        raise error_classes.UVMNotImplemented(
+        raise error_classes.UsePythonMethod(
             'Python provides better ways to do this '
             'so the uvm_object_wrapper is unimplemented')
 
@@ -123,20 +123,20 @@ class uvm_object(utility_classes.uvm_void):
         """
         Not implemented. Use __str__() and print()
         """
-        raise error_classes.UVMNotImplemented(
+        raise error_classes.UsePythonMethod(
             'There are better ways to do printing in Python using'
             'print() or str()')
 
     # 5.3.6.2
     def sprint(self):
         """ Not implemented. use __str__() and print()"""
-        raise error_classes.UVMNotImplemented(
+        raise error_classes.UsePythonMethod(
             'There are better ways to do printing in Python')
 
     # 5.3.6.3
     def do_print(self):
         """ not implemented. Use __str__() and print()"""
-        raise error_classes.UVMNotImplemented(
+        raise error_classes.UsePythonMethod(
             'There are better ways to do printing in Python')
 
     # 5.3.6.4
