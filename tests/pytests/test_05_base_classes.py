@@ -72,10 +72,10 @@ def test_identification():
     moe_id = moe.get_inst_id()
     assert id(moe) == moe_id
     # 5.3.4.5 not implemented
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(error_classes.UsePythonMethod):
         moe.get_type()
     # 5.3.4.6 not implemented
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(error_classes.UsePythonMethod):
         moe.get_object_type()
     # 5.3.4.7
     assert "my_object" == moe.get_type_name()
@@ -104,10 +104,10 @@ def test_printing():
     """
     mo = my_object("mo")
     # 5.3.6.1
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(error_classes.UsePythonMethod):
         mo.print()
     # 5.3.6.2
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(error_classes.UsePythonMethod):
         mo.sprint()
     assert "Hello", mo.convert2string()
 
