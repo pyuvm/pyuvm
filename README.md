@@ -1,4 +1,6 @@
-# Description
+# PyUVM
+
+## Description
 
 **pyuvm** is the Universal Verification Methodology implemented in Python instead of SystemVerilog. **pyuvm** uses cocotb to interact with the simulator and schedule simulation events.
 
@@ -18,8 +20,7 @@ The following IEEE 1800.2 sections have been implemented:
 |13|Predefined Component Classes|Implements uvm_component with hierarchy, uvm_root singleton,run_test(), simplified ConfigDB, uvm_driver, etc|
 |14 & 15|Sequences, sequencer, sequence_item|Refactored sequencer functionality leveraging Python language capabilities. Simpler and more direct implementation|
 
-
-## Installation
+### Installation
 
 You can install **pyuvm** using `pip`. This will also install **cocotb** as a requirement for **pyuvm**.
 
@@ -29,7 +30,7 @@ You can install **pyuvm** using `pip`. This will also install **cocotb** as a re
 
 Then you can run a simple test:
 
-```
+```bash
 % python
 >>> from pyuvm import *
 >>> my_object = uvm_object("my_object")
@@ -39,7 +40,7 @@ Then you can run a simple test:
 object name: my_object
 ```
 
-## Running from the repository
+### Running from the repository
 
 You can run pyuvm from a cloned repository by installing the cloned repository using pip.
 
@@ -48,11 +49,11 @@ You can run pyuvm from a cloned repository by installing the cloned repository u
 % pip install -e .
 ```
 
-# Usage
+## Usage
 
 This section demonstrates running an example simulation and then shows how the example has been put together demonstrating what the UVM looks like in Python.
 
-## Running the simulation
+### Running the simulation
 
 The TinyALU is, as its name implies, a tiny ALU. It has four operations: ADD, AND, NOT, and MUL. This example shows us running the Verilog version of the design, but there is also a VHDL version.
 
@@ -94,18 +95,20 @@ You should be able to run the simulation like this:
 250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xff XOR 0xff = 0x0000
 250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xff MUL 0xff = 0xfe01
 ```
-# The `TinyAluBfm` in `tinyalu_utils.py`
+
+## The `TinyAluBfm` in `tinyalu_utils.py`
 
 The `TinyAluBfm` is a singleton that uses **cocotb** to communicate with the TinyALU.  The BFM exposes three coroutines to the user: `send_op()`, `get_cmd()`, and `get_result()`.
 
 The singleton uses the `cocotb.top` variable to get the handle to the DUT.  This is the handle that we normally pass to a `cocotb.test()` coroutine.
 
 The `TinyAluBfm` is defined in `tinyalu_utils.py` and imported into our testbench.
-# The `pyuvm` testbench
+
+## The `pyuvm` testbench
 
 The `testbench.py` contains the entire UVM testbench and connects to the TinyALU through a `TinyAluBfm` object defined in `tinyalu_utils.py`.  We'll examine the `testbench.py` file and enough of the **cocotb** test too run the simlation
 
-## Importing `pyuvm`
+### Importing `pyuvm`
 
 Testbenches written in the SystemVerilog UVM usually import the package like this:
 
@@ -120,7 +123,8 @@ similar behavior with `pyuvm` us the `from` import syntax. We import `pyuvm` to 
 import pyuvm
 from pyuvm import *
 ```
-## The AluTest classes
+
+### The AluTest classes
 
 We're going to examine the UVM classes from the top, the test, to the bottom, the sequences.
 
@@ -162,8 +166,10 @@ class AluTest(uvm_test):
         await self.test_all.start()
         self.drop_objection()
 ```
+
 We extend the `AluTest` class to create a parallel version of the test and a Fibonacci program. You can find these sequences in `testbench.py`
-```
+
+```python
 @pyuvm.test()
 class ParallelTest(AluTest):
     def build_phase(self):
@@ -179,11 +185,13 @@ class FibonacciTest(AluTest):
 
 
 ```
+
 All the familiar pieces of a UVM testbench are in **pyuvm**.
 
-## The ALUEnv Class
+### The ALUEnv Class
 
 The `uvm_env` class is a container for the components that make up the testbench.  There are four component classes instantiated:
+
 * `Monitor`—There are actually two monitors instantiated, one to monitor commands (`self.cmd_mod`) and the other to monitor results (`self.result_mon`).  The `Monitor` code is the same for both. We pass them the name of the proxy function that gets the data they monitor.
 * `Scoreboard`—The scoreboard gathers all the commands and results and compares predicted results to actual results.
 * `Coverage`—The coverage class checks that we've covered all the kinds of operations and issues an error if we did not.
@@ -210,12 +218,15 @@ class AluEnv(uvm_env):
         self.cmd_mon.ap.connect(self.coverage.analysis_export)
         self.driver.ap.connect(self.scoreboard.result_export)
 ```
-## The Monitor
+
+### The Monitor
+
 The `Monitor` extends `uvm_component`. Takes the name of a `CocotProxy` method name as an argument.  It uses the name to find the method in the proxy and then calls the method. You cannot do this in SystemVerilog as there is no introspection.
 
 The `Monitor` creates an analysis port and writes the data it gets into the analysis port.
 
 Notice in the `run_phase()` we use the `await` keyword to wait for the `get_cmd` coroutine.  Unlike SystemVerilog, Python makes it clear when you are calling a time-consuming task vs a function. Also notice that the `run_phase()` has the `async` keyword to designate that it is a coroutine. (A task in SystemVerilog.)
+
 ```python
 class Monitor(uvm_component):
     def __init__(self, name, parent, method_name):
@@ -233,14 +244,17 @@ class Monitor(uvm_component):
             self.logger.debug(f"MONITORED {datum}")
             self.ap.write(datum)
 ```
-## The Scoreboard
+
+### The Scoreboard
+
 The scoreboard receives commands from the command monitor and results from the results monitor in the same order.  It uses the commands to predict the results and compares them.
 
 * The `build_phase` uses `uvm_tlm_analysis_fifos` to receive data from the monitors and store it.
 * The scoreboard exposes the FIFO exports by copying them into class data members.  As we see in the environment above, this allows us to connect the exports without reaching into the `Scoreboard's` inner workings.
 * We connect the exports in the `connect_phase()`
-* The `check_phase() runs after the `run_phase()`.  At this point the scoreboard has all operations and results. It loops through the operations and predicts the result, then it compares the predicted and actual result.
+* The `check_phase()` runs after the `run_phase()`.  At this point the scoreboard has all operations and results. It loops through the operations and predicts the result, then it compares the predicted and actual result.
 * Notice that we do not use UVM reporting. Instead we us the Python `logging` module. Every `uvm_report_object` and its children has its own logger stored in `self.logger.`
+
 ```python
 class Scoreboard(uvm_component):
 
@@ -275,7 +289,8 @@ class Scoreboard(uvm_component):
                                       f"expected 0x{predicted_result:04x}")
 
 ```
-## Coverage
+
+### Coverage
 
 The `Coverage` Class extends `uvm_subscriber` which extends `uvm_analysis_export`.  As we see in the `AluEnv` above, this allows us to pass the object directly to the `connect()` method to connect it to an analysis port.
 
@@ -309,7 +324,7 @@ class Coverage(uvm_subscriber):
                 assert True
 ```
 
-## Driver
+### Driver
 
 The `Driver` extends `uvm_driver` and so it works with sequences and sequence items.
 
@@ -338,7 +353,9 @@ class Driver(uvm_driver):
             self.seq_item_port.item_done()
 
 ```
-## The ALU Sequence
+
+### The ALU Sequence
+
 The ALU Sequence creates sequence items, randomizes them and sends them to the `Driver`. It inherits `start_item` and `finish_item` from `uvm_sequence`.
 
 It is clear that `start_item` and `finish_item` block because we call them using the `await` keyword.  `start_item` waits for it's turn to use the sequencer, and `finish_item` sends the sequence_item to the driver and returns when the driver calls `item_done()`
@@ -354,7 +371,9 @@ class TestAllSeq(uvm_sequence):
         await max.start(seqr)
 
 ```
+
 This virtual sequence launches two other sequences: `RandomSeq` and `MaxSeq`. `RandomSeq` randomizes the operands.
+
 ```python
 class RandomSeq(uvm_sequence):
     async def body(self):
@@ -364,7 +383,9 @@ class RandomSeq(uvm_sequence):
             cmd_tr.randomize_operands()
             await self.finish_item(cmd_tr)
 ```
+
 `MaxSeq` sets the operands to `0xff`:
+
 ```python
 class MaxSeq(uvm_sequence):
     async def body(self):
@@ -374,7 +395,8 @@ class MaxSeq(uvm_sequence):
             await self.finish_item(cmd_tr)
 ```
 
-## ALU Sequence Item
+### ALU Sequence Item
+
 The `AluSeqItem` contains the TinyALU commands.  It has two operands and an operation.
 
 The SystemVerilog `uvm_sequence_item` class uses `convert2string()` to convert the item to a string and `do_compare()` to compare the item to another item.  We do not use these in **pyuvm** because Python has magic methods that do these functions.
@@ -411,11 +433,12 @@ class AluSeqItem(uvm_sequence_item):
 ```
 
 Now that we've got the UVM testbench we can call it from a **cocotb** test.
-# The Cocotb Tests
+
+## The Cocotb Tests
 
 **cocotb** finds `uvm_test` classes identified with the `@pyuvm.test()` decorator and launches them as coroutines.  Our test does the following:
 
-# Contributing
+## Contributing
 
 You can contribute to `pyuvm` by forking this repository and submitting pull requests.
 
@@ -428,14 +451,13 @@ There are three sets of `pytest` tests that test features that
 don't use coroutines.  The rest of the tests are in `tests/cocotb_tests`
 and need a simulator to run.
 
-
 Credits:
 
 * Ray Salemi—Original author, created as an employee of Siemens.
 * IEEE 1800.2 Specification
 * Siemens for supporting me in this effort.
 
-# License
+## License
 
 Copyright 2020 Siemens EDA
 
@@ -450,6 +472,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-
-
