@@ -18,7 +18,7 @@ def test(
     cocotb_ver_int = []
     for xx in cocotb_ver_str:
         try:
-            cocotb_ver_int.append(int(xx))  # to avoid errors for strings like 'dev0'
+            cocotb_ver_int.append(int(xx))  # for strings like 'dev0'
         except ValueError:
             pass
     version_info = tuple(cocotb_ver_int)
