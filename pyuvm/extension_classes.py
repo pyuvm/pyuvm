@@ -14,8 +14,14 @@ def test(
     skip=False,
     stage=None,
 ):
-    version_info = tuple(int(n) for n in cocotb.__version__.split(".")
-                         if isinstance(n, int))
+    cocotb_ver_str = cocotb.__version__.split(".")
+    cocotb_ver_int = []
+    for xx in cocotb_ver_str:
+        try:
+            cocotb_ver_int.append(int(xx))  # to avoid errors for strings like 'dev0'
+        except ValueError:
+            pass
+    version_info = tuple(cocotb_ver_int)
     if version_info >= (1, 7, 0) and stage is None:
         stage = 0
 
