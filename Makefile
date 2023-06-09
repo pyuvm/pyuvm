@@ -10,6 +10,10 @@ run_questa:
 run_vcs:
 	make -C examples/TinyALU SIM=vcs
 
+.PHONY: run_verilator
+run_verilator:
+	make -C examples/TinyALU SIM=verilator
+
 .PHONY: init
 init:
 	pip install -r requirements.txt
