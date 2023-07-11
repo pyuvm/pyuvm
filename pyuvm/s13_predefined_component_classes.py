@@ -57,24 +57,27 @@ class uvm_agent(uvm_component):
 
     def build_phase(self):
         super().build_phase()
-        self.is_active = uvm_active_passive_enum.UVM_ACTIVE
         try:
-            self.is_active = self.cdb_get("is_active")
+            self._active = self.cdb_get("is_active")
         except error_classes.UVMConfigItemNotFound:
-            self.is_active = uvm_active_passive_enum.UVM_ACTIVE
+            self._active = uvm_active_passive_enum.UVM_ACTIVE
 
-        if self.is_active not in list(uvm_active_passive_enum):
+        if self._active not in list(uvm_active_passive_enum):
             self.logger.warning(f"{self.get_full_name()}"
                                 "has illegal is_active"
-                                f" value: {self.is_active}."
+                                f" value: {self._active}."
                                 "Setting to UVM_ACTIVE")
-            self.is_active = uvm_active_passive_enum.UVM_ACTIVE
+            self._active = uvm_active_passive_enum.UVM_ACTIVE
 
     def get_is_active(self):
-        return self.is_active
+        return self._active
 
     def active(self):
         return self.get_is_active() == uvm_active_passive_enum.UVM_ACTIVE
+    
+    @property
+    def active(self) -> bool:
+        return self._active == uvm_active_passive_enum.UVM_ACTIVE
 
 
 # 13.5
