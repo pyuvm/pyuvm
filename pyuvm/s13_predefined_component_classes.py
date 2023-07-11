@@ -68,12 +68,10 @@ class uvm_agent(uvm_component):
                                 f" value: {self._active}."
                                 "Setting to UVM_ACTIVE")
             self._active = uvm_active_passive_enum.UVM_ACTIVE
-
-    def get_is_active(self):
+    
+    @property
+    def is_active(self) -> uvm_active_passive_enum:
         return self._active
-
-    def active(self):
-        return self.get_is_active() == uvm_active_passive_enum.UVM_ACTIVE
     
     @property
     def active(self) -> bool:
