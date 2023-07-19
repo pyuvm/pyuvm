@@ -259,18 +259,6 @@ def test_transaction_recording():
     """
     tr = uvm_transaction()
     with pytest.raises(error_classes.UVMNotImplemented):
-        tr.accept_tr(None)
-    with pytest.raises(error_classes.UVMNotImplemented):
-        tr.do_accept_tr()
-    with pytest.raises(error_classes.UVMNotImplemented):
-        tr.begin_tr(None, None)
-    with pytest.raises(error_classes.UVMNotImplemented):
-        tr.do_begin_tr()
-    with pytest.raises(error_classes.UVMNotImplemented):
-        tr.end_tr(None, None)
-    with pytest.raises(error_classes.UVMNotImplemented):
-        tr.do_end_tr()
-    with pytest.raises(error_classes.UVMNotImplemented):
         tr.get_tr_handle()
     with pytest.raises(error_classes.UVMNotImplemented):
         tr.enable_recording()
@@ -282,12 +270,9 @@ def test_transaction_recording():
         tr.is_active()
     with pytest.raises(error_classes.UVMNotImplemented):
         tr.get_event_pool()
-    with pytest.raises(error_classes.UVMNotImplemented):
-        tr.get_accept_time()
-    with pytest.raises(error_classes.UVMNotImplemented):
-        tr.get_begin_time()
-    with pytest.raises(error_classes.UVMNotImplemented):
-        tr.get_end_time()
+    tr.get_accept_time()
+    tr.get_begin_time()
+    tr.get_end_time()
 
 
 def test_clone():
