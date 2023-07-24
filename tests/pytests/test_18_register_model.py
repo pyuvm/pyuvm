@@ -1,5 +1,6 @@
 import itertools
 from pyuvm import *
+import pytest
 
 
 def test_reg_block_get_name():
@@ -33,7 +34,10 @@ def test_reg_map_get_name():
 def test_reg_map_configure():
     reg_map = uvm_reg_map()
     parent = uvm_reg_block()
-    reg_map.configure(parent, 1024)
+    reg_map.configure(parent,
+                      1024,
+                      n_bytes=4,
+                      endian=uvm_endianness_e.UVM_LITTLE_ENDIAN)
     assert reg_map.get_parent() == parent
     assert reg_map.get_base_addr() == 1024
 
@@ -47,9 +51,9 @@ def test_reg_map_with_single_reg():
 
 def test_reg_map_with_multiple_regs():
     reg_map = uvm_reg_map()
-    reg0 = uvm_reg()
+    reg0 = uvm_reg("reg0")
     reg_map.add_reg(reg0, 128)
-    reg1 = uvm_reg()
+    reg1 = uvm_reg("reg1")
     reg_map.add_reg(reg1, 256)
     assert reg_map.get_registers() == [reg0, reg1]
     assert reg_map.get_reg_by_offset(128) == reg0
@@ -111,6 +115,18 @@ def test_reg_field_is_volatile():
     assert not field.is_volatile()
 
 
+def test_reg_map_unaligned_offset():
+    reg0 = uvm_reg("reg0")
+    block = uvm_reg_block("block")
+    map = block.create_map("map",
+                           0x1000,
+                           n_bytes=4,
+                           endian=uvm_endianness_e.UVM_LITTLE_ENDIAN,
+                           byte_addressing=False)
+    with pytest.raises(error_classes.UVMFatalError):
+        map.add_reg(reg0, 0x2)
+
+
 def test_simple_reg_model():
     """
     A more realistic register model based on the venerable UART 16550 design
@@ -143,7 +159,10 @@ def test_simple_reg_model():
         def __init__(self, name):
             super().__init__(name)
             self.map = uvm_reg_map('map')
-            self.map.configure(self, 0)
+            self.map.configure(self,
+                               0xFF00,
+                               n_bytes=4,
+                               endian=uvm_endianness_e.UVM_BIG_ENDIAN)
             self.LCR = LineControlRegister('LCR')
             self.LCR.configure(self)
             self.map.add_reg(self.LCR, int('0x100c', 0))
@@ -155,6 +174,21 @@ def test_simple_reg_model():
     assert regs.get_name() == 'regs'
     assert regs.map.get_reg_by_offset(int('0x100c', 0)) == regs.LCR
     assert regs.map.get_reg_by_offset(int('0x1014', 0)) == regs.LSR
+
+    # Check n_bytes
+    assert regs.map.get_n_bytes() == 4
+    # Check reg_map methods
+    assert regs.map.get_parent() == regs
+    # Add register with same offset but different name
+    with pytest.raises(error_classes.UVMFatalError):
+        regs.map.add_reg(LineStatusRegister("temp_reg"), offset=0x100c)
+    # Add register with same name but different offset
+    with pytest.raises(error_classes.UVMFatalError):
+        regs.map.add_reg(LineStatusRegister("LSR"), offset=0x200c)
+    assert regs.map.get_base_addr() == 0xFF00
+    # Check unaligned base address
+    regs.map.set_base_addr(0x1F00)
+    assert regs.map.get_base_addr() == 0x1F00
 
     LCR = regs.LCR
     assert LCR.get_name() == 'LCR'
