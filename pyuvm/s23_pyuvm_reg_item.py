@@ -1,7 +1,7 @@
 ## Import Main Package
 from pyuvm import uvm_sequence_item
 from pyuvm import uvm_object
-from s24_pyuvm_reg_includes import *
+from pyuvm.s24_pyuvm_reg_includes import *
 
 ## Main Class
 #@rand_enable(enable_pyvsc,uvm_sequence_item)

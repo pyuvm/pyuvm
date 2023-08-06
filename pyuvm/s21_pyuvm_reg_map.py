@@ -1,9 +1,9 @@
 ## Import Main Packages
 from pyuvm import uvm_object, uvm_sequencer
-from s24_pyuvm_reg_includes import *
-from s25_pyuvm_adapter import *
-from s26_pyuvm_predictor import *
-from s18_pyuvm_reg_block import *
+from pyuvm.s24_pyuvm_reg_includes import *
+from pyuvm.s25_pyuvm_adapter import *
+from pyuvm.s26_pyuvm_predictor import *
+from pyuvm.s18_pyuvm_reg_block import *
 
 # Class declaration: uvm_reg_map
 class pyuvm_reg_map(uvm_object):

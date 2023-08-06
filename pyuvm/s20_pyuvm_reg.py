@@ -1,8 +1,8 @@
 # Main Packages same as import uvm_pkg or uvm_defines.svh
 from pyuvm import uvm_object
-from s18_pyuvm_reg_block import *
-from s21_pyuvm_reg_map import pyuvm_reg_map
-from s24_pyuvm_reg_includes import *
+from pyuvm.s18_pyuvm_reg_block import *
+from pyuvm.s21_pyuvm_reg_map import pyuvm_reg_map
+from pyuvm.s24_pyuvm_reg_includes import *
 
 # Class declaration
 class pyuvm_reg(uvm_object):

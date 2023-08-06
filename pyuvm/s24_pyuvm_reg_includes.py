@@ -6,7 +6,7 @@ from tabnanny import check
 #import vsc
 import copy
 from pyuvm.error_classes import UVMFatalError, UVMError
-from s17_pyuvm_reg_enumerations import *
+from pyuvm.s17_pyuvm_reg_enumerations import *
 
 class path_t(Enum):
     '''

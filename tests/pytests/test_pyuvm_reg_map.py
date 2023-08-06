@@ -1,7 +1,7 @@
 ## Main Packages for the entire RAL model
 import itertools
 import pytest
-from pyuvm import *
+from pyuvm.s27_pyuvm_reg_pkg import *
 #from s18_pyuvm_reg_block import *
 #from s19_pyvum_reg_field import *
 #from s20_pyuvm_reg import *

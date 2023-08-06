@@ -1,7 +1,7 @@
 # Main Packages same as import uvm_pkg or uvm_defines.
 from pyuvm import uvm_object
-from s24_pyuvm_reg_includes import *
-from s20_pyuvm_reg import pyuvm_reg
+from pyuvm.s24_pyuvm_reg_includes import *
+from pyuvm.s20_pyuvm_reg import pyuvm_reg
 
 # Class declaration for register field
 #@rand_enable(enable_pyvsc)
