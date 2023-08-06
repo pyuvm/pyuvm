@@ -4,17 +4,16 @@ from pyuvm.error_classes import UVMFatalError
 from enum import Enum
 
 
-UVM_REG_DATA_WIDTH = 64
-UVM_REG_ADDR_WIDTH = 64
+PYUVM_REG_DATA_WIDTH = 64
+PYUVM_REG_ADDR_WIDTH = 64
 
 # 17.2.1.1 uvm_reg_data_t
-uvm_reg_data_t = int
+pyuvm_reg_data_t = int
 
 # 17.2.1.3 uvm_reg_addr_t
-uvm_reg_addr_t = int
+pyuvm_reg_addr_t = int
 
-
-uvm_reg_policy_t = [
+pyuvm_reg_policy_t = [
     "RO",       # no effect, R: no effect.
     "RW",       # as is, R: no effect.
     "RC",       # no effect, R: clears all bits.
@@ -47,7 +46,7 @@ uvm_reg_policy_t = [
     "NOACCESS"  # no effect, R: no effect.
 ]
 
-uvm_reg_field_ignore_rand_mode = ["RW", "WRC", "WRS", "WO", "W1", "WO1"]
+pyuvm_reg_field_ignore_rand_mode = ["RW", "WRC", "WRS", "WO", "W1", "WO1"]
 
 
 # 17.2.1.7 uvm_hdl_path_slice
