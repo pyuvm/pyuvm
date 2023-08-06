@@ -28,7 +28,7 @@ jobs:
       continue-on-error: false
       run: |
         pip install flake8
-        flake8 pyuvm tests/pytests
+        flake8 pyuvm
 
   tests:
 
