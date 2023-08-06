@@ -8,12 +8,13 @@ module tinyalu (input [7:0] A,
 		output [15:0] result);
 
    wire [15:0] 		      result_aax, result_mult;
-   wire 		      start_single, start_mult;
-	bit clk;
+   wire 		          start_single, start_mult;
+   wire                   done_aax;
+   wire                   done_mult;
+   bit                    clk;
 
-	initial clk = 0;
-	always #5 clk = ~clk;
-
+   initial clk = 0;
+   always #5 clk = ~clk;
 
    assign start_single = start & ~op[2];
    assign start_mult   = start & op[2];
@@ -46,9 +47,10 @@ module single_cycle(input [7:0] A,
       result <= 0;
     else
       case(op)
-		3'b001 : result <= A + B;
-		3'b010 : result <= A & B;
-		3'b011 : result <= A ^ B;
+		3'b001 : result <= {8'd0,A} + {8'd0,B};
+		3'b010 : result <= {8'd0,A} & {8'd0,B};
+		3'b011 : result <= {8'd0,A} ^ {8'd0,B};
+		default : result <= {A,B};
       endcase // case (op)
 
    always @(posedge clk)

@@ -11,6 +11,10 @@ else ifeq ($(TOPLEVEL_LANG),vhdl)
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
+ifeq ($(SIM), verilator)
+    # Enable processing of #delay statements
+    COMPILE_ARGS += --timing
+endif
 MODULE := testbench
 TOPLEVEL = tinyalu
 GHDL_ARGS := --ieee=synopsys

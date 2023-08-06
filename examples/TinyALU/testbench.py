@@ -71,8 +71,8 @@ class TestAllForkSeq(uvm_sequence):
         seqr = ConfigDB().get(None, "", "SEQR")
         random = RandomSeq("random")
         max = MaxSeq("max")
-        random_task = cocotb.fork(random.start(seqr))
-        max_task = cocotb.fork(max.start(seqr))
+        random_task = cocotb.start_soon(random.start(seqr))
+        max_task = cocotb.start_soon(max.start(seqr))
         await Combine(Join(random_task), Join(max_task))
 
 # Sequence library example

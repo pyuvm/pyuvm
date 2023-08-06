@@ -16,6 +16,8 @@ from pyuvm.s12_uvm_tlm_interfaces import *
 from pyuvm.s13_predefined_component_classes import *
 # Section 14, 15 (Done as fresh Python design)
 from pyuvm.s14_15_python_sequences import *
+# Section 17, Register enumeration
+from pyuvm.s17_register_enumerations import *
 # Section 18
 from pyuvm.s18_register_model import *
 # Extension Modules
