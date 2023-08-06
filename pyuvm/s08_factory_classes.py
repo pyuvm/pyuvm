@@ -78,10 +78,10 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         # instance_overrides is an OrderedDict, so we will check
         # the paths in the order they are registered later.
 
-        assert issubclass(original_type, utility_classes.uvm_void),\
+        assert issubclass(original_type, utility_classes.uvm_void), \
             "You tried to override a non-uvm_void class"
         assert issubclass(override_type,
-                          utility_classes.uvm_void),\
+                          utility_classes.uvm_void), \
             "You tried to use a non-uvm_void class as an override"
         self.__set_override(original_type, override_type, full_inst_path)
 
@@ -137,10 +137,10 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param override_type: The new type that will override it
         :param replace: If the override exists, only replace it if this is True
         """
-        assert issubclass(original_type, utility_classes.uvm_void),\
+        assert issubclass(original_type, utility_classes.uvm_void), \
             "You tried to override a non-uvm_void class"
         assert issubclass(override_type,
-                          utility_classes.uvm_void),\
+                          utility_classes.uvm_void), \
             "You tried to use a non-uvm_void class as an override"
         if (original_type not in self.fd.overrides) or replace:
             self.__set_override(original_type, override_type)
@@ -160,9 +160,9 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         replace if this is True
         :return:
         """
-        assert isinstance(original_type_name, str),\
+        assert isinstance(original_type_name, str), \
             "Original_name must be a string"
-        assert isinstance(override_type_name, str),\
+        assert isinstance(override_type_name, str), \
             "Override_name must be a string"
         try:
             override_type = self.fd.classes[override_type_name]
