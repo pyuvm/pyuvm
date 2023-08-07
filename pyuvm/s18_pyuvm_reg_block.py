@@ -1,7 +1,7 @@
 from pyuvm import uvm_object
-#import vsc
-
 # 18.1.1 Class declaration
+
+
 class pyuvm_reg_block(uvm_object):
 
     # 18.1.2.1
