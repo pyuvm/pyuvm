@@ -2,7 +2,7 @@
 import itertools
 import pytest
 from pyuvm import *
-from pyuvm.s27_pyuvm_reg_pkg import *
+from pyuvm.s27_uvm_reg_pkg import *
 
 ##############################################################################
 ## TIPS
@@ -25,19 +25,126 @@ running tests (expecially if in Parallel)
 """
 
 ##############################################################################
+## TESTS
+##############################################################################
+@pytest.mark.reg_block_get_name
+def test_reg_block_get_name():
+    block = uvm_reg_block('some_block')
+    assert block.get_name() == 'some_block'
+
+@pytest.mark.reg_block_with_single_reg
+def test_reg_block_with_single_reg():
+    block = uvm_reg_block()
+    reg = uvm_reg()
+    reg.configure(block,"0x4","")
+    assert block.get_registers() == [reg]
+
+@pytest.mark.reg_block_with_multiple_regs
+def test_reg_block_with_multiple_regs():
+    block = uvm_reg_block()
+    reg0 = uvm_reg()
+    reg0.configure(block,"0x4","")
+    reg1 = uvm_reg()
+    reg1.configure(block,"0x8","")
+    assert block.get_registers() == [reg0, reg1]
+
+def test_reg_map_get_name():
+    map_with_explicit_name = uvm_reg_map('some_map')
+    assert map_with_explicit_name.get_name() == 'some_map'
+    map_with_implicit_name = uvm_reg_map()
+    assert map_with_implicit_name.get_name() == 'uvm_reg_map'
+
+def test_reg_map_configure():
+    reg_map = uvm_reg_map()
+    parent = uvm_reg_block()
+    reg_map.configure(parent, 1024)
+    assert reg_map.get_parent() == parent
+    assert reg_map.get_base_addr() == 1024
+
+def test_reg_map_with_single_reg():
+    reg_map = uvm_reg_map()
+    reg = uvm_reg()
+    reg_map.add_reg(reg, 0)
+    assert reg_map.get_registers() == [reg]
+
+def test_reg_map_with_multiple_regs():
+    reg_map = uvm_reg_map()
+    reg0 = uvm_reg()
+    reg_map.add_reg(reg0, 128)
+    reg1 = uvm_reg()
+    reg_map.add_reg(reg1, 256)
+    assert reg_map.get_registers() == [reg0, reg1]
+    assert reg_map.get_reg_by_offset(128) == reg0
+    assert reg_map.get_reg_by_offset(256) == reg1
+
+##############################################################################
+## TESTS UVM_REG
+##############################################################################
+def test_reg_get_name():
+    reg = uvm_reg('some_reg')
+    assert reg.get_name() == 'some_reg'
+
+def test_reg_configure():
+    reg = uvm_reg()
+    parent = uvm_reg_block()
+    reg.configure(parent,"0x4","")
+    assert reg.get_parent() == parent
+
+def test_reg_with_single_field():
+    reg = uvm_reg()
+    field = uvm_reg_field()
+    field.configure(reg, 8, 0, 'RW', 0, 0)
+    assert reg.get_fields() == [field]
+
+def test_reg_with_multiple_fields():
+    reg = uvm_reg()
+    field0 = uvm_reg_field()
+    field0.configure(reg, 8, 0, 'RW', 0, 0)
+    field1 = uvm_reg_field()
+    field1.configure(reg, 8, 0, 'RW', 0, 0)
+    assert reg.get_fields() == [field0, field1]
+
+def test_reg_field_get_name():
+    field_with_explicit_name = uvm_reg_field("some_field")
+    print(field_with_explicit_name.get_name())
+    assert field_with_explicit_name.get_name() == "some_field"
+    field_with_implicit_name = uvm_reg_field()
+    assert field_with_implicit_name.get_name() == 'uvm_reg_field'
+
+def test_reg_field_configure():
+    field = uvm_reg_field()
+    parent = uvm_reg()
+    field.configure(parent, 8, 16, 'RW', True, 15)
+    field.field_lock()
+    assert field.get_parent() == parent
+    assert field.get_n_bits() == 8
+    assert field.get_lsb_pos() == 16
+    assert field.get_access() == 'RW'
+    assert field.is_volatile()
+    assert field.get_reset() == 15
+
+def test_reg_field_is_volatile():
+    field = uvm_reg_field()
+    field.configure(uvm_reg(), 8, 16, 'RW', True, 15)
+    field.field_lock()
+    assert field.is_volatile()
+    field.configure(uvm_reg(), 8, 16, 'RW', False, 15)
+    assert not field.is_volatile()
+
+##############################################################################
 ## TESTS ENTIRE RAL
 ##############################################################################
 def test_simple_reg_model():
     """
     A more realistic register model based on the venerable UART 16550 design
     """
-    class LineControlRegister(pyuvm_reg):
+    class LineControlRegister(uvm_reg):
         def __init__(self, name="LineControlRegister", reg_width=32):
             super().__init__(name,reg_width)
-            self.WLS = pyuvm_reg_field('WLS')
-            self.STB = pyuvm_reg_field('STB')
-            self.PEN = pyuvm_reg_field('PEN')
-            self.EPS = pyuvm_reg_field('EPS')
+            self.WLS = uvm_reg_field('WLS')
+            self.STB = uvm_reg_field('STB')
+            self.PEN = uvm_reg_field('PEN')
+            self.EPS = uvm_reg_field('EPS')
 
         def build(self):
             self.WLS.configure(self, 2, 0, 'RW', 0, 0)
@@ -47,13 +154,13 @@ def test_simple_reg_model():
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT) 
 
-    class LineStatusRegister(pyuvm_reg):
+    class LineStatusRegister(uvm_reg):
         def __init__(self, name="LineStatusRegister", reg_width=32):
             super().__init__(name,reg_width)
-            self.DR = pyuvm_reg_field('DR')
-            self.OE = pyuvm_reg_field('OE')
-            self.PE = pyuvm_reg_field('PE')
-            self.FE = pyuvm_reg_field('FE')
+            self.DR = uvm_reg_field('DR')
+            self.OE = uvm_reg_field('OE')
+            self.PE = uvm_reg_field('PE')
+            self.FE = uvm_reg_field('FE')
 
         def build(self):
             self.DR.configure(self, 1, 0, 'RW', 1, 0)
@@ -63,10 +170,10 @@ def test_simple_reg_model():
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT) 
 
-    class Regs(pyuvm_reg_block):
+    class Regs(uvm_reg_block):
         def __init__(self, name):
             super().__init__(name)
-            self.map = pyuvm_reg_map('map')
+            self.map = uvm_reg_map('map')
             self.map.configure(self, 0)
             self.LCR = LineControlRegister('LCR')
             self.LCR.configure(self,"0x100c","")

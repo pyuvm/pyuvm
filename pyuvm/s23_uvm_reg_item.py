@@ -1,12 +1,12 @@
 # Import Main Package
 from pyuvm import uvm_sequence_item
 from pyuvm import uvm_object
-from pyuvm.s24_pyuvm_reg_includes import *
+from pyuvm.s24_uvm_reg_includes import *
 
 
 # Main Class
 # @rand_enable(enable_pyvsc,uvm_sequence_item)
-class pyuvm_reg_item(uvm_sequence_item):
+class uvm_reg_item(uvm_sequence_item):
     # constructor
     def __init__(self, name='item'):
         # Kind of element being accessed: REG, MEM, or FIELD. See <uvm_elem_kind_e>.

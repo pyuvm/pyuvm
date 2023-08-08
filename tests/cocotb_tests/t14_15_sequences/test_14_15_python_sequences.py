@@ -1,5 +1,5 @@
 
-import pyuvm_unittest
+import uvm_unittest
 from pyuvm import *
 import cocotb
 import asyncio
@@ -40,7 +40,7 @@ class HandleRespSeqDriver(uvm_driver):
             self.seq_item_port.item_done()
 
 
-class py1415_sequence_TestCase(pyuvm_unittest.pyuvm_TestCase):
+class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

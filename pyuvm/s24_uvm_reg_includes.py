@@ -6,7 +6,7 @@ from tabnanny import check
 #import vsc
 import copy
 from pyuvm.error_classes import UVMFatalError, UVMError
-from pyuvm.s17_pyuvm_reg_enumerations import *
+from pyuvm.s17_uvm_reg_enumerations import *
 
 class path_t(Enum):
     '''
@@ -56,9 +56,9 @@ class access_e(Enum):
     PYUVM_READ  = 0
     PYUVM_WRITE = 1
 
-class pyuvm_resp_t(Enum):
+class uvm_resp_t(Enum):
     '''
-    pyuvm_resp_t is the main response based on the access issued
+    uvm_resp_t is the main response based on the access issued
     PASS_RESP  = 0
     ERROR_RESP = 1
     '''
@@ -114,7 +114,7 @@ class uvm_reg_bus_op:
     data:       int
     n_bits:     int
     byte_en:    bool
-    status:     pyuvm_resp_t
+    status:     uvm_resp_t
 
 class uvm_reg_error_decoder(Enum):
     '''

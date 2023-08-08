@@ -1,13 +1,13 @@
 # Main Packages same as import uvm_pkg or uvm_defines.svh
 from pyuvm import uvm_object
-from pyuvm.s18_pyuvm_reg_block import *
-from pyuvm.s21_pyuvm_reg_map import pyuvm_reg_map
-from pyuvm.s24_pyuvm_reg_includes import *
+from pyuvm.s18_uvm_reg_block import *
+from pyuvm.s21_uvm_reg_map import uvm_reg_map
+from pyuvm.s24_uvm_reg_includes import *
 
 
-class pyuvm_reg(uvm_object):
+class uvm_reg(uvm_object):
     # Constructor
-    def __init__(self, name="pyuvm_reg", reg_width=32):
+    def __init__(self, name="uvm_reg", reg_width=32):
         super().__init__(name)
         self._parent = None
         self._fields = []
@@ -30,7 +30,7 @@ class pyuvm_reg(uvm_object):
         self._op_in_progress = False
 
     # configure
-    def configure(self, parent: pyuvm_reg_block, address, hdl_path, throw_error_on_read=False, throw_error_on_write=False):
+    def configure(self, parent: uvm_reg_block, address, hdl_path, throw_error_on_read=False, throw_error_on_write=False):
         self._parent = parent
         self._address = address
         self._path = hdl_path
@@ -161,12 +161,12 @@ class pyuvm_reg(uvm_object):
         pass
 
     # Write Method (TASK)
-    async def write(self, value, map: pyuvm_reg_map, path: path_t, check: check_t) -> pyuvm_resp_t:
+    async def write(self, value, map: uvm_reg_map, path: path_t, check: check_t) -> uvm_resp_t:
         # This Task should implement the main read method via only FRONTDOOR
         # TODO: BACKDOOT and USER FRONTDOOR are missing
         # This Task returns only the operation status
         # Local Variables to be returned
-        status = pyuvm_resp_t
+        status = uvm_resp_t
         # Given the map we do not check if the current register exists in the map
         # (redundant check) since the register is directly taken from the MAP
         # We check instead if the map is set and if only one exists (multiple access)
@@ -185,18 +185,18 @@ class pyuvm_reg(uvm_object):
                 error_out(self._header, "WRITE: map cannot be NULL")
             self._op_in_progress = False
         else:
-            raise UVMFatalError("pyuvm_reg -- write -- cannot perform an operation while another is in progress")
+            raise UVMFatalError("uvm_reg -- write -- cannot perform an operation while another is in progress")
         # Return from Task
         return status
 
     # Read Method (TASK)
-    async def read(self, map: pyuvm_reg_map, path: path_t, check: check_t):
+    async def read(self, map: uvm_reg_map, path: path_t, check: check_t):
         # This Task should implement the main read method via only FRONTDOOR
         # TODO: BACKDOOT and USER FRONTDOOR are missing
         # This Task returns only the operation status and the read value
         # (0 is status is error)
         # Local Variables to be returned
-        status = pyuvm_resp_t
+        status = uvm_resp_t
         # Given the map we do not check if the current register exists in the map
         # (redundant check) since the register is directly taken from the MAP
         # We check instead if the map is set and if only one exists (multiple access)
@@ -208,12 +208,12 @@ class pyuvm_reg(uvm_object):
             self._op_in_progress = True
             if map is not None:
                 status, read_data = await map.process_read_operation(self.get_address(), path, check)
-                if status == pyuvm_resp_t.ERROR_RESP:
+                if status == uvm_resp_t.ERROR_RESP:
                     read_data = 0
             else:
                 error_out(self._header, "READ: map cannot be NULL")
             self._op_in_progress = False
         else:
-            raise UVMFatalError("pyuvm_reg -- read -- cannot perform an operation while another is in progress")
+            raise UVMFatalError("uvm_reg -- read -- cannot perform an operation while another is in progress")
         # Return from Task
         return status, read_data
