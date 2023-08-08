@@ -1,19 +1,179 @@
 from pyuvm import uvm_object
-#import vsc
+from pyuvm.s20_pyuvm_reg import uvm_reg
+from pyuvm.s21_pyuvm_reg_map import uvm_reg_map
+from pyuvm.s24_pyuvm_reg_includes import uvm_fatal, uvm_not_implemeneted
 
-# 18.1.1 Class declaration
-class pyuvm_reg_block(uvm_object):
 
-    # 18.1.2.1
-    # TODO Fix signature
-    def __init__(self, name=""):
+class uvm_reg_block(uvm_object):
+    def __init__(self, name="uvm_reg_block"):
         super().__init__(name)
         self._regs = []
+        self.def_map = None
+        self.is_locked = False
+        self.hdl_paths = {}
+        self.fields = []
+        self.root_path = ""
+        self.child_blk = []
+        self.maps = []
+        self.parent_blk = None
+        # optimize this by using dicationries with
+        # TUPLES (existence_bool, handle)
+        self.blk_maping = {}
+        self.map_mapping = {}
+        self.reg_mapping = {}
+        self.blk_name = name
+        self.header = name + "-- "
 
-    # 18.1.3.7
-    # TODO Fix signature
-    def get_registers(self):
-        return self._regs
+    # is_locked
+    def is_locked(self) -> bool:
+        return self.is_locked
 
-    def _add_register(self, reg):
-        self._regs.append(reg)
+    # clear_hdl_path
+    def clear_hdl_path(self, kind="RTL"):
+        uvm_not_implemeneted(self.header)
+
+    # add_hdl_path
+    def add_hdl_path(self, path: str, kind="RTL"):
+        uvm_not_implemeneted(self.header)
+
+    # has_hdl_path
+    def has_hdl_path(self, kind: str) -> bool:
+        uvm_not_implemeneted(self.header)
+
+    # get_hdl_path
+    def get_hdl_path(self, paths: list, kind=""):
+        uvm_not_implemeneted(self.header)
+
+    # get_full_hdl_path
+    def get_full_hdl_path(self, paths: list, kind="", separator="."):
+        uvm_not_implemeneted(self.header)
+
+    # set_lock
+    def set_lock(self):
+        self.is_locked = True
+
+    # blk_set_reg_mapping
+    def blk_set_reg_mapping(self, reg: uvm_reg):
+        self.reg_mapping[reg.get_name()] = 1
+
+    # blk_is_reg_mapped
+    def blk_is_reg_mapped(self, reg: uvm_reg) -> bool:
+        return self.reg_mapping[reg.get_name()]
+
+    # blk_is_child_mapped
+    def blk_is_child_mapped(self, in_blk) -> bool:
+        if (isinstance(in_blk, uvm_reg_block) is False):
+            uvm_fatal(self.header)
+        else:
+            return self.blk_maping[in_blk.get_name()]
+
+    # blk_set_map_mapping
+    def blk_set_map_mapping(self, map_i: uvm_reg_map):
+        self.map_mapping[map_i.get_name()] = 1
+
+    # blk_is_map_mapped
+    def blk_is_map_mapped(self, map_i: uvm_reg_map):
+        self.map_mapping[map_i.get_name()] = 1
+
+    # configure
+    def configure_blk(self, parent, hdl_path):
+        if (self.parent_blk is None):
+            self.parent_blk = parent
+            self.parent_blk.configure_blk(self)
+        else:
+            self.parent_blk = None
+        # add HDL PATH as well
+        self.add_hdl_path(hdl_path)
+
+    # add_block
+    def add_block(self, in_blk):
+        if (isinstance(in_blk, uvm_reg_block) is False):
+            uvm_fatal(self.he)
+        # add to the BLK main mapping
+        if (in_blk not in self.child_blk):
+            self.blk_maping[in_blk.get_name()] = 1
+            self.child_blk.append(in_blk)
+
+    # blk_add_register
+    def blk_add_register(self, reg):
+        if (self.is_locked() is True):
+            self._regs.append(reg)
+        else:
+            uvm_fatal(self.header)
+
+    # blk_get_def_map
+    def blk_get_def_map(self):
+        return self.def_map
+
+    # get_blk_full_name
+    def get_blk_full_name(self) -> str:
+        if (self.parent_blk is None):
+            self.blk_name
+        else:
+            self.parent_blk + "." + self.blk_name
+
+    # blk_get_registers
+    def blk_get_registers(self) -> list:
+        local_reg_collector = []
+        if (self.is_locked() is True):
+            for r in self._regs:
+                if (self.blk_is_reg_mapped(r) is True):
+                    local_reg_collector.append(r)
+        for b in self.child_blk:
+            local_reg_collector.append(b.blk_get_registers())
+        else:
+            uvm_fatal(self.header)
+        return local_reg_collector
+
+    # blk_get_fields
+    def blk_get_fields(self) -> list:
+        local_field_collector = []
+        for r in self.blk_get_registers():
+            local_field_collector.append(r.get_fields())
+        return local_field_collector
+
+    # get_all_child_blk
+    def get_all_child_blk(self) -> list:
+        local_blk_collector = []
+        for b in self.child_blk:
+            if (self.blk_is_child_mapped(b) is True):
+                local_blk_collector.append(b)
+                local_blk_collector.append(b.get_all_child_blk())
+        return local_blk_collector
+
+    # blk_add_map
+    def blk_add_map(self, map_i: uvm_reg_map):
+        if (self.is_locked() is True):
+            uvm_fatal(self.header)
+
+        if (self.map_mapping[map_i] is True):
+            uvm_fatal(self.header)
+        else:
+            self.maps.append(map_i)
+
+        if (self.def_map is None):
+            self.def_map = map_i
+
+    # blk_create_map byte_addressing and byte_en
+    # along with endianess not yet supported
+    def blk_create_map(self, name: str, base_addr: int):
+        lmap = uvm_reg_map.create(name, self)
+        lmap.configure(self, base_addr)
+        self.blk_add_map(lmap)
+
+    # reset_blk
+    def reset_blk(self):
+        uvm_not_implemeneted(self.header)
+
+    '''
+        TODO: the following must be completed
+        1. add_vreg
+        2. remove_reg
+        3. add_mem
+        4. remove_mem
+        5. unregister_blk
+        6. write_reg or write_mem by name
+        7. read_reg or read_mem by name
+        8. get_virtual_fields in a unique field list
+        9. get_mem to return a list of memories
+    '''

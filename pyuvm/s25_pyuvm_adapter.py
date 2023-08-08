@@ -1,20 +1,23 @@
-## Import Main Package
+# Import Main Package
 from pyuvm import uvm_object
 from pyuvm import uvm_sequence_item
 from pyuvm import uvm_sequence
-from pyuvm.s24_pyuvm_reg_includes import *
-from pyuvm.s23_pyuvm_reg_item import *
+from pyuvm.s24_pyuvm_reg_includes import uvm_reg_bus_op
+from pyuvm.s24_pyuvm_reg_includes import uvm_not_implemeneted
+from pyuvm.s23_pyuvm_reg_item import uvm_reg_item
 
-## Main Class
-class pyuvm_reg_adapter(uvm_object):
-    ## Constructor
-    def __init__(self, name="pyuvm_reg_adapter"):
+
+# Main Class
+class uvm_reg_adapter(uvm_object):
+    # Constructor
+    def __init__(self, name="uvm_reg_adapter"):
         super().__init__(name)
-        #    Set this bit in extensions of this class if the bus protocol supports
-        #    byte enables.
-        self.byte_enable    = True
-        self.parent_sequence= uvm_sequence  
-        self.reg_item       = uvm_sequence_item 
+        #  Set this bit in extensions of this class if the bus protocol
+        #  supports byte enables.
+        self.byte_enable = True
+        self.parent_sequence = uvm_sequence
+        self.reg_item = uvm_sequence_item
+        self.header = name + "-- "
 
     #    Function -- reg2bus
     #    Extensions of this class ~must~ implement this method to convert the specified
@@ -24,8 +27,8 @@ class pyuvm_reg_adapter(uvm_object):
     #    assign its members from
     #    the corresponding members from the given generic ~rw~ bus operation, then
     #    return it.
-    def reg2bus(rw: uvm_reg_bus_op):
-        pass
+    def reg2bus(self, rw: uvm_reg_bus_op):
+        uvm_not_implemeneted(self.header)
 
     #    Function -- bus2reg
     #    Extensions of this class ~must~ implement this method to copy members
@@ -33,15 +36,15 @@ class pyuvm_reg_adapter(uvm_object):
     #    ~bus_rw~ instance. Unlike <reg2bus>, the resulting transaction
     #    is not allocated from scratch. This is to accommodate applications
     #    where the bus response must be returned in the original request.
-    def bus2reg(bus_item: uvm_sequence_item, rw: uvm_reg_bus_op):
-        pass
-    
+    def bus2reg(self, bus_item: uvm_sequence_item, rw: uvm_reg_bus_op):
+        uvm_not_implemeneted(self.header)
+
     # Use this method to retrieve the item from the adapter
     def get_item(self):
         return self.reg_item
-    
+
     # Use this method to set the item into the adapter class
-    def set_item(self, item: pyuvm_reg_item):
+    def set_item(self, item: uvm_reg_item):
         self.reg_item = item
 
     # Use this method to set the parent sequence into the adapter class 
@@ -57,8 +60,8 @@ class pyuvm_reg_adapter(uvm_object):
 #  Example:
 #  The following example illustrates how to implement a RegModel-BUS adapter class
 #  for the APB bus protocol.
-# 
-#class rreg2apb_adapter(uvm_reg_adapter):
+#
+# class rreg2apb_adapter(uvm_reg_adapter):
 #  def __init__(self, name="uvm_reg_adapter"):
 #      super().__init__(name)
 #
@@ -66,7 +69,7 @@ class pyuvm_reg_adapter(uvm_object):
 #    apb_item apb = apb_item.create("apb_item")
 #    if(rw.kind == UVM_READ):
 #        apb.op   = READ
-#    elsif (rw.kind == UVM_WRITE): 
+#    elsif (rw.kind == UVM_WRITE):
 #        apb.op   = WRITE;
 #    else:
 #        assert(0,"reg2bus -- Wrong operation type used for APB OP")
@@ -81,12 +84,12 @@ class pyuvm_reg_adapter(uvm_object):
 #    else:
 #        if(apb.op == READ):
 #            rw.kind   = UVM_READ
-#        elsif (apb.op == WRITE): 
+#        elsif (apb.op == WRITE):
 #            rw.kind   = UVM_WRITE;
 #        else:
 #            assert(0,"bus2reg -- Wrong operation type used for uvm_reg_bus_op")
 #        rw.addr      = apb.addr;
 #        rw.data      = apb.data;
 #        rw.status    = UVM_IS_OK;
-# 
+#
 # ------------------------------------------------------------------------------

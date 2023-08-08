@@ -1,43 +1,48 @@
-## Main Packages for the entire RAL model
+# Main Packages for the entire RAL model
 import itertools
-import pytest
-from pyuvm import *
-from pyuvm.s27_pyuvm_reg_pkg import *
+from pyuvm.s27_pyuvm_reg_pkg import uvm_reg, uvm_reg_field
+from pyuvm.s27_pyuvm_reg_pkg import uvm_reg_map, uvm_reg_block
+from pyuvm.s24_pyuvm_reg_includes import predict_t, access_e
 
 ##############################################################################
-## TIPS
+# TIPS
 ##############################################################################
 """
-Use this to execute the test which will not be counted into the entire number of FAILING tests
+Use this to execute the test which will not be counted into the entire number
+of FAILING tests
 @pytest.mark.xfail
 
 Use this to just skip the execution of a specific test
 @pytest.mark.skip
 
-Use this to give a specific test method a name ID the exeucte it by using py.test -m ID_NAME
+Use this to give a specific test method a name ID
+the exeucte it by using py.test -m ID_NAME
 @pytest.mark.ID_NAME
 
 Use this to give a specific test parameters to be used
 @pytest.mark.parametrize("name1, name2",value_type_1, value_type_2)
 
-If pip install pytest-sugar is ran then pytest is gonna likly execute a bar progression while
+If pip install pytest-sugar is ran then pytest is gonna
+likly execute a bar progression while
 running tests (expecially if in Parallel)
 """
 
 ##############################################################################
-## TESTS ENTIRE RAL
+# TESTS ENTIRE RAL
 ##############################################################################
+
+
 def test_simple_reg_model():
     """
     A more realistic register model based on the venerable UART 16550 design
     """
-    class LineControlRegister(pyuvm_reg):
+    class LineControlRegister(uvm_reg):
         def __init__(self, name="LineControlRegister", reg_width=32):
-            super().__init__(name,reg_width)
-            self.WLS = pyuvm_reg_field('WLS')
-            self.STB = pyuvm_reg_field('STB')
-            self.PEN = pyuvm_reg_field('PEN')
-            self.EPS = pyuvm_reg_field('EPS')
+            super().__init__(name, reg_width)
+            self.WLS = uvm_reg_field('WLS')
+            self.STB = uvm_reg_field('STB')
+            self.PEN = uvm_reg_field('PEN')
+            self.EPS = uvm_reg_field('EPS')
 
         def build(self):
             self.WLS.configure(self, 2, 0, 'RW', 0, 0)
@@ -45,15 +50,15 @@ def test_simple_reg_model():
             self.PEN.configure(self, 1, 3, 'RW', 0, 0)
             self.EPS.configure(self, 1, 4, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT) 
+            self.set_prediction(predict_t.PREDICT_DIRECT)
 
-    class LineStatusRegister(pyuvm_reg):
+    class LineStatusRegister(uvm_reg):
         def __init__(self, name="LineStatusRegister", reg_width=32):
-            super().__init__(name,reg_width)
-            self.DR = pyuvm_reg_field('DR')
-            self.OE = pyuvm_reg_field('OE')
-            self.PE = pyuvm_reg_field('PE')
-            self.FE = pyuvm_reg_field('FE')
+            super().__init__(name, reg_width)
+            self.DR = uvm_reg_field('DR')
+            self.OE = uvm_reg_field('OE')
+            self.PE = uvm_reg_field('PE')
+            self.FE = uvm_reg_field('FE')
 
         def build(self):
             self.DR.configure(self, 1, 0, 'RW', 1, 0)
@@ -61,18 +66,18 @@ def test_simple_reg_model():
             self.PE.configure(self, 1, 2, 'RW', 1, 0)
             self.FE.configure(self, 1, 3, 'RW', 1, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT) 
+            self.set_prediction(predict_t.PREDICT_DIRECT)
 
-    class Regs(pyuvm_reg_block):
+    class Regs(uvm_reg_block):
         def __init__(self, name):
             super().__init__(name)
-            self.map = pyuvm_reg_map('map')
+            self.map = uvm_reg_map('map')
             self.map.configure(self, 0)
             self.LCR = LineControlRegister('LCR')
-            self.LCR.configure(self,"0x100c","")
+            self.LCR.configure(self, "0x100c", "")
             self.map.add_reg(self.LCR, int(self.LCR.get_address(), 0))
             self.LSR = LineStatusRegister('LSR')
-            self.LSR.configure(self,self.LSR.get_address(),"")
+            self.LSR.configure(self, self.LSR.get_address(), "")
             self.map.add_reg(self.LSR, int('0x1014', 0))
 
     regs = Regs('regs')
@@ -130,7 +135,7 @@ def test_simple_reg_model():
 
     LSR.reset()
     assert LSR.get_mirrored_value() == 0
-    LSR.predict(32,access_e.PYUVM_WRITE)
+    LSR.predict(32, access_e.PYUVM_WRITE)
     assert LSR.get_mirrored_value() == 32
     for field in LSR.get_fields():
         print(field.get_value())
