@@ -1,11 +1,11 @@
 # Main Packages same as import uvm_pkg or uvm_defines.svh
-from tabnanny import check
 from pyuvm import uvm_object
-#import vsc
+from pyuvm.s24_pyuvm_reg_includes import uvm_not_implemeneted
+
 
 # Pyuvm Mem Class declaration abstraction
-class pyuvm_mem(uvm_object):
-    pass
+class uvm_mem(uvm_object):
+    uvm_not_implemeneted()
 
 
 

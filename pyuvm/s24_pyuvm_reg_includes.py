@@ -66,7 +66,7 @@ class access_e(Enum):
 #
 class uvm_resp_t(Enum):
     '''
-    pyuvm_resp_t is the main response based on the access issued
+    uvm_resp_t is the main response based on the access issued
     PASS_RESP  = 0
     ERROR_RESP = 1
     '''
