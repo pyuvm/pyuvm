@@ -40,6 +40,7 @@ class uvm_reg_field(uvm_object):
         # they are part of the parent register
         self._error_on_read = False
         self._error_on_write = False
+        self._is_locked = False
 
     # configure
     def configure(self,
@@ -78,8 +79,8 @@ class uvm_reg_field(uvm_object):
         # of the parent register
         self._error_on_read = self._parent.throw_error_on_read
         self._error_on_write = self._parent.throw_error_on_write
-        # one configure is called let's unlock
-        self.field_unlock()
+        # Set config_done as field is configured now
+        self._config_done = True
         # check the reset value is not beyond the MAX
         if (self._reset >= (2**self._size)):
             error_out(self._header, f"""Reset value for feild : {self._name}
@@ -90,11 +91,11 @@ class uvm_reg_field(uvm_object):
 
     # lock method meaning the configursation is done
     # and we can unlock all the internal methods
-    def field_lock(self):
-        self._config_done = True
+    def _field_lock(self):
+        self._is_locked = True
 
-    def field_unlock(self):
-        self._config_done = False
+    def _field_unlock(self):
+        self._is_locked = False
 
     # adding error to the main error list
     def _add_error(self, value):
@@ -110,11 +111,11 @@ class uvm_reg_field(uvm_object):
         self._check = check_type
 
     # set_throw_error_on_read
-    def set_throw_error_on_read(self, teor=False):
+    def set_throw_error_on_read(self, teor: bool = False):
         self._error_on_read = teor
 
     # set_throw_error_on_write
-    def set_throw_error_on_write(self, teow=False):
+    def set_throw_error_on_write(self, teow: bool = False):
         self._error_on_write = teow
 
     # get_compare
@@ -135,7 +136,7 @@ class uvm_reg_field(uvm_object):
     def _check_if_configured_and_execute(self, pass_value, fail_value):
         if self._config_done is False:
             error_out(self._header, "Configure for a field must be called"
-                                    "called before any other memeber method")
+                                    " before any other memeber method")
             self._add_error(
                 uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
             return fail_value

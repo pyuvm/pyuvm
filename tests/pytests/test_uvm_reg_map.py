@@ -118,7 +118,7 @@ def test_reg_field_configure():
     field = uvm_reg_field()
     parent = uvm_reg()
     field.configure(parent, 8, 16, 'RW', True, 15)
-    field.field_lock()
+    field. _field_lock()
     assert field.get_parent() == parent
     assert field.get_n_bits() == 8
     assert field.get_lsb_pos() == 16
@@ -129,7 +129,7 @@ def test_reg_field_configure():
 def test_reg_field_is_volatile():
     field = uvm_reg_field()
     field.configure(uvm_reg(), 8, 16, 'RW', True, 15)
-    field.field_lock()
+    field. _field_lock()
     assert field.is_volatile()
     field.configure(uvm_reg(), 8, 16, 'RW', False, 15)
     assert not field.is_volatile()

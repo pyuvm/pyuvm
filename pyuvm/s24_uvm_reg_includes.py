@@ -110,7 +110,7 @@ def error_out(header, message):
     '''
     Used to error out based on header and message
     '''
-    assert (disable_code_interruption_assert, header + message)
+    assert disable_code_interruption_assert, header + message
 
 
 class uvm_reg_bus_op:

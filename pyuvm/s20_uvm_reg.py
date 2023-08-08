@@ -95,7 +95,7 @@ class uvm_reg(uvm_object):
     # _add_field
     def _add_field(self, field):
         # - field not None
-        if (field is not None):
+        if (field is None):
             error_out(self._header, "_add_field Fields cannot be None")
             self._add_error(uvm_reg_error_decoder.FIELD_CANNOT_BE_NONE.name)
         # - field not already added
@@ -128,12 +128,12 @@ class uvm_reg(uvm_object):
     # _set_lock
     def _set_lock(self):
         for _f in self._fields:
-            _f.field_lock()
+            _f._field_lock()
 
     # _set_unlock
     def _set_unlock(self):
         for _f in self._fields:
-            _f.field_unlock()
+            _f._field_unlock()
 
     # Predict
     def predict(self, value, direction: access_e):

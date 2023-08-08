@@ -44,7 +44,7 @@ def test_reg_field_configure():
     field = uvm_reg_field()
     parent = uvm_reg()
     field.configure(parent, 8, 16, 'RW', True, 15)
-    field.field_lock()
+    field. _field_lock()
     assert field.get_parent() == parent
     assert field.get_n_bits() == 8
     assert field.get_lsb_pos() == 16
@@ -56,10 +56,10 @@ def test_reg_field_configure():
 def test_reg_field_is_volatile():
     field = uvm_reg_field("FIELD_volatile")
     field.configure(uvm_reg(), 8, 16, 'RW', True, 15)
-    field.field_lock()
+    field. _field_lock()
     assert field.is_volatile()
     field.configure(uvm_reg(), 8, 16, 'RW', False, 15)
-    field.field_lock()
+    field. _field_lock()
     assert not field.is_volatile()
 
 @pytest.mark.test_reg_field_all_access
@@ -67,21 +67,21 @@ def test_reg_field_all_access():
     for acs in ["RO","RW","RC","RS","WC","WS","W1C","W1S","W1T","W0C","W0S","W0T","WRC","WRS","W1SRC","W1CRS","W0SRC","W0CRS","WSRC","WCRS","WO","WOC","WOS","W1","WO1"]:
         field = uvm_reg_field("FIELD_"+acs)
         field.configure(uvm_reg(), 8, 16, acs, True, 15)
-        field.field_lock()
+        field. _field_lock()
         assert field.get_access() == acs, "Access value {} not in the list".format(acs) 
 
 @pytest.mark.test_reg_field_lsb_pos
 def test_reg_field_lsb_pos():
     field = uvm_reg_field("FIELD_lsb_pos")
     field.configure(uvm_reg(), 8, 16, 'RW', True, 15)
-    field.field_lock()
+    field. _field_lock()
     assert field.get_lsb_pos() == 16
 
 @pytest.mark.test_reg_field_reset
 def test_reg_field_reset():
     field = uvm_reg_field()
     field.configure(uvm_reg(), 8, 16, 'RW', True, 15)
-    field.field_lock()
+    field. _field_lock()
     field.reset()
     assert field.get_reset() == 15, "after reset internal reset value doesn't match {}".format(field.get_reset())
     assert field.get_value() == 15, "after reset internal mirrored value doesn't match {}".format(field.get_value())
@@ -90,14 +90,14 @@ def test_reg_field_reset():
 def test_reg_field_get():
     field = uvm_reg_field()
     field.configure(uvm_reg(), 8, 16, 'RW', True, 15)
-    field.field_lock()
+    field. _field_lock()
     assert field.get() == 0
 
 @pytest.mark.test_reg_field_get_value
 def test_reg_field_get_value():
     field = uvm_reg_field()
     field.configure(uvm_reg(), 8, 16, 'RW', True, 15)
-    field.field_lock()
+    field. _field_lock()
     assert field.get_lsb_pos() == 16
 
 @pytest.mark.test_reg_field_field_predict_read_set
@@ -108,7 +108,7 @@ def test_reg_field_field_predict_read_set():
     ## getting a prendicted value of 1 regardless of the predicted value we set through the function
     for acs in ["RS","WRS","WCRS","W1CRS","W0CRS"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 15)
-        field.field_lock()
+        field. _field_lock()
         field.reset()
         field.set_prediction(predict_t.PREDICT_DIRECT)
         field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.PYUVM_READ)
@@ -123,7 +123,7 @@ def test_reg_field_field_predict_read_clear():
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
     for acs in ["RC","WRC","WSRC","W1SRC","W0SRC"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 15)
-        field.field_lock()
+        field. _field_lock()
         field.reset()
         field.set_prediction(predict_t.PREDICT_DIRECT)
         field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.PYUVM_READ)
@@ -138,7 +138,7 @@ def test_reg_field_field_predict_write_set():
     ## getting a prendicted value of 1 regardless of the predicted value we set through the function
     for acs in ["WSRC","WOS","WS","W0S","W1SRC","W0SRC","W1S"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 0)
-        field.field_lock()
+        field. _field_lock()
         field.reset()
         local_rand_el = randint(1,(2**field.get_n_bits()-1))
         field.set_prediction(predict_t.PREDICT_DIRECT)
@@ -160,7 +160,7 @@ def test_reg_field_field_predict_write_clear():
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
     for acs in ["WOC","WC","W1C","W1CRS","W0C","W0CRS","WCRS"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 0)
-        field.field_lock()
+        field. _field_lock()
         field.reset()
         local_rand_el = randint(1,(2**field.get_n_bits()-1))
         field.set_prediction(predict_t.PREDICT_DIRECT)
@@ -182,7 +182,7 @@ def test_reg_field_field_predict_TOGGLE():
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
     for acs in ["W1T","W0T"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 0)
-        field.field_lock()
+        field. _field_lock()
         field.reset()
         local_rand_el = randint(1,(2**field.get_n_bits()-1))
         field.set_prediction(predict_t.PREDICT_DIRECT)
@@ -200,7 +200,7 @@ def test_reg_field_field_predict_NO_ACCESS():
     field = uvm_reg_field()
     ## With the NO_ACCESS the reset value is always returned
     field.configure(uvm_reg(), 8, 16, "NO_ACCESS", True, randint(1,2**8-1))
-    field.field_lock()
+    field. _field_lock()
     field.reset()
     field.set_prediction(predict_t.PREDICT_DIRECT)
     field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.PYUVM_WRITE)
@@ -216,7 +216,7 @@ def test_reg_field_field_predict_status_error_on_write():
     ## With the NO_ACCESS the reset value is always returned
     for acs in ["RO","RW","RC","RS"]:
         field.configure(uvm_reg(), 8, 16, acs, True, randint(1,2**8-1))
-        field.field_lock()
+        field. _field_lock()
         field.set_throw_error_on_read(True)
         field.set_throw_error_on_write(True)        
         field.reset()
@@ -231,7 +231,7 @@ def test_reg_field_field_predict_status_error_on_read():
     ## With the NO_ACCESS the reset value is always returned
     for acs in ["WO","WOC","WOS","WO1","NOACCESS","W1","W1T","W0T","WC","WS","W1C","W1S","W0C","W0S"]:
         field.configure(uvm_reg(), 8, 16, acs, True, randint(1,2**8-1))
-        field.field_lock()
+        field. _field_lock()
         field.set_throw_error_on_read(True)
         field.set_throw_error_on_write(True)        
         field.reset()
