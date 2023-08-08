@@ -4,9 +4,11 @@ on:
   push:
     branches:
     - master
+    - ral_dev
   pull_request:
     branches:
     - master
+    - ral_dev
   workflow_dispatch:
 
 jobs:
