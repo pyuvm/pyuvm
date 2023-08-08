@@ -9,7 +9,7 @@ class uvm_reg_block(uvm_object):
         super().__init__(name)
         self._regs = []
         self.def_map = None
-        self.is_locked = False
+        self._is_locked = False
         self.hdl_paths = {}
         self.fields = []
         self.root_path = ""
@@ -22,11 +22,15 @@ class uvm_reg_block(uvm_object):
         self.map_mapping = {}
         self.reg_mapping = {}
         self.blk_name = name
-        self.header = name + "-- "
+        self.header = name + " -- "
 
     # is_locked
     def is_locked(self) -> bool:
-        return self.is_locked
+        return self._is_locked
+
+    # gen_message
+    def gen_message(self, txt="") -> str:
+        return f"{self.header,txt}"
 
     # clear_hdl_path
     def clear_hdl_path(self, kind="RTL"):
@@ -50,11 +54,11 @@ class uvm_reg_block(uvm_object):
 
     # set_lock
     def set_lock(self):
-        self.is_locked = True
+        self._is_locked = True
 
     # blk_set_reg_mapping
     def blk_set_reg_mapping(self, reg: uvm_reg):
-        self.reg_mapping[reg.get_name()] = 1
+        self.reg_mapping[reg.get_name()] = True
 
     # blk_is_reg_mapped
     def blk_is_reg_mapped(self, reg: uvm_reg) -> bool:
@@ -63,7 +67,7 @@ class uvm_reg_block(uvm_object):
     # blk_is_child_mapped
     def blk_is_child_mapped(self, in_blk) -> bool:
         if (isinstance(in_blk, uvm_reg_block) is False):
-            uvm_fatal(self.header)
+            uvm_fatal(self.gen_message("blk_is_child_mapped -- input block should be uvm_reg_block"))
         else:
             return self.blk_maping[in_blk.get_name()]
 
@@ -88,18 +92,16 @@ class uvm_reg_block(uvm_object):
     # add_block
     def add_block(self, in_blk):
         if (isinstance(in_blk, uvm_reg_block) is False):
-            uvm_fatal(self.he)
+            uvm_fatal(self.gen_message("add_block -- input block must be uvm_reg_block type"))
         # add to the BLK main mapping
         if (in_blk not in self.child_blk):
             self.blk_maping[in_blk.get_name()] = 1
             self.child_blk.append(in_blk)
 
     # blk_add_register
-    def blk_add_register(self, reg):
-        if (self.is_locked() is True):
-            self._regs.append(reg)
-        else:
-            uvm_fatal(self.header)
+    def _add_register(self, reg):
+        self._regs.append(reg)
+        self.blk_set_reg_mapping(reg)
 
     # blk_get_def_map
     def blk_get_def_map(self):
@@ -113,16 +115,17 @@ class uvm_reg_block(uvm_object):
             self.parent_blk + "." + self.blk_name
 
     # blk_get_registers
-    def blk_get_registers(self) -> list:
+    def _get_registers(self) -> list:
         local_reg_collector = []
-        if (self.is_locked() is True):
+        if self.is_locked() is True:
             for r in self._regs:
-                if (self.blk_is_reg_mapped(r) is True):
+                if self.blk_is_reg_mapped(r) is True:
                     local_reg_collector.append(r)
-        for b in self.child_blk:
-            local_reg_collector.append(b.blk_get_registers())
+            if len(self.child_blk) != 0:
+                for b in self.child_blk:
+                    local_reg_collector.append(b.blk_get_registers())
         else:
-            uvm_fatal(self.header)
+            uvm_fatal(self.gen_message("_get_registers -- register block must be locked"))
         return local_reg_collector
 
     # blk_get_fields
@@ -144,7 +147,7 @@ class uvm_reg_block(uvm_object):
     # blk_add_map
     def blk_add_map(self, map_i: uvm_reg_map):
         if (self.is_locked() is True):
-            uvm_fatal(self.header)
+            uvm_fatal(self.gen_message("blk_add_map -- register block should be locked"))
 
         if (self.map_mapping[map_i] is True):
             uvm_fatal(self.header)
@@ -163,7 +166,7 @@ class uvm_reg_block(uvm_object):
 
     # reset_blk
     def reset_blk(self):
-        uvm_not_implemeneted(self.header)
+        uvm_not_implemeneted(self.gen_message("reset_blk -- not implemented"))
 
     '''
         TODO: the following must be completed

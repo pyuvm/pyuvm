@@ -117,7 +117,7 @@ def test_reg_field_field_predict_read_set():
         field.field_lock()
         field.reset()
         field.set_prediction(predict_t.PREDICT_DIRECT)
-        field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.PYUVM_READ)
+        field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.UVM_READ)
         assert field.get_value() == (2**field.get_n_bits()-1), "Failing for access {}".format(acs)  
         assert field.get_response() == uvm_resp_t.PASS_RESP, "Failing as default status is not PASS_RESP is {}".format(field.get_response())
 
@@ -132,7 +132,7 @@ def test_reg_field_field_predict_read_clear():
         field.field_lock()
         field.reset()
         field.set_prediction(predict_t.PREDICT_DIRECT)
-        field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.PYUVM_READ)
+        field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR, access_e.UVM_READ)
         assert field.get_value() == 0, "Failing for access {}".format(acs)
         assert field.get_response() == uvm_resp_t.PASS_RESP, "Failing as default status is not PASS_RESP is {}".format(field.get_response())
 
@@ -192,7 +192,7 @@ def test_reg_field_field_predict_TOGGLE():
         field.reset()
         local_rand_el = randint(1,(2**field.get_n_bits()-1))
         field.set_prediction(predict_t.PREDICT_DIRECT)
-        field.field_predict(local_rand_el,path_t.FRONTDOOR,access_e.PYUVM_WRITE)
+        field.field_predict(local_rand_el,path_t.FRONTDOOR,access_e.UVM_WRITE)
         if "0" in field.get_access():   ## anytime a bit is cleared to 0 that bit is gonna be set to 1 or 0 toggling 
             predicted_v = field.get_reset() ^ (~local_rand_el & int("".join(["1"]*field.get_n_bits()),2))     
         else:                           ## anytime a bit is cleared to 1 that bit is gonna be set to 1 or 0 toggling 
@@ -209,9 +209,9 @@ def test_reg_field_field_predict_NO_ACCESS():
     field.field_lock()
     field.reset()
     field.set_prediction(predict_t.PREDICT_DIRECT)
-    field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.PYUVM_WRITE)
+    field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR, access_e.UVM_WRITE)
     assert field.get_value() == field.get_reset(), "Failing for access NO_ACCESS"
-    field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.PYUVM_READ)
+    field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR, access_e.UVM_READ)
     assert field.get_value() == field.get_reset(), "Failing for access NO_ACCESS"
     assert field.get_response() == uvm_resp_t.PASS_RESP, "Failing as default status is not PASS_RESP is {}".format(field.get_response())
 
@@ -227,7 +227,7 @@ def test_reg_field_field_predict_status_error_on_write():
         field.set_throw_error_on_write(True)        
         field.reset()
         field.set_prediction(predict_t.PREDICT_DIRECT)
-        field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR, access_e.PYUVM_WRITE)
+        field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR, access_e.UVM_WRITE)
         assert field.get_response() == uvm_resp_t.ERROR_RESP, "Failing for access access: {} where UVM_READ is issued response is: {}".format(acs,field.get_response().name) 
 
 @pytest.mark.test_reg_field_field_predict_status_error_on_read
@@ -242,5 +242,5 @@ def test_reg_field_field_predict_status_error_on_read():
         field.set_throw_error_on_write(True)        
         field.reset()
         field.set_prediction(predict_t.PREDICT_DIRECT)
-        field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.PYUVM_READ)
+        field.field_predict(randint(1,2**field.get_n_bits()),path_t.FRONTDOOR,access_e.UVM_READ)
         assert field.get_response() == uvm_resp_t.ERROR_RESP, "Failing for access access: {} where UVM_READ is issued response is: {}".format(acs,field.get_response().name) 

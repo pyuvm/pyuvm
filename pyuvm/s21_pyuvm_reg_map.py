@@ -1,13 +1,12 @@
 # Import Main Packages
 from pyuvm import uvm_object, uvm_sequencer, uvm_sequence_item
-from pyuvm.s24_pyuvm_reg_includes import uvm_fatal, uvm_error
+from pyuvm.s24_pyuvm_reg_includes import uvm_error
 from pyuvm.s24_pyuvm_reg_includes import access_e, path_t, check_t
 from pyuvm.s24_pyuvm_reg_includes import uvm_not_implemeneted
 from pyuvm.s24_pyuvm_reg_includes import enable_auto_predict
 from pyuvm.s24_pyuvm_reg_includes import uvm_reg_bus_op
 from pyuvm.s25_pyuvm_adapter import uvm_reg_adapter
 from pyuvm.s26_pyuvm_predictor import uvm_reg_predictor
-from pyuvm.s18_pyuvm_reg_block import uvm_reg_block
 
 
 # Class declaration: uvm_reg_map
@@ -24,10 +23,7 @@ class uvm_reg_map(uvm_object):
     # Function called by the REG_BLOCK create_map funcction
     # the parent value here should be a uvm_reg_block instance type
     def configure(self, parent, base_addr):
-        if (isinstance(parent, uvm_reg_block)):
-            self._parent = parent
-        else:
-            uvm_fatal(self.header, "configure parent should be uvm_reg_block type")
+        self._parent = parent
         self._base_addr = base_addr
         # No support for Byte_Addressing nor for Byte_en TODO: add
 

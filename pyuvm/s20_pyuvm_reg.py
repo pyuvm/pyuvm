@@ -1,6 +1,5 @@
 # Main Packages same as import uvm_pkg or uvm_defines.svh
 from pyuvm import uvm_object
-from pyuvm.s18_pyuvm_reg_block import uvm_reg_block
 from pyuvm.s21_pyuvm_reg_map import uvm_reg_map
 from pyuvm.s24_pyuvm_reg_includes import uvm_reg_error_decoder, error_out
 from pyuvm.s24_pyuvm_reg_includes import access_e, path_t, uvm_fatal
@@ -35,7 +34,7 @@ class uvm_reg(uvm_object):
         self._op_in_progress = False
 
     # configure
-    def configure(self, parent: uvm_reg_block, address, hdl_path, throw_error_on_read=False, throw_error_on_write=False):
+    def configure(self, parent, address, hdl_path, throw_error_on_read=False, throw_error_on_write=False):
         self._parent = parent
         self._address = address
         self._path = hdl_path
@@ -75,11 +74,11 @@ class uvm_reg(uvm_object):
     # get size function
     def get_reg_size(self) -> int:
         if (self._width == 0):
-            error_out(self._header, "_add_field Fields cannot be None")
+            error_out(self._header, "_width cannot be 0")
             self._add_error(uvm_reg_error_decoder.REG_SIZE_CANNOT_BE_ZERO.name)
             return 0
         else:
-            return self._width        
+            return self._width
 
     # setting the desired value, if this one is set we can avoid using the Value in write
     def set_desired(self, value):
@@ -159,13 +158,14 @@ class uvm_reg(uvm_object):
     # get_name
     def get_name(self) -> str:
         return self._name
-    
+
     # Build internal function
     def build(self):
         '''
         This function needs to be implemented into the child class
         create each fields and invoke the configure from each field
         '''
+        # TODO: add excpetion
         pass
 
     # Write Method (TASK)

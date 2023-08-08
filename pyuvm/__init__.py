@@ -19,17 +19,18 @@ from pyuvm.s14_15_python_sequences import *
 # Section 17, Register enumeration
 from pyuvm.s17_pyuvm_reg_enumerations import *
 # from pyuvm.s17_register_enumerations import *
-# Section 18
+#
+#  Section 18
 #from pyuvm.s18_register_model import *
-from pyuvm.s18_pyuvm_reg_block import *
-from pyuvm.s19_pyvum_reg_field import *
-from pyuvm.s20_pyuvm_reg import *
-from pyuvm.s21_pyuvm_reg_map import *
-from pyuvm.s22_pyuvm_mem import *
-from pyuvm.s23_pyuvm_reg_item import *
+from pyuvm.s18_pyuvm_reg_block import uvm_reg_block
+from pyuvm.s19_pyvum_reg_field import uvm_reg_field
+from pyuvm.s20_pyuvm_reg import uvm_reg
+from pyuvm.s21_pyuvm_reg_map import uvm_reg_map
+from pyuvm.s22_pyuvm_mem import uvm_mem
+from pyuvm.s23_pyuvm_reg_item import uvm_reg_item
 from pyuvm.s24_pyuvm_reg_includes import *
-from pyuvm.s25_pyuvm_adapter import *
-from pyuvm.s26_pyuvm_predictor import *
+from pyuvm.s25_pyuvm_adapter import uvm_reg_adapter
+from pyuvm.s26_pyuvm_predictor import uvm_reg_predictor
 
 # Extension Modules
 from pyuvm.extension_classes import *

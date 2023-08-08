@@ -5,7 +5,9 @@ from pyuvm.s24_pyuvm_reg_includes import uvm_not_implemeneted
 
 # Pyuvm Mem Class declaration abstraction
 class uvm_mem(uvm_object):
-    uvm_not_implemeneted()
+    def __init__(self, name=''):
+        super().__init__(name)
+        uvm_not_implemeneted(f"{name} uvm_mem not implemented")
 
 
 

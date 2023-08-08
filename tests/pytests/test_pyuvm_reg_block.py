@@ -44,7 +44,8 @@ def test_reg_block_with_single_reg():
     block = uvm_reg_block()
     reg = uvm_reg()
     reg.configure(block, "0x4", "")
-    assert block.get_registers() == [reg]
+    block.set_lock()
+    assert block._get_registers() == [reg]
 
 
 @pytest.mark.reg_block_with_multiple_regs
@@ -54,7 +55,8 @@ def test_reg_block_with_multiple_regs():
     reg0.configure(block, "0x4", "")
     reg1 = uvm_reg()
     reg1.configure(block, "0x8", "")
-    assert block.get_registers() == [reg0, reg1]
+    block.set_lock()
+    assert block._get_registers() == [reg0, reg1]
 
 
 def test_reg_map_get_name():
@@ -118,7 +120,7 @@ def test_reg_with_multiple_fields():
     field0 = uvm_reg_field()
     field0.configure(reg, 8, 0, 'RW', 0, 0)
     field1 = uvm_reg_field()
-    field1.configure(reg, 8, 0, 'RW', 0, 0)
+    field1.configure(reg, 8, 8, 'RW', 0, 0)
     assert reg.get_fields() == [field0, field1]
 
 
@@ -259,7 +261,7 @@ def test_simple_reg_model():
 
     LSR.reset()
     assert LSR.get_mirrored_value() == 0
-    LSR.predict(32, access_e.PYUVM_WRITE)
+    LSR.predict(32, access_e.UVM_WRITE)
     assert LSR.get_mirrored_value() == 32
     for field in LSR.get_fields():
         print(field.get_value())
