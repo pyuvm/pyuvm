@@ -2,13 +2,13 @@
 from pyuvm import uvm_object
 from pyuvm import uvm_sequence_item
 from pyuvm import uvm_sequence
-from pyuvm.s24_pyuvm_reg_includes import *
-from pyuvm.s23_pyuvm_reg_item import *
+from pyuvm.s24_uvm_reg_includes import *
+from pyuvm.s23_uvm_reg_item import *
 
 ## Main Class
-class pyuvm_reg_adapter(uvm_object):
+class uvm_reg_adapter(uvm_object):
     ## Constructor
-    def __init__(self, name="pyuvm_reg_adapter"):
+    def __init__(self, name="uvm_reg_adapter"):
         super().__init__(name)
         #    Set this bit in extensions of this class if the bus protocol supports
         #    byte enables.
@@ -41,7 +41,7 @@ class pyuvm_reg_adapter(uvm_object):
         return self.reg_item
     
     # Use this method to set the item into the adapter class
-    def set_item(self, item: pyuvm_reg_item):
+    def set_item(self, item: uvm_reg_item):
         self.reg_item = item
 
     # Use this method to set the parent sequence into the adapter class 

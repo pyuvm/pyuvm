@@ -1,17 +1,17 @@
 # Main Packages same as import uvm_pkg or uvm_defines.
 from pyuvm import uvm_object
-from pyuvm.s24_pyuvm_reg_includes import *
+from pyuvm.s24_uvm_reg_includes import *
 
 
 # Class declaration for register field
 # @rand_enable(enable_pyvsc)
 
 
-class pyuvm_reg_field(uvm_object):
+class uvm_reg_field(uvm_object):
     # constructor
-    def __init__(self, name='pyuvm_reg_field'):
+    def __init__(self, name='uvm_reg_field'):
         super().__init__(name)
-        self.access_list = pyuvm_reg_policy_t
+        self.access_list = uvm_reg_policy_t
         self._parent = None
         self._size = 0
         self._lsb_pos = None
@@ -30,7 +30,7 @@ class pyuvm_reg_field(uvm_object):
         self._config_done = False
         self._has_been_writ = False
         self._prediction = predict_t
-        self._response = pyuvm_resp_t
+        self._response = uvm_resp_t
         self._name = name
         self._header = name + " -- "
         # These 2 flags cannot change for fields since are part of the parent register
@@ -188,7 +188,7 @@ class pyuvm_reg_field(uvm_object):
     def reset(self):
         self._field_mirrored = self._reset
         self._has_been_writ = False
-        self._response = pyuvm_resp_t.PASS_RESP
+        self._response = uvm_resp_t.PASS_RESP
 
     # atomic get value
     def get_value(self):
@@ -208,7 +208,7 @@ class pyuvm_reg_field(uvm_object):
                 self._access = "NOACCESS"
 
     # Atomic set response status for fields
-    def set_response(self, f_response: pyuvm_resp_t):
+    def set_response(self, f_response: uvm_resp_t):
         self._response = f_response
 
     # Atomic set prediction type for field. This comes from the register parent
@@ -430,13 +430,13 @@ class pyuvm_reg_field(uvm_object):
         # Check the Direction and the access type along with the enable error flags (if error is supposed to be thown then send it out)
         # if we try to write a 1 when the access on write will require the 0 to generate some effect
         if ((direction == access_e.PYUVM_WRITE) & (self.get_access() in ["RO", "RW", "RC", "RS"]) & (path == path_t.FRONTDOOR)):
-            self.set_response(pyuvm_resp_t.PASS_RESP if (self._error_on_write is False) else pyuvm_resp_t.ERROR_RESP)
+            self.set_response(uvm_resp_t.PASS_RESP if (self._error_on_write is False) else uvm_resp_t.ERROR_RESP)
         elif ((direction == access_e.PYUVM_READ) & (self.get_access() in ["WO", "WOC", "WOS", "WO1", "NOACCESS", "W1", "W1T", "W0T", "WC", "WS", "W1C", "W1S", "W0C", "W0S"]) & (path == path_t.FRONTDOOR)):
-            self.set_response(pyuvm_resp_t.PASS_RESP if (self._error_on_read is False) else pyuvm_resp_t.ERROR_RESP)
+            self.set_response(uvm_resp_t.PASS_RESP if (self._error_on_read is False) else uvm_resp_t.ERROR_RESP)
         else:  # This will include the BACKDOOR
-            self.set_response(pyuvm_resp_t.PASS_RESP)
+            self.set_response(uvm_resp_t.PASS_RESP)
 
-    # Main field prediction function to be used to predict mirrored value for pyuvm_fields
+    # Main field prediction function to be used to predict mirrored value for uvm_fields
     def field_predict(self, value, path: path_t, direction: access_e):
         # Predict the status based on the flags
         self.predict_response(value, path, direction)
@@ -448,12 +448,12 @@ class pyuvm_reg_field(uvm_object):
             self.predict_based_on_read(value)
         elif (path == path_t.BACKDOOR):
             self._field_mirrored = value
-            self.set_response(pyuvm_resp_t.PASS_RESP)
+            self.set_response(uvm_resp_t.PASS_RESP)
         else:
             self._add_error(uvm_reg_field_error_decoder.WRONG_COMBINATION_PREDICTION_DIRECTION)
-            error_out(self._header, "Wrong combination of PATH - PREDICTION TYPE and DIRECTION on pyuvm_field -- field_predict function")
+            error_out(self._header, "Wrong combination of PATH - PREDICTION TYPE and DIRECTION on uvm_field -- field_predict function")
 
-    # String representation of pyuvm_reg_filed class content
+    # String representation of uvm_reg_filed class content
     def __str__(self) -> str:
         return f"   {self._header} \
                     parent :    {self._parent} \

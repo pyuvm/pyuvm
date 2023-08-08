@@ -4,5 +4,5 @@ from pyuvm import uvm_object
 
 
 # Pyuvm Mem Class declaration abstraction
-class pyuvm_mem(uvm_object):
+class uvm_mem(uvm_object):
     pass

@@ -3,7 +3,7 @@ Main Packages for the entire RAL model
 '''
 import pytest
 from pyuvm import * 
-from pyuvm.s27_pyuvm_reg_pkg import *
+from pyuvm.s27_uvm_reg_pkg import *
 
 ##############################################################################
 ## TIPS
@@ -31,23 +31,23 @@ running tests (expecially if in Parallel)
 @pytest.mark.test_reg_get_name
 def test_reg_get_name():
     for l in range(32):
-        reg = pyuvm_reg(('some_reg_'+str(l)),l)
+        reg = uvm_reg(('some_reg_'+str(l)),l)
         assert reg.get_name() == ('some_reg_'+str(l)), "Name mismatch: expected {} got: {}".format(('some_reg_'+str(l)),reg.get_name()) 
         assert reg.get_reg_size() == l, "Register size mismatch: expected {} got: {}".format(l, reg.get_reg_size()) 
         reg.check_err_list()
 
 @pytest.mark.test_reg_configure
 def test_reg_configure():
-    reg = pyuvm_reg()
-    parent = pyuvm_reg_block()
+    reg = uvm_reg()
+    parent = uvm_reg_block()
     reg.configure(parent,"0x4","",False,False)
     assert reg.get_parent() == parent, "Mismatch on get parent: expected {} got: {}".format(type(parent),type(reg.get_parent))
     assert reg.get_address() == "0x4", "Mismacth on get address: expected {} got {}".format("0x4",reg.get_address())
 
 @pytest.mark.test_reg_with_single_field
 def test_reg_with_single_field():
-    class my_reg(pyuvm_reg):
-        def __init__(self, name="pyuvm_reg", reg_width=32):
+    class my_reg(uvm_reg):
+        def __init__(self, name="uvm_reg", reg_width=32):
             super().__init__(name,reg_width)
 
         def build(self):
@@ -55,7 +55,7 @@ def test_reg_with_single_field():
             self.set_prediction(predict_t.PREDICT_DIRECT)
 
     myreg = my_reg("myreg",32)
-    myfield_1 = pyuvm_reg_field("myfield_1")
+    myfield_1 = uvm_reg_field("myfield_1")
     myfield_1.configure(myreg, 16, 0, "RW", False, 10)
     myreg.build()   
     myreg.reset()    
@@ -64,8 +64,8 @@ def test_reg_with_single_field():
 
 @pytest.mark.test_reg_with_multiple_fields
 def test_reg_with_multiple_fields():
-    class my_reg(pyuvm_reg):
-        def __init__(self, name="pyuvm_reg", reg_width=32):
+    class my_reg(uvm_reg):
+        def __init__(self, name="uvm_reg", reg_width=32):
             super().__init__(name,reg_width)
         
         def build(self):
@@ -73,8 +73,8 @@ def test_reg_with_multiple_fields():
             self.set_prediction(predict_t.PREDICT_DIRECT)
 
     myreg = my_reg("myreg",32)
-    myfield_1 = pyuvm_reg_field("myfield_1")
-    myfield_2 = pyuvm_reg_field("myfield_2")
+    myfield_1 = uvm_reg_field("myfield_1")
+    myfield_2 = uvm_reg_field("myfield_2")
     myfield_1.configure(myreg, 16, 0, "RW", False, 10)
     myfield_2.configure(myreg, 16, 15, "RW", False, 20)
     myreg.build()
@@ -83,11 +83,11 @@ def test_reg_with_multiple_fields():
 
 @pytest.mark.test_reg_with_multiple_felds_reset
 def test_reg_with_multiple_felds_reset():
-    class my_reg(pyuvm_reg):
-        def __init__(self, name="pyuvm_reg", reg_width=32):
+    class my_reg(uvm_reg):
+        def __init__(self, name="uvm_reg", reg_width=32):
             super().__init__(name,reg_width)
-            self.myfield_1 = pyuvm_reg_field("myfield_1")
-            self.myfield_2 = pyuvm_reg_field("myfield_2")
+            self.myfield_1 = uvm_reg_field("myfield_1")
+            self.myfield_2 = uvm_reg_field("myfield_2")
         
         def build(self):
             ## int('0x0f',16)
@@ -107,11 +107,11 @@ def test_reg_with_multiple_felds_reset():
 
 @pytest.mark.test_reg_with_multiple_fields_get_mirrored_value
 def test_reg_with_multiple_fields_get_mirrored_value():
-    class my_reg(pyuvm_reg):
-        def __init__(self, name="pyuvm_reg", reg_width=32):
+    class my_reg(uvm_reg):
+        def __init__(self, name="uvm_reg", reg_width=32):
             super().__init__(name,reg_width)
-            self.myfield_1 = pyuvm_reg_field("myfield_1")
-            self.myfield_2 = pyuvm_reg_field("myfield_2")
+            self.myfield_1 = uvm_reg_field("myfield_1")
+            self.myfield_2 = uvm_reg_field("myfield_2")
         
         def build(self):
             self.myfield_1.configure(self, 16, 0, "RW", False, int('0xf',16))
@@ -131,11 +131,11 @@ def test_reg_with_multiple_fields_get_mirrored_value():
 
 @pytest.mark.test_reg_with_multiple_fields_get_desired_value
 def test_reg_with_multiple_fields_get_desired_value():
-    class my_reg(pyuvm_reg):
+    class my_reg(uvm_reg):
         def __init__(self, name="uvm_reg", reg_width=32):
             super().__init__(name,reg_width)
-            self.myfield_1 = pyuvm_reg_field("myfield_1")
-            self.myfield_2 = pyuvm_reg_field("myfield_2")
+            self.myfield_1 = uvm_reg_field("myfield_1")
+            self.myfield_2 = uvm_reg_field("myfield_2")
         
         def build(self):
             self.myfield_1.configure(self, 16, 0, "RW", False, int('0xf',16))

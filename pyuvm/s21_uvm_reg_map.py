@@ -1,15 +1,15 @@
 # Import Main Packages
 from pyuvm import uvm_object, uvm_sequencer
-from pyuvm.s24_pyuvm_reg_includes import *
-from pyuvm.s25_pyuvm_adapter import *
-from pyuvm.s26_pyuvm_predictor import *
-from pyuvm.s18_pyuvm_reg_block import *
+from pyuvm.s24_uvm_reg_includes import *
+from pyuvm.s25_uvm_adapter import *
+from pyuvm.s26_uvm_predictor import *
+from pyuvm.s18_uvm_reg_block import *
 
 
 # Class declaration: uvm_reg_map
-class pyuvm_reg_map(uvm_object):
+class uvm_reg_map(uvm_object):
     # Constructor
-    def __init__(self, name="pyuvm_reg_map"):
+    def __init__(self, name="uvm_reg_map"):
         super().__init__(name)
         self._parent = None
         self._base_addr = None
@@ -18,12 +18,12 @@ class pyuvm_reg_map(uvm_object):
         self.header = name + " -- "
 
     # Function called by the REG_BLOCK create_map funcction
-    # the parent value here should be a pyuvm_reg_block instance type
+    # the parent value here should be a uvm_reg_block instance type
     def configure(self, parent, base_addr):
-        if (isinstance(parent, pyuvm_reg_block)):
+        if (isinstance(parent, uvm_reg_block)):
             self._parent = parent
         else:
-            UVMFatalError("pyuvm_reg_map -- configure -- parent should be pyuvm_reg_block type")
+            UVMFatalError("uvm_reg_map -- configure -- parent should be uvm_reg_block type")
         self._base_addr = base_addr
         # No support for Byte_Addressing nor for Byte_en TODO: add
 
@@ -49,7 +49,7 @@ class pyuvm_reg_map(uvm_object):
 
     # set_predictor
     def set_predictor(self, predictor):
-        if isinstance(predictor, pyuvm_reg_predictor):
+        if isinstance(predictor, uvm_reg_predictor):
             self.predictor = predictor
         else:
             error_out(self.header, "predictor should be type of uvm_reg_predictor")
@@ -63,7 +63,7 @@ class pyuvm_reg_map(uvm_object):
 
     # set_adapter
     def set_adapter(self, adapter):
-        if isinstance(adapter, pyuvm_reg_adapter):
+        if isinstance(adapter, uvm_reg_adapter):
             self.adapter = adapter
         else:
             error_out(self.header, "adapter should be type of uvm_reg_adapter")
