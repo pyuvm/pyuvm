@@ -1,15 +1,7 @@
 ## Main Packages for the entire RAL model
 import itertools
 import pytest
-from pyuvm.s27_uvm_reg_pkg import *
-#from s18_uvm_reg_block import *
-#from s19_uvm_reg_field import *
-#from s20_uvm_reg import *
-#from s21_uvm_reg_map import *
-#from s23_uvm_reg_item import *
-#from s24_uvm_reg_includes import *
-#from s25_uvm_adapter import *
-#from s26_uvm_predictor import *
+from pyuvm import *
 
 ##############################################################################
 ## TIPS
@@ -163,7 +155,7 @@ def test_simple_reg_model():
             self.PEN.configure(self, 1, 3, 'RW', 0, 0)
             self.EPS.configure(self, 1, 4, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT) 
+            self.set_prediction(predict_t.PREDICT_DIRECT)
 
     class LineStatusRegister(uvm_reg):
         def __init__(self, name="LineStatusRegister", reg_width=32):
@@ -179,7 +171,7 @@ def test_simple_reg_model():
             self.PE.configure(self, 1, 2, 'RW', 1, 0)
             self.FE.configure(self, 1, 3, 'RW', 1, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT) 
+            self.set_prediction(predict_t.PREDICT_DIRECT)
 
     class Regs(uvm_reg_block):
         def __init__(self, name):

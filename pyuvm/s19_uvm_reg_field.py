@@ -1,6 +1,9 @@
 # Main Packages same as import uvm_pkg or uvm_defines.
 from pyuvm import uvm_object
+from pyuvm.error_classes import UVMFatalError
+from pyuvm.s17_uvm_reg_enumerations import *
 from pyuvm.s24_uvm_reg_includes import *
+from pyuvm.s20_uvm_reg import uvm_reg
 
 
 # Class declaration for register field
@@ -33,12 +36,19 @@ class uvm_reg_field(uvm_object):
         self._response = uvm_resp_t
         self._name = name
         self._header = name + " -- "
-        # These 2 flags cannot change for fields since are part of the parent register
+        # These 2 flags cannot change for fields since
+        # they are part of the parent register
         self._error_on_read = False
         self._error_on_write = False
 
     # configure
-    def configure(self, parent, size: int, lsb_pos: int, access: str, is_volatile: bool, reset: int):
+    def configure(self,
+                  parent: uvm_reg,
+                  size: int,
+                  lsb_pos: int,
+                  access: str,
+                  is_volatile: bool,
+                  reset: int):
         self._parent = parent
         self._size = size
         self._lsb_pos = lsb_pos
@@ -59,22 +69,27 @@ class uvm_reg_field(uvm_object):
             self._desidered = 0
         # Check if size is 0
         if (self._size == 0):
-            raise UVMFatalError(f"{self._header} Size of a filed cannot be 0 MINIMUN allowed is 1")
+            raise UVMFatalError(f"""{self._header} Size
+                of a filed cannot be 0 MINIMUN allowed is 1""")
         # Check if policy is a valid policy
         if (self._access not in self.access_list):
             self._access = "NOACCESS"
-        # These 2 flags cannot change for fields since are part of the parent register
+        # These 2 flags cannot change for fields since are part
+        # of the parent register
         self._error_on_read = self._parent.throw_error_on_read
         self._error_on_write = self._parent.throw_error_on_write
         # one configure is called let's unlock
         self.field_unlock()
         # check the reset value is not beyond the MAX
         if (self._reset >= (2**self._size)):
-            error_out(self._header, f"Reset value for REG feild : {self._name} is [{self._reset}] is beyond the MAX valoue given by the size [{((2**self._size)-1)}]")
+            error_out(self._header, f"""Reset value for feild : {self._name}
+                is [{self._reset}] is beyond the MAX valoue given by
+                the size [{((2**self._size)-1)}]""")
         # Add field
         parent._add_field(self)
 
-    # lock method meaning the configursation is done and we can unlock all the internal methods
+    # lock method meaning the configursation is done
+    # and we can unlock all the internal methods
     def field_lock(self):
         self._config_done = True
 
@@ -114,50 +129,39 @@ class uvm_reg_field(uvm_object):
     def get_name(self):
         return self._name
 
+    # Common method to check if uvm_reg_field is configured
+    # if configured return the pass_value else return fail value
+    # after updating error list
+    def _check_if_configured_and_execute(self, pass_value, fail_value):
+        if self._config_done is False:
+            error_out(self._header, "Configure for a field must be called"
+                                    "called before any other memeber method")
+            self._add_error(
+                uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
+            return fail_value
+        else:
+            return pass_value
+
     # get_parent
     def get_parent(self):
-        if self._config_done is False:
-            error_out(self._header, "Configure for a field must be called called before any other memeber method")
-            self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
-            return None
-        else:
-            return self._parent
+        return self._check_if_configured_and_execute(self._parent, None)
 
     # get_lsb_pos
     def get_lsb_pos(self) -> int:
-        if self._config_done is False:
-            error_out(self._header, "Configure for a field must be called called before any other memeber method")
-            self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
-            return 0
-        else:
-            return self._lsb_pos
+        return self._check_if_configured_and_execute(self._lsb_pos, 0)
 
     # get_msb_pos
     def get_msb_pos(self) -> int:
-        if self._config_done is False:
-            error_out(self._header, "Configure for a field must be called called before any other memeber method")
-            self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
-            return 0
-        else:
-            return self.get_lsb_pos() + self.get_n_bits() - 1
+        msb_pos = self.get_lsb_pos() + self.get_n_bits() - 1
+        return self._check_if_configured_and_execute(msb_pos, 0)
 
     # get_n_bits
     def get_n_bits(self) -> int:
-        if self._config_done is False:
-            error_out(self._header, "Configure for a field must be called called before any other memeber method")
-            self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
-            return 0
-        else:
-            return self._size
+        return self._check_if_configured_and_execute(self._size, 0)
 
     # get_access
     def get_access(self) -> str:
-        if self._config_done is False:
-            error_out(self._header, "Configure for a field must be called called before any other memeber method")
-            self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
-            return ""
-        else:
-            return self._access
+        return self._check_if_configured_and_execute(self._access, "")
 
     # is_known_access
     def is_known_access(self) -> bool:
@@ -165,20 +169,11 @@ class uvm_reg_field(uvm_object):
 
     # is_volatile
     def is_volatile(self) -> bool:
-        if self._config_done is False:
-            error_out(self._header, "Configure for a field must be called called before any other memeber method")
-            return False
-        else:
-            return self._is_volatile
+        return self._check_if_configured_and_execute(self._is_volatile, False)
 
     # get_reset
     def get_reset(self) -> int:
-        if self._config_done is False:
-            error_out(self._header, "Configure for a field must be called called before any other memeber method")
-            self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
-            return 0
-        else:
-            return self._reset
+        return self._check_if_configured_and_execute(self._reset, 0)
 
     # atomic get value
     def get(self):
@@ -197,14 +192,17 @@ class uvm_reg_field(uvm_object):
     # Atomic set access value
     def set_access(self, access_value):
         if (not isinstance(access_value, str)):
-            error_out(self._header, "Access set for reg field needs to be a string")
-            self._add_error(uvm_reg_field_error_decoder.ACCESS_TYPE_NEEDS_TO_BE_A_STRING)
+            error_out(self._header, "Access set for field must be a string")
+            self._add_error(
+                uvm_reg_field_error_decoder.ACCESS_TYPE_NEEDS_TO_BE_A_STRING)
         else:
             if (access_value is self.access_list):
                 self._access = access_value
             else:
-                error_out(self._header, "Access value provided is not part of possible access values")
-                self._add_error(uvm_reg_field_error_decoder.ACCESS_VALUE_OUT_OF_LIST)
+                error_out(self._header, "Access value provided is not"
+                                        "part of possible access values")
+                self._add_error(
+                    uvm_reg_field_error_decoder.ACCESS_VALUE_OUT_OF_LIST)
                 self._access = "NOACCESS"
 
     # Atomic set response status for fields
@@ -225,10 +223,10 @@ class uvm_reg_field(uvm_object):
         _mask = int("".join(["1"] * self._size), 2)
         # check if value given is bigger than the size of field
 
-        # Ideally the set value should be checked against the parent register being accessed.
-        # if the parent is under WRITE there should be no set called. Not yet implemenmted.
-        #
-        #
+        # Ideally the set value should be checked against the
+        # parent register being accessed.
+        # Not yet implemenmted
+        # if the parent is under WRITE there should be no set called.
 
         # Return value based on the access
         if self.get_access() == "RO":
@@ -291,7 +289,8 @@ class uvm_reg_field(uvm_object):
             pass  # Leave the desired value stable
 
     # Since there is no Switch case in python we use a simple switch case
-    # Where error is mentioned it depends on _error_on_write flag, no effect will be translated in Error reponse if flag is enable
+    # Where error is mentioned it depends on _error_on_write flag, no effect
+    # will be translated in Error reponse if flag is enable
     # "RO"       - W: no effect, R: no effect
     # "RW"       - W: as-is, R: no effect
     # "RC"       - W: no effect, R: clears all bits
@@ -315,8 +314,10 @@ class uvm_reg_field(uvm_object):
     # "WO"       - W: as-is, R: error
     # "WOC"      - W: clears all bits, R: error
     # "WOS"      - W: sets all bits, R: error
-    # "W1"       - W: first one after ~HARD~ reset is as-is, other W have no effects, R: no effect
-    # "WO1"      - W: first one after ~HARD~ reset is as-is, other W have no effects, R: error
+    # "W1"       - W: first one after ~HARD~ reset is as-is,
+    #                 other W have no effects, R: no effect
+    # "WO1"      - W: first one after ~HARD~ reset is as-is,
+    #                 other W have no effects, R: error
     # "NOACCESS" - W: no effect, R: no effect
     def predict_based_on_write(self, wr_val):
         # Define an all 1 values
@@ -382,7 +383,8 @@ class uvm_reg_field(uvm_object):
             self._field_mirrored = self._reset
 
     # atomic predict value based on the operation (READ)
-    # Where error is mentioned it depends on _error_on_read flag, no effect will be translated in Error reponse if flag is enable
+    # Where error is mentioned it depends on _error_on_read flag, no effect
+    # will be translated in Error reponse if flag is enable
     # Since there is no Switch case in python we use a simple switch case
     # "RO"       - W: no effect, R: return the mirrored value (reset one)
     # "RW"       - W: as-is, R: as-is
@@ -407,8 +409,10 @@ class uvm_reg_field(uvm_object):
     # "WO"       - W: as-is, R: error
     # "WOC"      - W: clears all bits, R: error
     # "WOS"      - W: sets all bits, R: error
-    # "W1"       - W: first one after ~HARD~ reset is as-is, other W have no effects, R: no effect
-    # "WO1"      - W: first one after ~HARD~ reset is as-is, other W have no effects, R: error
+    # "W1"       - W: first one after ~HARD~ reset is as-is,
+    #                 other W have no effects, R: no effect
+    # "WO1"      - W: first one after ~HARD~ reset is as-is,
+    #                 other W have no effects, R: error
     # "NOACCESS" - W: no effect, R: no effect
     def predict_based_on_read(self, value):
         # FRONTDOOR
@@ -418,40 +422,73 @@ class uvm_reg_field(uvm_object):
         elif self.get_access() in ["RS", "WRS", "WCRS", "W1CRS", "W0CRS"]:
             # Set Value to 1 since READ will set to 1
             self._field_mirrored = int("".join(["1"] * self._size), 2)
-        elif self.get_access() in ["WO", "WOC", "WOS", "WO1", "NOACCESS", "W1", "W1T", "W0T", "WC", "WS", "W1C", "W1S", "W0C", "W0S"]:
+        elif self.get_access() in ["WO", "WOC", "WOS", "WO1", "NOACCESS",
+                                   "W1", "W1T", "W0T", "WC", "WS", "W1C",
+                                   "W1S", "W0C", "W0S"]:
             # Set Value to the reset since READ will have no effect
             self._field_mirrored = self._reset
         else:
-            self._add_error(uvm_reg_field_error_decoder.WRONG_ACCESS_FOR_PREDICT_READ)
-            error_out(self._header, "Wrong Access set on predict_based_on_read")
+            self._add_error(
+                uvm_reg_field_error_decoder.WRONG_ACCESS_FOR_PREDICT_READ)
+            error_out(self._header,
+                      "Wrong Access set on predict_based_on_read")
 
-    # Check the Direction and the access type along with the enable error flags (if error is supposed to be thown then send it out)
+    # Check the Direction and the access type along with the enable error
+    # flags (if error is supposed to be thown then send it out)
     def predict_response(self, value, path: path_t, direction: access_e):
-        # Check the Direction and the access type along with the enable error flags (if error is supposed to be thown then send it out)
-        # if we try to write a 1 when the access on write will require the 0 to generate some effect
-        if ((direction == access_e.PYUVM_WRITE) & (self.get_access() in ["RO", "RW", "RC", "RS"]) & (path == path_t.FRONTDOOR)):
-            self.set_response(uvm_resp_t.PASS_RESP if (self._error_on_write is False) else uvm_resp_t.ERROR_RESP)
-        elif ((direction == access_e.PYUVM_READ) & (self.get_access() in ["WO", "WOC", "WOS", "WO1", "NOACCESS", "W1", "W1T", "W0T", "WC", "WS", "W1C", "W1S", "W0C", "W0S"]) & (path == path_t.FRONTDOOR)):
-            self.set_response(uvm_resp_t.PASS_RESP if (self._error_on_read is False) else uvm_resp_t.ERROR_RESP)
-        else:  # This will include the BACKDOOR
-            self.set_response(uvm_resp_t.PASS_RESP)
+        # Check the Direction and the access type along with
+        # the enable error flags (if error is supposed to be
+        # thrown then send it out)
+        # if we try to write a 1 when the access on write will
+        # require the 0 to generate some effect
+        response = uvm_resp_t.PASS_RESP
+        write_error_accesses = ["RO", "RW", "RC", "RS"]
+        read_error_accesses = ["WO", "WOC", "WOS", "WO1",
+                               "NOACCESS", "W1", "W1T",
+                               "W0T", "WC", "WS", "W1C",
+                               "W1S", "W0C", "W0S"]
+        if path == path_t.FRONTDOOR:
+            if (direction == access_e.PYUVM_WRITE) and \
+                (self.get_access() in write_error_accesses) and \
+                    (self._error_on_write is True):
+                response = uvm_resp_t.ERROR_RESP
+            elif (direction == access_e.PYUVM_READ) and \
+                 (self.get_access() in read_error_accesses) and \
+                    (self._error_on_read is True):
+                response = uvm_resp_t.ERROR_RESP
 
-    # Main field prediction function to be used to predict mirrored value for uvm_fields
+        else:  # This will include the BACKDOOR
+            pass  # default value set above
+        self.set_response(response)
+
+    # Main field prediction function to be used to predict
+    # mirrored value for uvm_fields
     def field_predict(self, value, path: path_t, direction: access_e):
         # Predict the status based on the flags
         self.predict_response(value, path, direction)
         # WRITE prediction and prediction is ether on write and Direct
-        if ((direction == access_e.PYUVM_WRITE) & (path == path_t.FRONTDOOR) & (self._prediction in [predict_t.PREDICT_DIRECT, predict_t.PREDICT_WRITE])):
+        if (direction == access_e.PYUVM_WRITE) and \
+            (path == path_t.FRONTDOOR) and \
+                (self._prediction in [predict_t.PREDICT_DIRECT,
+                                      predict_t.PREDICT_WRITE]):
             self.predict_based_on_write(value)
         # READ prediction and prediction is ether on read and Direct
-        elif ((direction == access_e.PYUVM_READ) & (path == path_t.FRONTDOOR) & (self._prediction in [predict_t.PREDICT_DIRECT, predict_t.PREDICT_READ])):
+        elif (direction == access_e.PYUVM_READ) and \
+             (path == path_t.FRONTDOOR) and \
+                (self._prediction in [predict_t.PREDICT_DIRECT,
+                                      predict_t.PREDICT_READ]):
             self.predict_based_on_read(value)
         elif (path == path_t.BACKDOOR):
             self._field_mirrored = value
             self.set_response(uvm_resp_t.PASS_RESP)
         else:
-            self._add_error(uvm_reg_field_error_decoder.WRONG_COMBINATION_PREDICTION_DIRECTION)
-            error_out(self._header, "Wrong combination of PATH - PREDICTION TYPE and DIRECTION on uvm_field -- field_predict function")
+            self._add_error(
+                uvm_reg_field_error_decoder.
+                WRONG_COMBINATION_PREDICTION_DIRECTION)
+            error_out(self._header,
+                      "Wrong combination of PATH - PREDICTION TYPE "
+                      "and DIRECTION on uvm_field -- "
+                      "field_predict function")
 
     # String representation of uvm_reg_filed class content
     def __str__(self) -> str:
@@ -473,5 +510,6 @@ class uvm_reg_field(uvm_object):
         1. Checking the set during a write happening on the Parent register
         2. Checking if the write or read operation is ongoing
         3. implement any reference needed for the BACKDOOR
-        4. implement the single field write method (should take the UVM_REG parent as reference)
+        4. implement the single field write method (should take the UVM_REG
+           parent as reference)
     '''

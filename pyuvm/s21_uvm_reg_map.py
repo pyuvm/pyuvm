@@ -23,7 +23,8 @@ class uvm_reg_map(uvm_object):
         if (isinstance(parent, uvm_reg_block)):
             self._parent = parent
         else:
-            UVMFatalError("uvm_reg_map -- configure -- parent should be uvm_reg_block type")
+            UVMFatalError("uvm_reg_map -- configure -- "
+                          "parent should be uvm_reg_block type")
         self._base_addr = base_addr
         # No support for Byte_Addressing nor for Byte_en TODO: add
 
@@ -52,7 +53,8 @@ class uvm_reg_map(uvm_object):
         if isinstance(predictor, uvm_reg_predictor):
             self.predictor = predictor
         else:
-            error_out(self.header, "predictor should be type of uvm_reg_predictor")
+            error_out(self.header, "predictor should be type of "
+                                   "uvm_reg_predictor")
 
     # get_predictor
     def get_predictor(self):
@@ -90,7 +92,8 @@ class uvm_reg_map(uvm_object):
             return self.sequencer
 
     # process_write_operation
-    async def process_write_operation(self, reg_address, data_to_be_written, path, check):
+    async def process_write_operation(self, reg_address,
+                                      data_to_be_written, path, check):
         # Get the sequencer and the adapter
         local_adapter = self.get_adapter()
         local_sequencer = self.get_sequencer()
@@ -144,7 +147,8 @@ class uvm_reg_map(uvm_object):
             local_bus_op.byte_en = local_adapter.get_byte_en()
             # Parse the local bus operation with the adapter
             local_adapter.reg2bus(local_bus_op)
-            # The get parent sequence is still not implemented hence we should be using the base sequence type for the time being
+            # The get parent sequence is still not implemented hence we
+            # should be using the base sequence type for the time being
             local_sequence = local_adapter.get_parent_sequence()
             # Start the sequence on local sequencer
             await local_sequence.start(local_sequencer)

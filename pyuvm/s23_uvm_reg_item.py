@@ -1,6 +1,7 @@
 # Import Main Package
 from pyuvm import uvm_sequence_item
 from pyuvm import uvm_object
+from pyuvm.s17_uvm_reg_enumerations import *
 from pyuvm.s24_uvm_reg_includes import *
 
 
@@ -9,29 +10,37 @@ from pyuvm.s24_uvm_reg_includes import *
 class uvm_reg_item(uvm_sequence_item):
     # constructor
     def __init__(self, name='item'):
-        # Kind of element being accessed: REG, MEM, or FIELD. See <uvm_elem_kind_e>.
+        # Kind of element being accessed:
+        # REG, MEM, or FIELD. See <uvm_elem_kind_e>.
         self.element_kind = elem_kind_e()
-        # A handle to the RegModel model element associated with this transaction.
+        # A handle to the RegModel model element associated
+        # with this transaction.
         # Use <element_kind> to determine the type to cast  to: <uvm_reg>,
         # <uvm_mem>, or <uvm_reg_field>.
         self.element = uvm_object()
         # Kind of access: READ or WRITE.
-        # Access to this variable is provided for randomization, otherwise interactions
+        # Access to this variable is provided for randomization,
+        # otherwise interactions
         # with it shall be via the set_kind() and get_kind() accessor methods
         if enable_pyvsc is True:
             self.kind = vsc.rand_enum_t(access_e)  # BUG  VCS is not defined
         else:
             self.kind = access_e
-        # The value to write to, or after completion, the value read from the DUT.
+        # The value to write to, or after completion,
+        # the value read from the DUT.
         # Burst operations use the <values> property.
-        # Access to this variable is provided for randomization, otherwise interactions
-        # with it shall be via the set_value_array() and get_value_array() accessor methods
+        # Access to this variable is provided for randomization,
+        # otherwise interactions
+        # with it shall be via the set_value_array() and
+        # get_value_array() accessor methods
         # self.value = vsc.rand_list_t(32, 4)
         self.value = []
         # For memory accesses, the offset address. For bursts,
         # the ~starting~ offset address.
-        # Access to this variable is provided for randomization, otherwise interactions
-        # with it shall be via the set_offset() and get_offset() accessor methods
+        # Access to this variable is provided for randomization,
+        # otherwise interactions
+        # with it shall be via the set_offset() and
+        # get_offset() accessor methods
         if enable_pyvsc is True:
             self.offset = vsc.uint32_t()
         else:
@@ -50,12 +59,16 @@ class uvm_reg_item(uvm_sequence_item):
         # The path being used: <UVM_FRONTDOOR> or <UVM_BACKDOOR>.
         self.path = path_t()
         # The sequence from which the operation originated.
-        # Access to this variable is provided for randomization, otherwise interactions
-        # with it shall be via the set_parent() and get_parent() accessor methods
+        # Access to this variable is provided for randomization,
+        # otherwise interactions
+        # with it shall be via the set_parent() and
+        # get_parent() accessor methods
         # self.parent = uvm_sequence() TODO: i doubt is needed
         # Handle to optional user data, as conveyed in the call to
         # write(), read(), mirror(), or update() used to trigger the operation.
-        self.extension = uvm_object()  # TODO: not needed as rand since it will be simple assigned to be carried
+        # TODO: not needed as rand since it will be
+        # simple assigned to be carried
+        self.extension = uvm_object()
         # If path is UVM_BACKDOOR, this member specifies the abstraction
         # kind for the backdoor access, e.g. "RTL" or "GATES".
         self.bd_kind = "RTL"
@@ -77,7 +90,8 @@ class uvm_reg_item(uvm_sequence_item):
         copied = uvm_reg_item()
         # Check
         if ~isinstance(rhs, uvm_reg_item):
-            error_out(self.header, "WRONG_TYPE Provided rhs is not of type uvm_reg_item")
+            error_out(self.header, "WRONG_TYPE Provided "
+                      "rhs is not of type uvm_reg_item")
         else:
             # Deep Copy
             copied = copy.deepcopy(rhs)
@@ -164,7 +178,8 @@ class uvm_reg_item(uvm_sequence_item):
     # set_extension
     def set_extension(self, ext):
         if ~isinstance(ext, uvm_object):
-            error_out(self.header, "bd kind is not string possible values RTL or GATE")
+            error_out(self.header, "bd kind is not string "
+                      "possible values RTL or GATE")
         else:
             self.extension = ext
 
@@ -175,7 +190,8 @@ class uvm_reg_item(uvm_sequence_item):
     # set_bd_kind
     def set_bd_kind(self, val):
         if ~isinstance(val, str):
-            error_out(self.header, "bd kind is not string possible values RTL or GATE")
+            error_out(self.header, "bd kind is not string "
+                      "possible values RTL or GATE")
         else:
             self.bd_kind = val
 
