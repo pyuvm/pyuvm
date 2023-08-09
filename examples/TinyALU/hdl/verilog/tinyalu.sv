@@ -1,20 +1,34 @@
+import TinyALUreg_pkg::*;
+
 module tinyalu (input [7:0] A,
 		input [7:0] B,
 		input [2:0] op,
-//		input clk,
+		input clk,
 		input reset_n,
 		input start,
 		output done,
-		output [15:0] result);
+		output [15:0] result,
+		// APB interface
+        input wire s_apb_psel,
+        input wire s_apb_penable,
+        input wire s_apb_pwrite,
+        input wire [2:0] s_apb_paddr,
+        input wire [15:0] s_apb_pwdata,
+        output logic s_apb_pready,
+        output logic [15:0] s_apb_prdata,
+        output logic s_apb_pslverr
+		);
 
    wire [15:0] 		      result_aax, result_mult;
    wire 		          start_single, start_mult;
    wire                   done_aax;
    wire                   done_mult;
-   bit                    clk;
+   // bit                    clk;
+   TinyALUreg__in_t  reg_in;
+   TinyALUreg__out_t reg_out;
 
-   initial clk = 0;
-   always #5 clk = ~clk;
+   // initial clk = 0;
+   // always #5 clk = ~clk;
 
    assign start_single = start & ~op[2];
    assign start_mult   = start & op[2];
@@ -29,6 +43,30 @@ module tinyalu (input [7:0] A,
    assign done = (op[2]) ? done_mult : done_aax;
 
    assign result = (op[2]) ? result_mult : result_aax;
+
+   assign reg_in.SRC.data0.next = A;
+   assign reg_in.SRC.data1.next = B;
+   assign reg_in.CMD.op.next = op;
+   assign reg_in.RESULT.data.next = result;
+   assign reg_in.CMD.done.next = done;
+   assign reg_in.CMD.start.next = start;
+   assign reg_in.CMD.reserved.next = '0;
+
+
+	TinyALUreg regblock(
+    	.clk (clk),
+    	.rst (reset_n),
+    	.s_apb_psel (s_apb_psel),
+    	.s_apb_penable (s_apb_penable),
+    	.s_apb_pwrite (s_apb_pwrite),
+    	.s_apb_paddr (s_apb_paddr),
+    	.s_apb_pwdata (s_apb_pwdata),
+    	.s_apb_pready (s_apb_pready),
+    	.s_apb_prdata (s_apb_prdata),
+    	.s_apb_pslverr (s_apb_pslverr),
+    	.hwif_in (reg_in),
+    	.hwif_out (reg_out)
+    	);
 
 endmodule // tinyalu
 
@@ -97,4 +135,5 @@ module three_cycle(input [7:0] A,
 	done1  <= done2 & !done;
 	done   <= done1 & !done;
      end // else: !if(!reset_n)
+
 endmodule : three_cycle
