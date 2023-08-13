@@ -3,6 +3,19 @@ from pyuvm.s20_pyuvm_reg import uvm_reg
 from pyuvm.s21_pyuvm_reg_map import uvm_reg_map
 from pyuvm.s24_pyuvm_reg_includes import uvm_fatal, uvm_not_implemeneted
 
+'''
+    TODO: the following must be completed
+    1. add_vreg
+    2. remove_reg
+    3. add_mem
+    4. remove_mem
+    5. unregister_blk
+    6. write_reg or write_mem by name
+    7. read_reg or read_mem by name
+    8. get_virtual_fields in a unique field list
+    9. get_mem to return a list of memories
+'''
+
 
 class uvm_reg_block(uvm_object):
     def __init__(self, name="uvm_reg_block"):
@@ -167,16 +180,3 @@ class uvm_reg_block(uvm_object):
     # reset_blk
     def reset_blk(self):
         uvm_not_implemeneted(self.gen_message("reset_blk -- not implemented"))
-
-    '''
-        TODO: the following must be completed
-        1. add_vreg
-        2. remove_reg
-        3. add_mem
-        4. remove_mem
-        5. unregister_blk
-        6. write_reg or write_mem by name
-        7. read_reg or read_mem by name
-        8. get_virtual_fields in a unique field list
-        9. get_mem to return a list of memories
-    '''
