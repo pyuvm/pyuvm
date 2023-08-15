@@ -432,7 +432,7 @@ class uvm_reg_field(uvm_object):
 
     # Main field prediction function to be used to predict
     # mirrored value for pyuvm_fields
-    def field_predict(self, value, path: path_t, direction: access_e):      
+    def field_predict(self, value, path: path_t, direction: access_e):
         # Predict the status based on the flags
         self.predict_response(value, path, direction)
         # WRITE prediction and prediction is ether on write and Direct

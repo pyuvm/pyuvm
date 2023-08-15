@@ -21,7 +21,8 @@ class uvm_reg_item(uvm_sequence_item):
         # Kind of access: READ or WRITE.
         # with it shall be via the set_kind() and get_kind() accessor methods
         self.kind = access_e()
-        # The value to write to, or after completion, the value read from the DUT.
+        # The value to write to, or after completion,
+        # the value read from the DUT.
         self.value = []
         # For memory accesses, the offset address. For bursts,
         # the ~starting~ offset address.
@@ -44,9 +45,11 @@ class uvm_reg_item(uvm_sequence_item):
         # The path being used: <UVM_FRONTDOOR> or <UVM_BACKDOOR>.
         self.path = path_t()
         # The sequence from which the operation originated.
-        # with it shall be via the set_parent() and get_parent() accessor methods
+        # with it shall be via the set_parent() and get_parent()
+        # accessor methods
         self.parent_sequence = None  # TODO: i doubt is needed
-        # TODO: not needed as rand since it will be simple assigned to be carried
+        # TODO: not needed as rand since it will
+        # be simple assigned to be carried
         self.extension_object = None
         # If path is UVM_BACKDOOR, this member specifies the abstraction
         # kind for the backdoor access, e.g. "RTL" or "GATES".
@@ -66,8 +69,9 @@ class uvm_reg_item(uvm_sequence_item):
     # do_copy
     def do_copy(self, rhs):
         # Check
-        if ~isinstance(rhs, uvm_reg_item):
-            error_out(self.header, "WRONG_TYPE Provided rhs is not of type uvm_reg_item")
+        if not isinstance(rhs, uvm_reg_item):
+            error_out(self.header, "WRONG_TYPE Provided rhs \
+                      is not of type uvm_reg_item")
         else:
             # Deep Copy
             copied = deepcopy(rhs)
@@ -107,7 +111,7 @@ class uvm_reg_item(uvm_sequence_item):
             return self.value[idx]
         else:
             error_out(self.header, "Index out of LIST")
-         
+
     # set_value_size
     def set_value_size(self, sz):
         self.value = [0]*sz
@@ -139,22 +143,23 @@ class uvm_reg_item(uvm_sequence_item):
         else:
             self.status = status
 
-    ## get_status
+    # get_status
     def get_status(self):
         return self.status
 
-    ## set_door 
+    # set_door
     def set_door(self, door):
         self.path = door
 
-    ## get_door
+    # get_door
     def get_door(self):
         return self.path
 
-    ## set_extension
-    def set_extension(self,ext):
-        if ~isinstance(ext,uvm_object):
-            error_out(self.header, "bd kind is not string possible values RTL or GATE")
+    # set_extension
+    def set_extension(self, ext):
+        if not isinstance(ext, uvm_object):
+            error_out(self.header, "bd kind is not string possible values \
+                      RTL or GATE")
         else:
             self.extension = ext
 
@@ -164,8 +169,9 @@ class uvm_reg_item(uvm_sequence_item):
 
     # set_bd_kind
     def set_bd_kind(self, val):
-        if ~isinstance(val,str):
-            error_out(self.header, "bd kind is not string possible values RTL or GATE")
+        if not isinstance(val, str):
+            error_out(self.header, "bd kind is not string possible values \
+                      RTL or GATE")
         else:
             self.bd_kind = val
 
