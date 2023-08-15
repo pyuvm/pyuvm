@@ -1,7 +1,8 @@
 #  Main Packages for the entire RAL model
 import itertools
-from pyuvm import *
-from pyuvm.s27_uvm_reg_pkg import *
+from pyuvm.s27_uvm_reg_pkg import uvm_reg, uvm_reg_field
+from pyuvm.s27_uvm_reg_pkg import uvm_reg_map, uvm_reg_block
+from pyuvm.s24_uvm_reg_includes import predict_t, access_e
 
 ##############################################################################
 # TIPS
@@ -22,7 +23,6 @@ Use this to give a specific test parameters to be used
 If pip install pytest-sugar is ran then pytest is gonna likly execute a bar progression while
 running tests (expecially if in Parallel)
 """
-
 
 ##############################################################################
 # TESTS ENTIRE RAL
