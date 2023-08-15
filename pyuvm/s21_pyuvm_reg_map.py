@@ -32,7 +32,7 @@ class uvm_reg_map(uvm_object):
         # this must be uvm_reg_block
         self._parent = None
         # this is equivalent to offset in uvm map refernce
-        self._offset = None
+        self._offset = 0
         self._regs = {}
         self.name = name
         self.header = name + " -- "
@@ -68,6 +68,8 @@ class uvm_reg_map(uvm_object):
     def get_offset(self):
         if self._is_a_submap is True:
             return self.get_parent_map().get_offset()
+        else:
+            return self._offset
 
     # add_reg
     def add_reg(self, reg, offset):

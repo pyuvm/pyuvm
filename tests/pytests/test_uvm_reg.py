@@ -38,7 +38,15 @@ def test_reg_get_name():
 
 @pytest.mark.test_reg_configure
 def test_reg_configure():
-    reg = uvm_reg()
+    class temp_reg(uvm_reg):
+        def __init__(self, name="temp_reg", reg_width=32):
+            super().__init__(name, reg_width)
+
+        def build(self):
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # START
+    reg = temp_reg()
     parent = uvm_reg_block()
     reg.configure(parent,"0x4","",False,False)
     assert reg.get_parent() == parent, "Mismatch on get parent: expected {} got: {}".format(type(parent),type(reg.get_parent))

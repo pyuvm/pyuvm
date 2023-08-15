@@ -41,19 +41,39 @@ def test_reg_block_get_name():
 
 @pytest.mark.test_reg_block_with_single_reg
 def test_reg_block_with_single_reg():
+    class temp_reg(uvm_reg):
+        def __init__(self, name="temp_reg", reg_width=32):
+            super().__init__(name, reg_width)
+
+        def build(self):
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # START
     block = uvm_reg_block()
-    reg = uvm_reg()
-    reg.configure(block,"0x4","")
-    assert block.get_registers() == [reg]
+    reg = temp_reg()
+    reg.configure(block, "0x4", "")
+    block.set_lock()
+    assert block._get_registers() == [reg]
+
 
 @pytest.mark.test_reg_block_with_multiple_regs
 def test_reg_block_with_multiple_regs():
+    class temp_reg(uvm_reg):
+        def __init__(self, name="temp_reg", reg_width=32):
+            super().__init__(name, reg_width)
+
+        def build(self):
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # START
     block = uvm_reg_block()
-    reg0 = uvm_reg()
-    reg0.configure(block,"0x4","")
-    reg1 = uvm_reg()
-    reg1.configure(block,"0x8","")
-    assert block.get_registers() == [reg0, reg1]
+    reg0 = temp_reg()
+    reg0.configure(block, "0x4", "")
+    reg1 = temp_reg()
+    reg1.configure(block, "0x8", "")
+    block.set_lock()
+    assert block._get_registers() == [reg0, reg1]
+
 
 @pytest.mark.test_reg_map_get_name
 def test_reg_map_get_name():
@@ -68,7 +88,7 @@ def test_reg_map_configure():
     parent = uvm_reg_block()
     reg_map.configure(parent, 1024)
     assert reg_map.get_parent() == parent
-    assert reg_map.get_base_addr() == 1024
+    assert reg_map.get_offset() == 1024
 
 @pytest.mark.test_reg_map_with_single_reg
 def test_reg_map_with_single_reg():
@@ -91,12 +111,22 @@ def test_reg_map_with_multiple_regs():
 ##############################################################################
 ## TESTS UVM_REG
 ##############################################################################
+
+
 def test_reg_get_name():
     reg = uvm_reg('some_reg')
     assert reg.get_name() == 'some_reg'
 
 def test_reg_configure():
-    reg = uvm_reg()
+    class temp_reg(uvm_reg):
+        def __init__(self, name="temp_reg", reg_width=32):
+            super().__init__(name, reg_width)
+
+        def build(self):
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # START
+    reg = temp_reg()
     parent = uvm_reg_block()
     reg.configure(parent,"0x4","")
     assert reg.get_parent() == parent
@@ -163,7 +193,7 @@ def test_simple_reg_model():
             self.PEN.configure(self, 1, 3, 'RW', 0, 0)
             self.EPS.configure(self, 1, 4, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT) 
+            self.set_prediction(predict_t.PREDICT_DIRECT)
 
     class LineStatusRegister(uvm_reg):
         def __init__(self, name="LineStatusRegister", reg_width=32):
