@@ -1,41 +1,36 @@
 # Import Main Package
 from pyuvm import uvm_sequence_item
+from copy import deepcopy
 from pyuvm import uvm_object
-from pyuvm.s24_uvm_reg_includes import *
+from pyuvm.s24_uvm_reg_includes import elem_kind_e, access_e
+from pyuvm.s24_uvm_reg_includes import status_t, path_t
+from pyuvm.s24_uvm_reg_includes import error_out
 
 
 # Main Class
-# @rand_enable(enable_pyvsc,uvm_sequence_item)
 class uvm_reg_item(uvm_sequence_item):
     # constructor
     def __init__(self, name='item'):
-        # Kind of element being accessed: REG, MEM, or FIELD. See <uvm_elem_kind_e>.
+        # Kind of element being accessed: REG, MEM, or FIELD.
         self.element_kind = elem_kind_e()
-        # A handle to the RegModel model element associated with this transaction.
+        # A handle to the RegModel model element
+        # associated with this transaction.
         # Use <element_kind> to determine the type to cast  to: <uvm_reg>,
         # <uvm_mem>, or <uvm_reg_field>.
-        self.element = uvm_object()
+        self.element_object = None
         # Kind of access: READ or WRITE.
-        # Access to this variable is provided for randomization, otherwise interactions
         # with it shall be via the set_kind() and get_kind() accessor methods
-        if enable_pyvsc is True:
-            self.kind = vsc.rand_enum_t(access_e)  # BUG  VCS is not defined
-        else:
-            self.kind = access_e
-        # The value to write to, or after completion, the value read from the DUT.
-        # Burst operations use the <values> property.
-        # Access to this variable is provided for randomization, otherwise interactions
-        # with it shall be via the set_value_array() and get_value_array() accessor methods
-        # self.value = vsc.rand_list_t(32, 4)
+        self.kind = access_e()
+        # The value to write to, or after completion,
+        # the value read from the DUT.
         self.value = []
         # For memory accesses, the offset address. For bursts,
         # the ~starting~ offset address.
-        # Access to this variable is provided for randomization, otherwise interactions
-        # with it shall be via the set_offset() and get_offset() accessor methods
-        if enable_pyvsc is True:
-            self.offset = vsc.uint32_t()
-        else:
-            self.offset = 0
+        # Access to this variable is provided
+        # for randomization, otherwise interactions
+        # with it shall be via the set_offset()
+        # and get_offset() accessor methods
+        self.offset = 0
         # The result of the transaction: IS_OK, HAS_X, or ERROR.
         self.status = status_t()
         # The local map used to obtain addresses. Users may customize
@@ -50,12 +45,12 @@ class uvm_reg_item(uvm_sequence_item):
         # The path being used: <UVM_FRONTDOOR> or <UVM_BACKDOOR>.
         self.path = path_t()
         # The sequence from which the operation originated.
-        # Access to this variable is provided for randomization, otherwise interactions
-        # with it shall be via the set_parent() and get_parent() accessor methods
-        # self.parent = uvm_sequence() TODO: i doubt is needed
-        # Handle to optional user data, as conveyed in the call to
-        # write(), read(), mirror(), or update() used to trigger the operation.
-        self.extension = uvm_object()  # TODO: not needed as rand since it will be simple assigned to be carried
+        # with it shall be via the set_parent() and get_parent()
+        # accessor methods
+        self.parent_sequence = None  # TODO: i doubt is needed
+        # TODO: not needed as rand since it will
+        # be simple assigned to be carried
+        self.extension_object = None
         # If path is UVM_BACKDOOR, this member specifies the abstraction
         # kind for the backdoor access, e.g. "RTL" or "GATES".
         self.bd_kind = "RTL"
@@ -73,14 +68,13 @@ class uvm_reg_item(uvm_sequence_item):
 
     # do_copy
     def do_copy(self, rhs):
-        # local object
-        copied = uvm_reg_item()
         # Check
-        if ~isinstance(rhs, uvm_reg_item):
-            error_out(self.header, "WRONG_TYPE Provided rhs is not of type uvm_reg_item")
+        if not isinstance(rhs, uvm_reg_item):
+            error_out(self.header, "WRONG_TYPE Provided rhs \
+                      is not of type uvm_reg_item")
         else:
             # Deep Copy
-            copied = copy.deepcopy(rhs)
+            copied = deepcopy(rhs)
         return copied
 
     # set_element_kind
@@ -108,7 +102,7 @@ class uvm_reg_item(uvm_sequence_item):
         return self.kind
 
     # set_value
-    def set_value(self, value, idx):
+    def set_value(self, value):
         self.value.append(value)
 
     # get_value
@@ -144,7 +138,7 @@ class uvm_reg_item(uvm_sequence_item):
 
     # set_status
     def set_status(self, status):
-        if ~isinstance(status, status_t):  # TODO Where is status_t defined?
+        if ~isinstance(status, status_t):
             error_out(self.header, "Wrong assignment to status Enum")
         else:
             self.status = status
@@ -163,8 +157,9 @@ class uvm_reg_item(uvm_sequence_item):
 
     # set_extension
     def set_extension(self, ext):
-        if ~isinstance(ext, uvm_object):
-            error_out(self.header, "bd kind is not string possible values RTL or GATE")
+        if not isinstance(ext, uvm_object):
+            error_out(self.header, "bd kind is not string possible values \
+                      RTL or GATE")
         else:
             self.extension = ext
 
@@ -174,8 +169,9 @@ class uvm_reg_item(uvm_sequence_item):
 
     # set_bd_kind
     def set_bd_kind(self, val):
-        if ~isinstance(val, str):
-            error_out(self.header, "bd kind is not string possible values RTL or GATE")
+        if not isinstance(val, str):
+            error_out(self.header, "bd kind is not string possible values \
+                      RTL or GATE")
         else:
             self.bd_kind = val
 

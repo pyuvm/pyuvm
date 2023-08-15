@@ -2,8 +2,8 @@
 Main Packages for the entire RAL model
 '''
 import pytest
-from pyuvm import * 
-from pyuvm.s27_uvm_reg_pkg import *
+from pyuvm.s27_uvm_reg_pkg import uvm_reg_field, uvm_reg, uvm_reg_block
+from pyuvm.s24_uvm_reg_includes import access_e, predict_t
 
 ##############################################################################
 ## TIPS
