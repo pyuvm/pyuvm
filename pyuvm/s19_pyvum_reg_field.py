@@ -7,6 +7,16 @@ from pyuvm.s24_pyuvm_reg_includes import error_out, access_e
 from pyuvm.s24_pyuvm_reg_includes import uvm_error, uvm_reg_field_error_decoder
 from pyuvm.s20_pyuvm_reg import uvm_reg
 
+############################################
+# Yet to be implemeneted TODO:
+############################################
+'''
+    1. Checking the set during a write happening on the Parent register
+    2. Checking if the write or read operation is ongoing
+    3. implement any reference needed for the BACKDOOR
+    4. implement the single field write method (should take the UVM_REG parent as reference)
+'''
+
 
 # Class declaration for register field
 class uvm_reg_field(uvm_object):
@@ -460,13 +470,3 @@ class uvm_reg_field(uvm_object):
                     reset:      {self._reset} \
                     mirrored:   {self._field_mirrored} \
                     value:      {self._value}"
-
-    ############################################
-    # Yet to be implemeneted
-    ############################################
-    '''
-        1. Checking the set during a write happening on the Parent register
-        2. Checking if the write or read operation is ongoing 
-        3. implement any reference needed for the BACKDOOR
-        4. implement the single field write method (should take the UVM_REG parent as reference)
-    '''
