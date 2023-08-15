@@ -2,9 +2,9 @@
 from pyuvm import uvm_sequence_item
 from copy import deepcopy
 from pyuvm import uvm_object
-from pyuvm.s24_pyuvm_reg_includes import elem_kind_e, access_e
-from pyuvm.s24_pyuvm_reg_includes import status_t, path_t
-from pyuvm.s24_pyuvm_reg_includes import error_out
+from pyuvm.s24_uvm_reg_includes import elem_kind_e, access_e
+from pyuvm.s24_uvm_reg_includes import status_t, path_t
+from pyuvm.s24_uvm_reg_includes import error_out
 
 
 # Main Class
@@ -114,7 +114,7 @@ class uvm_reg_item(uvm_sequence_item):
 
     # set_value_size
     def set_value_size(self, sz):
-        self.value = [0]*sz
+        self.value = [0] * sz
 
     # get_value_size
     def get_value_size(self):

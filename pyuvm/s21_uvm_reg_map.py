@@ -1,12 +1,12 @@
 # Import Main Packages
 from pyuvm import uvm_object, uvm_sequencer, uvm_sequence_item
-from pyuvm.s24_pyuvm_reg_includes import uvm_error
-from pyuvm.s24_pyuvm_reg_includes import access_e, path_t, check_t
-from pyuvm.s24_pyuvm_reg_includes import uvm_not_implemeneted, uvm_fatal
-from pyuvm.s24_pyuvm_reg_includes import enable_auto_predict
-from pyuvm.s24_pyuvm_reg_includes import uvm_reg_bus_op
-from pyuvm.s25_pyuvm_adapter import uvm_reg_adapter
-from pyuvm.s26_pyuvm_predictor import uvm_reg_predictor
+from pyuvm.s24_uvm_reg_includes import uvm_error
+from pyuvm.s24_uvm_reg_includes import access_e, path_t, check_t
+from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted, uvm_fatal
+from pyuvm.s24_uvm_reg_includes import enable_auto_predict
+from pyuvm.s24_uvm_reg_includes import uvm_reg_bus_op
+from pyuvm.s25_uvm_adapter import uvm_reg_adapter
+from pyuvm.s26_uvm_predictor import uvm_reg_predictor
 
 '''
     TODO: the following must be completed
@@ -296,4 +296,4 @@ class uvm_reg_map(uvm_object):
                     self._parent    : {self._parent   } \
                     self._offset : {self._offset} \
                     self._regs      : {self._regs     } \
-                    self.name       : {self.name      } "
+                    self.name       : {self.name      }"

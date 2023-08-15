@@ -1,10 +1,10 @@
 # Main Packages same as import uvm_pkg or uvm_defines.svh
 from pyuvm import uvm_object
-from pyuvm.s21_pyuvm_reg_map import uvm_reg_map
-from pyuvm.s24_pyuvm_reg_includes import uvm_reg_error_decoder, error_out
-from pyuvm.s24_pyuvm_reg_includes import access_e, path_t, uvm_fatal
-from pyuvm.s24_pyuvm_reg_includes import uvm_not_implemeneted
-from pyuvm.s24_pyuvm_reg_includes import uvm_resp_t, check_t, predict_t
+from pyuvm.s21_uvm_reg_map import uvm_reg_map
+from pyuvm.s24_uvm_reg_includes import uvm_reg_error_decoder, error_out
+from pyuvm.s24_uvm_reg_includes import access_e, path_t, uvm_fatal
+from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted
+from pyuvm.s24_uvm_reg_includes import uvm_resp_t, check_t, predict_t
 
 
 # Class declaration
@@ -117,7 +117,7 @@ class uvm_reg(uvm_object):
                 uvm_reg_error_decoder.FIELD_DOESNT_FIT_INTO_REG.name)
         # - field doesn't overlap with any other field
         if (len(self._fields) > 1):
-            msb_pos = self._fields[self._fields.index(field)-1].get_msb_pos()
+            msb_pos = self._fields[self._fields.index(field) - 1].get_msb_pos()
             if (field.get_lsb_pos() - msb_pos <= 0):
                 error_out(self._header, f"_add_field: \
                 Fields {field.get_name()} overlap \
@@ -151,8 +151,8 @@ class uvm_reg(uvm_object):
     def get_mirrored_value(self):
         self._mirrored = 0
         for f in self.get_fields():
-            self._mirrored = (self._mirrored
-                              | (f.get_value() << f.get_lsb_pos()))
+            updt_v = (f.get_value() << f.get_lsb_pos())
+            self._mirrored = (self._mirrored | updt_v)
         return self._mirrored
 
     # get_address

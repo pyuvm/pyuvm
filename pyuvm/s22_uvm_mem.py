@@ -1,6 +1,6 @@
 # Main Packages same as import uvm_pkg or uvm_defines.svh
 from pyuvm import uvm_object
-from pyuvm.s24_pyuvm_reg_includes import uvm_not_implemeneted
+from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted
 
 
 # Pyuvm Mem Class declaration abstraction

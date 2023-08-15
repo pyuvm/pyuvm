@@ -2,9 +2,9 @@
 from pyuvm import uvm_object
 from pyuvm import uvm_sequence_item
 from pyuvm import uvm_sequence
-from pyuvm.s24_pyuvm_reg_includes import uvm_reg_bus_op
-from pyuvm.s24_pyuvm_reg_includes import uvm_not_implemeneted
-from pyuvm.s23_pyuvm_reg_item import uvm_reg_item
+from pyuvm.s24_uvm_reg_includes import uvm_reg_bus_op
+from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted
+from pyuvm.s23_uvm_reg_item import uvm_reg_item
 
 
 # Main Class

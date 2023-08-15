@@ -1,7 +1,7 @@
 from pyuvm import uvm_object
-from pyuvm.s20_pyuvm_reg import uvm_reg
-from pyuvm.s21_pyuvm_reg_map import uvm_reg_map
-from pyuvm.s24_pyuvm_reg_includes import uvm_fatal, uvm_not_implemeneted
+from pyuvm.s20_uvm_reg import uvm_reg
+from pyuvm.s21_uvm_reg_map import uvm_reg_map
+from pyuvm.s24_uvm_reg_includes import uvm_fatal, uvm_not_implemeneted
 
 '''
     TODO: the following must be completed
