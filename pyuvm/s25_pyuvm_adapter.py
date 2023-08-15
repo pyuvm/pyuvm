@@ -19,20 +19,24 @@ class uvm_reg_adapter(uvm_object):
         self.reg_item = uvm_sequence_item
         self.header = name + "-- "
 
-    #    Function -- reg2bus
-    #    Extensions of this class ~must~ implement this method to convert the specified
-    #    <uvm_reg_bus_op> to a corresponding <uvm_sequence_item> subtype that defines the bus
-    #    transaction.
-    #    The method must allocate a new bus-specific <uvm_sequence_item>,
-    #    assign its members from
-    #    the corresponding members from the given generic ~rw~ bus operation, then
-    #    return it.
+    # Function -- reg2bus
+    # Extensions of this class must
+    # implement this method to convert the specified
+    # <uvm_reg_bus_op> to a corresponding <uvm_sequence_item>
+    # subtype that defines the bus
+    # transaction.
+    # The method must allocate a new bus-specific <uvm_sequence_item>,
+    # assign its members from
+    # the corresponding members from the given
+    # generic ~rw~ bus operation, then
+    # return it.
     def reg2bus(self, rw: uvm_reg_bus_op):
         uvm_not_implemeneted(self.header)
 
     #    Function -- bus2reg
     #    Extensions of this class ~must~ implement this method to copy members
-    #    of the given bus-specific ~bus_item~ to corresponding members of the provided
+    #    of the given bus-specific ~bus_item~
+    #   to corresponding members of the provided
     #    ~bus_rw~ instance. Unlike <reg2bus>, the resulting transaction
     #    is not allocated from scratch. This is to accommodate applications
     #    where the bus response must be returned in the original request.
@@ -47,18 +51,19 @@ class uvm_reg_adapter(uvm_object):
     def set_item(self, item: uvm_reg_item):
         self.reg_item = item
 
-    # Use this method to set the parent sequence into the adapter class 
+    # Use this method to set the parent sequence into the adapter class
     # Generaly is a simple Write Sequence
     def set_parent_sequence(self, sequence: uvm_sequence):
         self.parent_sequence = sequence
 
-    # Use this method to set the parent sequence into the adapter class 
+    # Use this method to set the parent sequence into the adapter class
     # Generaly is a simple Write Sequence
     def get_parent_sequence(self):
         return self.parent_sequence
 # ------------------------------------------------------------------------------
 #  Example:
-#  The following example illustrates how to implement a RegModel-BUS adapter class
+#  The following example illustrates how to implement a
+#   RegModel-BUS adapter class
 #  for the APB bus protocol.
 #
 # class rreg2apb_adapter(uvm_reg_adapter):
@@ -83,11 +88,12 @@ class uvm_reg_adapter(uvm_object):
 #        assert(0,"Bus item is not of type apb_item")
 #    else:
 #        if(apb.op == READ):
-#            rw.kind   = UVM_READ
+#           rw.kind   = UVM_READ
 #        elsif (apb.op == WRITE):
-#            rw.kind   = UVM_WRITE;
+#           rw.kind   = UVM_WRITE;
 #        else:
-#            assert(0,"bus2reg -- Wrong operation type used for uvm_reg_bus_op")
+#           assert 0,"bus2reg -- Wrong operation \
+#           type used for uvm_reg_bus_op"
 #        rw.addr      = apb.addr;
 #        rw.data      = apb.data;
 #        rw.status    = UVM_IS_OK;

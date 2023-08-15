@@ -5,15 +5,34 @@ from pyuvm.s24_pyuvm_reg_includes import uvm_fatal, uvm_not_implemeneted
 
 '''
     TODO: the following must be completed
-    1. add_vreg
-    2. remove_reg
-    3. add_mem
-    4. remove_mem
-    5. unregister_blk
-    6. write_reg or write_mem by name
-    7. read_reg or read_mem by name
-    8. get_virtual_fields in a unique field list
-    9. get_mem to return a list of memories
+    1.  implement add_vreg
+    2.  implement remove_reg
+    3.  implement add_mem
+    4.  implement remove_mem
+    5.  implement unregister_blk
+    6.  implement write_reg or write_mem by name
+    7.  implement read_reg or read_mem by name
+    8.  implement get_virtual_fields in a unique field list
+    9.  implement get_mem to return a list of memories
+    10. implement get_default_hdl_path
+    11. implement set_default_hdl_path
+    12. implement set_hdl_path_root
+    13. implement is_hdl_path_root
+    14. implement get_full_hdl_path
+    15. implement has_hdl_path
+    16. implement add_hdl_path
+    17. implement clear_hdl_path
+    18. implement get_backdoor
+    19. implement set_backdoor
+    20. implement get_default_door
+    21. implement set_default_door
+    22. implement needs_update
+    23. implement update
+    24. implement mirror
+    25. implement all the coverage APIs using COCOTB coverage report
+
+    NOTE:   write/read_reg_by_name will not be implemented there is no need
+            to run this command from the BLK
 '''
 
 
@@ -36,6 +55,9 @@ class uvm_reg_block(uvm_object):
         self.reg_mapping = {}
         self.blk_name = name
         self.header = name + " -- "
+        self._has_cover = False
+        self._is_cover_ion = False
+        self._cover_on = False
 
     # is_locked
     def is_locked(self) -> bool:
@@ -80,7 +102,8 @@ class uvm_reg_block(uvm_object):
     # blk_is_child_mapped
     def blk_is_child_mapped(self, in_blk) -> bool:
         if (isinstance(in_blk, uvm_reg_block) is False):
-            uvm_fatal(self.gen_message("blk_is_child_mapped -- input block should be uvm_reg_block"))
+            uvm_fatal(self.gen_message("blk_is_child_mapped -- input block \
+                                       should be uvm_reg_block"))
         else:
             return self.blk_maping[in_blk.get_name()]
 
@@ -105,7 +128,8 @@ class uvm_reg_block(uvm_object):
     # add_block
     def add_block(self, in_blk):
         if (isinstance(in_blk, uvm_reg_block) is False):
-            uvm_fatal(self.gen_message("add_block -- input block must be uvm_reg_block type"))
+            uvm_fatal(self.gen_message("add_block -- input block must be \
+                                       uvm_reg_block type"))
         # add to the BLK main mapping
         if (in_blk not in self.child_blk):
             self.blk_maping[in_blk.get_name()] = 1
@@ -138,7 +162,8 @@ class uvm_reg_block(uvm_object):
                 for b in self.child_blk:
                     local_reg_collector.append(b.blk_get_registers())
         else:
-            uvm_fatal(self.gen_message("_get_registers -- register block must be locked"))
+            uvm_fatal(self.gen_message("_get_registers -- register block must \
+                                       be locked"))
         return local_reg_collector
 
     # blk_get_fields
@@ -160,7 +185,8 @@ class uvm_reg_block(uvm_object):
     # blk_add_map
     def blk_add_map(self, map_i: uvm_reg_map):
         if (self.is_locked() is True):
-            uvm_fatal(self.gen_message("blk_add_map -- register block should be locked"))
+            uvm_fatal(self.gen_message("blk_add_map -- register block should \
+                                       be locked"))
 
         if (self.map_mapping[map_i] is True):
             uvm_fatal(self.header)
@@ -180,3 +206,80 @@ class uvm_reg_block(uvm_object):
     # reset_blk
     def reset_blk(self):
         uvm_not_implemeneted(self.gen_message("reset_blk -- not implemented"))
+
+    # set_default_map
+    def set_default_map(self, mapi: uvm_reg_map):
+        if self.blk_is_map_mapped(mapi) is True:
+            self.def_map = mapi
+        else:
+            uvm_fatal(self.gen_message("set_default_map required only \
+                                       internal Mapped maps as degfault map"))
+
+    # get_map_by_name
+    def get_map_by_name(self, namei: str):
+        if self.map_mapping[namei] == 1:
+            return [m for m in self.maps if (m.get_name() == namei)]
+            # TODO: search into child_blk
+        else:
+            return None
+
+    # get_reg_by_name
+    def get_reg_by_name(self, namei: str):
+        if self.reg_mapping[namei] == 1:
+            return [r for r in self._regs if (r.get_name() == namei)]
+            # TODO: search into child_blk maps
+        else:
+            return None
+
+    # set_coverage
+    def set_coverage(self, is_on: bool):
+        self._cover_on = self._has_cover and self._is_cover_on
+
+        for rg in self.regs:
+            rg.set_coverage(is_on)
+
+        for mm in self.mems:
+            mm.set_coverage(is_on)
+
+        for blk in self.blks:
+            blk.set_coverage(is_on)
+
+    # sample_values
+    def sample_values(self):
+        for rg in self.regs:
+            rg.sample_values()
+
+        for blk in self.blks:
+            blk.sample_values()
+
+    # add_coverage
+    def add_coverage(self):
+        uvm_not_implemeneted(self.gen_message("add coverage not implemented"))
+
+    # has_coverage
+    def has_coverage(self):
+        return self._has_cover
+
+    # get_coverage
+    def get_coverage(self):
+        if self.has_coverage() is True:
+            return self._cover_on
+        else:
+            return 0
+
+    # similar to convert2string
+    def __str__(self) -> str:
+        return f"   {self.gen_message} \
+                    self._regs          : {self._regs      } \
+                    self.def_map        : {self.def_map    } \
+                    self._is_locked     : {self._is_locked } \
+                    self.hdl_paths      : {self.hdl_paths  } \
+                    self.fields         : {self.fields     } \
+                    self.root_path      : {self.root_path  } \
+                    self.child_blk      : {self.child_blk  } \
+                    self.maps           : {self.maps       } \
+                    self.parent_blk     : {self.parent_blk } \
+                    self.blk_maping     : {self.blk_maping } \
+                    self.map_mapping    : {self.map_mapping} \
+                    self.reg_mapping    : {self.reg_mapping} \
+                    self.blk_name       : {self.blk_name   }"
