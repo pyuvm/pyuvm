@@ -231,11 +231,9 @@ class uvm_reg_block(uvm_object):
         else:
             return None
 
-    '''
-    # COVERAGE API based on cocotb-coverage
     # set_coverage
     def set_coverage(self, is_on: bool):
-        self._cover_on = (self._has_cover and self._is_cover_on
+        self._cover_on = self._has_cover and self._is_cover_on
 
         for rg in self.regs:
             rg.set_coverage(is_on)
@@ -249,24 +247,25 @@ class uvm_reg_block(uvm_object):
     # sample_values
     def sample_values(self):
         for rg in self.regs:
-            rg.sample_values();
+            rg.sample_values()
 
         for blk in self.blks:
-            blk.sample_values();
+            blk.sample_values()
 
     # add_coverage
-    def add_coverage(self, uvm_reg_cvr_t models)
-        self._has_cover |= models;
+    def add_coverage(self):
+        uvm_not_implemeneted(self.gen_message("add coverage not implemented"))
 
     # has_coverage
-    def has_coverage(self, uvm_reg_cvr_t models)
-        return ((this.has_cover & models) == models)
+    def has_coverage(self):
+        return self._has_cover
 
     # get_coverage
-    def get_coverage(uvm_reg_cvr_t is_on = UVM_CVR_ALL):
-        if (self.has_coverage(is_on) == 0) return 0
-            return ((self.cover_on & is_on) == is_on);
-    '''
+    def get_coverage(self):
+        if self.has_coverage() is True:
+            return self._cover_on
+        else:
+            return 0
 
     # similar to convert2string
     def __str__(self) -> str:

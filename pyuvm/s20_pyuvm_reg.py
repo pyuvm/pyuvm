@@ -33,6 +33,8 @@ class uvm_reg(uvm_object):
         # there were will be no difference between read and write
         # we cannot read and write from to the same register at tsame time
         self._op_in_progress = False
+        self._is_cover_ion = False
+        self._cover_on = False
 
     # configure
     def configure(self, parent, address, hdl_path,
@@ -259,3 +261,13 @@ class uvm_reg(uvm_object):
                       another is in progress")
         # Return from Task
         return status, read_data
+
+    # Coverage API
+    # set_coverage
+    def set_coverage(self, is_on: bool):
+        self._cover_on = self._has_cover and self._is_cover_on
+
+    # sample_values
+    def sample_values(self):
+        uvm_not_implemeneted(self.gen_message("sample_values \
+                                              used but not implemented"))
