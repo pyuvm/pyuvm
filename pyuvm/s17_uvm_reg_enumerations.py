@@ -4,8 +4,8 @@ from pyuvm.error_classes import UVMFatalError
 from enum import Enum
 
 
-PYUVM_REG_DATA_WIDTH = 64
-PYUVM_REG_ADDR_WIDTH = 64
+UVM_REG_DATA_WIDTH = 64
+UVM_REG_ADDR_WIDTH = 64
 
 # 17.2.1.1 uvm_reg_data_t
 uvm_reg_data_t = int

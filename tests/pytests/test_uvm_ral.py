@@ -1,11 +1,10 @@
-## Main Packages for the entire RAL model
+#  Main Packages for the entire RAL model
 import itertools
-import pytest
 from pyuvm import *
 from pyuvm.s27_uvm_reg_pkg import *
 
 ##############################################################################
-## TIPS
+# TIPS
 ##############################################################################
 """
 Use this to execute the test which will not be counted into the entire number of FAILING tests
@@ -24,16 +23,18 @@ If pip install pytest-sugar is ran then pytest is gonna likly execute a bar prog
 running tests (expecially if in Parallel)
 """
 
+
 ##############################################################################
-## TESTS ENTIRE RAL
+# TESTS ENTIRE RAL
 ##############################################################################
+
 def test_simple_reg_model():
     """
     A more realistic register model based on the venerable UART 16550 design
     """
     class LineControlRegister(uvm_reg):
         def __init__(self, name="LineControlRegister", reg_width=32):
-            super().__init__(name,reg_width)
+            super().__init__(name, reg_width)
             self.WLS = uvm_reg_field('WLS')
             self.STB = uvm_reg_field('STB')
             self.PEN = uvm_reg_field('PEN')
