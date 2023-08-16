@@ -265,7 +265,7 @@ def test_simple_reg_model():
 
     LSR.reset()
     assert LSR.get_mirrored_value() == 0
-    LSR.predict(32,access_e.PYUVM_WRITE)
+    LSR.predict(32,access_e.UVM_WRITE)
     assert LSR.get_mirrored_value() == 32
     for field in LSR.get_fields():
         print(field.get_value())

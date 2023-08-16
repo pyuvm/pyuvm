@@ -131,7 +131,7 @@ def test_reg_with_multiple_fields_get_mirrored_value():
     myreg.build()   
     myreg.reset()
     myreg.set_prediction(predict_t.PREDICT_DIRECT)
-    myreg.predict(int('0x0f00f0',16),access_e.PYUVM_WRITE)
+    myreg.predict(int('0x0f00f0',16),access_e.UVM_WRITE)
     assert myreg.get_mirrored_value() == int('0x0f00f0',16)
     myreg.reset()
     assert myreg.get_mirrored_value() == int('0xf000f',16)
