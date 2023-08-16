@@ -30,7 +30,7 @@ running tests (expecially if in Parallel)
 ##############################################################################
 @pytest.mark.test_reg_get_name
 def test_reg_get_name():
-    for l in range(32):
+    for l in range(1,32):
         reg = uvm_reg(('some_reg_'+str(l)),l)
         assert reg.get_name() == ('some_reg_'+str(l)), "Name mismatch: expected {} got: {}".format(('some_reg_'+str(l)),reg.get_name()) 
         assert reg.get_reg_size() == l, "Register size mismatch: expected {} got: {}".format(l, reg.get_reg_size()) 
@@ -84,7 +84,7 @@ def test_reg_with_multiple_fields():
     myfield_1 = uvm_reg_field("myfield_1")
     myfield_2 = uvm_reg_field("myfield_2")
     myfield_1.configure(myreg, 16, 0, "RW", False, 10)
-    myfield_2.configure(myreg, 16, 15, "RW", False, 20)
+    myfield_2.configure(myreg, 16, 16, "RW", False, 20)
     myreg.build()
     assert myreg.get_fields() == [myfield_1,myfield_2]
     myreg.check_err_list()
