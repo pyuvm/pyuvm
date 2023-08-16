@@ -136,7 +136,7 @@ def test_reg_with_multiple_fields():
     field0 = uvm_reg_field()
     field0.configure(reg, 8, 0, 'RW', 0, 0)
     field1 = uvm_reg_field()
-    field1.configure(reg, 8, 0, 'RW', 0, 0)
+    field1.configure(reg, 8, 8, 'RW', 0, 0)
     assert reg.get_fields() == [field0, field1]
 
 def test_reg_field_get_name():
