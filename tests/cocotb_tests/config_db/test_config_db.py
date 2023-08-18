@@ -1,7 +1,7 @@
-import pyuvm_unittest
+import uvm_unittest
 from pyuvm import *
 
-class config_db_TestCase(pyuvm_unittest.pyuvm_TestCase):
+class config_db_TestCase(uvm_unittest.uvm_TestCase):
 
     def tearDown(self) -> None:
         super().tearDown()

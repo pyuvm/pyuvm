@@ -1,5 +1,5 @@
 from pyuvm.utility_classes import Singleton
-import pyuvm_unittest
+import uvm_unittest
 import unittest
 from pyuvm.s13_predefined_component_classes import *
 
@@ -8,7 +8,7 @@ class my_test(uvm_test):
     ...
 
 
-class s13_predefined_component_TestCase(pyuvm_unittest.pyuvm_TestCase):
+class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
     """Basic test cases."""
 
     def setUp(self):
