@@ -8,15 +8,19 @@ module tinyalu (input [7:0] A,
 		input start,
 		output done,
 		output [15:0] result,
-		// APB interface
-        input wire s_apb_psel,
-        input wire s_apb_penable,
-        input wire s_apb_pwrite,
-        input wire [2:0] s_apb_paddr,
-        input wire [15:0] s_apb_pwdata,
-        output logic s_apb_pready,
-        output logic [15:0] s_apb_prdata,
-        output logic s_apb_pslverr
+    // cpuif
+    input wire cpuif_req,
+    input wire cpuif_req_is_wr,
+    input wire [2:0] cpuif_addr,
+    input wire [15:0] cpuif_wr_data,
+    input wire [15:0] cpuif_wr_biten,
+    output wire cpuif_req_stall_wr,
+    output wire cpuif_req_stall_rd,
+    output wire cpuif_rd_ack,
+    output wire cpuif_rd_err,
+    output wire [15:0] cpuif_rd_data,
+    output wire cpuif_wr_ack,
+    output wire cpuif_wr_err,
 		);
 
    wire [15:0] 		      result_aax, result_mult;
@@ -53,20 +57,24 @@ module tinyalu (input [7:0] A,
    assign reg_in.CMD.reserved.next = '0;
 
 
-	TinyALUreg regblock(
-    	.clk (clk),
-    	.rst (reset_n),
-    	.s_apb_psel (s_apb_psel),
-    	.s_apb_penable (s_apb_penable),
-    	.s_apb_pwrite (s_apb_pwrite),
-    	.s_apb_paddr (s_apb_paddr),
-    	.s_apb_pwdata (s_apb_pwdata),
-    	.s_apb_pready (s_apb_pready),
-    	.s_apb_prdata (s_apb_prdata),
-    	.s_apb_pslverr (s_apb_pslverr),
-    	.hwif_in (reg_in),
-    	.hwif_out (reg_out)
-    	);
+  TinyALUreg regblock(
+    .clk                  (clk),
+    .rst                  (reset_n),
+    .s_cpuif_req          (cpuif_req),
+    .s_cpuif_req_is_wr    (cpuif_req_is_wr),
+    .s_cpuif_addr         (cpuif_addr),
+    .s_cpuif_wr_data      (cpuif_wr_data),
+    .s_cpuif_wr_biten     (cpuif_wr_biten),
+    .s_cpuif_req_stall_wr (cpuif_req_stall_wr),
+    .s_cpuif_req_stall_rd (cpuif_req_stall_rd),
+    .s_cpuif_rd_ack       (cpuif_rd_ack),
+    .s_cpuif_rd_err       (cpuif_rd_err),
+    .s_cpuif_rd_data      (cpuif_rd_data),
+    .s_cpuif_wr_ack       (cpuif_wr_ack),
+    .s_cpuif_wr_err       (cpuif_wr_err),
+    .hwif_in              (reg_in),
+    .hwif_out             (reg_out)
+  );
 
 endmodule // tinyalu
 
