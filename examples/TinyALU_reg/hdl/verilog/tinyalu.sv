@@ -1,80 +1,114 @@
-import TinyALUreg_pkg::*;
-
 module tinyalu (input [7:0] A,
 		input [7:0] B,
 		input [2:0] op,
-		input clk,
+		// input clk,
 		input reset_n,
 		input start,
 		output done,
 		output [15:0] result,
-    // cpuif
-    input wire cpuif_req,
-    input wire cpuif_req_is_wr,
-    input wire [2:0] cpuif_addr,
-    input wire [15:0] cpuif_wr_data,
-    input wire [15:0] cpuif_wr_biten,
-    output wire cpuif_req_stall_wr,
-    output wire cpuif_req_stall_rd,
-    output wire cpuif_rd_ack,
-    output wire cpuif_rd_err,
-    output wire [15:0] cpuif_rd_data,
-    output wire cpuif_wr_ack,
-    output wire cpuif_wr_err,
+    // Register Bus
+    input  logic valid,    //! Active high valid
+    input  logic read,     //! Indicates request is a read
+    input  logic [31:0] addr,     //! Address (byte aligned, absolute address)
+    /* verilator lint_off UNUSED */
+    input  logic [31:0] wdata,    //! Write data
+    input  logic [3:0] wmask,    //! Write mask
+    /* verilator lint_on UNUSED */
+    output logic [31:0] rdata     //! Read data
 		);
 
-   wire [15:0] 		      result_aax, result_mult;
-   wire 		          start_single, start_mult;
-   wire                   done_aax;
-   wire                   done_mult;
-   // bit                    clk;
-   TinyALUreg__in_t  reg_in;
-   TinyALUreg__out_t reg_out;
+    localparam ADDR_WIDTH = 32;
+    localparam DATA_WIDTH = 32;
+    localparam ADDR_OFFSET = 'd0;
+    localparam RESERVED_VALUE = 'd1;
 
-   // initial clk = 0;
-   // always #5 clk = ~clk;
+    wire [15:0] 		      result_aax, result_mult;
+    wire 		          start_single, start_mult;
+    wire                   done_aax;
+    wire                   done_mult;
+    bit                    clk;
 
-   assign start_single = start & ~op[2];
-   assign start_mult   = start & op[2];
+    // Register CMD input
+    logic       CMD_op_we;             //! Control HW write (active high)
+    logic [4:0] CMD_op_wdata;          //! HW write data
+    logic       CMD_start_we;             //! Control HW write (active high)
+    logic [0:0] CMD_start_wdata;          //! HW write data
+    logic       CMD_done_we;             //! Control HW write (active high)
+    logic [0:0] CMD_done_wdata;          //! HW write data
+    logic       CMD_reserved_we;             //! Control HW write (active high)
+    logic [6:0] CMD_reserved_wdata;          //! HW write data
+    // Register CMD output
+    logic [6:0] CMD_reserved_q;              //! Current field value
+    logic [4:0] CMD_op_q;              //! Current field value
+    logic [0:0] CMD_start_q;              //! Current field value
+    logic [0:0] CMD_done_q;              //! Current field value
 
-   single_cycle and_add_xor (.A, .B, .op, .clk, .reset_n, .start(start_single),
-			     .done(done_aax), .result(result_aax));
+    // Register SRC
+    logic [7:0] SRC_data0_wdata;          //! HW write data
+    logic [7:0] SRC_data1_wdata;          //! HW write data
 
-   three_cycle mult (.A, .B, .op, .clk, .reset_n, .start(start_mult),
-		    .done(done_mult), .result(result_mult));
+    // Register RESULT
+    logic [15:0] RESULT_data_wdata;          //! HW write data
 
+    initial clk = 0;
+    always #5 clk = ~clk;
 
-   assign done = (op[2]) ? done_mult : done_aax;
+    assign start_single = start & ~op[2];
+    assign start_mult   = start & op[2];
 
-   assign result = (op[2]) ? result_mult : result_aax;
+    single_cycle and_add_xor (.A, .B, .op, .clk, .reset_n, .start(start_single),
+	   	     .done(done_aax), .result(result_aax));
 
-   assign reg_in.SRC.data0.next = A;
-   assign reg_in.SRC.data1.next = B;
-   assign reg_in.CMD.op.next = op;
-   assign reg_in.RESULT.data.next = result;
-   assign reg_in.CMD.done.next = done;
-   assign reg_in.CMD.start.next = start;
-   assign reg_in.CMD.reserved.next = '0;
+    three_cycle mult (.A, .B, .op, .clk, .reset_n, .start(start_mult),
+	       .done(done_mult), .result(result_mult));
 
+    assign done = (op[2]) ? done_mult : done_aax;
 
-  TinyALUreg regblock(
-    .clk                  (clk),
-    .rst                  (reset_n),
-    .s_cpuif_req          (cpuif_req),
-    .s_cpuif_req_is_wr    (cpuif_req_is_wr),
-    .s_cpuif_addr         (cpuif_addr),
-    .s_cpuif_wr_data      (cpuif_wr_data),
-    .s_cpuif_wr_biten     (cpuif_wr_biten),
-    .s_cpuif_req_stall_wr (cpuif_req_stall_wr),
-    .s_cpuif_req_stall_rd (cpuif_req_stall_rd),
-    .s_cpuif_rd_ack       (cpuif_rd_ack),
-    .s_cpuif_rd_err       (cpuif_rd_err),
-    .s_cpuif_rd_data      (cpuif_rd_data),
-    .s_cpuif_wr_ack       (cpuif_wr_ack),
-    .s_cpuif_wr_err       (cpuif_wr_err),
-    .hwif_in              (reg_in),
-    .hwif_out             (reg_out)
-  );
+    assign result = (op[2]) ? result_mult : result_aax;
+
+    // Enable write to register from hardware
+    assign CMD_op_we = 1'b1;             //! Control HW write (active high)
+    assign CMD_start_we = 1'b1;             //! Control HW write (active high)
+    assign CMD_done_we = 1'b1;             //! Control HW write (active high)
+    assign CMD_reserved_we = 1'b1;             //! Control HW write (active high)
+    assign CMD_op_wdata = {2'd0,op};          //! HW write data
+    assign CMD_start_wdata = start;          //! HW write data
+    assign CMD_done_wdata = done;          //! HW write data
+    assign CMD_reserved_wdata = RESERVED_VALUE;          //! HW write data
+    assign SRC_data0_wdata = A;
+    assign SRC_data1_wdata = B;
+    assign RESULT_data_wdata = result;
+
+    TinyALUreg #(
+      .ADDR_OFFSET(ADDR_OFFSET),  //! Module's offset in the main address map
+      .ADDR_WIDTH (ADDR_WIDTH),   //! Width of SW address bus
+      .DATA_WIDTH (ADDR_WIDTH)    //! Width of SW data bus
+    )regblock(
+      // Clocks and resets
+      .clk                (clk),                      //! Default clock
+      .resetn             (reset_n),                  //! Default reset
+      .SRC_data0_wdata    (SRC_data0_wdata),          //! HW write data
+      .SRC_data1_wdata    (SRC_data1_wdata),          //! HW write data
+      .RESULT_data_wdata  (RESULT_data_wdata),        //! HW write data
+      .CMD_op_we          (CMD_op_we),                //! Control HW write (active high)
+      .CMD_op_wdata       (CMD_op_wdata),             //! HW write data
+      .CMD_op_q           (CMD_op_q),                 //! Current field value
+      .CMD_start_we       (CMD_start_we),             //! Control HW write (active high)
+      .CMD_start_wdata    (CMD_start_wdata),          //! HW write data
+      .CMD_start_q        (CMD_start_q),              //! Current field value
+      .CMD_done_we        (CMD_done_we),              //! Control HW write (active high)
+      .CMD_done_wdata     (CMD_done_wdata),           //! HW write data
+      .CMD_done_q         (CMD_done_q),               //! Current field value
+      .CMD_reserved_we    (CMD_reserved_we),          //! Control HW write (active high)
+      .CMD_reserved_wdata (CMD_reserved_wdata),       //! HW write data
+      .CMD_reserved_q     (CMD_reserved_q),           //! Current field value
+      .valid              (valid),                    //! Active high valid
+      .read               (read),                     //! Indicates request is a read
+      .addr               (addr),                     //! Address (byte aligned, absolute address)
+      .wdata              (wdata),                    //! Write data
+      .wmask              (wmask),                    //! Write mask
+      .rdata              (rdata)                     //! Read data
+    );
 
 endmodule // tinyalu
 
