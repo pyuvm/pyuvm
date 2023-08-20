@@ -1,3 +1,4 @@
+from cocotb.clock import Clock
 from cocotb.triggers import Join, Combine
 from pyuvm import *
 import random
@@ -268,6 +269,9 @@ class AluTest(uvm_test):
 
     async def run_phase(self):
         self.raise_objection()
+        # Start clock
+        clock = Clock(cocotb.top.clk, 1, units="ns")
+        cocotb.start_soon(clock.start())
         await self.test_all.start()
         self.drop_objection()
 
