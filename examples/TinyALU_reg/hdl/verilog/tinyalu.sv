@@ -1,7 +1,7 @@
 module tinyalu (input [7:0] A,
 		input [7:0] B,
 		input [2:0] op,
-		// input clk,
+		input clk,
 		input reset_n,
 		input start,
 		output done,
@@ -26,7 +26,6 @@ module tinyalu (input [7:0] A,
     wire 		          start_single, start_mult;
     wire                   done_aax;
     wire                   done_mult;
-    bit                    clk;
 
     // Register CMD input
     logic       CMD_op_we;             //! Control HW write (active high)
@@ -49,9 +48,6 @@ module tinyalu (input [7:0] A,
 
     // Register RESULT
     logic [15:0] RESULT_data_wdata;          //! HW write data
-
-    initial clk = 0;
-    always #5 clk = ~clk;
 
     assign start_single = start & ~op[2];
     assign start_mult   = start & op[2];

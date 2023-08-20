@@ -15,11 +15,12 @@ endif
 ifeq ($(SIM), verilator)
     # Enable processing of #delay statements
     COMPILE_ARGS += --timing
+	EXTRA_ARGS += --trace --trace-structs
 endif
 MODULE := testbench
 TOPLEVEL = tinyalu
 GHDL_ARGS := --ieee=synopsys
-COCOTB_HDL_TIMEUNIT = 1us
-COCOTB_HDL_TIMEPRECISION = 1us
+COCOTB_HDL_TIMEUNIT = 1ns
+COCOTB_HDL_TIMEPRECISION = 1ps
 include $(shell cocotb-config --makefiles)/Makefile.sim
 include ../../cleanall.mk
