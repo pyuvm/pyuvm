@@ -1,3 +1,4 @@
+from simple_bus import simple_bus_agent, simple_bus_adapter
 from cocotb.clock import Clock
 from cocotb.triggers import Join, Combine
 from pyuvm import *
@@ -240,6 +241,11 @@ class Monitor(uvm_component):
             self.ap.write(datum)
 
 
+# Dummy reg map
+class alu_reg_block(uvm_reg_block):
+    pass
+
+
 class AluEnv(uvm_env):
 
     def build_phase(self):
@@ -249,12 +255,19 @@ class AluEnv(uvm_env):
         self.cmd_mon = Monitor("cmd_mon", self, "get_cmd")
         self.coverage = Coverage("coverage", self)
         self.scoreboard = Scoreboard("scoreboard", self)
+        self.reg_agent = simple_bus_agent("simple_bus_agent", self)
+        self.reg_adapter = simple_bus_adapter("reg_adapter")
+        self.reg_block = alu_reg_block("alu_reg_block")
+        # Create default map
+        self.reg_block.blk_create_map("map", 0)
 
     def connect_phase(self):
         self.driver.seq_item_port.connect(self.seqr.seq_item_export)
         self.cmd_mon.ap.connect(self.scoreboard.cmd_export)
         self.cmd_mon.ap.connect(self.coverage.analysis_export)
         self.driver.ap.connect(self.scoreboard.result_export)
+        self.reg_block.def_map.set_sequencer(self.reg_agent.seqr)
+        self.reg_block.def_map.set_adapter(self.reg_adapter)
 
 
 @pyuvm.test()
@@ -269,9 +282,12 @@ class AluTest(uvm_test):
 
     async def run_phase(self):
         self.raise_objection()
-        # Start clock
-        clock = Clock(cocotb.top.clk, 1, units="ns")
-        cocotb.start_soon(clock.start())
+        if cocotb.LANGUAGE == "verilog":
+            # Start clock
+            clock = Clock(cocotb.top.clk, 1, units="ns")
+            cocotb.start_soon(clock.start())
+            # Pass dut to environment
+            self.cdb_set("env.simple_bus_agent", cocotb.top, "vif")
         await self.test_all.start()
         self.drop_objection()
 
