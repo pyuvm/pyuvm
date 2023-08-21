@@ -243,7 +243,7 @@ class uvm_reg_map(uvm_object):
             local_item = uvm_sequence_item()
             local_sequence.copy(local_item)
             # Assign the response and read data back
-            local_adapter.bus2reg(local_item, local_bus_op)
+            local_bus_op = local_adapter.bus2reg(local_item, local_bus_op)
             # Invoke the prediction
             if (enable_auto_predict is True):
                 local_predictor = self.get_predictor()
@@ -281,7 +281,7 @@ class uvm_reg_map(uvm_object):
             local_item = uvm_sequence_item
             local_sequence.copy(local_item)
             # Assign the response and read data back
-            local_adapter.bus2reg(local_item, local_bus_op)
+            local_bus_op = local_adapter.bus2reg(local_item, local_bus_op)
             # Invoke the prediction
             if (enable_auto_predict is True):
                 local_predictor = self.get_predictor()
