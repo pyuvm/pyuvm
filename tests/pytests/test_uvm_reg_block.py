@@ -93,19 +93,19 @@ def test_reg_map_configure():
 def test_reg_map_with_single_reg():
     reg_map = uvm_reg_map()
     reg = uvm_reg()
-    reg_map.add_reg(reg, 0)
+    reg_map.add_reg(reg, "0x0")
     assert reg_map.get_registers() == [reg]
 
 
 def test_reg_map_with_multiple_regs():
     reg_map = uvm_reg_map()
     reg0 = uvm_reg()
-    reg_map.add_reg(reg0, 128)
+    reg_map.add_reg(reg0, "0xf")
     reg1 = uvm_reg()
-    reg_map.add_reg(reg1, 256)
+    reg_map.add_reg(reg1, "0xff")
     assert reg_map.get_registers() == [reg0, reg1]
-    assert reg_map.get_reg_by_offset(128) == reg0
-    assert reg_map.get_reg_by_offset(256) == reg1
+    assert reg_map.get_reg_by_offset("0xf") == reg0
+    assert reg_map.get_reg_by_offset("0xff") == reg1
 
 ##############################################################################
 # TESTS UVM_REG
@@ -225,15 +225,15 @@ def test_simple_reg_model():
             self.map.configure(self, 0)
             self.LCR = LineControlRegister('LCR')
             self.LCR.configure(self, "0x100c", "")
-            self.map.add_reg(self.LCR, int(self.LCR.get_address(), 0))
+            self.map.add_reg(self.LCR, "0x0")
             self.LSR = LineStatusRegister('LSR')
-            self.LSR.configure(self, self.LSR.get_address(), "")
-            self.map.add_reg(self.LSR, int('0x1014', 0))
+            self.LSR.configure(self, "0x1014", "")
+            self.map.add_reg(self.LSR, "0x0")
 
     regs = Regs('regs')
     assert regs.get_name() == 'regs'
-    assert regs.map.get_reg_by_offset(int('0x100c', 0)) == regs.LCR
-    assert regs.map.get_reg_by_offset(int('0x1014', 0)) == regs.LSR
+    assert regs.map.get_reg_by_offset("0x100c") == regs.LCR
+    assert regs.map.get_reg_by_offset("0x1014") == regs.LSR
 
     LCR = regs.LCR
     assert LCR.get_name() == 'LCR'

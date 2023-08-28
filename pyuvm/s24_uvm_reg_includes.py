@@ -117,7 +117,7 @@ Global assert disable this is used in
 order to avoid code interruption by just checking for the error list
 '''
 enable_pyvsc = False
-enable_auto_predict = True
+enable_auto_predict = False
 enable_throw_error_response_on_read = False
 enable_throw_error_response_on_write = False
 disable_code_interruption_assert = False
@@ -164,12 +164,13 @@ class uvm_reg_bus_op:
     Standard class for register bus operation
     to be used into the Prediction or Adpater
     '''
-    kind: access_e
-    addr: int
-    data: int
-    n_bits: int
-    byte_en: bool
-    status: uvm_resp_t
+    def __init__(self) -> None:
+        self.kind: access_e = access_e.UVM_READ
+        self.addr: int = 0
+        self.data: int = 0
+        self.n_bits: int = 0
+        self.byte_en: bool = False
+        self.status: uvm_resp_t = uvm_resp_t.PASS_RESP
 
 
 #

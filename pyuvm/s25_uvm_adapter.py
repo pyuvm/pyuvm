@@ -15,9 +15,10 @@ class uvm_reg_adapter(uvm_object):
         #  Set this bit in extensions of this class if the bus protocol
         #  supports byte enables.
         self.byte_enable = True
-        self.parent_sequence = uvm_sequence
+        self.parent_sequence = None
         self.reg_item = uvm_sequence_item
         self.header = name + "-- "
+        self.provide_response = False
 
     # Function -- reg2bus
     # Extensions of this class must
@@ -30,7 +31,7 @@ class uvm_reg_adapter(uvm_object):
     # the corresponding members from the given
     # generic ~rw~ bus operation, then
     # return it.
-    def reg2bus(self, rw: uvm_reg_bus_op):
+    def reg2bus(self, rw: uvm_reg_bus_op) -> uvm_sequence_item:
         uvm_not_implemeneted(self.header)
 
     #    Function -- bus2reg
@@ -60,6 +61,15 @@ class uvm_reg_adapter(uvm_object):
     # Generaly is a simple Write Sequence
     def get_parent_sequence(self):
         return self.parent_sequence
+
+    # get_provide_reponse
+    def get_provide_reponse(self):
+        return self.provide_response
+
+    # get_byte_en
+    def get_byte_en(self):
+        return self.byte_enable
+
 # ------------------------------------------------------------------------------
 #  Example:
 #  The following example illustrates how to implement a
@@ -84,7 +94,7 @@ class uvm_reg_adapter(uvm_object):
 #
 #  def bus2reg(bus_item: uvm_sequencer_item, rw: uvm_reg_bus_op):
 #    apb_item apb;
-#    if (isinstance(apb,bus_item)):
+#    if (isinstance(apb,uvm_sequencer_item)):
 #        assert(0,"Bus item is not of type apb_item")
 #    else:
 #        if(apb.op == READ):
