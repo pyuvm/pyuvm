@@ -188,7 +188,8 @@ class uvm_reg_block(uvm_object):
             uvm_fatal(self.gen_message("blk_add_map -- register block should \
                                        be locked"))
 
-        if (self.map_mapping[map_i] is True):
+        if map_i in self.map_mapping.keys() and \
+           self.map_mapping[map_i] is True:
             uvm_fatal(self.header)
         else:
             self.maps.append(map_i)
@@ -199,7 +200,7 @@ class uvm_reg_block(uvm_object):
     # blk_create_map byte_addressing and byte_en
     # along with endianess not yet supported
     def blk_create_map(self, name: str, base_addr: int):
-        lmap = uvm_reg_map.create(name, self)
+        lmap = uvm_reg_map.create(name)
         lmap.configure(self, base_addr)
         self.blk_add_map(lmap)
 
