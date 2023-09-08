@@ -1,6 +1,6 @@
 .PHONY: run_icarus
 run_icarus:
-	make -C tests/cocotb SIM=icarus
+	make -C tests/TinyALU SIM=icarus
 
 .PHONY: run_questa
 run_questa:
