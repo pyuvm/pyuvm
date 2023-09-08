@@ -38,5 +38,5 @@ async def run_tests(dut):
 async def test_14_sequences(dut):
     """Tests the Sequences"""
     clock = Clock(dut.clk, 2, units="us")
-    cocotb.fork(clock.start())
+    cocotb.start_soon(clock.start())
     await run_tests(dut)

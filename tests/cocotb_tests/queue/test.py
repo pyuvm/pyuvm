@@ -88,12 +88,12 @@ def run_uvm_test(test_name):
 # @cocotb.test()
 async def test_alu(dut):
     clock = Clock(dut.clk, 2, units="us")
-    cocotb.fork(clock.start())
+    cocotb.start_soon(clock.start())
     proxy = CocotbProxy(dut, "PROXY")
     await proxy.reset()
-    cocotb.fork(proxy.driver_bfm())
-    cocotb.fork(proxy.cmd_mon_bfm())
-    cocotb.fork(proxy.result_mon_bfm())
+    cocotb.start_soon(proxy.driver_bfm())
+    cocotb.start_soon(proxy.cmd_mon_bfm())
+    cocotb.start_soon(proxy.result_mon_bfm())
     await FallingEdge(dut.clk)
     test_thread = threading.Thread(target=run_uvm_test, args=("CocotbAluTest",), name="run_test")
     test_thread.start()
@@ -145,11 +145,11 @@ async def delay_peek(qq, delay):
 async def wait_on_queue(dut):
     """Test put and get with waits"""
     clock = Clock(dut.clk, 2, units="us") #make the simualtor wait
-    cocotb.fork(clock.start())
+    cocotb.start_soon(clock.start())
     qq = utility_classes.UVMQueue(maxsize=1)
     send_data = [
         .01, "two", 3, None]
-    cocotb.fork(delay_put(qq, .01, send_data))
+    cocotb.start_soon(delay_put(qq, .01, send_data))
     got_data = await delay_peek(qq, .01)
     assert got_data == .01
     got_data = await delay_get(qq, .01)
