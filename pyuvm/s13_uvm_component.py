@@ -535,17 +535,18 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
         self.trace("SET", context, inst_name, field_name, value)
 
-    def get(self, context, inst_name, field_name, default = default_get):       
+    def get(self, context, inst_name, field_name, default=default_get):
         """
         The component path matches against the paths in the ConfigDB. The path
         cannot have wildcards, but can match against keys with wildcards.
-        Return the value stored at key. If the key is missing, returns default or
-        raises UVMConfigItemNotFound.
+        Return the value stored at key. If the key is missing, returns default
+        or raises UVMConfigItemNotFound.
 
         :param context: The component making the call
         :param inst_name: component full path with no wildcards
         :param field_name: the field_name being retrieved
-        :param default: the value to return if there is no key, defaults to default_get
+        :param default: the value to return if there is no key, defaults to
+            default_get
         :return: value found at location
         """
         if not set(inst_name).issubset(self.legal_chars):
@@ -611,7 +612,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
                     f'"Component {inst_name} has no key: {field_name}')
         except error_classes.UVMConfigItemNotFound as e:
             if default is self.default_get:
-                raise(e)
+                raise e
             return default
 
     def exists(self, context, inst_name, field_name):
