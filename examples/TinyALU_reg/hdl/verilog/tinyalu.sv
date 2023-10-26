@@ -1,79 +1,71 @@
-module tinyalu (input [7:0] A,
-		input [7:0] B,
-		input [2:0] op,
-		input clk,
-		input reset_n,
-		input start,
-		output done,
-		output [15:0] result,
-    // Register Bus
-    input  logic valid,    //! Active high valid
-    input  logic read,     //! Indicates request is a read
-    input  logic [31:0] addr,     //! Address (byte aligned, absolute address)
-    /* verilator lint_off UNUSED */
-    input  logic [31:0] wdata,    //! Write data
-    input  logic [3:0] wmask,    //! Write mask
-    /* verilator lint_on UNUSED */
-    output logic [31:0] rdata     //! Read data
-		);
+module tinyalu (
+      /** Leave it but unused start */
+      input [7:0] A,
+      input logic [7:0] B,
+      input logic [2:0] op,
+      input logic start,
+      /** Leave it but unused end */
+      input logic clk,
+      input logic reset_n,
+      // Register Bus
+      input  logic valid,           //! Active high valid
+      input  logic read,            //! Indicates request is a read
+      input  logic [31:0] addr,     //! Address (byte aligned, absolute address)
+      /* verilator lint_off UNUSED */
+      input  logic [31:0] wdata,    //! Write data
+      input  logic [3:0] wmask,     //! Write mask
+      /* verilator lint_on UNUSED */
+      output logic [31:0] rdata,    //! Read data
+      output logic [15:0] result    //! final result 
+  );
 
-    localparam ADDR_WIDTH = 32;
-    localparam DATA_WIDTH = 32;
-    localparam ADDR_OFFSET = 'd0;
+    localparam ADDR_WIDTH     = 32;
+    localparam DATA_WIDTH     = 32;
+    localparam ADDR_OFFSET    = 'd0;
     localparam RESERVED_VALUE = 'd1;
 
     wire [15:0] 		      result_aax, result_mult;
-    wire 		          start_single, start_mult;
-    wire                   done_aax;
-    wire                   done_mult;
+    wire 		              start_single, start_mult;
+    wire                  done_aax;
+    wire                  done_mult;
 
     // Register CMD input
     logic       CMD_op_we;             //! Control HW write (active high)
     logic [4:0] CMD_op_wdata;          //! HW write data
-    logic       CMD_start_we;             //! Control HW write (active high)
-    logic [0:0] CMD_start_wdata;          //! HW write data
-    logic       CMD_done_we;             //! Control HW write (active high)
-    logic [0:0] CMD_done_wdata;          //! HW write data
     logic       CMD_reserved_we;             //! Control HW write (active high)
     logic [6:0] CMD_reserved_wdata;          //! HW write data
     // Register CMD output
     logic [6:0] CMD_reserved_q;              //! Current field value
     logic [4:0] CMD_op_q;              //! Current field value
     logic [0:0] CMD_start_q;              //! Current field value
-    logic [0:0] CMD_done_q;              //! Current field value
 
     // Register SRC
-    logic [7:0] SRC_data0_wdata;          //! HW write data
-    logic [7:0] SRC_data1_wdata;          //! HW write data
+    logic [7:0] SRC_data0_q;
+    logic [7:0] SRC_data1_q;
 
     // Register RESULT
     logic [15:0] RESULT_data_wdata;          //! HW write data
 
-    assign start_single = start & ~op[2];
-    assign start_mult   = start & op[2];
+    // Start Signal coming from the register from the RF written by SW interface
+    logic done;
+    logic [2:0] op_from_rf;
+    assign op_from_rf   = CMD_op_q[2:0];
+    assign start_single = CMD_start_q & ~op_from_rf[2];
+    assign start_mult   = CMD_start_q & op_from_rf[2];
 
-    single_cycle and_add_xor (.A, .B, .op, .clk, .reset_n, .start(start_single),
-	   	     .done(done_aax), .result(result_aax));
+    single_cycle and_add_xor (  .A(SRC_data0_q), .B(SRC_data1_q), 
+                                .op(op_from_rf), .clk, .reset_n, 
+                                .start(start_single),
+	   	                          .done(done_aax), .result(result_aax));
 
-    three_cycle mult (.A, .B, .op, .clk, .reset_n, .start(start_mult),
-	       .done(done_mult), .result(result_mult));
+    three_cycle mult (  .A(SRC_data0_q), .B(SRC_data1_q), 
+                        .op(op_from_rf), .clk, .reset_n, 
+                        .start(start_mult),
+	                      .done(done_mult), .result(result_mult));
 
-    assign done = (op[2]) ? done_mult : done_aax;
+    assign done = (CMD_op_q[2]) ? done_mult : done_aax;
 
-    assign result = (op[2]) ? result_mult : result_aax;
-
-    // Enable write to register from hardware
-    assign CMD_op_we = 1'b1;             //! Control HW write (active high)
-    assign CMD_start_we = 1'b1;             //! Control HW write (active high)
-    assign CMD_done_we = 1'b1;             //! Control HW write (active high)
-    assign CMD_reserved_we = 1'b1;             //! Control HW write (active high)
-    assign CMD_op_wdata = {2'd0,op};          //! HW write data
-    assign CMD_start_wdata = start;          //! HW write data
-    assign CMD_done_wdata = done;          //! HW write data
-    assign CMD_reserved_wdata = RESERVED_VALUE;          //! HW write data
-    assign SRC_data0_wdata = A;
-    assign SRC_data1_wdata = B;
-    assign RESULT_data_wdata = result;
+    assign result = (CMD_op_q[2]) ? result_mult : result_aax;
 
     TinyALUreg #(
       .ADDR_OFFSET(ADDR_OFFSET),  //! Module's offset in the main address map
@@ -83,21 +75,15 @@ module tinyalu (input [7:0] A,
       // Clocks and resets
       .clk                (clk),                      //! Default clock
       .resetn             (reset_n),                  //! Default reset
-      .SRC_data0_wdata    (SRC_data0_wdata),          //! HW write data
-      .SRC_data1_wdata    (SRC_data1_wdata),          //! HW write data
-      .RESULT_data_wdata  (RESULT_data_wdata),        //! HW write data
-      .CMD_op_we          (CMD_op_we),                //! Control HW write (active high)
-      .CMD_op_wdata       (CMD_op_wdata),             //! HW write data
+      .SRC_data0_q        (SRC_data0_q),              //! HW write data
+      .SRC_data1_q        (SRC_data1_q),              //! HW write data
+      .RESULT_data_wdata  (result),                   //! HW write data
       .CMD_op_q           (CMD_op_q),                 //! Current field value
-      .CMD_start_we       (CMD_start_we),             //! Control HW write (active high)
-      .CMD_start_wdata    (CMD_start_wdata),          //! HW write data
       .CMD_start_q        (CMD_start_q),              //! Current field value
-      .CMD_done_we        (CMD_done_we),              //! Control HW write (active high)
-      .CMD_done_wdata     (CMD_done_wdata),           //! HW write data
-      .CMD_done_q         (CMD_done_q),               //! Current field value
-      .CMD_reserved_we    (CMD_reserved_we),          //! Control HW write (active high)
-      .CMD_reserved_wdata (CMD_reserved_wdata),       //! HW write data
-      .CMD_reserved_q     (CMD_reserved_q),           //! Current field value
+      // .CMD_done_we        (1'b1),                     //! Control HW write (active high)
+      .CMD_done_wdata     (done),                     //! HW write data
+      .CMD_reserved_we    (1'b1),                     //! Control HW write (active high)
+      .CMD_reserved_wdata ('h0),                      //! HW write data
       .valid              (valid),                    //! Active high valid
       .read               (read),                     //! Indicates request is a read
       .addr               (addr),                     //! Address (byte aligned, absolute address)

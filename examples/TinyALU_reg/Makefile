@@ -4,7 +4,6 @@ SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 ifeq ($(TOPLEVEL_LANG),verilog)
 	VERILOG_SOURCES =$(CWD)/hdl/verilog/tinyalu.sv $(CWD)/hdl/verilog/TinyALUreg.sv
-
 else ifeq ($(TOPLEVEL_LANG),vhdl)
 	VHDL_SOURCES=$(CWD)/hdl/vhdl/single_cycle_add_and_xor.vhd \
 				$(CWD)/hdl/vhdl/three_cycle_mult.vhd \
