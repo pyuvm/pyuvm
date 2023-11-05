@@ -19,6 +19,17 @@ The following IEEE 1800.2 sections have been implemented:
 |12|UVM TLM Interfaces|Fully implemented|
 |13|Predefined Component Classes|Implements uvm_component with hierarchy, uvm_root singleton,run_test(), simplified ConfigDB, uvm_driver, etc|
 |14 & 15|Sequences, sequencer, sequence_item|Refactored sequencer functionality leveraging Python language capabilities. Simpler and more direct implementation|
+|17|UVM Regfister Enum|All the basic Enum types to be used in the whole PYUVM Ral|
+|18|UVM Register Block|Main Register Block class|
+|19|UVM Register Field|Regsister Filed there are still few functionalities missing like atomic Backdoor access amd Field byte access or single Field access during read or write operation|
+|20|UVM Register|Main register class, still missing Backdoor and used Backdoor to be leveraged from cocotb force. Byte access and single field access yet to be implemeneted|
+|21|UVM Register Map|Main register map class, should be refatored to guarantee simplicity and backdoor access, extension class in Read and Write to be implemeneted|
+|22|UVM Memory|Not Implemented|
+|23|Register Item|Register Item used across multiple classes|
+|24|Register include file|Includes other Enum and typeds to be merged with s17|
+|25|UVM register adapter|Main register adapter|
+|26|UVM register predictor|Main register predictor, should be disabled if auto_prediction is not set|
+|27|Register Package|Main PKG if included and flake8 is not active should behave similarly to uvm_reg_pkg|
 
 ### Installation
 

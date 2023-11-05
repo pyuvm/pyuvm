@@ -7,12 +7,12 @@ addrmap TinyALUreg {
         name = "source data reg";
         field {
             desc = "source data register 0";
-            hw=w; sw=r;
+            hw=r; sw=rw;
         } data0[7:0] = 0;
 
         field {
             desc = "source data register 1";
-            hw=w; sw=r;
+            hw=r; sw=rw;
         } data1[15:8] = 0;
 
     } SRC @ 0x0;
@@ -32,23 +32,23 @@ addrmap TinyALUreg {
 
         field {
             desc = "operation";
-            hw=rw; sw=rw;
+            hw=r; sw=rw;
         } op[4:0] = 0;
 
         field {
             desc = "start";
-            hw=rw; sw=rw;
-        } start = 0;
+            hw=r; sw=rw;
+        } start[5:5] = 0;
 
         field {
             desc = "Done";
-            hw=rw; sw=rw;
-        } done = 0;
+            hw=w; sw=r;
+        } done[6:6] = 0;
 
         field {
-          desc = "reserved field";
-          hw=rw; sw=rw;
-        } reserved[14:8] = 0;
+            desc = "reserved field";
+            hw=w; sw=rw;
+        } reserved[15:7] = 0;
 
     } CMD @ 0x4;
 };

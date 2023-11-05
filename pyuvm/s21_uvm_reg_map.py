@@ -1,5 +1,5 @@
 # Import Main Packages
-from pyuvm import uvm_object, uvm_sequencer, uvm_sequence_item
+from pyuvm import uvm_object, uvm_sequencer, uvm_sequence
 from pyuvm.s24_uvm_reg_includes import uvm_error
 from pyuvm.s24_uvm_reg_includes import access_e, path_t, check_t
 from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted, uvm_fatal
@@ -7,6 +7,7 @@ from pyuvm.s24_uvm_reg_includes import enable_auto_predict
 from pyuvm.s24_uvm_reg_includes import uvm_reg_bus_op
 from pyuvm.s25_uvm_adapter import uvm_reg_adapter
 from pyuvm.s26_uvm_predictor import uvm_reg_predictor
+from pyuvm.s23_uvm_reg_item import uvm_reg_item
 
 '''
     TODO: the following must be completed
@@ -41,6 +42,7 @@ class uvm_reg_map(uvm_object):
         self._parent_map = None
         self._is_a_submap = False
         self._reset_kind = ["SOFT", "HARD"]
+        self.predictor = None
 
     # Function called by the REG_BLOCK create_map funcction
     # the parent value here should be a uvm_reg_block instance type
@@ -60,6 +62,18 @@ class uvm_reg_map(uvm_object):
             uvm_error(self.header, "add_parent_map -- cannot add parent map \
                 if the parentmap is already set")
 
+    # str2int
+    def _str2int(self, istr: str = "") -> int:
+        return int(istr, 16)
+
+    # int2hex
+    def _int2hex(self, ival: int = 0) -> str:
+        return hex(ival)
+
+    # gen_message
+    def gen_message(self, txt="") -> str:
+        return f"{self.header} {txt}"
+
     # get_parent
     def get_parent(self):
         return self._parent
@@ -72,8 +86,11 @@ class uvm_reg_map(uvm_object):
             return self._offset
 
     # add_reg
-    def add_reg(self, reg, offset):
-        self._regs[offset] = reg
+    def add_reg(self, reg, offset: str = "0x0", rigths: str = "RW"):
+        reg.add_map(self)
+        sum_offset = self._str2int(offset) + self._str2int(reg.get_address())
+        reg.set_access_policy(rigths)
+        self._regs[self._int2hex(sum_offset)] = reg
 
     # get_registers
     def get_registers(self, as_dict=False):
@@ -101,7 +118,10 @@ class uvm_reg_map(uvm_object):
     # get_predictor
     def get_predictor(self):
         if (self.predictor is None):
-            uvm_error(self.header, "predictor Not set")
+            # TODO: this should be only a warning since depends
+            # on the prediction type
+            if enable_auto_predict is True:
+                uvm_error(self.header, "predictor Not set")
         else:
             return self.predictor
 
@@ -210,6 +230,38 @@ class uvm_reg_map(uvm_object):
         else:
             return list(self._submaps.values)
 
+    # check integrity of process
+    def check_process_integrity(self, adapter=None, reg_item=None):
+        # check if the input adapter is none
+        if (adapter is None):
+            # TODO: here basically we should be creating a local base sequence
+            #       we should be getting the sequencers from the adapter
+            #       error pout if NONE and call the start ITEM using the
+            #       reg_item as sequence_item is then up to the Driver to
+            #       figure out how to proceed
+            uvm_fatal(self.gen_message("adapter is not assigned to MAP"))
+        elif isinstance(adapter, uvm_reg_adapter) is False:
+            uvm_fatal(self.gen_message("adapter is not correct type"))
+
+        # check if the reg item is set
+        if (reg_item is None):
+            uvm_fatal(self.gen_message("reg_item is not assigned to MAP"))
+        elif isinstance(reg_item, uvm_reg_item) is False:
+            uvm_fatal(self.gen_message("reg_item is not correct type"))
+
+        # check in case the Adapter is set
+        # if the parent sequence is set by User
+        if adapter.get_parent_sequence() is not None:
+            reg_item.set_parent_sequence(adapter.get_parent_sequence())
+        else:
+            # if the parent sequence is not set in teh adapter we need to
+            # create a base sequence and assign it internally
+            # to the reg_item there is no need to use the factory
+            # we aare not gonna use the factory constructor
+            base_seq = uvm_sequence("base_seq")
+            reg_item.set_parent_sequence(base_seq)
+            adapter.set_parent_sequence(base_seq)
+
     #
     # OPERATION PROCESS
     #
@@ -219,6 +271,16 @@ class uvm_reg_map(uvm_object):
                                       path: path_t, check: check_t):
         # Get the sequencer and the adapter
         local_adapter = self.get_adapter()
+        # Build a local reg_item
+        # TODO: this should come as input of the main process operation
+        item = uvm_reg_item()
+        item.set_kind(access_e.UVM_WRITE)
+        item.set_value(data_to_be_written)
+        item.set_door(path)
+        item.set_map(self)
+        item.set_parent_sequence(None)
+        # check if we pass this point we are ready to go
+        self.check_process_integrity(local_adapter, item)
         local_sequencer = self.get_sequencer()
         # check if the Path is set to BACKDOOR, FRONTDOOR or USER_FRONTDOOR
         if (path is path_t.BACKDOOR):
@@ -228,35 +290,52 @@ class uvm_reg_map(uvm_object):
         elif (path is path_t.FRONTDOOR):
             # Populate internal Item
             local_bus_op = uvm_reg_bus_op()
-            local_bus_op.kind = access_e.uvm_WRITE
+            local_bus_op.kind = access_e.UVM_WRITE
             local_bus_op.addr = reg_address
-            local_bus_op.n_bits = self._regs[reg_address].get_n_bits()
+            local_bus_op.n_bits = self._regs[reg_address].get_reg_size()
             local_bus_op.byte_en = local_adapter.get_byte_en()
             local_bus_op.data = data_to_be_written
             # Parse the local bus operation with the adapter
-            local_adapter.reg2bus(local_bus_op)
+            # give the ITEM once to the adpater so it can
+            # eventually fecth the extension element
+            local_adapter.set_item(item)
+            bus_req = local_adapter.reg2bus(local_bus_op)
+            local_adapter.set_item(None)
             # Get the sequence and start
             local_sequence = local_adapter.get_parent_sequence()
+            # set the sequencer to the local sequence
+            local_sequence.sequencer = local_sequencer
             # Start the sequence on local sequencer
-            await local_sequence.start(local_sequencer)
+            await local_sequence.start_item(bus_req)
+            await local_sequence.finish_item(bus_req)
             # Get the sequence item from the local sequence
-            local_item = uvm_sequence_item()
-            local_sequence.copy(local_item)
             # Assign the response and read data back
-            local_bus_op = local_adapter.bus2reg(local_item, local_bus_op)
+            local_adapter.bus2reg(bus_req, local_bus_op)
             # Invoke the prediction
             if (enable_auto_predict is True):
                 local_predictor = self.get_predictor()
                 local_predictor.predict(local_bus_op, check)
             else:
-                uvm_not_implemeneted(self.header, "EXPLICIT_PREDICTION \
-                                     not implemented")
+                pass
+                # uvm_not_implemeneted(self.header,
+                #                      "EXPLICIT_PREDICTION not implemented")
+            # assign status
+            return local_bus_op.status
 
     # process_read_operation
     async def process_read_operation(self, reg_address, path: path_t,
                                      check: check_t):
         # Get the sequencer and the adapter
         local_adapter = self.get_adapter()
+        # Build a local reg_item
+        # TODO: this should come as input of the main process operation
+        item = uvm_reg_item()
+        item.set_kind(access_e.UVM_WRITE)
+        item.set_door(path)
+        item.set_map(self)
+        item.set_parent_sequence(None)
+        # check if we pass this point we are ready to go
+        self.check_process_integrity(local_adapter, item)
         local_sequencer = self.get_sequencer()
         # check if the Path is set to BACKDOOR, FRONTDOOR or USER_FRONTDOOR
         if (path is path_t.BACKDOOR):
@@ -266,34 +345,41 @@ class uvm_reg_map(uvm_object):
         elif (path is path_t.FRONTDOOR):
             # Populate internal Item
             local_bus_op = uvm_reg_bus_op()
-            local_bus_op.kind = access_e.uvm_READ
+            local_bus_op.kind = access_e.UVM_READ
             local_bus_op.addr = reg_address
-            local_bus_op.n_bits = self._regs[reg_address].get_n_bits()
+            local_bus_op.n_bits = self._regs[reg_address].get_reg_size()
             local_bus_op.byte_en = local_adapter.get_byte_en()
             # Parse the local bus operation with the adapter
-            local_adapter.reg2bus(local_bus_op)
-            # The get parent sequence is still not implemented hence we
-            # hould be using the base sequence type for the time being
+            # give the ITEM once to the adpater so it can
+            # eventually fecth the extension element
+            local_adapter.set_item(item)
+            bus_req = local_adapter.reg2bus(local_bus_op)
+            local_adapter.set_item(None)
+            # Get the sequence and start
             local_sequence = local_adapter.get_parent_sequence()
+            # set the sequencer to the local sequence
+            local_sequence.sequencer = local_sequencer
             # Start the sequence on local sequencer
-            await local_sequence.start(local_sequencer)
+            await local_sequence.start_item(bus_req)
+            await local_sequence.finish_item(bus_req)
             # Get the sequence item from the local sequence
-            local_item = uvm_sequence_item
-            local_sequence.copy(local_item)
             # Assign the response and read data back
-            local_bus_op = local_adapter.bus2reg(local_item, local_bus_op)
+            local_adapter.bus2reg(bus_req, local_bus_op)
             # Invoke the prediction
             if (enable_auto_predict is True):
                 local_predictor = self.get_predictor()
                 local_predictor.predict(local_bus_op, check)
             else:
-                uvm_not_implemeneted(self.header, "EXPLICIT_PREDICTION \
-                                     not implemented")
+                pass
+                # uvm_not_implemeneted(self.header,
+                #                      "EXPLICIT_PREDICTION not implemented")
+            # assign status
+            return local_bus_op.status, local_bus_op.data
 
     # print of uvm_reg_map similar to convert2string
     def __str__(self) -> str:
         return f"   {self.header} \
-                    self._parent    : {self._parent   } \
-                    self._offset : {self._offset} \
-                    self._regs      : {self._regs     } \
-                    self.name       : {self.name      }"
+                    self._parent    : {self._parent} \
+                    self._offset    : {self._offset} \
+                    self._regs      : {self._regs} \
+                    self.name       : {self.name }"

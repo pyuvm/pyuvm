@@ -1,6 +1,5 @@
 import cocotb
-from cocotb.triggers import FallingEdge
-from cocotb.queue import QueueEmpty, Queue
+from cocotb.triggers import FallingEdge, RisingEdge
 import enum
 import logging
 
@@ -47,77 +46,63 @@ def get_int(signal):
 class TinyAluBfm(metaclass=utility_classes.Singleton):
     def __init__(self):
         self.dut = cocotb.top
-        self.driver_queue = Queue(maxsize=1)
-        self.cmd_mon_queue = Queue(maxsize=0)
-        self.result_mon_queue = Queue(maxsize=0)
 
-    async def send_op(self, aa, bb, op):
-        command_tuple = (aa, bb, op)
-        await self.driver_queue.put(command_tuple)
+    # clock generation
+    async def wait_clock(self, cycles=1):
+        """wait for clock pulses"""
+        for cycle in range(cycles):
+            await RisingEdge(self.dut.clk)
 
-    async def get_cmd(self):
-        cmd = await self.cmd_mon_queue.get()
-        return cmd
+    async def SW_READ(self, sw_addr: int):
+        await FallingEdge(self.dut.clk)
+        self.dut.valid.value = 1
+        self.dut.read.value = 1
+        self.dut.addr.value = sw_addr
+        await FallingEdge(self.dut.clk)
+        self.dut.valid.value = 0
+        return self.dut.rdata.value.integer
 
-    async def get_result(self):
-        result = await self.result_mon_queue.get()
-        return result
+    async def SW_WRITE(self, sw_addr: int, sw_data: int):
+        await FallingEdge(self.dut.clk)
+        self.dut.valid.value = 1
+        self.dut.read.value = 0
+        self.dut.addr.value = sw_addr
+        self.dut.wdata.value = sw_data
+        self.dut.wmask.value = 15
+        await FallingEdge(self.dut.clk)
+        self.dut.valid.value = 0
 
     async def reset(self):
-        await FallingEdge(self.dut.clk)
         self.dut.reset_n.value = 0
-        self.dut.A.value = 0
-        self.dut.B.value = 0
-        self.dut.op.value = 0
-        await FallingEdge(self.dut.clk)
+        await self.wait_clock(1)
         self.dut.reset_n.value = 1
+        await self.wait_clock(1)
+
+    async def capture_valid(self):
+        await RisingEdge(self.dut.valid)
         await FallingEdge(self.dut.clk)
+        
+    async def operation_finished(self):
+        await RisingEdge(self.dut.regblock.CMD_done_q)
+        await self.wait_clock(1)
 
-    async def driver_bfm(self):
-        self.dut.start.value = 0
-        self.dut.A.value = 0
-        self.dut.B.value = 0
-        self.dut.op.value = 0
-        while True:
-            await FallingEdge(self.dut.clk)
-            start = get_int(self.dut.start)
-            done = get_int(self.dut.done)
-            if start == 0 and done == 0:
-                try:
-                    (aa, bb, op) = self.driver_queue.get_nowait()
-                    self.dut.A.value = aa
-                    self.dut.B.value = bb
-                    self.dut.op.value = op
-                    self.dut.start.value = 1
-                except QueueEmpty:
-                    pass
-            elif start == 1:
-                if done == 1:
-                    self.dut.start.value = 0
+    def get_addr(self):
+        return hex(self.dut.addr.value)
 
-    async def cmd_mon_bfm(self):
-        prev_start = 0
-        while True:
-            await FallingEdge(self.dut.clk)
-            start = get_int(self.dut.start)
-            if start == 1 and prev_start == 0:
-                cmd_tuple = (get_int(self.dut.A),
-                             get_int(self.dut.B),
-                             get_int(self.dut.op))
-                self.cmd_mon_queue.put_nowait(cmd_tuple)
-            prev_start = start
+    def get_src0(self):
+        return self.dut.regblock.SRC_data0_q.value.integer
 
-    async def result_mon_bfm(self):
-        prev_done = 0
-        while True:
-            await FallingEdge(self.dut.clk)
-            done = get_int(self.dut.done)
-            if prev_done == 0 and done == 1:
-                result = get_int(self.dut.result)
-                self.result_mon_queue.put_nowait(result)
-            prev_done = done
+    def get_src1(self):
+        return self.dut.regblock.SRC_data1_q.value.integer
 
-    def start_bfm(self):
-        cocotb.start_soon(self.driver_bfm())
-        cocotb.start_soon(self.cmd_mon_bfm())
-        cocotb.start_soon(self.result_mon_bfm())
+    def get_op(self):
+        if (self.dut.regblock.CMD_op_q.value != 0):
+            return Ops(self.dut.regblock.CMD_op_q.value.integer)
+        else:
+            return 0
+
+    def get_result(self):
+        return self.dut.result.value.integer
+
+    def get_reset(self):
+        return self.dut.reset_n.value

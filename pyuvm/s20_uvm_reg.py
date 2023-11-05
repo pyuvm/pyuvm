@@ -5,6 +5,7 @@ from pyuvm.s24_uvm_reg_includes import uvm_reg_error_decoder, error_out
 from pyuvm.s24_uvm_reg_includes import access_e, path_t, uvm_fatal
 from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted
 from pyuvm.s24_uvm_reg_includes import uvm_resp_t, check_t, predict_t
+from pyuvm.s17_uvm_reg_enumerations import uvm_reg_policy_t
 
 
 # Class declaration
@@ -12,34 +13,39 @@ class uvm_reg(uvm_object):
     # Constructor
     def __init__(self, name="uvm_reg", reg_width=32):
         super().__init__(name)
-        self._parent = None
+        self._parent = None  # Reference to the parent Reg Block
         self._fields = []
         self._err_list = []
-        self._mirrored = 0
-        self._desired = 0
-        self._reset = 0
-        self._sum = 0
-        self._name = name
-        self._header = name + " -- "
-        self._address = "0x0"
-        self._path = ""
+        self._mirrored: int = 0
+        self._desired: int = 0
+        self._reset: int = 0
+        self._sum: int = 0
+        self._name: str = name
+        self._header: str = name + " -- "
+        self._address: str = "0x0"
+        self._path: str = ""
         self._width = reg_width
         # If set those 2 flags will override fields values, and if set to True
         # the fields will report error reponse
         # in case of (Operation,Access) expect an error
-        self.throw_error_on_read = False
-        self.throw_error_on_write = False
+        self.throw_error_on_read: bool = False
+        self.throw_error_on_write: bool = False
         # Internal varibales used to detect if an operation is in progress
         # there were will be no difference between read and write
         # we cannot read and write from to the same register at tsame time
-        self._op_in_progress = False
-        self._is_cover_ion = False
-        self._cover_on = False
+        self._op_in_progress: bool = False
+        self._is_cover_ion: bool = False
+        self._cover_on: bool = False
+        self._maps = []  # Collection to the maps owning the specific register
+        self._access_policy: str = "RW"
 
     # configure
-    def configure(self, parent, address, hdl_path,
-                  throw_error_on_read=False,
-                  throw_error_on_write=False):
+    def configure(self,
+                  parent,
+                  address: str,
+                  hdl_path: str,
+                  throw_error_on_read: bool = False,
+                  throw_error_on_write: bool = False):
         self._parent = parent
         self._address = address
         self._path = hdl_path
@@ -60,6 +66,13 @@ class uvm_reg(uvm_object):
     def _add_error(self, value):
         self._err_list.append(value)
 
+    # add_map
+    def add_map(self, map_i: uvm_reg_map):
+        if map_i in self._maps:
+            uvm_fatal(self.gen_message(f"Adding same map {map_i} twice"))
+        else:
+            self._maps.append(map_i)
+
     # create a message
     def gen_message(self, mss: str) -> str:
         return self._header + mss
@@ -75,6 +88,18 @@ class uvm_reg(uvm_object):
     # get parent
     def get_parent(self):
         return self._parent
+
+    # set_access_policy
+    def set_access_policy(self, policy: str = "RW"):
+        if (policy in uvm_reg_policy_t):
+            self._access_policy = policy
+        else:
+            uvm_fatal(self.gen_message(f"given access \
+                                       policy not correct: {policy}"))
+
+    # set_access_policy
+    def get_access_policy(self) -> str:
+        return self._access_policy
 
     # get_fields Return fields in canonical order (LSB to MSB)
     def get_fields(self):
@@ -137,7 +162,7 @@ class uvm_reg(uvm_object):
             _f.field_unlock()
 
     # Predict
-    def predict(self, value, direction: access_e):
+    def predict(self, value: int, direction: access_e):
         for f in self.get_fields():
             f.field_predict((
                 value >> f.get_lsb_pos()), path_t.FRONTDOOR, direction)
@@ -188,8 +213,11 @@ class uvm_reg(uvm_object):
                                               implemented by the user"))
 
     # Write Method (TASK)
-    async def write(self, value, map: uvm_reg_map,
-                    path: path_t, check: check_t) -> uvm_resp_t:
+    async def write(self,
+                    value: int,
+                    map: uvm_reg_map,
+                    path: path_t,
+                    check: check_t) -> uvm_resp_t:
         # This Task should implement the main read method via only FRONTDOOR
         # TODO: BACKDOOT and USER FRONTDOOR are missing
         # This Task returns only the operation status

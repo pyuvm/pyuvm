@@ -9,25 +9,18 @@ module TinyALUreg #(
     input logic                              resetn,  //! Default reset
 
     // Register SRC
-    input  logic                     [ 7: 0] SRC_data0_wdata,          //! HW write data
-    input  logic                     [ 7: 0] SRC_data1_wdata,          //! HW write data
+    output logic                     [ 7: 0] SRC_data0_q,              //! Current field value
+    output logic                     [ 7: 0] SRC_data1_q,              //! Current field value
 
     // Register RESULT
     input  logic                     [15: 0] RESULT_data_wdata,          //! HW write data
 
     // Register CMD
-    input  logic                             CMD_op_we,             //! Control HW write (active high)
-    input  logic                     [ 4: 0] CMD_op_wdata,          //! HW write data
     output logic                     [ 4: 0] CMD_op_q,              //! Current field value
-    input  logic                             CMD_start_we,             //! Control HW write (active high)
-    input  logic                     [ 0: 0] CMD_start_wdata,          //! HW write data
     output logic                     [ 0: 0] CMD_start_q,              //! Current field value
-    input  logic                             CMD_done_we,             //! Control HW write (active high)
     input  logic                     [ 0: 0] CMD_done_wdata,          //! HW write data
-    output logic                     [ 0: 0] CMD_done_q,              //! Current field value
     input  logic                             CMD_reserved_we,             //! Control HW write (active high)
-    input  logic                     [ 6: 0] CMD_reserved_wdata,          //! HW write data
-    output logic                     [ 6: 0] CMD_reserved_q,              //! Current field value
+    input  logic                     [ 8: 0] CMD_reserved_wdata,          //! HW write data
 
     // Register Bus
     input  logic                             valid,    //! Active high valid
@@ -43,12 +36,10 @@ module TinyALUreg #(
 /* verilator lint_off UNUSED */
     // local output signals for fields (unless block outputs)
     // these can be used as references in other fields
-    logic                           [ 7: 0] SRC_data0_q;
     logic                           [ 7: 0] SRC_data0_next;
     logic                             SRC_data0_anded;
     logic                             SRC_data0_ored;
     logic                             SRC_data0_xored;
-    logic                           [ 7: 0] SRC_data1_q;
     logic                           [ 7: 0] SRC_data1_next;
     logic                             SRC_data1_anded;
     logic                             SRC_data1_ored;
@@ -66,11 +57,13 @@ module TinyALUreg #(
     logic                             CMD_start_anded;
     logic                             CMD_start_ored;
     logic                             CMD_start_xored;
+    logic                           [ 0: 0] CMD_done_q;
     logic                           [ 0: 0] CMD_done_next;
     logic                             CMD_done_anded;
     logic                             CMD_done_ored;
     logic                             CMD_done_xored;
-    logic                           [ 6: 0] CMD_reserved_next;
+    logic                           [ 8: 0] CMD_reserved_q;
+    logic                           [ 8: 0] CMD_reserved_next;
     logic                             CMD_reserved_anded;
     logic                             CMD_reserved_ored;
     logic                             CMD_reserved_xored;
@@ -116,8 +109,8 @@ module TinyALUreg #(
         
     // ============================================================
     // Register: SRC
-    //    [ 7: 0]                data0: hw=w     sw=r     reset=0x0
-    //    [15: 8]                data1: hw=w     sw=r     reset=0x0
+    //    [ 7: 0]                data0: hw=r     sw=rw    reset=0x0
+    //    [15: 8]                data1: hw=r     sw=rw    reset=0x0
     // ============================================================
     logic                  SRC_decode;
     logic                  SRC_sw_wr;
@@ -138,26 +131,44 @@ module TinyALUreg #(
     assign SRC_rdata = SRC_sw_rd ? SRC_q : 'b0;
 
     // ------------------------------------------------------------
-    // Field: data0 (wire)
+    // Field: data0
     // ------------------------------------------------------------
     assign SRC_data0_anded = & SRC_data0_q;
     assign SRC_data0_ored  = | SRC_data0_q;
     assign SRC_data0_xored = ^ SRC_data0_q;
 
     // next hardware value
-    assign SRC_data0_next = SRC_data0_wdata;
-    assign SRC_data0_q = SRC_data0_next;
+
+    //! main storage
+    always_ff @ (posedge clk, negedge resetn)
+    if (~resetn) begin
+        SRC_data0_q <= 0;
+    end else begin
+        // Software write
+        if (SRC_sw_wr) begin
+            SRC_data0_q <=  sw_masked_data[ 7: 0] | (SRC_data0_q & ~sw_mask[ 7: 0]);
+        end
+    end
 
     // ------------------------------------------------------------
-    // Field: data1 (wire)
+    // Field: data1
     // ------------------------------------------------------------
     assign SRC_data1_anded = & SRC_data1_q;
     assign SRC_data1_ored  = | SRC_data1_q;
     assign SRC_data1_xored = ^ SRC_data1_q;
 
     // next hardware value
-    assign SRC_data1_next = SRC_data1_wdata;
-    assign SRC_data1_q = SRC_data1_next;
+
+    //! main storage
+    always_ff @ (posedge clk, negedge resetn)
+    if (~resetn) begin
+        SRC_data1_q <= 0;
+    end else begin
+        // Software write
+        if (SRC_sw_wr) begin
+            SRC_data1_q <=  sw_masked_data[15: 8] | (SRC_data1_q & ~sw_mask[15: 8]);
+        end
+    end
             
         
     // ============================================================
@@ -195,10 +206,10 @@ module TinyALUreg #(
         
     // ============================================================
     // Register: CMD
-    //    [ 4: 0]                   op: hw=rw    sw=rw    reset=0x0
-    //    [ 5: 5]                start: hw=rw    sw=rw    reset=0x0
-    //    [ 6: 6]                 done: hw=rw    sw=rw    reset=0x0
-    //    [14: 8]             reserved: hw=rw    sw=rw    reset=0x0
+    //    [ 4: 0]                   op: hw=r     sw=rw    reset=0x0
+    //    [ 5: 5]                start: hw=r     sw=rw    reset=0x0
+    //    [ 6: 6]                 done: hw=w     sw=r     reset=0x0
+    //    [15: 7]             reserved: hw=w     sw=rw    reset=0x0
     // ============================================================
     logic                  CMD_decode;
     logic                  CMD_sw_wr;
@@ -214,7 +225,7 @@ module TinyALUreg #(
         CMD_q[ 4: 0] = CMD_op_q;
         CMD_q[ 5: 5] = CMD_start_q;
         CMD_q[ 6: 6] = CMD_done_q;
-        CMD_q[14: 8] = CMD_reserved_q;
+        CMD_q[15: 7] = CMD_reserved_q;
     end
 
     // masked version of return data
@@ -228,17 +239,12 @@ module TinyALUreg #(
     assign CMD_op_xored = ^ CMD_op_q;
 
     // next hardware value
-    assign CMD_op_next = CMD_op_wdata;
 
     //! main storage
     always_ff @ (posedge clk, negedge resetn)
     if (~resetn) begin
         CMD_op_q <= 0;
     end else begin
-        // Hardware Write
-        if (CMD_op_we) begin
-            CMD_op_q <= CMD_op_next;
-        end
         // Software write
         if (CMD_sw_wr) begin
             CMD_op_q <=  sw_masked_data[ 4: 0] | (CMD_op_q & ~sw_mask[ 4: 0]);
@@ -253,17 +259,12 @@ module TinyALUreg #(
     assign CMD_start_xored = ^ CMD_start_q;
 
     // next hardware value
-    assign CMD_start_next = CMD_start_wdata;
 
     //! main storage
     always_ff @ (posedge clk, negedge resetn)
     if (~resetn) begin
         CMD_start_q <= 0;
     end else begin
-        // Hardware Write
-        if (CMD_start_we) begin
-            CMD_start_q <= CMD_start_next;
-        end
         // Software write
         if (CMD_sw_wr) begin
             CMD_start_q <=  sw_masked_data[ 5: 5] | (CMD_start_q & ~sw_mask[ 5: 5]);
@@ -271,7 +272,7 @@ module TinyALUreg #(
     end
 
     // ------------------------------------------------------------
-    // Field: done
+    // Field: done (wire)
     // ------------------------------------------------------------
     assign CMD_done_anded = & CMD_done_q;
     assign CMD_done_ored  = | CMD_done_q;
@@ -279,21 +280,7 @@ module TinyALUreg #(
 
     // next hardware value
     assign CMD_done_next = CMD_done_wdata;
-
-    //! main storage
-    always_ff @ (posedge clk, negedge resetn)
-    if (~resetn) begin
-        CMD_done_q <= 0;
-    end else begin
-        // Hardware Write
-        if (CMD_done_we) begin
-            CMD_done_q <= CMD_done_next;
-        end
-        // Software write
-        if (CMD_sw_wr) begin
-            CMD_done_q <=  sw_masked_data[ 6: 6] | (CMD_done_q & ~sw_mask[ 6: 6]);
-        end
-    end
+    assign CMD_done_q = CMD_done_next;
 
     // ------------------------------------------------------------
     // Field: reserved
@@ -316,8 +303,8 @@ module TinyALUreg #(
         end
         // Software write
         if (CMD_sw_wr) begin
-            CMD_reserved_q <=  sw_masked_data[14: 8] | (CMD_reserved_q & ~sw_mask[14: 8]);
+            CMD_reserved_q <=  sw_masked_data[15: 7] | (CMD_reserved_q & ~sw_mask[15: 7]);
         end
     end
 
-endmodule
+endmodule: TinyALUreg

@@ -12,7 +12,7 @@ class uvm_reg_item(uvm_sequence_item):
     # constructor
     def __init__(self, name='item'):
         # Kind of element being accessed: REG, MEM, or FIELD.
-        self.element_kind = elem_kind_e()
+        self.element_kind: elem_kind_e
         # A handle to the RegModel model element
         # associated with this transaction.
         # Use <element_kind> to determine the type to cast  to: <uvm_reg>,
@@ -20,7 +20,7 @@ class uvm_reg_item(uvm_sequence_item):
         self.element_object = None
         # Kind of access: READ or WRITE.
         # with it shall be via the set_kind() and get_kind() accessor methods
-        self.kind = access_e()
+        self.kind: access_e
         # The value to write to, or after completion,
         # the value read from the DUT.
         self.value = []
@@ -32,23 +32,22 @@ class uvm_reg_item(uvm_sequence_item):
         # and get_offset() accessor methods
         self.offset = 0
         # The result of the transaction: IS_OK, HAS_X, or ERROR.
-        self.status = status_t()
+        self.status: status_t
         # The local map used to obtain addresses. Users may customize
         # address-translation using this map. Access to the sequencer
         # and bus adapter can be obtained by getting this map's root map,
         # then calling <uvm_reg_map::get_sequencer> and
-        # self.local_map = uvm_reg_map() TODO:
+        self.local_map = None
         # The original map specified for the operation. The actual <map>
         # used may differ when a test or sequence written at the block
         # level is reused at the system level.
         # self.map = uvm_reg_map() TODO:
         # The path being used: <UVM_FRONTDOOR> or <UVM_BACKDOOR>.
-        self.path = path_t()
+        self.path: path_t
         # The sequence from which the operation originated.
         # with it shall be via the set_parent() and get_parent()
         # accessor methods
-        self.parent_sequence = None  # TODO: i doubt is needed
-        # TODO: not needed as rand since it will
+        self.parent_sequence = None
         # be simple assigned to be carried
         self.extension_object = None
         # If path is UVM_BACKDOOR, this member specifies the abstraction
@@ -151,6 +150,15 @@ class uvm_reg_item(uvm_sequence_item):
     def set_door(self, door):
         self.path = door
 
+    # set_parent
+    def set_parent_sequence(self, seq: None):
+        if seq is not None:
+            self.parent_sequence = seq
+
+    # set_parent
+    def get_parent_sequence(self):
+        return self.parent_sequence
+
     # get_door
     def get_door(self):
         return self.path
@@ -174,6 +182,10 @@ class uvm_reg_item(uvm_sequence_item):
                       RTL or GATE")
         else:
             self.bd_kind = val
+
+    # set_map
+    def set_map(self, map_input):
+        self.local_map = map_input
 
     # get_bd_kind
     def get_bd_kind(self):
