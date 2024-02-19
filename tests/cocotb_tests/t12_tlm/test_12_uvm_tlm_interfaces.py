@@ -1,4 +1,4 @@
-import pyuvm_unittest
+import uvm_unittest
 from pyuvm import * # pylint: disable=unused-wildcard-import
 import cocotb
 from cocotb.triggers import Timer
@@ -6,7 +6,7 @@ from cocotb.triggers import Timer
 
 async def waitabit(abit=5):
     await Timer(1, units="us")
-class s12_uvm_tlm_interfaces_TestCase(pyuvm_unittest.pyuvm_TestCase):
+class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if uvm_root().has_child("my_root"):

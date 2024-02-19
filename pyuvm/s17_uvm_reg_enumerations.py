@@ -13,7 +13,6 @@ uvm_reg_data_t = int
 # 17.2.1.3 uvm_reg_addr_t
 uvm_reg_addr_t = int
 
-
 uvm_reg_policy_t = [
     "RO",       # no effect, R: no effect.
     "RW",       # as is, R: no effect.

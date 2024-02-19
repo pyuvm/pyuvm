@@ -1,0 +1,54 @@
+addrmap TinyALUreg {
+    name = "TinyALUreg";
+    desc = "Register description of TinyALU";
+    default regwidth = 16;
+
+    reg {
+        name = "source data reg";
+        field {
+            desc = "source data register 0";
+            hw=r; sw=rw;
+        } data0[7:0] = 0;
+
+        field {
+            desc = "source data register 1";
+            hw=r; sw=rw;
+        } data1[15:8] = 0;
+
+    } SRC @ 0x0;
+
+    reg {
+        name = "result data reg";
+
+        field {
+            desc = "result data";
+            hw=w; sw=r;
+        } data[15:0] = 0;
+
+    } RESULT @ 0x2;
+
+    reg {
+        name = "Command and status register";
+
+        field {
+            desc = "operation";
+            hw=r; sw=rw;
+        } op[4:0] = 0;
+
+        field {
+            desc = "start";
+            hw=r; sw=rw;
+        } start[5:5] = 0;
+
+        field {
+            desc = "Done";
+            hw=w; sw=r;
+        } done[6:6] = 0;
+
+        field {
+            desc = "reserved field";
+            hw=w; sw=rw;
+        } reserved[15:7] = 0;
+
+    } CMD @ 0x4;
+};
