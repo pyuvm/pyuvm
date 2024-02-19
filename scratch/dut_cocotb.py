@@ -49,11 +49,11 @@ def run_test(test):
 @cocotb.test()
 async def test_alu(dut):
     clock = Clock(dut.clk, 2, units="us")
-    cocotb.fork(clock.start())
+    cocotb.start_soon(clock.start())
     bfm = CocoTBBFM(dut)
     stim = test_sw.Stim(5,dut, bfm)
     await bfm.reset()
-    cocotb.fork(bfm.start())
+    cocotb.start_soon(bfm.start())
     tt = threading.Thread(target=run_test, args=(stim.numb_gen_test,), name="Run Thread")
     tt.start()
     await bfm.done.wait()

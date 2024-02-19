@@ -524,7 +524,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         put_data = [1, 'f', 3, 'c', None]
         peek_data = []
         get_data = []
-        cocotb.fork(self.do_blocking_put(pp, put_data))
+        cocotb.start_soon(self.do_blocking_put(pp, put_data))
         await self.do_blocking_peek(gpp, peek_data)
         await self.do_blocking_get(gpp, get_data)
         self.assertEqual(put_data[:-1], get_data)
@@ -532,7 +532,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         peek_data = []
         get_data = []
         fifo.flush()
-        cocotb.fork(self.do_blocking_put(pp,put_data))
+        cocotb.start_soon(self.do_blocking_put(pp,put_data))
         await self.do_blocking_peek(gpp, peek_data)
         await self.do_blocking_get(gpp, get_data)
         self.assertTrue(put_data[0], peek_data[0])
@@ -578,7 +578,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         self.assertFalse(success)
         self.assertIsNone(data)
         await waitabit()
-        cocotb.fork(self.do_nonblocking_put(pp, put_data))
+        cocotb.start_soon(self.do_nonblocking_put(pp, put_data))
         self.assertTrue(pk.can_peek())
         await self.do_nonblocking_peek(pk, peek_data)
         success, data = peek_data.pop()
@@ -596,7 +596,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         success, data = peek_data.pop()
         self.assertFalse(success)
         self.assertIsNone(data)
-        cocotb.fork(self.do_nonblocking_put(pp, put_data))
+        cocotb.start_soon(self.do_nonblocking_put(pp, put_data))
         await Timer(1, units="us")
         self.assertTrue(pk.can_peek())
         await self.do_nonblocking_peek(gpp, peek_data)

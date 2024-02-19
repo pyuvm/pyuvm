@@ -8,6 +8,7 @@ import fnmatch
 # superiority in terms of OOP features and lack of types.
 
 # Implementing section 8 in the IEEE Specification
+#
 # The IEEE spec assumes that UVM is being written in SystemVerilog,
 # a language that does not allow you to control how classes get defined.
 # Python has more control in this area. With Python we can set things up

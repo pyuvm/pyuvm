@@ -436,6 +436,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
 
 
 class ConfigDB(metaclass=utility_classes.Singleton):
+    default_get = object()
     default_precedence = 1000
     legal_chars = set(string.ascii_letters) | set(string.digits) | set("_.")
     """
@@ -534,15 +535,18 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
         self.trace("SET", context, inst_name, field_name, value)
 
-    def get(self, context, inst_name, field_name):
+    def get(self, context, inst_name, field_name, default=default_get):
         """
         The component path matches against the paths in the ConfigDB. The path
         cannot have wildcards, but can match against keys with wildcards.
-        Return the value stored at key. Raise UVMConfigError if there is no key
+        Return the value stored at key. If the key is missing, returns default
+        or raises UVMConfigItemNotFound.
 
+        :param context: The component making the call
         :param inst_name: component full path with no wildcards
         :param field_name: the field_name being retrieved
-        :param context: The component making the call
+        :param default: the value to return if there is no key, defaults to
+            default_get
         :return: value found at location
         """
         if not set(inst_name).issubset(self.legal_chars):
@@ -552,59 +556,64 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
         context, inst_name = self._get_context_inst_name(context, inst_name)
 
-        key_matches = []  # Make the linter happy by setting this.
         try:
-            # key_matches = [dk for dk in self._path_dict.keys()
-            #                if fnmatch.fnmatch(inst_name, dk)]
-            for dk in self._path_dict.keys():
-                if fnmatch.fnmatch(inst_name, dk):
-                    key_matches.append(dk)
+            key_matches = []  # Make the linter happy by setting this.
+            try:
+                # key_matches = [dk for dk in self._path_dict.keys()
+                #                if fnmatch.fnmatch(inst_name, dk)]
+                for dk in self._path_dict.keys():
+                    if fnmatch.fnmatch(inst_name, dk):
+                        key_matches.append(dk)
 
-        except TypeError:
-            raise error_classes.UVMConfigItemNotFound(
-                f'"{inst_name}" is not in ConfigDB().')
-        finally:
-            if len(key_matches) == 0:
+            except TypeError:
                 raise error_classes.UVMConfigItemNotFound(
                     f'"{inst_name}" is not in ConfigDB().')
-        # Here we sort the list of paths by which paths are "in" other
-        # paths. That is A comes before '*'  A.B comes before A.*, etc.
-        # We use an insertion sort. A path is inserted in front of the
-        # first path it is "in"
-        sorted_paths = []
-        try:
-            sorted_paths.append(key_matches.pop())
-        except IndexError:
-            raise error_classes.UVMConfigItemNotFound(
-                f"{inst_name} not in ConfigDB()")
-
-        # Sort the matching keys from most specific to
-        # most greedy. A.B.C before A.B.* before A.* before *
-        for path in key_matches:
-            inserted = False
-            for ii in range(len(sorted_paths)):
-                if fnmatch.fnmatch(path, sorted_paths[ii]):
-                    sorted_paths.insert(ii, path)
-                    inserted = True
-                    break
-            if not inserted:
-                sorted_paths.append(path)
-        value = None
-        for path in sorted_paths:
+            finally:
+                if len(key_matches) == 0:
+                    raise error_classes.UVMConfigItemNotFound(
+                        f'"{inst_name}" is not in ConfigDB().')
+            # Here we sort the list of paths by which paths are "in" other
+            # paths. That is A comes before '*'  A.B comes before A.*, etc.
+            # We use an insertion sort. A path is inserted in front of the
+            # first path it is "in"
+            sorted_paths = []
             try:
-                component_fields = self._path_dict[path]
-                matching_path_fields = component_fields[field_name]
-                max_precedence = max(matching_path_fields.keys())
-                value = matching_path_fields[max_precedence]
-                break
-            except KeyError:
-                pass
-        if value is not None:
-            self.trace("GET", context, inst_name, field_name, value)
-            return value
-        else:
-            raise error_classes.UVMConfigItemNotFound(
-                f'"Component {inst_name} has no key: {field_name}')
+                sorted_paths.append(key_matches.pop())
+            except IndexError:
+                raise error_classes.UVMConfigItemNotFound(
+                    f"{inst_name} not in ConfigDB()")
+
+            # Sort the matching keys from most specific to
+            # most greedy. A.B.C before A.B.* before A.* before *
+            for path in key_matches:
+                inserted = False
+                for ii in range(len(sorted_paths)):
+                    if fnmatch.fnmatch(path, sorted_paths[ii]):
+                        sorted_paths.insert(ii, path)
+                        inserted = True
+                        break
+                if not inserted:
+                    sorted_paths.append(path)
+            value = None
+            for path in sorted_paths:
+                try:
+                    component_fields = self._path_dict[path]
+                    matching_path_fields = component_fields[field_name]
+                    max_precedence = max(matching_path_fields.keys())
+                    value = matching_path_fields[max_precedence]
+                    break
+                except KeyError:
+                    pass
+            if value is not None:
+                self.trace("GET", context, inst_name, field_name, value)
+                return value
+            else:
+                raise error_classes.UVMConfigItemNotFound(
+                    f'"Component {inst_name} has no key: {field_name}')
+        except error_classes.UVMConfigItemNotFound as e:
+            if default is self.default_get:
+                raise e
+            return default
 
     def exists(self, context, inst_name, field_name):
         """
