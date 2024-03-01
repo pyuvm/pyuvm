@@ -22,7 +22,7 @@ class uvm_reg(uvm_object):
         self._sum: int = 0
         self._name: str = name
         self._header: str = name + " -- "
-        self._address: str = "0x0"
+        self._address: int = 0
         self._path: str = ""
         self._width = reg_width
         # If set those 2 flags will override fields values, and if set to True
@@ -42,7 +42,7 @@ class uvm_reg(uvm_object):
     # configure
     def configure(self,
                   parent,
-                  address: str,
+                  address: int,
                   hdl_path: str,
                   throw_error_on_read: bool = False,
                   throw_error_on_write: bool = False):

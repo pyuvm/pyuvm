@@ -51,7 +51,7 @@ def test_reg_block_with_single_reg():
     # START
     block = uvm_reg_block()
     reg = temp_reg()
-    reg.configure(block, "0x4", "")
+    reg.configure(block, 0x4, "")
     block.set_lock()
     assert block._get_registers() == [reg]
 
@@ -68,9 +68,9 @@ def test_reg_block_with_multiple_regs():
     # START
     block = uvm_reg_block()
     reg0 = temp_reg()
-    reg0.configure(block, "0x4", "")
+    reg0.configure(block, 0x4, "")
     reg1 = temp_reg()
-    reg1.configure(block, "0x8", "")
+    reg1.configure(block, 0x8, "")
     block.set_lock()
     assert block._get_registers() == [reg0, reg1]
 
@@ -96,7 +96,7 @@ def test_reg_map_configure():
 def test_reg_map_with_single_reg():
     reg_map = uvm_reg_map()
     reg = uvm_reg()
-    reg_map.add_reg(reg, "0", "RW")
+    reg_map.add_reg(reg, 0, "RW")
     assert reg_map.get_registers() == [reg]
 
 
@@ -104,12 +104,12 @@ def test_reg_map_with_single_reg():
 def test_reg_map_with_multiple_regs():
     reg_map = uvm_reg_map()
     reg0 = uvm_reg()
-    reg_map.add_reg(reg0, "0xf", "RW")
+    reg_map.add_reg(reg0, 0xf, "RW")
     reg1 = uvm_reg()
-    reg_map.add_reg(reg1, "0xff", "RW")
+    reg_map.add_reg(reg1, 0xff, "RW")
     assert reg_map.get_registers() == [reg0, reg1]
-    assert reg_map.get_reg_by_offset("0xf") == reg0
-    assert reg_map.get_reg_by_offset("0xff") == reg1
+    assert reg_map.get_reg_by_offset(0xf) == reg0
+    assert reg_map.get_reg_by_offset(0xff) == reg1
 
 ##############################################################################
 # TESTS UVM_REG
@@ -132,7 +132,7 @@ def test_reg_configure():
     # START
     reg = temp_reg()
     parent = uvm_reg_block()
-    reg.configure(parent, "0x4", "")
+    reg.configure(parent, 0x4, "")
     assert reg.get_parent() == parent
 
 
@@ -228,16 +228,16 @@ def test_simple_reg_model():
             self.map = uvm_reg_map('map')
             self.map.configure(self, 0)
             self.LCR = LineControlRegister('LCR')
-            self.LCR.configure(self, "0x100c", "")
-            self.map.add_reg(self.LCR, "0x0")
+            self.LCR.configure(self, 0x100c, "")
+            self.map.add_reg(self.LCR, 0x0)
             self.LSR = LineStatusRegister('LSR')
-            self.LSR.configure(self, "0x1014", "")
-            self.map.add_reg(self.LSR, "0x0")
+            self.LSR.configure(self, 0x1014, "")
+            self.map.add_reg(self.LSR, 0x0)
 
     regs = Regs('regs')
     assert regs.get_name() == 'regs'
-    assert regs.map.get_reg_by_offset("0x100c") == regs.LCR
-    assert regs.map.get_reg_by_offset("0x1014") == regs.LSR
+    assert regs.map.get_reg_by_offset(0x100c) == regs.LCR
+    assert regs.map.get_reg_by_offset(0x1014) == regs.LSR
 
     LCR = regs.LCR
     assert LCR.get_name() == 'LCR'
