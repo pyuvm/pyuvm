@@ -74,16 +74,16 @@ def test_simple_reg_model():
             self.map = uvm_reg_map('map')
             self.map.configure(self, 0)
             self.LCR = LineControlRegister('LCR')
-            self.LCR.configure(self, "0x100c", "")
-            self.map.add_reg(self.LCR, "0x0")
+            self.LCR.configure(self, 0x100c, "")
+            self.map.add_reg(self.LCR, 0x0)
             self.LSR = LineStatusRegister('LSR')
-            self.LSR.configure(self, "0x1014", "")
-            self.map.add_reg(self.LSR, "0x0")
+            self.LSR.configure(self, 0x1014, "")
+            self.map.add_reg(self.LSR, 0x0)
 
     regs = Regs('regs')
     assert regs.get_name() == 'regs'
-    assert regs.map.get_reg_by_offset("0x100c") == regs.LCR
-    assert regs.map.get_reg_by_offset("0x1014") == regs.LSR
+    assert regs.map.get_reg_by_offset(0x100c) == regs.LCR
+    assert regs.map.get_reg_by_offset(0x1014) == regs.LSR
 
     LCR = regs.LCR
     assert LCR.get_name() == 'LCR'

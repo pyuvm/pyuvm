@@ -62,14 +62,6 @@ class uvm_reg_map(uvm_object):
             uvm_error(self.header, "add_parent_map -- cannot add parent map \
                 if the parentmap is already set")
 
-    # str2int
-    def _str2int(self, istr: str = "") -> int:
-        return int(istr, 16)
-
-    # int2hex
-    def _int2hex(self, ival: int = 0) -> str:
-        return hex(ival)
-
     # gen_message
     def gen_message(self, txt="") -> str:
         return f"{self.header} {txt}"
@@ -86,11 +78,11 @@ class uvm_reg_map(uvm_object):
             return self._offset
 
     # add_reg
-    def add_reg(self, reg, offset: str = "0x0", rigths: str = "RW"):
+    def add_reg(self, reg, offset: int = 0x0, rigths: str = "RW"):
         reg.add_map(self)
-        sum_offset = self._str2int(offset) + self._str2int(reg.get_address())
+        sum_offset = reg.get_address() + offset
         reg.set_access_policy(rigths)
-        self._regs[self._int2hex(sum_offset)] = reg
+        self._regs[sum_offset] = reg
 
     # get_registers
     def get_registers(self, as_dict=False):
@@ -378,8 +370,8 @@ class uvm_reg_map(uvm_object):
 
     # print of uvm_reg_map similar to convert2string
     def __str__(self) -> str:
-        return f"   {self.header} \
-                    self._parent    : {self._parent} \
-                    self._offset    : {self._offset} \
-                    self._regs      : {self._regs} \
-                    self.name       : {self.name }"
+        return f"{self.header} \
+                 self._parent   : {self._parent} \
+                 self._offset   : {hex(self._offset)} \
+                 self._regs     : { {hex(k):v for k,v in self._regs.items()} }\
+                 self.name      : {self.name }"
