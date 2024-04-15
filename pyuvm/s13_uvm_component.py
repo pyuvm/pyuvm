@@ -72,6 +72,19 @@ class uvm_component(uvm_report_object):
     def drop_objection(self):
         utility_classes.ObjectionHandler().drop_objection(self)
 
+    def objection(self):
+        class Objection:
+            def __init__(self, component):
+                self.component = component
+
+            def __enter__(self):
+                return self.component.raise_objection()
+
+            def __exit__(self, *args):
+                return self.component.drop_objection()
+            
+        return Objection(self)
+
     def cdb_set(self, label, value, inst_path="*"):
         """
         Store an object in the config_db.
