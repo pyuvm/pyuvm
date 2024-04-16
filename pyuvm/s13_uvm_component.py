@@ -82,7 +82,7 @@ class uvm_component(uvm_report_object):
 
             def __exit__(self, *args):
                 return self.component.drop_objection()
-            
+
         return Objection(self)
 
     def cdb_set(self, label, value, inst_path="*"):
