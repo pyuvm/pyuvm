@@ -142,9 +142,9 @@ class uvm_blocking_put_port(uvm_port_base):
     # 12.2.4.2.1
     async def put(self, datum):
         """
-         A blocking put that calls the export.put
-        :param datum: Datum to put
-        :return: None
+            :param datum: Datum to put
+            :return: None
+
         """
         try:
             await self.export.put(datum)

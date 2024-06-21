@@ -133,10 +133,11 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     def set_type_override_by_type(self, original_type, override_type,
                                   replace=True):
         """
-        Override one type with another type globally
         :param original_type: The original type to be overridden
         :param override_type: The new type that will override it
         :param replace: If the override exists, only replace it if this is True
+
+                Override one type with another type globally
         """
         assert issubclass(original_type, utility_classes.uvm_void), \
             "You tried to override a non-uvm_void class"
@@ -150,16 +151,15 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     def set_type_override_by_name(self, original_type_name,
                                   override_type_name, replace=True):
         """
+        :param original_type_name: The name of the type to be
+            overridden or an arbitrary string.
+        :param override_type_name: The name of the overriding type.
+            It must have been declared.
+        :param replace: If the override already exists only replace
+            if this is True
+
         Override one type with another type globally using strings
         containing the type names.
-
-        :param original_type_name: The name of the type to be
-        overridden or an arbitrary string.
-        :param override_type_name: The name of the overriding type.
-        It must have been declared.
-        :param replace: If the override already exists only
-        replace if this is True
-        :return:
         """
         assert isinstance(original_type_name, str), \
             "Original_name must be a string"
@@ -253,16 +253,16 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     def create_component_by_type(self, requested_type, parent_inst_path="",
                                  name="", parent=None):
         """
-        Create a component of the requested uvm_component type.
-
         :param requested_type: Type type to be overridden
         :param parent_inst_path: The inst path if we are looking
-        for inst overrides
+            for inst overrides
         :param name: Concatenated with parent_inst_path if it
-        exists for inst overrides
+            exists for inst overrides
         :param parent: The parent component
+
         :return: a uvm_component with the name an parent given.
 
+        Create a component of the requested uvm_component type.
         If the type is is not in the factory we raise UVMFactoryError
         """
 

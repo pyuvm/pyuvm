@@ -143,10 +143,12 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.6.4
     def convert2string(self):
         """
+        :return: __str__()
+
         Returns the result of self.__str__().
         Perhaps better to just use __str__() directly?
-        :return __str__()
         """
+
         return self.__str__()
 
     # 5.3.7
@@ -182,7 +184,12 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.9.1
     def compare(self, rhs):
         """
+        :param rhs: The object being compared.
+        :returns: True if do_compare() believes the objects
+            are the same.
 
+        Compares one uvm_object to another uvm_object using
+        the user-overridden ``do_compare()`` function.
         """
         return self.do_compare(rhs)
 
@@ -360,24 +367,28 @@ class uvm_transaction(uvm_object):
 
     def set_id_info(self, other):
         """
-        Set transaction_id from other
         :param other: uvm_transaction
         :return: None
+
+        Set transaction_id from other
+
         """
         self.transaction_id = other.transaction_id
 
     def set_initiator(self, initiator):
         """
-        5.4.2.14
         :param initiator: initiator to set
         :return: None
+
+        5.4.2.14
         """
         self._initiator = initiator
 
     def get_initiator(self):
         """
-        5.4.2.15
         :return: initiator
+
+        5.4.2.15
         """
         return self._initiator
 
@@ -445,6 +456,7 @@ class uvm_transaction(uvm_object):
         :param end_time: Simulation time at which the transaction
                          is marked as acted upon
         :param free_handle:
+        :return: None
         """
         if end_time is not None and end_time != 0:
             # end_time must be greater than or equal to
