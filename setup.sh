@@ -1,2 +1,0 @@
-export PYTHONPATH=$PWD/pyuvm:$PYTHONPATH
-

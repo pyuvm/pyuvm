@@ -1,4 +1,0 @@
-pylint
-pytest
-sphinx
-cocotb
