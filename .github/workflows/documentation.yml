@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
+      metadata: write
     steps:
     - name: Install dependencies
       run: |
