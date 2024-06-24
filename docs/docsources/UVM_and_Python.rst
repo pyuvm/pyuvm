@@ -1,4 +1,5 @@
-# Overview
+UVM and Python
+==============
 
 The Universal Verification Methodology (UVM) grew out of the Open Verification
 Methodology (OVM) which grew out of the Advanced Verification Methdology (AVM)
@@ -8,28 +9,27 @@ Though this long lineage suggests that the UVM must be implemented in
 SystemVerilog, this is not the case. The UVM is a class library, and a class
 library can be implemented in any object oriented programming language.
 
-`pyuvm` implements the UVM using Python.  Creating testbenches using Python
+**pyuvm** implements the UVM using Python.  Creating testbenches using Python
 has several advantages over SystemVerilog:
 
-* The Python ecosystem is larger than the SystemVerilog ecosystem.  More 
-developers understand Python than SystemVerilog, and Python has a long tradition
-of being the language of choice for large-scale object oriented projects.
+   * The Python ecosystem is larger than the SystemVerilog ecosystem.  More 
+     developers understand Python than SystemVerilog, and Python has a long tradition
+     of being the language of choice for large-scale object oriented projects.
+   * Python is object-oriented, even more so than SystemVerilog, and so it is 
+     easier to deliver functions such as overridable factories in Python than
+     SystemVerilog.
+   * Python runs without a simulator, and so is faster than SystemVerilog.
+   * Python forces the testbench developer to separate simulated and timed
+     RTL code from testbench code.  This means that testbenches written with
+     Python support accelerated testbenches with little, if any, modification.
 
-* Python is object-oriented, even more so than SystemVerilog, and so it is 
-easier to deliver functions such as overridable factories in Python than
-SystemVerilog.
-
-* Python runs without a simulator, and so is faster than SystemVerilog.
-
-* Python forces the testbench developer to separate simulated and timed
-RTL code from testbench code.  This means that testbenches written with
-Python support accelerated testbenches with little, if any, modification.
 
 While Python is an excellent testbench development language, the UVM is an 
 excellent Verification Library. Implementing the UVM using Python gives us
 the best of both worlds.
 
-# Pythonizing the UVM
+Pythonizing the UVM
+===================
 
 Much of the UVM specification in IEEE-1800.2-2017 is driven by elements of
 the SystemVerilog programming language.  Blindly implementing all that is in
@@ -45,7 +45,8 @@ functionality of the UVM even if this changes the details of delivering the
 functionalty.  This section examines some differences that we'll see in 
 this implementation.
 
-## Static Typing vs. Duck Typing
+Static Typing vs. Duck Typing
+-----------------------------
 
 SystemVerilog is a statically typed language, you declare variables to be of 
 a certain type in the source code before using them.  It is also a relatively 
@@ -62,7 +63,8 @@ goes into parameterizing classes to get the behavior you want, that problem
 goes away in Python.  Instead, you see runtime errors if you mess up the typing.
 
 
-## Exception Handling
+Exception Handling
+------------------
 
 Unlike SystemVerilog, Python provides the ability to raise and catch exceptions. 
 While a SystemVerilog programmer needs to check to be sure that an action will
@@ -73,28 +75,32 @@ Uncaught exceptions rise through the call stack and eventually cause the Python
 to dump out the stack trace information and exit. Catching exceptions keeps the
 program from terminating. 
 
-### `pyuvm` Exceptions
+**pyuvm** Exceptions
+^^^^^^^^^^^^^^^^^^^^
 
 `pyuvm` implements the following exceptions:
 
 * `UVMNotImplemented`---This means that a function call defined in the IEEE UVM 
-specification has not been implemented in `pyuvm`. This could be because the code
-simply hasn't been written yet, or that we did not implement this feature in
-`pyuvm`.  For example the `get_type()` method has not been implemented since
-Python's language capabilities make the `uvm_object_wrapper` class unecessary.   
+  specification has not been implemented in `pyuvm`. This could be because the code
+  simply hasn't been written yet, or that we did not implement this feature in
+  `pyuvm`.  For example the `get_type()` method has not been implemented since
+  Python's language capabilities make the `uvm_object_wrapper` class unecessary.   
 
-# Differences between SystemVerilog UVM and `pyuvm`
+Differences between SystemVerilog UVM and **pyuvm**
+===================================================
 
 The topics outline above lead to differences between the way `pyuvm` implements
 behaviors vs. how SystemVerilog does it.  This section highlights these differences.
 
-## Underscore Naming
+Underscore Naming
+-----------------
 
 While most Python programs use camel casing to define classes, `pyuvm` using underscore
 naming to match the IEEE specification.  `uvm_object` is named `uvm_object` not `UvmObject`.
 
 
-## Decorators and Accessor Functions
+Decorators and Accessor Functions
+---------------------------------
 
 SystemVerilog allows you to `protect` a variable in a class and make it 
 accessible to class users only through accessor function.  For example
@@ -104,16 +110,17 @@ name variable.
 Python implements a similar behavior using the `@property` decorator. For
 example `uvm_object` implements name behavior like this:
 
-```Python
-@property
-def name(self):
-   return self__name
+.. code-block:: Python
+   
+   @property
+   def name(self):
+      return self__name
 
-@name.setter
-def name(self, name):
-   assert(isinstance(name, str))
-   self.obj_name = name   
-```
+   @name.setter
+   def name(self, name):
+      assert(isinstance(name, str))
+      self.obj_name = name   
+
 
 A user refers to `obj.name` regardless of whether it is being read or written.
 The double underscore before then variable (`__name`) means that we treat the 
@@ -123,7 +130,9 @@ Generally speaking, `pyuvm` replaces all methods starting with `set_` and `get_`
 with properties, removing the prefix. This does not apply if the `set_` or `get_`
 prefix is not defining functionality that works like a property.
 
-## `uvm_object_wrapper` and Factories
+`uvm_object_wrapper` and Factories
+----------------------------------
+
 
 SystemVerilog has relatively poor class manipulation mechanisms.  Most of
 the class information has already been determined at compile time and dynamically
@@ -148,32 +157,40 @@ where Python has made parts of the UVM unecessary.
 
 There are also elements of the UVM that assume we are running in a simulator.
 
-## `uvm_transaction GUI Support`
+`uvm_transaction` GUI Support
+-----------------------------
 
 The `uvm_transaction` class contains methods that support capturing the 
 simulation time so it can be displayed in a GUI.  Since we are not running
 in the simulator, we implement none of these methods.  
 
-## `uvm_policy` Class
+`uvm_policy` Class
+------------------
 
 The `uvm_policy` Classes provide functionality that is built into 
 Python with the `setattr` and `getattr` methods. 
 
 There are no field macros and thus no need to implement this class.
 
-## `uvm_port_base` Class
+`uvm_port_base` Class
+---------------------
 
 Python uses the `Queue` class to implement everything done by the
 port/export system in the UVM. Therefore we do not implement the
 `uvm_port_base` or any of its extensions.
 
-## `uvm_time` Class
+`uvm_time` Class
+----------------
 
 `pyuvm` does not run in the simulator, and thus does not use time. We do not
 implement the `uvm_time` class. 
 
-## Reporting Classes
-We will not
+Reporting Classes
+-----------------
 
-## Sychronization Classes
-We will not recreate the Python `threading` package in pyuvm
+We use Python logging instead of the UVM reporting system.
+
+Sychronization Classes
+----------------------
+
+We do not recreate the Python `threading` package in pyuvm

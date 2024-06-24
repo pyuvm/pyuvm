@@ -20,3 +20,5 @@ examples/*/transcript
 .vscode
 results.xml
 sim_build
+docs/_build/*
+docs/generated/*

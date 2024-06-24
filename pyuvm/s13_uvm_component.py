@@ -62,7 +62,8 @@ class uvm_component(uvm_report_object):
     def get_parent(self):
         """
         :return: parent object
-        13.1.3.1--- No 'get_' prefix
+
+        13.1.3.1--- No "get" prefix
         """
         return self._parent
 
@@ -125,6 +126,7 @@ class uvm_component(uvm_report_object):
     def get_full_name(self):
         """
         :return: Name concatenated to parent name.
+
         13.1.3.2
         """
         if self.get_name() is None or self.get_name() == 'uvm_root':

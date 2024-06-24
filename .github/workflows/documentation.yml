@@ -1,5 +1,6 @@
 name: documentation
 
+
 on: [push, workflow_dispatch]
 
 permissions:
@@ -10,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
     - name: Install dependencies
       run: |
@@ -21,7 +23,8 @@ jobs:
         pwd
         make clean html
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
+
       with:
         name: html-docs
         path: docs/_build/html/
