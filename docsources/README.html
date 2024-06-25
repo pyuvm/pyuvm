@@ -1,57 +1,116 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<html lang="en" data-content_root="../">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>README &mdash; pyuvm v3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
-    <title>README &#8212; pyuvm v3.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/bizstyle.css?v=9da9c8fd" />
-    
-    <script src="../_static/documentation_options.js?v=5773a0da"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/bizstyle.js"></script>
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5773a0da"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="UVM and Python" href="UVM_and_Python.html" />
-    <link rel="prev" title="pyuvm" href="../index.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="UVM_and_Python.html" title="UVM and Python"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="../index.html" title="pyuvm"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pyuvm v3.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">README</a></li> 
-      </ul>
-    </div>  
+    <link rel="prev" title="pyuvm" href="../index.html" /> 
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pyuvm
+          </a>
+              <div class="version">
+                v3.0.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">README</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#description">Description</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-from-the-repository">Running from the repository</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#running-the-simulation">Running the simulation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-tinyalubfm-in-tinyalu-utils-py">The <code class="docutils literal notranslate"><span class="pre">TinyAluBfm</span></code> in <code class="docutils literal notranslate"><span class="pre">tinyalu_utils.py</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-pyuvm-testbench">The <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code> testbench</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#importing-pyuvm">Importing <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-alutest-classes">The AluTest classes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-aluenv-class">The ALUEnv Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-monitor">The Monitor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-scoreboard">The Scoreboard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#coverage">Coverage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#driver">Driver</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-alu-sequence">The ALU Sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#alu-sequence-item">ALU Sequence Item</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-cocotb-tests">The Cocotb Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributing">Contributing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="UVM_and_Python.html">UVM and Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UVM_and_Python.html#pythonizing-the-uvm">Pythonizing the UVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="UVM_and_Python.html#differences-between-systemverilog-uvm-and-pyuvm">Differences between SystemVerilog UVM and <strong>pyuvm</strong></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pyuvm.html">pyuvm package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">pyuvm</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyuvm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">README</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/docsources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="readme">
-<h1>README<a class="headerlink" href="#readme" title="Link to this heading">¶</a></h1>
+<h1>README<a class="headerlink" href="#readme" title="Link to this heading"></a></h1>
 <section id="description">
-<h2>Description<a class="headerlink" href="#description" title="Link to this heading">¶</a></h2>
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
 <p><strong>pyuvm</strong> is the Universal Verification Methodology implemented in Python instead of SystemVerilog. <strong>pyuvm</strong> uses cocotb to interact with the simulator and schedule simulation events.</p>
 <p><strong>pyuvm</strong> implements the most often-used parts of the UVM while taking advantage of the fact that Python does not have strict typing and does not require parameterized classes. The project refactors pieces of the UVM that were either overly complicated due to typing or legacy code.</p>
 <p>The code is based in the IEEE 1800.2 specification and most classes and methods have the specification references in the comments.</p>
@@ -139,7 +198,7 @@
 </tbody>
 </table>
 <section id="installation">
-<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h3>
+<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h3>
 <p>You can install <strong>pyuvm</strong> using <code class="docutils literal notranslate"><span class="pre">pip</span></code>. This will also install <strong>cocotb</strong> as a requirement for <strong>pyuvm</strong>.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pyuvm
 </pre></div>
@@ -156,7 +215,7 @@ object<span class="w"> </span>name:<span class="w"> </span>my_object
 </div>
 </section>
 <section id="running-from-the-repository">
-<h3>Running from the repository<a class="headerlink" href="#running-from-the-repository" title="Link to this heading">¶</a></h3>
+<h3>Running from the repository<a class="headerlink" href="#running-from-the-repository" title="Link to this heading"></a></h3>
 <p>You can run pyuvm from a cloned repository by installing the cloned repository using pip.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;pyuvm<span class="w"> </span>repo<span class="w"> </span>directory&gt;
 %<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
@@ -165,10 +224,10 @@ object<span class="w"> </span>name:<span class="w"> </span>my_object
 </section>
 </section>
 <section id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
 <p>This section demonstrates running an example simulation and then shows how the example has been put together demonstrating what the UVM looks like in Python.</p>
 <section id="running-the-simulation">
-<h3>Running the simulation<a class="headerlink" href="#running-the-simulation" title="Link to this heading">¶</a></h3>
+<h3>Running the simulation<a class="headerlink" href="#running-the-simulation" title="Link to this heading"></a></h3>
 <p>The TinyALU is, as its name implies, a tiny ALU. It has four operations: ADD, AND, NOT, and MUL. This example shows us running the Verilog version of the design, but there is also a VHDL version.</p>
 <p><strong>cocotb</strong> uses a Makefile to run its simulation. We see it in <code class="docutils literal notranslate"><span class="pre">examples/TinyALU</span></code>:</p>
 <div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nv">CWD</span><span class="o">=</span><span class="k">$(</span>shell<span class="w"> </span><span class="nb">pwd</span><span class="k">)</span>
@@ -204,16 +263,16 @@ object<span class="w"> </span>name:<span class="w"> </span>my_object
 </section>
 </section>
 <section id="the-tinyalubfm-in-tinyalu-utils-py">
-<h2>The <code class="docutils literal notranslate"><span class="pre">TinyAluBfm</span></code> in <code class="docutils literal notranslate"><span class="pre">tinyalu_utils.py</span></code><a class="headerlink" href="#the-tinyalubfm-in-tinyalu-utils-py" title="Link to this heading">¶</a></h2>
+<h2>The <code class="docutils literal notranslate"><span class="pre">TinyAluBfm</span></code> in <code class="docutils literal notranslate"><span class="pre">tinyalu_utils.py</span></code><a class="headerlink" href="#the-tinyalubfm-in-tinyalu-utils-py" title="Link to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">TinyAluBfm</span></code> is a singleton that uses <strong>cocotb</strong> to communicate with the TinyALU.  The BFM exposes three coroutines to the user: <code class="docutils literal notranslate"><span class="pre">send_op()</span></code>, <code class="docutils literal notranslate"><span class="pre">get_cmd()</span></code>, and <code class="docutils literal notranslate"><span class="pre">get_result()</span></code>.</p>
 <p>The singleton uses the <code class="docutils literal notranslate"><span class="pre">cocotb.top</span></code> variable to get the handle to the DUT.  This is the handle that we normally pass to a <code class="docutils literal notranslate"><span class="pre">cocotb.test()</span></code> coroutine.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">TinyAluBfm</span></code> is defined in <code class="docutils literal notranslate"><span class="pre">tinyalu_utils.py</span></code> and imported into our testbench.</p>
 </section>
 <section id="the-pyuvm-testbench">
-<h2>The <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code> testbench<a class="headerlink" href="#the-pyuvm-testbench" title="Link to this heading">¶</a></h2>
+<h2>The <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code> testbench<a class="headerlink" href="#the-pyuvm-testbench" title="Link to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">testbench.py</span></code> contains the entire UVM testbench and connects to the TinyALU through a <code class="docutils literal notranslate"><span class="pre">TinyAluBfm</span></code> object defined in <code class="docutils literal notranslate"><span class="pre">tinyalu_utils.py</span></code>.  We’ll examine the <code class="docutils literal notranslate"><span class="pre">testbench.py</span></code> file and enough of the <strong>cocotb</strong> test too run the simlation</p>
 <section id="importing-pyuvm">
-<h3>Importing <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code><a class="headerlink" href="#importing-pyuvm" title="Link to this heading">¶</a></h3>
+<h3>Importing <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code><a class="headerlink" href="#importing-pyuvm" title="Link to this heading"></a></h3>
 <p>Testbenches written in the SystemVerilog UVM usually import the package like this:</p>
 <div class="highlight-systemverilog notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">uvm_pkg::*</span><span class="p">;</span>
 </pre></div>
@@ -226,7 +285,7 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="the-alutest-classes">
-<h3>The AluTest classes<a class="headerlink" href="#the-alutest-classes" title="Link to this heading">¶</a></h3>
+<h3>The AluTest classes<a class="headerlink" href="#the-alutest-classes" title="Link to this heading"></a></h3>
 <p>We’re going to examine the UVM classes from the top, the test, to the bottom, the sequences.</p>
 <p><strong>pyuvm</strong> names the UVM classes as they are named in the specification. Therefore **pyvu use underscore naming as is done in SystemVerilog and not camel-casing.</p>
 <p>We extend <code class="docutils literal notranslate"><span class="pre">uvm_test</span></code> to create the <code class="docutils literal notranslate"><span class="pre">AluTest</span></code>, using camel-casing in our code even if <strong>pyuvm</strong> does not use it:</p>
@@ -276,7 +335,7 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 <p>All the familiar pieces of a UVM testbench are in <strong>pyuvm</strong>.</p>
 </section>
 <section id="the-aluenv-class">
-<h3>The ALUEnv Class<a class="headerlink" href="#the-aluenv-class" title="Link to this heading">¶</a></h3>
+<h3>The ALUEnv Class<a class="headerlink" href="#the-aluenv-class" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">uvm_env</span></code> class is a container for the components that make up the testbench.  There are four component classes instantiated:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Monitor</span></code>—There are actually two monitors instantiated, one to monitor commands (<code class="docutils literal notranslate"><span class="pre">self.cmd_mod</span></code>) and the other to monitor results (<code class="docutils literal notranslate"><span class="pre">self.result_mon</span></code>).  The <code class="docutils literal notranslate"><span class="pre">Monitor</span></code> code is the same for both. We pass them the name of the proxy function that gets the data they monitor.</p></li>
@@ -306,7 +365,7 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="the-monitor">
-<h3>The Monitor<a class="headerlink" href="#the-monitor" title="Link to this heading">¶</a></h3>
+<h3>The Monitor<a class="headerlink" href="#the-monitor" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">Monitor</span></code> extends <code class="docutils literal notranslate"><span class="pre">uvm_component</span></code>. Takes the name of a <code class="docutils literal notranslate"><span class="pre">CocotProxy</span></code> method name as an argument.  It uses the name to find the method in the proxy and then calls the method. You cannot do this in SystemVerilog as there is no introspection.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Monitor</span></code> creates an analysis port and writes the data it gets into the analysis port.</p>
 <p>Notice in the <code class="docutils literal notranslate"><span class="pre">run_phase()</span></code> we use the <code class="docutils literal notranslate"><span class="pre">await</span></code> keyword to wait for the <code class="docutils literal notranslate"><span class="pre">get_cmd</span></code> coroutine.  Unlike SystemVerilog, Python makes it clear when you are calling a time-consuming task vs a function. Also notice that the <code class="docutils literal notranslate"><span class="pre">run_phase()</span></code> has the <code class="docutils literal notranslate"><span class="pre">async</span></code> keyword to designate that it is a coroutine. (A task in SystemVerilog.)</p>
@@ -329,7 +388,7 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="the-scoreboard">
-<h3>The Scoreboard<a class="headerlink" href="#the-scoreboard" title="Link to this heading">¶</a></h3>
+<h3>The Scoreboard<a class="headerlink" href="#the-scoreboard" title="Link to this heading"></a></h3>
 <p>The scoreboard receives commands from the command monitor and results from the results monitor in the same order.  It uses the commands to predict the results and compares them.</p>
 <ul class="simple">
 <li><p>The <code class="docutils literal notranslate"><span class="pre">build_phase</span></code> uses <code class="docutils literal notranslate"><span class="pre">uvm_tlm_analysis_fifos</span></code> to receive data from the monitors and store it.</p></li>
@@ -374,7 +433,7 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="coverage">
-<h3>Coverage<a class="headerlink" href="#coverage" title="Link to this heading">¶</a></h3>
+<h3>Coverage<a class="headerlink" href="#coverage" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">Coverage</span></code> Class extends <code class="docutils literal notranslate"><span class="pre">uvm_subscriber</span></code> which extends <code class="docutils literal notranslate"><span class="pre">uvm_analysis_export</span></code>.  As we see in the <code class="docutils literal notranslate"><span class="pre">AluEnv</span></code> above, this allows us to pass the object directly to the <code class="docutils literal notranslate"><span class="pre">connect()</span></code> method to connect it to an analysis port.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Coverage</span></code> Class overrides the <code class="docutils literal notranslate"><span class="pre">write()</span></code> method expected of a <code class="docutils literal notranslate"><span class="pre">uvm_subscriber</span></code>. If it didn’t you’d get a runtime error.  The <code class="docutils literal notranslate"><span class="pre">Coverage</span></code> class uses a set to store all the operations seen. Then it subtracts that from the set of all operations. If the result has a length longer than <code class="docutils literal notranslate"><span class="pre">0</span></code> it issues an error.</p>
 <p>Since this tesbench loops through all the operations you will not see this error.</p>
@@ -405,7 +464,7 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="driver">
-<h3>Driver<a class="headerlink" href="#driver" title="Link to this heading">¶</a></h3>
+<h3>Driver<a class="headerlink" href="#driver" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">Driver</span></code> extends <code class="docutils literal notranslate"><span class="pre">uvm_driver</span></code> and so it works with sequences and sequence items.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">connect_phase()</span></code> gets the proxy from the <code class="docutils literal notranslate"><span class="pre">ConfigDB()</span></code> and the <code class="docutils literal notranslate"><span class="pre">run_phase()</span></code> uses it to get items and process them by calling <code class="docutils literal notranslate"><span class="pre">send_op</span></code>.  We use <code class="docutils literal notranslate"><span class="pre">while</span> <span class="pre">True</span></code> because we do this forever. <strong>cocotb</strong> will shut down the <code class="docutils literal notranslate"><span class="pre">run_phase</span></code> coroutine at the end of simulation.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Driver</span><span class="p">(</span><span class="n">uvm_driver</span><span class="p">):</span>
@@ -433,7 +492,7 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="the-alu-sequence">
-<h3>The ALU Sequence<a class="headerlink" href="#the-alu-sequence" title="Link to this heading">¶</a></h3>
+<h3>The ALU Sequence<a class="headerlink" href="#the-alu-sequence" title="Link to this heading"></a></h3>
 <p>The ALU Sequence creates sequence items, randomizes them and sends them to the <code class="docutils literal notranslate"><span class="pre">Driver</span></code>. It inherits <code class="docutils literal notranslate"><span class="pre">start_item</span></code> and <code class="docutils literal notranslate"><span class="pre">finish_item</span></code> from <code class="docutils literal notranslate"><span class="pre">uvm_sequence</span></code>.</p>
 <p>It is clear that <code class="docutils literal notranslate"><span class="pre">start_item</span></code> and <code class="docutils literal notranslate"><span class="pre">finish_item</span></code> block because we call them using the <code class="docutils literal notranslate"><span class="pre">await</span></code> keyword.  <code class="docutils literal notranslate"><span class="pre">start_item</span></code> waits for it’s turn to use the sequencer, and <code class="docutils literal notranslate"><span class="pre">finish_item</span></code> sends the sequence_item to the driver and returns when the driver calls <code class="docutils literal notranslate"><span class="pre">item_done()</span></code></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TestAllSeq</span><span class="p">(</span><span class="n">uvm_sequence</span><span class="p">):</span>
@@ -468,7 +527,7 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 </div>
 </section>
 <section id="alu-sequence-item">
-<h3>ALU Sequence Item<a class="headerlink" href="#alu-sequence-item" title="Link to this heading">¶</a></h3>
+<h3>ALU Sequence Item<a class="headerlink" href="#alu-sequence-item" title="Link to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">AluSeqItem</span></code> contains the TinyALU commands.  It has two operands and an operation.</p>
 <p>The SystemVerilog <code class="docutils literal notranslate"><span class="pre">uvm_sequence_item</span></code> class uses <code class="docutils literal notranslate"><span class="pre">convert2string()</span></code> to convert the item to a string and <code class="docutils literal notranslate"><span class="pre">do_compare()</span></code> to compare the item to another item.  We do not use these in <strong>pyuvm</strong> because Python has magic methods that do these functions.</p>
 <p><code class="docutils literal notranslate"><span class="pre">__eq__()</span></code>—This does the same thing as <code class="docutils literal notranslate"><span class="pre">do_compare()</span></code> It returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the items are equal.  This method works with the <code class="docutils literal notranslate"><span class="pre">==</span></code> operator.</p>
@@ -503,11 +562,11 @@ similar behavior with <code class="docutils literal notranslate"><span class="pr
 </section>
 </section>
 <section id="the-cocotb-tests">
-<h2>The Cocotb Tests<a class="headerlink" href="#the-cocotb-tests" title="Link to this heading">¶</a></h2>
+<h2>The Cocotb Tests<a class="headerlink" href="#the-cocotb-tests" title="Link to this heading"></a></h2>
 <p><strong>cocotb</strong> finds <code class="docutils literal notranslate"><span class="pre">uvm_test</span></code> classes identified with the <code class="docutils literal notranslate"><span class="pre">&#64;pyuvm.test()</span></code> decorator and launches them as coroutines.  Our test does the following:</p>
 </section>
 <section id="contributing">
-<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h2>
+<h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading"></a></h2>
 <p>You can contribute to <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code> by forking this repository and submitting pull requests.</p>
 <p>The repository runs all needed tests using <code class="docutils literal notranslate"><span class="pre">tox</span></code>.  The test runs
 <code class="docutils literal notranslate"><span class="pre">flake8</span></code> and fails if that linter finds any issues.  Visual Studio Code
@@ -524,7 +583,7 @@ and need a simulator to run.</p>
 </ul>
 </section>
 <section id="license">
-<h2>License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
 <p>Copyright 2020 Siemens EDA</p>
 <p>Licensed under the Apache License, Version 2.0 (the “License”);
 you may not use this file except in compliance with the License.
@@ -539,99 +598,34 @@ limitations under the License.</p>
 </section>
 
 
-            <div class="clearer"></div>
+           </div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">README</a><ul>
-<li><a class="reference internal" href="#description">Description</a><ul>
-<li><a class="reference internal" href="#installation">Installation</a></li>
-<li><a class="reference internal" href="#running-from-the-repository">Running from the repository</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#usage">Usage</a><ul>
-<li><a class="reference internal" href="#running-the-simulation">Running the simulation</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#the-tinyalubfm-in-tinyalu-utils-py">The <code class="docutils literal notranslate"><span class="pre">TinyAluBfm</span></code> in <code class="docutils literal notranslate"><span class="pre">tinyalu_utils.py</span></code></a></li>
-<li><a class="reference internal" href="#the-pyuvm-testbench">The <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code> testbench</a><ul>
-<li><a class="reference internal" href="#importing-pyuvm">Importing <code class="docutils literal notranslate"><span class="pre">pyuvm</span></code></a></li>
-<li><a class="reference internal" href="#the-alutest-classes">The AluTest classes</a></li>
-<li><a class="reference internal" href="#the-aluenv-class">The ALUEnv Class</a></li>
-<li><a class="reference internal" href="#the-monitor">The Monitor</a></li>
-<li><a class="reference internal" href="#the-scoreboard">The Scoreboard</a></li>
-<li><a class="reference internal" href="#coverage">Coverage</a></li>
-<li><a class="reference internal" href="#driver">Driver</a></li>
-<li><a class="reference internal" href="#the-alu-sequence">The ALU Sequence</a></li>
-<li><a class="reference internal" href="#alu-sequence-item">ALU Sequence Item</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#the-cocotb-tests">The Cocotb Tests</a></li>
-<li><a class="reference internal" href="#contributing">Contributing</a></li>
-<li><a class="reference internal" href="#license">License</a></li>
-</ul>
-</li>
-</ul>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="pyuvm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="UVM_and_Python.html" class="btn btn-neutral float-right" title="UVM and Python" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Ray Salemi.</p>
   </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="../index.html"
-                          title="previous chapter">pyuvm</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="UVM_and_Python.html"
-                          title="next chapter">UVM and Python</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/docsources/README.md.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="UVM_and_Python.html" title="UVM and Python"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="../index.html" title="pyuvm"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pyuvm v3.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">README</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-    &#169; Copyright 2020, Ray Salemi.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>

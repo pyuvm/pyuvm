@@ -1,55 +1,105 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<html lang="en" data-content_root="../">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UVM and Python &mdash; pyuvm v3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
-    <title>UVM and Python &#8212; pyuvm v3.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/bizstyle.css?v=9da9c8fd" />
-    
-    <script src="../_static/documentation_options.js?v=5773a0da"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/bizstyle.js"></script>
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5773a0da"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="pyuvm package" href="../pyuvm.html" />
-    <link rel="prev" title="README" href="README.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
-  </head><body>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../pyuvm.html" title="pyuvm package"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="README.html" title="README"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pyuvm v3.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">UVM and Python</a></li> 
-      </ul>
-    </div>  
+    <link rel="prev" title="README" href="README.html" /> 
+</head>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pyuvm
+          </a>
+              <div class="version">
+                v3.0.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">UVM and Python</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#pythonizing-the-uvm">Pythonizing the UVM</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#static-typing-vs-duck-typing">Static Typing vs. Duck Typing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exception-handling">Exception Handling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pyuvm-exceptions"><strong>pyuvm</strong> Exceptions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#differences-between-systemverilog-uvm-and-pyuvm">Differences between SystemVerilog UVM and <strong>pyuvm</strong></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#underscore-naming">Underscore Naming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#decorators-and-accessor-functions">Decorators and Accessor Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#uvm-object-wrapper-and-factories"><cite>uvm_object_wrapper</cite> and Factories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#uvm-transaction-gui-support"><cite>uvm_transaction</cite> GUI Support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#uvm-policy-class"><cite>uvm_policy</cite> Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#uvm-port-base-class"><cite>uvm_port_base</cite> Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#uvm-time-class"><cite>uvm_time</cite> Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reporting-classes">Reporting Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sychronization-classes">Sychronization Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../pyuvm.html">pyuvm package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">pyuvm</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pyuvm</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">UVM and Python</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/docsources/UVM_and_Python.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="uvm-and-python">
-<h1>UVM and Python<a class="headerlink" href="#uvm-and-python" title="Link to this heading">¶</a></h1>
+<h1>UVM and Python<a class="headerlink" href="#uvm-and-python" title="Link to this heading"></a></h1>
 <p>The Universal Verification Methodology (UVM) grew out of the Open Verification
 Methodology (OVM) which grew out of the Advanced Verification Methdology (AVM)
 which leveraged the SystemVerilog programming language.</p>
@@ -77,7 +127,7 @@ excellent Verification Library. Implementing the UVM using Python gives us
 the best of both worlds.</p>
 </section>
 <section id="pythonizing-the-uvm">
-<h1>Pythonizing the UVM<a class="headerlink" href="#pythonizing-the-uvm" title="Link to this heading">¶</a></h1>
+<h1>Pythonizing the UVM<a class="headerlink" href="#pythonizing-the-uvm" title="Link to this heading"></a></h1>
 <p>Much of the UVM specification in IEEE-1800.2-2017 is driven by elements of
 the SystemVerilog programming language.  Blindly implementing all that is in
 the UVM specification is not only impossible (there are no parameters in Class
@@ -90,7 +140,7 @@ functionality of the UVM even if this changes the details of delivering the
 functionalty.  This section examines some differences that we’ll see in
 this implementation.</p>
 <section id="static-typing-vs-duck-typing">
-<h2>Static Typing vs. Duck Typing<a class="headerlink" href="#static-typing-vs-duck-typing" title="Link to this heading">¶</a></h2>
+<h2>Static Typing vs. Duck Typing<a class="headerlink" href="#static-typing-vs-duck-typing" title="Link to this heading"></a></h2>
 <p>SystemVerilog is a statically typed language, you declare variables to be of
 a certain type in the source code before using them.  It is also a relatively
 weakly typed languaged (relative to VHDL).  You can declare a variable to be
@@ -104,7 +154,7 @@ goes into parameterizing classes to get the behavior you want, that problem
 goes away in Python.  Instead, you see runtime errors if you mess up the typing.</p>
 </section>
 <section id="exception-handling">
-<h2>Exception Handling<a class="headerlink" href="#exception-handling" title="Link to this heading">¶</a></h2>
+<h2>Exception Handling<a class="headerlink" href="#exception-handling" title="Link to this heading"></a></h2>
 <p>Unlike SystemVerilog, Python provides the ability to raise and catch exceptions.
 While a SystemVerilog programmer needs to check to be sure that an action will
 work before attempting it, a Python programmer is more likely to try the action
@@ -113,7 +163,7 @@ and catch an exception if it arises.</p>
 to dump out the stack trace information and exit. Catching exceptions keeps the
 program from terminating.</p>
 <section id="pyuvm-exceptions">
-<h3><strong>pyuvm</strong> Exceptions<a class="headerlink" href="#pyuvm-exceptions" title="Link to this heading">¶</a></h3>
+<h3><strong>pyuvm</strong> Exceptions<a class="headerlink" href="#pyuvm-exceptions" title="Link to this heading"></a></h3>
 <p><cite>pyuvm</cite> implements the following exceptions:</p>
 <ul class="simple">
 <li><p><cite>UVMNotImplemented</cite>—This means that a function call defined in the IEEE UVM
@@ -126,16 +176,16 @@ Python’s language capabilities make the <cite>uvm_object_wrapper</cite> class 
 </section>
 </section>
 <section id="differences-between-systemverilog-uvm-and-pyuvm">
-<h1>Differences between SystemVerilog UVM and <strong>pyuvm</strong><a class="headerlink" href="#differences-between-systemverilog-uvm-and-pyuvm" title="Link to this heading">¶</a></h1>
+<h1>Differences between SystemVerilog UVM and <strong>pyuvm</strong><a class="headerlink" href="#differences-between-systemverilog-uvm-and-pyuvm" title="Link to this heading"></a></h1>
 <p>The topics outline above lead to differences between the way <cite>pyuvm</cite> implements
 behaviors vs. how SystemVerilog does it.  This section highlights these differences.</p>
 <section id="underscore-naming">
-<h2>Underscore Naming<a class="headerlink" href="#underscore-naming" title="Link to this heading">¶</a></h2>
+<h2>Underscore Naming<a class="headerlink" href="#underscore-naming" title="Link to this heading"></a></h2>
 <p>While most Python programs use camel casing to define classes, <cite>pyuvm</cite> using underscore
 naming to match the IEEE specification.  <cite>uvm_object</cite> is named <cite>uvm_object</cite> not <cite>UvmObject</cite>.</p>
 </section>
 <section id="decorators-and-accessor-functions">
-<h2>Decorators and Accessor Functions<a class="headerlink" href="#decorators-and-accessor-functions" title="Link to this heading">¶</a></h2>
+<h2>Decorators and Accessor Functions<a class="headerlink" href="#decorators-and-accessor-functions" title="Link to this heading"></a></h2>
 <p>SystemVerilog allows you to <cite>protect</cite> a variable in a class and make it
 accessible to class users only through accessor function.  For example
 <cite>uvm_object</cite> has <cite>get_name()</cite> and <cite>set_name()</cite> methods to access the
@@ -160,7 +210,7 @@ with properties, removing the prefix. This does not apply if the <cite>set_</cit
 prefix is not defining functionality that works like a property.</p>
 </section>
 <section id="uvm-object-wrapper-and-factories">
-<h2><cite>uvm_object_wrapper</cite> and Factories<a class="headerlink" href="#uvm-object-wrapper-and-factories" title="Link to this heading">¶</a></h2>
+<h2><cite>uvm_object_wrapper</cite> and Factories<a class="headerlink" href="#uvm-object-wrapper-and-factories" title="Link to this heading"></a></h2>
 <p>SystemVerilog has relatively poor class manipulation mechanisms.  Most of
 the class information has already been determined at compile time and dynamically
 creating objects of different classes, or overriding one class with another, requires
@@ -180,125 +230,67 @@ where Python has made parts of the UVM unecessary.</p>
 <p>There are also elements of the UVM that assume we are running in a simulator.</p>
 </section>
 <section id="uvm-transaction-gui-support">
-<h2><cite>uvm_transaction</cite> GUI Support<a class="headerlink" href="#uvm-transaction-gui-support" title="Link to this heading">¶</a></h2>
+<h2><cite>uvm_transaction</cite> GUI Support<a class="headerlink" href="#uvm-transaction-gui-support" title="Link to this heading"></a></h2>
 <p>The <cite>uvm_transaction</cite> class contains methods that support capturing the
 simulation time so it can be displayed in a GUI.  Since we are not running
 in the simulator, we implement none of these methods.</p>
 </section>
 <section id="uvm-policy-class">
-<h2><cite>uvm_policy</cite> Class<a class="headerlink" href="#uvm-policy-class" title="Link to this heading">¶</a></h2>
+<h2><cite>uvm_policy</cite> Class<a class="headerlink" href="#uvm-policy-class" title="Link to this heading"></a></h2>
 <p>The <cite>uvm_policy</cite> Classes provide functionality that is built into
 Python with the <cite>setattr</cite> and <cite>getattr</cite> methods.</p>
 <p>There are no field macros and thus no need to implement this class.</p>
 </section>
 <section id="uvm-port-base-class">
-<h2><cite>uvm_port_base</cite> Class<a class="headerlink" href="#uvm-port-base-class" title="Link to this heading">¶</a></h2>
+<h2><cite>uvm_port_base</cite> Class<a class="headerlink" href="#uvm-port-base-class" title="Link to this heading"></a></h2>
 <p>Python uses the <cite>Queue</cite> class to implement everything done by the
 port/export system in the UVM. Therefore we do not implement the
 <cite>uvm_port_base</cite> or any of its extensions.</p>
 </section>
 <section id="uvm-time-class">
-<h2><cite>uvm_time</cite> Class<a class="headerlink" href="#uvm-time-class" title="Link to this heading">¶</a></h2>
+<h2><cite>uvm_time</cite> Class<a class="headerlink" href="#uvm-time-class" title="Link to this heading"></a></h2>
 <p><cite>pyuvm</cite> does not run in the simulator, and thus does not use time. We do not
 implement the <cite>uvm_time</cite> class.</p>
 </section>
 <section id="reporting-classes">
-<h2>Reporting Classes<a class="headerlink" href="#reporting-classes" title="Link to this heading">¶</a></h2>
+<h2>Reporting Classes<a class="headerlink" href="#reporting-classes" title="Link to this heading"></a></h2>
 <p>We use Python logging instead of the UVM reporting system.</p>
 </section>
 <section id="sychronization-classes">
-<h2>Sychronization Classes<a class="headerlink" href="#sychronization-classes" title="Link to this heading">¶</a></h2>
+<h2>Sychronization Classes<a class="headerlink" href="#sychronization-classes" title="Link to this heading"></a></h2>
 <p>We do not recreate the Python <cite>threading</cite> package in pyuvm</p>
 </section>
 </section>
 
 
-            <div class="clearer"></div>
+           </div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <div>
-    <h3><a href="../index.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">UVM and Python</a></li>
-<li><a class="reference internal" href="#pythonizing-the-uvm">Pythonizing the UVM</a><ul>
-<li><a class="reference internal" href="#static-typing-vs-duck-typing">Static Typing vs. Duck Typing</a></li>
-<li><a class="reference internal" href="#exception-handling">Exception Handling</a><ul>
-<li><a class="reference internal" href="#pyuvm-exceptions"><strong>pyuvm</strong> Exceptions</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#differences-between-systemverilog-uvm-and-pyuvm">Differences between SystemVerilog UVM and <strong>pyuvm</strong></a><ul>
-<li><a class="reference internal" href="#underscore-naming">Underscore Naming</a></li>
-<li><a class="reference internal" href="#decorators-and-accessor-functions">Decorators and Accessor Functions</a></li>
-<li><a class="reference internal" href="#uvm-object-wrapper-and-factories"><cite>uvm_object_wrapper</cite> and Factories</a></li>
-<li><a class="reference internal" href="#uvm-transaction-gui-support"><cite>uvm_transaction</cite> GUI Support</a></li>
-<li><a class="reference internal" href="#uvm-policy-class"><cite>uvm_policy</cite> Class</a></li>
-<li><a class="reference internal" href="#uvm-port-base-class"><cite>uvm_port_base</cite> Class</a></li>
-<li><a class="reference internal" href="#uvm-time-class"><cite>uvm_time</cite> Class</a></li>
-<li><a class="reference internal" href="#reporting-classes">Reporting Classes</a></li>
-<li><a class="reference internal" href="#sychronization-classes">Sychronization Classes</a></li>
-</ul>
-</li>
-</ul>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="README.html" class="btn btn-neutral float-left" title="README" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../pyuvm.html" class="btn btn-neutral float-right" title="pyuvm package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Ray Salemi.</p>
   </div>
-  <div>
-    <h4>Previous topic</h4>
-    <p class="topless"><a href="README.html"
-                          title="previous chapter">README</a></p>
-  </div>
-  <div>
-    <h4>Next topic</h4>
-    <p class="topless"><a href="../pyuvm.html"
-                          title="next chapter">pyuvm package</a></p>
-  </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/docsources/UVM_and_Python.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related" role="navigation" aria-label="related navigation">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="../genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="../py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="../pyuvm.html" title="pyuvm package"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="README.html" title="README"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">pyuvm v3.0.0 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">UVM and Python</a></li> 
-      </ul>
-    </div>
-    <div class="footer" role="contentinfo">
-    &#169; Copyright 2020, Ray Salemi.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
-    </div>
-  </body>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
 </html>
