@@ -19,7 +19,7 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
-          pip install sphinx sphinx_rtd_theme myst_parser cocotb
+          pip install sphinx sphinx_rtd_theme myst_parser cocotb sphinx-rtd-theme
     - uses: actions/checkout@v3
     - name: Build HTML
       run: |
