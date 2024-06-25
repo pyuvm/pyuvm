@@ -12,7 +12,7 @@ class UVMNotImplemented(UVMError):
 class UsePythonMethod(UVMError):
     """
     For cases where the user should use a Python
-    method rather than a UVM method.  
+    method rather than a UVM method.
     """
 
 
