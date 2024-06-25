@@ -121,11 +121,11 @@ The singleton uses the `cocotb.top` variable to get the handle to the DUT.  This
 
 The `TinyAluBfm` is defined in `tinyalu_utils.py` and imported into our testbench.
 
-# The `pyuvm` testbench
+# The **pyuvm** testbench
 
 The `testbench.py` contains the entire UVM testbench and connects to the TinyALU through a `TinyAluBfm` object defined in `tinyalu_utils.py`.  We'll examine the `testbench.py` file and enough of the **cocotb** test too run the simlation
 
-## Importing `pyuvm`
+## Importing **pyuvm**
 
 Testbenches written in the SystemVerilog UVM usually import the package like this:
 
@@ -134,7 +134,7 @@ import uvm_pkg::*;
 ```
 
 This gives you access to the class names without needing a package path.  To get
-similar behavior with `pyuvm` us the `from` import syntax. We import `pyuvm` to distinguish the `@pyuvm.test()` decorator from the `@cocotb.test()` decorator:
+similar behavior with **pyuvm** us the `from` import syntax. We import **pyuvm** to distinguish the `@pyuvm.test()` decorator from the `@cocotb.test()` decorator:
 
 ```python
 import pyuvm
@@ -452,7 +452,7 @@ class AluSeqItem(uvm_sequence_item):
 
 # Contributing
 
-You can contribute to `pyuvm` by forking this repository and submitting pull requests.
+You can contribute to **pyuvm** by forking this repository and submitting pull requests.
 
 The repository runs all needed tests using `tox`.  The test runs
 `flake8` and fails if that linter finds any issues.  Visual Studio Code
