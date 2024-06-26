@@ -13,6 +13,8 @@ def test(
     expect_error=(),
     skip=False,
     stage=None,
+    keep_singletons=False,
+    keep_set=set()
 ):
     cocotb_ver_str = cocotb.__version__.split(".")
     cocotb_ver_int = []
@@ -38,7 +40,9 @@ def test(
         )
         @functools.wraps(cls)
         async def test(_):
-            await uvm_root().run_test(cls)
+            await uvm_root().run_test(cls,
+                                      keep_singletons=keep_singletons,
+                                      keep_set=keep_set)
 
         # adds cocotb.test object to caller's module
         caller_frame = inspect.stack()[1]

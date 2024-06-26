@@ -410,11 +410,13 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
 # is using it, and in fact it is recommended that people
 # stick to the basic phases.  So this implementation loops
 # through the hierarchy and runs the phases.
-    async def run_test(self, test_name, keep_singletons=False, keep_set=set()):
+    async def run_test(self, test_name,
+                       keep_singletons=False, keep_set=set()):
         """
         :param test_name: The uvm test name or test class
         :param keep_singletons: If True do not clear singletons (default False)
         :param keep_set: Set of singleton classes to keep
+            if keep_singletons is False
         :return: none
         """
         factory = uvm_factory()
