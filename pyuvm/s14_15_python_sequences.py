@@ -9,6 +9,7 @@
 
 from pyuvm.s05_base_classes import *
 from pyuvm.s12_uvm_tlm_interfaces import *
+from pyuvm.error_classes import *
 from cocotb.triggers import Event as CocotbEvent
 
 # The sequence system allows users to create and populate sequence
@@ -235,6 +236,11 @@ class uvm_seq_item_port(uvm_port_base):
 
     def put_response(self, item):
         """Put a response back in the queue. aka put_response"""
+        try:
+            assert issubclass(type(item), uvm_sequence_item)
+        except AssertionError:
+            raise UVMFatalError(
+                "put_response only takes uvm_sequence_items as arguments")
         self.export.put_response(item)
 
     async def get_next_item(self):
@@ -248,6 +254,12 @@ class uvm_seq_item_port(uvm_port_base):
 
     def item_done(self, rsp=None):
         """Notify finish_item that the item is complete"""
+        if rsp is not None:
+            try:
+                assert issubclass(type(rsp), uvm_sequence_item)
+            except AssertionError:
+                raise UVMFatalError(
+                    "item_done only takes uvm_sequence_items as arguments")
         self.export.item_done(rsp)
 
     async def get_response(self, transaction_id=None):

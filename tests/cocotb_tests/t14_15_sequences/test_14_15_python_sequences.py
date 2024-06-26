@@ -29,7 +29,8 @@ class ItemDoneRespSeqDriver(uvm_driver):
     async def run_phase(self):
         while True:
             op_item = await self.seq_item_port.get_next_item()
-            self.seq_item_port.item_done(op_item.data + 1)
+            op_item.data += 1
+            self.seq_item_port.item_done(op_item)
 
 
 class HandleRespSeqDriver(uvm_driver):
@@ -220,7 +221,8 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
             async def run_phase(self):
                 while True:
                     op_item = await self.seq_item_port.get_next_item()
-                    self.seq_item_port.put_response(op_item.data + 1)
+                    op_item.data += 1
+                    self.seq_item_port.put_response(op_item)
                     self.seq_item_port.item_done()
 
         class Seq(uvm_sequence):
@@ -230,7 +232,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 op.data = 0
                 await self.finish_item(op)
                 result = await self.get_response()
-                DataHolder().datum = (result == (op.data + 1))
+                DataHolder().datum = (result.data == 1)
 
         class SeqTest(uvm_test):
             def build_phase(self):
@@ -259,7 +261,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 op.data = 0
                 await self.finish_item(op)
                 result = await self.get_response()
-                DataHolder().datum = (result == (op.data + 1))
+                DataHolder().datum = (op.data == 1)
 
         class SeqTest(uvm_test):
             def build_phase(self):
@@ -312,7 +314,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 seq = Seq("seq")
                 seq.runner_name = self.get_name()
                 await seq.start(self.seqr)
-                DataHolder().dict_[self.get_name()] = seq.result
+                DataHolder().dict_[self.get_name()] = seq.result.data
                 self.drop_objection()
 
         class SeqTest(uvm_test):
