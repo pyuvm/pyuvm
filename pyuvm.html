@@ -7,6 +7,7 @@
   <title>pyuvm package &mdash; pyuvm v3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=7d54114d" />
 
   
   <!--[if lt IE 9]>
@@ -21,7 +22,6 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pyuvm" href="modules.html" />
     <link rel="prev" title="UVM and Python" href="docsources/UVM_and_Python.html" /> 
 </head>
 
@@ -48,10 +48,13 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="docsources/README.html">README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsources/README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsources/README.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsources/README.html#usage">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsources/README.html#the-pyuvm-testbench">The <strong>pyuvm</strong> testbench</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsources/README.html#contributing">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docsources/README.html#license">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="docsources/UVM_and_Python.html">UVM and Python</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docsources/UVM_and_Python.html#pythonizing-the-uvm">Pythonizing the UVM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="docsources/UVM_and_Python.html#differences-between-systemverilog-uvm-and-pyuvm">Differences between SystemVerilog UVM and <strong>pyuvm</strong></a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">pyuvm package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyuvm.error_classes">pyuvm.error_classes module</a><ul>
@@ -828,222 +831,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-pyuvm">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyuvm</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">pyuvm package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.error_classes">pyuvm.error_classes module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMBadPhase"><code class="docutils literal notranslate"><span class="pre">UVMBadPhase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMConfigError"><code class="docutils literal notranslate"><span class="pre">UVMConfigError</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMConfigItemNotFound"><code class="docutils literal notranslate"><span class="pre">UVMConfigItemNotFound</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMError"><code class="docutils literal notranslate"><span class="pre">UVMError</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMFactoryError"><code class="docutils literal notranslate"><span class="pre">UVMFactoryError</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMFatalError"><code class="docutils literal notranslate"><span class="pre">UVMFatalError</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMNotImplemented"><code class="docutils literal notranslate"><span class="pre">UVMNotImplemented</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMSequenceError"><code class="docutils literal notranslate"><span class="pre">UVMSequenceError</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UVMTLMConnectionError"><code class="docutils literal notranslate"><span class="pre">UVMTLMConnectionError</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.error_classes.UsePythonMethod"><code class="docutils literal notranslate"><span class="pre">UsePythonMethod</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.extension_classes">pyuvm.extension_classes module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.extension_classes.test"><code class="docutils literal notranslate"><span class="pre">test()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s05_base_classes">pyuvm.s05_base_classes module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s05_base_classes.uvm_field_op"><code class="docutils literal notranslate"><span class="pre">uvm_field_op</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s05_base_classes.uvm_object"><code class="docutils literal notranslate"><span class="pre">uvm_object</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s05_base_classes.uvm_policy"><code class="docutils literal notranslate"><span class="pre">uvm_policy</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s05_base_classes.uvm_transaction"><code class="docutils literal notranslate"><span class="pre">uvm_transaction</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s06_reporting_classes">pyuvm.s06_reporting_classes module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.PyuvmFormatter"><code class="docutils literal notranslate"><span class="pre">PyuvmFormatter</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.uvm_report_object"><code class="docutils literal notranslate"><span class="pre">uvm_report_object</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s08_factory_classes">pyuvm.s08_factory_classes module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s08_factory_classes.uvm_factory"><code class="docutils literal notranslate"><span class="pre">uvm_factory</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s09_phasing">pyuvm.s09_phasing module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_bottomup_phase"><code class="docutils literal notranslate"><span class="pre">uvm_bottomup_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_build_phase"><code class="docutils literal notranslate"><span class="pre">uvm_build_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_check_phase"><code class="docutils literal notranslate"><span class="pre">uvm_check_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_connect_phase"><code class="docutils literal notranslate"><span class="pre">uvm_connect_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_end_of_elaboration_phase"><code class="docutils literal notranslate"><span class="pre">uvm_end_of_elaboration_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_extract_phase"><code class="docutils literal notranslate"><span class="pre">uvm_extract_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_final_phase"><code class="docutils literal notranslate"><span class="pre">uvm_final_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_phase"><code class="docutils literal notranslate"><span class="pre">uvm_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_report_phase"><code class="docutils literal notranslate"><span class="pre">uvm_report_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_run_phase"><code class="docutils literal notranslate"><span class="pre">uvm_run_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_start_of_simulation_phase"><code class="docutils literal notranslate"><span class="pre">uvm_start_of_simulation_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_threaded_execute_phase"><code class="docutils literal notranslate"><span class="pre">uvm_threaded_execute_phase</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s09_phasing.uvm_topdown_phase"><code class="docutils literal notranslate"><span class="pre">uvm_topdown_phase</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s12_uvm_tlm_interfaces">pyuvm.s12_uvm_tlm_interfaces module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_QueueAccessor"><code class="docutils literal notranslate"><span class="pre">uvm_QueueAccessor</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_analysis_export"><code class="docutils literal notranslate"><span class="pre">uvm_analysis_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_analysis_port"><code class="docutils literal notranslate"><span class="pre">uvm_analysis_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_get_export"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_get_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_get_peek_export"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_get_peek_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_get_peek_port"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_get_peek_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_get_port"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_get_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_master_export"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_master_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_master_port"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_master_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_peek_export"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_peek_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_peek_port"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_peek_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_put_export"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_put_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_put_port"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_put_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_slave_export"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_slave_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_slave_port"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_slave_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_transport_export"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_transport_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_transport_port"><code class="docutils literal notranslate"><span class="pre">uvm_blocking_transport_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_export_base"><code class="docutils literal notranslate"><span class="pre">uvm_export_base</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_get_export"><code class="docutils literal notranslate"><span class="pre">uvm_get_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_get_peek_export"><code class="docutils literal notranslate"><span class="pre">uvm_get_peek_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_get_peek_port"><code class="docutils literal notranslate"><span class="pre">uvm_get_peek_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_get_port"><code class="docutils literal notranslate"><span class="pre">uvm_get_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_master_export"><code class="docutils literal notranslate"><span class="pre">uvm_master_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_master_port"><code class="docutils literal notranslate"><span class="pre">uvm_master_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_get_export"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_get_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_get_peek_export"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_get_peek_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_get_peek_port"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_get_peek_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_get_port"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_get_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_master_export"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_master_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_master_port"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_master_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_peek_export"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_peek_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_peek_port"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_peek_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_put_export"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_put_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_put_port"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_put_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_slave_export"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_slave_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_slave_port"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_slave_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_transport_export"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_transport_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_transport_port"><code class="docutils literal notranslate"><span class="pre">uvm_nonblocking_transport_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_peek_export"><code class="docutils literal notranslate"><span class="pre">uvm_peek_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_peek_port"><code class="docutils literal notranslate"><span class="pre">uvm_peek_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_port_base"><code class="docutils literal notranslate"><span class="pre">uvm_port_base</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_put_export"><code class="docutils literal notranslate"><span class="pre">uvm_put_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_put_port"><code class="docutils literal notranslate"><span class="pre">uvm_put_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_slave_export"><code class="docutils literal notranslate"><span class="pre">uvm_slave_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_slave_port"><code class="docutils literal notranslate"><span class="pre">uvm_slave_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_analysis_fifo"><code class="docutils literal notranslate"><span class="pre">uvm_tlm_analysis_fifo</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo"><code class="docutils literal notranslate"><span class="pre">uvm_tlm_fifo</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base"><code class="docutils literal notranslate"><span class="pre">uvm_tlm_fifo_base</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel"><code class="docutils literal notranslate"><span class="pre">uvm_tlm_req_rsp_channel</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_transport_channel"><code class="docutils literal notranslate"><span class="pre">uvm_tlm_transport_channel</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_transport_export"><code class="docutils literal notranslate"><span class="pre">uvm_transport_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_transport_port"><code class="docutils literal notranslate"><span class="pre">uvm_transport_port</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s13_predefined_component_classes">pyuvm.s13_predefined_component_classes module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_predefined_component_classes.uvm_active_passive_enum"><code class="docutils literal notranslate"><span class="pre">uvm_active_passive_enum</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_predefined_component_classes.uvm_agent"><code class="docutils literal notranslate"><span class="pre">uvm_agent</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_predefined_component_classes.uvm_driver"><code class="docutils literal notranslate"><span class="pre">uvm_driver</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_predefined_component_classes.uvm_env"><code class="docutils literal notranslate"><span class="pre">uvm_env</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_predefined_component_classes.uvm_monitor"><code class="docutils literal notranslate"><span class="pre">uvm_monitor</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_predefined_component_classes.uvm_scoreboard"><code class="docutils literal notranslate"><span class="pre">uvm_scoreboard</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_predefined_component_classes.uvm_subscriber"><code class="docutils literal notranslate"><span class="pre">uvm_subscriber</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_predefined_component_classes.uvm_test"><code class="docutils literal notranslate"><span class="pre">uvm_test</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s13_uvm_component">pyuvm.s13_uvm_component module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_uvm_component.ConfigDB"><code class="docutils literal notranslate"><span class="pre">ConfigDB</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_uvm_component.uvm_component"><code class="docutils literal notranslate"><span class="pre">uvm_component</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_uvm_component.uvm_root"><code class="docutils literal notranslate"><span class="pre">uvm_root</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s13_uvm_component.uvm_test"><code class="docutils literal notranslate"><span class="pre">uvm_test</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s14_15_python_sequences">pyuvm.s14_15_python_sequences module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s14_15_python_sequences.ResponseQueue"><code class="docutils literal notranslate"><span class="pre">ResponseQueue</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_export"><code class="docutils literal notranslate"><span class="pre">uvm_seq_item_export</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_port"><code class="docutils literal notranslate"><span class="pre">uvm_seq_item_port</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s14_15_python_sequences.uvm_sequence"><code class="docutils literal notranslate"><span class="pre">uvm_sequence</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s14_15_python_sequences.uvm_sequence_item"><code class="docutils literal notranslate"><span class="pre">uvm_sequence_item</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s14_15_python_sequences.uvm_sequencer"><code class="docutils literal notranslate"><span class="pre">uvm_sequencer</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s17_uvm_reg_enumerations">pyuvm.s17_uvm_reg_enumerations module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_access_e"><code class="docutils literal notranslate"><span class="pre">uvm_access_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_check_e"><code class="docutils literal notranslate"><span class="pre">uvm_check_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_coverage_model_e"><code class="docutils literal notranslate"><span class="pre">uvm_coverage_model_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_door_e"><code class="docutils literal notranslate"><span class="pre">uvm_door_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_elem_kind_e"><code class="docutils literal notranslate"><span class="pre">uvm_elem_kind_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_endianness_e"><code class="docutils literal notranslate"><span class="pre">uvm_endianness_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_hdl_path_concat"><code class="docutils literal notranslate"><span class="pre">uvm_hdl_path_concat</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_hdl_path_slice"><code class="docutils literal notranslate"><span class="pre">uvm_hdl_path_slice</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_hier_e"><code class="docutils literal notranslate"><span class="pre">uvm_hier_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_predict_e"><code class="docutils literal notranslate"><span class="pre">uvm_predict_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_reg_mem_tests_e"><code class="docutils literal notranslate"><span class="pre">uvm_reg_mem_tests_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s17_uvm_reg_enumerations.uvm_status_e"><code class="docutils literal notranslate"><span class="pre">uvm_status_e</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s18_uvm_reg_block">pyuvm.s18_uvm_reg_block module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s18_uvm_reg_block.uvm_reg_block"><code class="docutils literal notranslate"><span class="pre">uvm_reg_block</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s19_uvm_reg_field">pyuvm.s19_uvm_reg_field module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s19_uvm_reg_field.uvm_reg_field"><code class="docutils literal notranslate"><span class="pre">uvm_reg_field</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s20_uvm_reg">pyuvm.s20_uvm_reg module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s20_uvm_reg.uvm_reg"><code class="docutils literal notranslate"><span class="pre">uvm_reg</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s21_uvm_reg_map">pyuvm.s21_uvm_reg_map module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s21_uvm_reg_map.uvm_reg_map"><code class="docutils literal notranslate"><span class="pre">uvm_reg_map</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s22_uvm_mem">pyuvm.s22_uvm_mem module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s22_uvm_mem.uvm_mem"><code class="docutils literal notranslate"><span class="pre">uvm_mem</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s23_uvm_reg_item">pyuvm.s23_uvm_reg_item module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s23_uvm_reg_item.uvm_reg_item"><code class="docutils literal notranslate"><span class="pre">uvm_reg_item</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s24_uvm_reg_includes">pyuvm.s24_uvm_reg_includes module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.access_e"><code class="docutils literal notranslate"><span class="pre">access_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.check_t"><code class="docutils literal notranslate"><span class="pre">check_t</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.elem_kind_e"><code class="docutils literal notranslate"><span class="pre">elem_kind_e</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.error_out"><code class="docutils literal notranslate"><span class="pre">error_out()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.path_t"><code class="docutils literal notranslate"><span class="pre">path_t</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.predict_t"><code class="docutils literal notranslate"><span class="pre">predict_t</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.rand_enable"><code class="docutils literal notranslate"><span class="pre">rand_enable()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.status_t"><code class="docutils literal notranslate"><span class="pre">status_t</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.uvm_error"><code class="docutils literal notranslate"><span class="pre">uvm_error()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.uvm_fatal"><code class="docutils literal notranslate"><span class="pre">uvm_fatal()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.uvm_not_implemeneted"><code class="docutils literal notranslate"><span class="pre">uvm_not_implemeneted()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.uvm_reg_bus_op"><code class="docutils literal notranslate"><span class="pre">uvm_reg_bus_op</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.uvm_reg_error_decoder"><code class="docutils literal notranslate"><span class="pre">uvm_reg_error_decoder</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.uvm_reg_field_error_decoder"><code class="docutils literal notranslate"><span class="pre">uvm_reg_field_error_decoder</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s24_uvm_reg_includes.uvm_resp_t"><code class="docutils literal notranslate"><span class="pre">uvm_resp_t</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s25_uvm_adapter">pyuvm.s25_uvm_adapter module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s25_uvm_adapter.uvm_reg_adapter"><code class="docutils literal notranslate"><span class="pre">uvm_reg_adapter</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s26_uvm_predictor">pyuvm.s26_uvm_predictor module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s26_uvm_predictor.uvm_reg_predictor"><code class="docutils literal notranslate"><span class="pre">uvm_reg_predictor</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.s27_uvm_reg_pkg">pyuvm.s27_uvm_reg_pkg module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm.utility_classes">pyuvm.utility_classes module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.FactoryData"><code class="docutils literal notranslate"><span class="pre">FactoryData</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.FactoryMeta"><code class="docutils literal notranslate"><span class="pre">FactoryMeta</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.ObjectionHandler"><code class="docutils literal notranslate"><span class="pre">ObjectionHandler</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.Override"><code class="docutils literal notranslate"><span class="pre">Override</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.Singleton"><code class="docutils literal notranslate"><span class="pre">Singleton</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.UVMQueue"><code class="docutils literal notranslate"><span class="pre">UVMQueue</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.UVM_ROOT_Singleton"><code class="docutils literal notranslate"><span class="pre">UVM_ROOT_Singleton</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.uvm_void"><code class="docutils literal notranslate"><span class="pre">uvm_void</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-pyuvm">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
 </ul>
 
         </div>
@@ -1145,8 +932,7 @@
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyuvm.error_classes.</span></span><span class="sig-name descname"><span class="pre">UsePythonMethod</span></span><a class="headerlink" href="#pyuvm.error_classes.UsePythonMethod" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyuvm.error_classes.UVMError" title="pyuvm.error_classes.UVMError"><code class="xref py py-class docutils literal notranslate"><span class="pre">UVMError</span></code></a></p>
 <p>For cases where the user should use a Python
-method rather than a UVM method.  For example
-use __str__() instead of convert2string()</p>
+method rather than a UVM method.</p>
 </dd></dl>
 
 </section>
@@ -5075,7 +4861,6 @@ that all UVM classes can be stored in a factory.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="docsources/UVM_and_Python.html" class="btn btn-neutral float-left" title="UVM and Python" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="modules.html" class="btn btn-neutral float-right" title="pyuvm" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

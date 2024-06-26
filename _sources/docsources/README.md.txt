@@ -1,37 +1,43 @@
-# README
+# Introduction
 
-## Description
+The Universal Verification Methodology (UVM) is the dominant RTL verification network across the IC industry. The UVM is popular because it allows engineers to reuse testbench components across testbenches. It also provides a standardized testbench structure that allows engineers to understand existing testbenches as these engineers move across projects, companies, and industries. If you apply for a job as a verification engineer, it is likely that the hiring team uses the UVM and will test your UVM knowledge.
 
-**pyuvm** is the Universal Verification Methodology implemented in Python instead of SystemVerilog. **pyuvm** uses cocotb to interact with the simulator and schedule simulation events.
+IEEE defined the UVM in the [*IEEE Standard for Universal Verification Methodology Language Reference Manual*](https://ieeexplore.ieee.org/document/9195920), also know as the [IEEE 1800.2 standard](https://ieeexplore.ieee.org/document/9195920).
 
-**pyuvm** implements the most often-used parts of the UVM while taking advantage of the fact that Python does not have strict typing and does not require parameterized classes. The project refactors pieces of the UVM that were either overly complicated due to typing or legacy code.
+While the industry defined the 1800.2 standard in terms of SystemVerilog, there is little in the standard that requires us to implement the UVM library in SystemVerilog.  It could be implemented in any language with sufficient object oriented support---for example, Python.
 
-The code is based in the IEEE 1800.2 specification and most classes and methods have the specification references in the comments.
+## Python and IEEE 1800.2
 
-The following IEEE 1800.2 sections have been implemented:
+**pyuvm** is the Universal Verification Methodology implemented in Python instead of SystemVerilog. **pyuvm** uses [**cocotb**][cocotbLink] to interact with simulators and schedule simulation events.
+
+**pyuvm** takes advantage of Python's ease of use and object-oriented power to implement the most-often used parts of the IEEE 1800.2 standard.  It is easier to write UVM code in Python because Python does not have strict typing and does not require parameterized classes.  Python also supports important object-oriented programming (OOP) concepts such as [multiple-inheritance][multipleInh] that are missing in SystemVerilog.
+
+## IEEE 1800.2 and pyuvm
+
+**pyuvm** is a clean implementation of IEEE 1800.2 in Python.  It implements the following sections from 1800.2:
 
 |Section|Name|Description|
 |-------|----|-----------|
-|5|Base Classes|uvm_object does not capture transaction timing information|
-|6|Reporting Classes|Leverages logging, controlled using UVM hierarchy|
-|8|Factory Classes|All uvm_void classes automatically registered|
-|9|Phasing|Simplified to only common phases. Supports objection system|
-|12|UVM TLM Interfaces|Fully implemented|
-|13|Predefined Component Classes|Implements uvm_component with hierarchy, uvm_root singleton,run_test(), simplified ConfigDB, uvm_driver, etc|
-|14 & 15|Sequences, sequencer, sequence_item|Refactored sequencer functionality leveraging Python language capabilities. Simpler and more direct implementation|
-|17|UVM Regfister Enum|All the basic Enum types to be used in the whole PYUVM Ral|
-|18|UVM Register Block|Main Register Block class|
-|19|UVM Register Field|Regsister Filed there are still few functionalities missing like atomic Backdoor access amd Field byte access or single Field access during read or write operation|
-|20|UVM Register|Main register class, still missing Backdoor and used Backdoor to be leveraged from cocotb force. Byte access and single field access yet to be implemeneted|
+|5|Base Classes|Basic classes such as `uvm_void` and `uvm_object`|
+|6|Reporting Classes|**pyuvm** uses the **logging** package to implement reporting, but integrates it within some of the UVM reporting functionality.|
+|8|Factory Classes|**pyuvm** implements all the UVM factory functionality without using the macros needed in SystemVerilog.  The factory supports any class extended from `uvm_void`.|
+|9|Phasing|IEEE 1800.2 describes basic phasing that everyone uses and a complicated custom phasing system that almost nobody uses.  **pyuvm** only implmenents the phasing that everyone uses, but you can extend phasing using Python OOP techniques.|
+|12|UVM TLM Interfaces|**pyuvm** fully implements the UVM *Transaction Level Modeling* (TLM) system. |
+|13|Predefined Component Classes|**pyuvm** implements uvm_component with hierarchy, the uvm_root singleton, and the run_test() task. It simplifies the `uvm_config_db` to the Python-friendly `Config` class. 
+|14 & 15|Sequences, sequencer, sequence_item|**pyuvm** refactored the sequencer functionality to create a simpler implementation of the UVM Sequence functionality.|
+|17|UVM Register Enum|**pyuvm** implements all the basic Enum types in the **pyuvm** *Register Access Layer* (RAL)|
+|18|UVM Register Block|**pyuvm** implements the RAL register block classes|
+|19|UVM Register Field|**pyuvm** implements register fields as defined in IEEE 18002.  There are still few functionalities missing like atomic Backdoor access, Field byte access, and single Field access during read or write operation|
+|20|UVM Register|Main register class is implemented but is still missing Backdoor and used Backdoor to be leveraged from cocotb force. Byte access and single field access yet to be implemeneted|
 |21|UVM Register Map|Main register map class, should be refatored to guarantee simplicity and backdoor access, extension class in Read and Write to be implemeneted|
 |22|UVM Memory|Not Implemented|
 |23|Register Item|Register Item used across multiple classes|
-|24|Register include file|Includes other Enum and typeds to be merged with s17|
+|24|Register include file|Includes other Enum and types to be merged with s17|
 |25|UVM register adapter|Main register adapter|
 |26|UVM register predictor|Main register predictor, should be disabled if auto_prediction is not set|
 |27|Register Package|Main PKG if included and flake8 is not active should behave similarly to uvm_reg_pkg|
 
-### Installation
+# Installation
 
 You can install **pyuvm** using `pip`. This will also install **cocotb** as a requirement for **pyuvm**.
 
@@ -51,7 +57,7 @@ Then you can run a simple test:
 object name: my_object
 ```
 
-### Running from the repository
+## Running from a cloned repository
 
 You can run pyuvm from a cloned repository by installing the cloned repository using pip.
 
@@ -60,11 +66,11 @@ You can run pyuvm from a cloned repository by installing the cloned repository u
 % pip install -e .
 ```
 
-## Usage
+# Usage
 
 This section demonstrates running an example simulation and then shows how the example has been put together demonstrating what the UVM looks like in Python.
 
-### Running the simulation
+## Running the simulation
 
 The TinyALU is, as its name implies, a tiny ALU. It has four operations: ADD, AND, NOT, and MUL. This example shows us running the Verilog version of the design, but there is also a VHDL version.
 
@@ -115,11 +121,11 @@ The singleton uses the `cocotb.top` variable to get the handle to the DUT.  This
 
 The `TinyAluBfm` is defined in `tinyalu_utils.py` and imported into our testbench.
 
-## The `pyuvm` testbench
+# The **pyuvm** testbench
 
 The `testbench.py` contains the entire UVM testbench and connects to the TinyALU through a `TinyAluBfm` object defined in `tinyalu_utils.py`.  We'll examine the `testbench.py` file and enough of the **cocotb** test too run the simlation
 
-### Importing `pyuvm`
+## Importing **pyuvm**
 
 Testbenches written in the SystemVerilog UVM usually import the package like this:
 
@@ -128,14 +134,14 @@ import uvm_pkg::*;
 ```
 
 This gives you access to the class names without needing a package path.  To get
-similar behavior with `pyuvm` us the `from` import syntax. We import `pyuvm` to distinguish the `@pyuvm.test()` decorator from the `@cocotb.test()` decorator:
+similar behavior with **pyuvm** us the `from` import syntax. We import **pyuvm** to distinguish the `@pyuvm.test()` decorator from the `@cocotb.test()` decorator:
 
 ```python
 import pyuvm
 from pyuvm import *
 ```
 
-### The AluTest classes
+## The AluTest classes
 
 We're going to examine the UVM classes from the top, the test, to the bottom, the sequences.
 
@@ -199,7 +205,7 @@ class FibonacciTest(AluTest):
 
 All the familiar pieces of a UVM testbench are in **pyuvm**.
 
-### The ALUEnv Class
+## The ALUEnv Class
 
 The `uvm_env` class is a container for the components that make up the testbench.  There are four component classes instantiated:
 
@@ -230,7 +236,7 @@ class AluEnv(uvm_env):
         self.driver.ap.connect(self.scoreboard.result_export)
 ```
 
-### The Monitor
+## The Monitor
 
 The `Monitor` extends `uvm_component`. Takes the name of a `CocotProxy` method name as an argument.  It uses the name to find the method in the proxy and then calls the method. You cannot do this in SystemVerilog as there is no introspection.
 
@@ -256,7 +262,7 @@ class Monitor(uvm_component):
             self.ap.write(datum)
 ```
 
-### The Scoreboard
+## The Scoreboard
 
 The scoreboard receives commands from the command monitor and results from the results monitor in the same order.  It uses the commands to predict the results and compares them.
 
@@ -301,7 +307,7 @@ class Scoreboard(uvm_component):
 
 ```
 
-### Coverage
+## Coverage
 
 The `Coverage` Class extends `uvm_subscriber` which extends `uvm_analysis_export`.  As we see in the `AluEnv` above, this allows us to pass the object directly to the `connect()` method to connect it to an analysis port.
 
@@ -335,7 +341,7 @@ class Coverage(uvm_subscriber):
                 assert True
 ```
 
-### Driver
+## Driver
 
 The `Driver` extends `uvm_driver` and so it works with sequences and sequence items.
 
@@ -406,7 +412,7 @@ class MaxSeq(uvm_sequence):
             await self.finish_item(cmd_tr)
 ```
 
-### ALU Sequence Item
+## ALU Sequence Item
 
 The `AluSeqItem` contains the TinyALU commands.  It has two operands and an operation.
 
@@ -443,15 +449,10 @@ class AluSeqItem(uvm_sequence_item):
 
 ```
 
-Now that we've got the UVM testbench we can call it from a **cocotb** test.
 
-## The Cocotb Tests
+# Contributing
 
-**cocotb** finds `uvm_test` classes identified with the `@pyuvm.test()` decorator and launches them as coroutines.  Our test does the following:
-
-## Contributing
-
-You can contribute to `pyuvm` by forking this repository and submitting pull requests.
+You can contribute to **pyuvm** by forking this repository and submitting pull requests.
 
 The repository runs all needed tests using `tox`.  The test runs
 `flake8` and fails if that linter finds any issues.  Visual Studio Code
@@ -468,7 +469,7 @@ Credits:
 * IEEE 1800.2 Specification
 * Siemens for supporting me in this effort.
 
-## License
+# License
 
 Copyright 2020 Siemens EDA
 
@@ -483,3 +484,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+
+[cocotbLink]: https://cocotb.org
+[multipleInh]: https://www.geeksforgeeks.org/multiple-inheritance-in-python/

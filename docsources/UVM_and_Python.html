@@ -7,6 +7,7 @@
   <title>UVM and Python &mdash; pyuvm v3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=7d54114d" />
 
   
   <!--[if lt IE 9]>
@@ -22,7 +23,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="pyuvm package" href="../pyuvm.html" />
-    <link rel="prev" title="README" href="README.html" /> 
+    <link rel="prev" title="Introduction" href="README.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,30 +49,31 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="README.html">README</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">UVM and Python</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#pythonizing-the-uvm">Pythonizing the UVM</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#static-typing-vs-duck-typing">Static Typing vs. Duck Typing</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#exception-handling">Exception Handling</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#usage">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#the-pyuvm-testbench">The <strong>pyuvm</strong> testbench</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#contributing">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#license">License</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">UVM and Python</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pythonizing-the-uvm">Pythonizing the UVM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#static-typing-vs-duck-typing">Static Typing vs. Duck Typing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exception-handling">Exception Handling</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pyuvm-exceptions"><strong>pyuvm</strong> Exceptions</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#coding-differences-between-systemverilog-uvm-and-pyuvm">Coding differences between SystemVerilog UVM and <strong>pyuvm</strong></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#underscore-naming">Underscore Naming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decorators-and-accessor-functions">Decorators and Accessor Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uvm-object-wrapper-and-factories"><code class="docutils literal notranslate"><span class="pre">uvm_object_wrapper</span></code> and Factories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-python-functionality-instead-of-uvm-functions">Using Python functionality instead of UVM functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uvm-policy-class"><code class="docutils literal notranslate"><span class="pre">uvm_policy</span></code> Class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reporting-classes">Reporting Classes</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#differences-between-systemverilog-uvm-and-pyuvm">Differences between SystemVerilog UVM and <strong>pyuvm</strong></a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#underscore-naming">Underscore Naming</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#decorators-and-accessor-functions">Decorators and Accessor Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#uvm-object-wrapper-and-factories"><cite>uvm_object_wrapper</cite> and Factories</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#uvm-transaction-gui-support"><cite>uvm_transaction</cite> GUI Support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#uvm-policy-class"><cite>uvm_policy</cite> Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#uvm-port-base-class"><cite>uvm_port_base</cite> Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#uvm-time-class"><cite>uvm_time</cite> Class</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#reporting-classes">Reporting Classes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#sychronization-classes">Sychronization Classes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../pyuvm.html">pyuvm package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html">pyuvm</a></li>
 </ul>
 
         </div>
@@ -125,9 +127,8 @@ Python support accelerated testbenches with little, if any, modification.</p></l
 <p>While Python is an excellent testbench development language, the UVM is an
 excellent Verification Library. Implementing the UVM using Python gives us
 the best of both worlds.</p>
-</section>
 <section id="pythonizing-the-uvm">
-<h1>Pythonizing the UVM<a class="headerlink" href="#pythonizing-the-uvm" title="Link to this heading"></a></h1>
+<h2>Pythonizing the UVM<a class="headerlink" href="#pythonizing-the-uvm" title="Link to this heading"></a></h2>
 <p>Much of the UVM specification in IEEE-1800.2-2017 is driven by elements of
 the SystemVerilog programming language.  Blindly implementing all that is in
 the UVM specification is not only impossible (there are no parameters in Class
@@ -140,21 +141,21 @@ functionality of the UVM even if this changes the details of delivering the
 functionalty.  This section examines some differences that we’ll see in
 this implementation.</p>
 <section id="static-typing-vs-duck-typing">
-<h2>Static Typing vs. Duck Typing<a class="headerlink" href="#static-typing-vs-duck-typing" title="Link to this heading"></a></h2>
+<h3>Static Typing vs. Duck Typing<a class="headerlink" href="#static-typing-vs-duck-typing" title="Link to this heading"></a></h3>
 <p>SystemVerilog is a statically typed language, you declare variables to be of
 a certain type in the source code before using them.  It is also a relatively
 weakly typed languaged (relative to VHDL).  You can declare a variable to be
-a <cite>short int</cite> and another to be an <cite>integer</cite> and still add them with no problem.</p>
+a <code class="docutils literal notranslate"><span class="pre">short</span> <span class="pre">int</span></code> and another to be an <code class="docutils literal notranslate"><span class="pre">integer</span></code> and still add them with no problem.</p>
 <p>Python using Duck Typing, which is form of dynamic typing.  Duck typing says
 that if something looks like a duck, and acts like a duck, then we’ll consider it
-a duck.  That means we don’t declare a variable to be of type <cite>duck</cite>, instead we
-call <cite>duck.quack()</cite> and see if we get an exception.</p>
+a duck.  That means we don’t declare a variable to be of type <code class="docutils literal notranslate"><span class="pre">duck</span></code>, instead we
+call <code class="docutils literal notranslate"><span class="pre">duck.quack()</span></code> and see if we get an exception.</p>
 <p>The UVM can be difficult to write because of its static typing. A lot of energy
 goes into parameterizing classes to get the behavior you want, that problem
 goes away in Python.  Instead, you see runtime errors if you mess up the typing.</p>
 </section>
 <section id="exception-handling">
-<h2>Exception Handling<a class="headerlink" href="#exception-handling" title="Link to this heading"></a></h2>
+<h3>Exception Handling<a class="headerlink" href="#exception-handling" title="Link to this heading"></a></h3>
 <p>Unlike SystemVerilog, Python provides the ability to raise and catch exceptions.
 While a SystemVerilog programmer needs to check to be sure that an action will
 work before attempting it, a Python programmer is more likely to try the action
@@ -162,103 +163,59 @@ and catch an exception if it arises.</p>
 <p>Uncaught exceptions rise through the call stack and eventually cause the Python
 to dump out the stack trace information and exit. Catching exceptions keeps the
 program from terminating.</p>
+</section>
 <section id="pyuvm-exceptions">
 <h3><strong>pyuvm</strong> Exceptions<a class="headerlink" href="#pyuvm-exceptions" title="Link to this heading"></a></h3>
-<p><cite>pyuvm</cite> implements the following exceptions:</p>
-<ul class="simple">
-<li><p><cite>UVMNotImplemented</cite>—This means that a function call defined in the IEEE UVM
-specification has not been implemented in <cite>pyuvm</cite>. This could be because the code
-simply hasn’t been written yet, or that we did not implement this feature in
-<cite>pyuvm</cite>.  For example the <cite>get_type()</cite> method has not been implemented since
-Python’s language capabilities make the <cite>uvm_object_wrapper</cite> class unecessary.</p></li>
-</ul>
+<p>Review the documentation for the <code class="docutils literal notranslate"><span class="pre">error_classes</span></code> module to see the Exceptions defined in <strong>pyuvm</strong>.</p>
 </section>
 </section>
-</section>
-<section id="differences-between-systemverilog-uvm-and-pyuvm">
-<h1>Differences between SystemVerilog UVM and <strong>pyuvm</strong><a class="headerlink" href="#differences-between-systemverilog-uvm-and-pyuvm" title="Link to this heading"></a></h1>
-<p>The topics outline above lead to differences between the way <cite>pyuvm</cite> implements
+<section id="coding-differences-between-systemverilog-uvm-and-pyuvm">
+<h2>Coding differences between SystemVerilog UVM and <strong>pyuvm</strong><a class="headerlink" href="#coding-differences-between-systemverilog-uvm-and-pyuvm" title="Link to this heading"></a></h2>
+<p>The topics outline above lead to differences between the way <strong>pyuvm</strong> implements
 behaviors vs. how SystemVerilog does it.  This section highlights these differences.</p>
 <section id="underscore-naming">
-<h2>Underscore Naming<a class="headerlink" href="#underscore-naming" title="Link to this heading"></a></h2>
-<p>While most Python programs use camel casing to define classes, <cite>pyuvm</cite> using underscore
-naming to match the IEEE specification.  <cite>uvm_object</cite> is named <cite>uvm_object</cite> not <cite>UvmObject</cite>.</p>
+<h3>Underscore Naming<a class="headerlink" href="#underscore-naming" title="Link to this heading"></a></h3>
+<p>Python programs use camel casing to define classes, but <strong>pyuvm</strong> uses underscore
+naming to match the IEEE specification.  <code class="docutils literal notranslate"><span class="pre">uvm_object</span></code> is named <code class="docutils literal notranslate"><span class="pre">uvm_object</span></code> not <code class="docutils literal notranslate"><span class="pre">UvmObject</span></code>.</p>
 </section>
 <section id="decorators-and-accessor-functions">
-<h2>Decorators and Accessor Functions<a class="headerlink" href="#decorators-and-accessor-functions" title="Link to this heading"></a></h2>
-<p>SystemVerilog allows you to <cite>protect</cite> a variable in a class and make it
-accessible to class users only through accessor function.  For example
-<cite>uvm_object</cite> has <cite>get_name()</cite> and <cite>set_name()</cite> methods to access the
-name variable.</p>
-<p>Python implements a similar behavior using the <cite>&#64;property</cite> decorator. For
-example <cite>uvm_object</cite> implements name behavior like this:</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nd">@property</span>
-<span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-   <span class="k">return</span> <span class="n">self__name</span>
-
-<span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
-<span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-   <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">))</span>
-   <span class="bp">self</span><span class="o">.</span><span class="n">obj_name</span> <span class="o">=</span> <span class="n">name</span>
-</pre></div>
-</div>
-<p>A user refers to <cite>obj.name</cite> regardless of whether it is being read or written.
-The double underscore before then variable (<cite>__name</cite>) means that we treat the
-variable as a protected variable.</p>
-<p>Generally speaking, <cite>pyuvm</cite> replaces all methods starting with <cite>set_</cite> and <cite>get_</cite>
-with properties, removing the prefix. This does not apply if the <cite>set_</cite> or <cite>get_</cite>
-prefix is not defining functionality that works like a property.</p>
+<h3>Decorators and Accessor Functions<a class="headerlink" href="#decorators-and-accessor-functions" title="Link to this heading"></a></h3>
+<p>SystemVerilog UVM sets and gets variable values using accessor functions such
+as <code class="docutils literal notranslate"><span class="pre">set_name()</span></code> and <code class="docutils literal notranslate"><span class="pre">get_name</span></code>. Python implements similar functionality using
+the <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> decorator.</p>
+<p>While <strong>pyuvm</strong> could have changed all the accessor functions to properties, it implements
+the IEEE 1800.2 spec and keeps the accessor functions.</p>
 </section>
 <section id="uvm-object-wrapper-and-factories">
-<h2><cite>uvm_object_wrapper</cite> and Factories<a class="headerlink" href="#uvm-object-wrapper-and-factories" title="Link to this heading"></a></h2>
+<h3><code class="docutils literal notranslate"><span class="pre">uvm_object_wrapper</span></code> and Factories<a class="headerlink" href="#uvm-object-wrapper-and-factories" title="Link to this heading"></a></h3>
 <p>SystemVerilog has relatively poor class manipulation mechanisms.  Most of
 the class information has already been determined at compile time and dynamically
 creating objects of different classes, or overriding one class with another, requires
 considerable gymnastics.</p>
 <p>Python, on the other hand easily handles classes.  Classes are objects just like
 everything else in the language.</p>
-<p>As a result, <cite>pyuvm</cite> does not need  certain UVM features
-such as the <cite>uvm_object_wrapper</cite> class.</p>
-<p># Python Instead of UVM in a Simulator
-The UVM defines methods that make up for SystemVerilog’s relative
-immaturity relative to Python.  For example, the UVM defines
-a <cite>convert2string()</cite> method which is the same as Python’s <cite>__str__()</cite>
-method.</p>
-<p>We raise the <cite>UsePythonMethod</cite> exception whenever we implement a
-UVM method that can be replaced by a Python method.  This section highlights areas
-where Python has made parts of the UVM unecessary.</p>
-<p>There are also elements of the UVM that assume we are running in a simulator.</p>
+<p>As a result, <strong>pyuvm</strong> does not need the macros we use in SystemVerilog to
+register classes with the factory.  It does not have <cite>uvm_object_utils</cite> or <cite>uvm_component_utils</cite>
+macros.  It registers all classes that extend <code class="docutils literal notranslate"><span class="pre">uvm_void</span></code> with the factory.</p>
 </section>
-<section id="uvm-transaction-gui-support">
-<h2><cite>uvm_transaction</cite> GUI Support<a class="headerlink" href="#uvm-transaction-gui-support" title="Link to this heading"></a></h2>
-<p>The <cite>uvm_transaction</cite> class contains methods that support capturing the
-simulation time so it can be displayed in a GUI.  Since we are not running
-in the simulator, we implement none of these methods.</p>
+<section id="using-python-functionality-instead-of-uvm-functions">
+<h3>Using Python functionality instead of UVM functions<a class="headerlink" href="#using-python-functionality-instead-of-uvm-functions" title="Link to this heading"></a></h3>
+<p>The UVM defines methods that make up for SystemVerilog’s relative
+immaturity relative to Python.  For example <code class="docutils literal notranslate"><span class="pre">uvm_object</span></code> defines
+a <cite>get_type()</cite> method to get the type of an object.  Python has a <code class="docutils literal notranslate"><span class="pre">type()</span></code>
+function that does the same thing for all objects.</p>
+<p>Therefore, <strong>pyuvm</strong> raises <code class="docutils literal notranslate"><span class="pre">UsePythonMethod</span></code> if you call <code class="docutils literal notranslate"><span class="pre">get_type()</span></code>.</p>
 </section>
 <section id="uvm-policy-class">
-<h2><cite>uvm_policy</cite> Class<a class="headerlink" href="#uvm-policy-class" title="Link to this heading"></a></h2>
-<p>The <cite>uvm_policy</cite> Classes provide functionality that is built into
-Python with the <cite>setattr</cite> and <cite>getattr</cite> methods.</p>
+<h3><code class="docutils literal notranslate"><span class="pre">uvm_policy</span></code> Class<a class="headerlink" href="#uvm-policy-class" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">uvm_policy</span></code> Classes provide functionality that is built into
+Python with the <code class="docutils literal notranslate"><span class="pre">setattr</span></code> and <code class="docutils literal notranslate"><span class="pre">getattr</span></code> methods.</p>
 <p>There are no field macros and thus no need to implement this class.</p>
 </section>
-<section id="uvm-port-base-class">
-<h2><cite>uvm_port_base</cite> Class<a class="headerlink" href="#uvm-port-base-class" title="Link to this heading"></a></h2>
-<p>Python uses the <cite>Queue</cite> class to implement everything done by the
-port/export system in the UVM. Therefore we do not implement the
-<cite>uvm_port_base</cite> or any of its extensions.</p>
-</section>
-<section id="uvm-time-class">
-<h2><cite>uvm_time</cite> Class<a class="headerlink" href="#uvm-time-class" title="Link to this heading"></a></h2>
-<p><cite>pyuvm</cite> does not run in the simulator, and thus does not use time. We do not
-implement the <cite>uvm_time</cite> class.</p>
-</section>
 <section id="reporting-classes">
-<h2>Reporting Classes<a class="headerlink" href="#reporting-classes" title="Link to this heading"></a></h2>
+<h3>Reporting Classes<a class="headerlink" href="#reporting-classes" title="Link to this heading"></a></h3>
 <p>We use Python logging instead of the UVM reporting system.</p>
 </section>
-<section id="sychronization-classes">
-<h2>Sychronization Classes<a class="headerlink" href="#sychronization-classes" title="Link to this heading"></a></h2>
-<p>We do not recreate the Python <cite>threading</cite> package in pyuvm</p>
 </section>
 </section>
 
@@ -266,7 +223,7 @@ implement the <cite>uvm_time</cite> class.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="README.html" class="btn btn-neutral float-left" title="README" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="README.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../pyuvm.html" class="btn btn-neutral float-right" title="pyuvm package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
