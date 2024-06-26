@@ -12,8 +12,7 @@ class UVMNotImplemented(UVMError):
 class UsePythonMethod(UVMError):
     """
     For cases where the user should use a Python
-    method rather than a UVM method.  For example
-    use __str__() instead of convert2string()
+    method rather than a UVM method.
     """
 
 
