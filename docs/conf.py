@@ -15,12 +15,9 @@ import pathlib
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 src_path = pathlib.Path(__file__).parents[1]  # /"pyuvm"
-print("src_path is: ",src_path)
 # src_path = src_path/"pyuvm"
 src_path = src_path.resolve().as_posix()
-print("Inserted src_path is: ",src_path)
 sys.path.insert(0, src_path)
-print("THIS IS THE SYS PATH: ",sys.path)
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
