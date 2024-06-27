@@ -28,7 +28,7 @@ import fnmatch
 # 8.3.1.1
 class uvm_factory(metaclass=utility_classes.Singleton):
     """
-    The uvm_factory is a singleton that delivers all factory functions.
+    The uvm_factory is a singleton that delivers all UVM factory functions.
     """
 
     # 8.3.1.2.1 get
@@ -46,10 +46,16 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         self.debug_level = 1
 
     def clear_all(self):
+        """
+        Clear all the classes and overrides from the factory
+        """
         self.fd.clear_classes()
         self.clear_overrides()
 
     def clear_overrides(self):
+        """
+        Clear all the overrides from the factory
+        """
         self.fd.clear_overrides()
 
     def __set_override(self, original, override, path=None):
@@ -61,10 +67,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     def set_inst_override_by_type(self, original_type, override_type,
                                   full_inst_path):
         """
-        Override an instance with a new type if original type is at that path
         :param original_type: The original type being overridden
         :param override_type: The overriding type
-        :param full_inst_path: The inst where this happens.
+        :param full_inst_path: The inst where this happens
+        :return: None
+
+        Override an instance with a new type if original type is at that path
         """
 
         # The intention here is to only override when a type of original_type
@@ -90,12 +98,13 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     def set_inst_override_by_name(self, original_type_name,
                                   override_type_name, full_inst_path):
         """
-        Override a specific instance  using strings that contain
-        the names of the types.
         :param original_type_name: the name of type being replaced
         :param override_type_name: the name of the substitute type
         :param full_inst_path: The path to the instance
-        :return:
+        :return: None
+
+        Override a specific instance  using strings that contain
+        the names of the types.
         """
 
         # Here we use the names of classes instead of the classes.
@@ -136,8 +145,9 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param original_type: The original type to be overridden
         :param override_type: The new type that will override it
         :param replace: If the override exists, only replace it if this is True
+        :return: None
 
-                Override one type with another type globally
+        Override one type with another type globally
         """
         assert issubclass(original_type, utility_classes.uvm_void), \
             "You tried to override a non-uvm_void class"
@@ -184,15 +194,6 @@ class uvm_factory(metaclass=utility_classes.Singleton):
             self.__set_override(original_type, override_type)
 
     def __find_override(self, requested_type, parent_inst_path="", name=""):
-        """
-        An internal function that finds overrides
-
-        :param requested_type: The type that could be overridden
-        :param parent_inst_path: The parent inst path for an override
-        :param name: The name of the object, concatenated with parent
-        inst path for override
-        :return: either the requested_type or its override
-        """
         if not isinstance(requested_type, str):
             assert (issubclass(requested_type, utility_classes.uvm_void)), \
                 f"You must create uvm_void descendants not {requested_type}"
@@ -215,12 +216,14 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     def create_object_by_type(self, requested_type, parent_inst_path="",
                               name=""):
         """
-        8.3.1.5 Creation
         :param requested_type: The type that we request but that can be
-        overridden
+            overridden
         :param parent_inst_path: The get_full_name path of the parent
         :param name: The name of the instance requested_type("name")
+        :raises: UVMFactoryError if the type is not in the factory
         :return: Type that is child of uvm_object.
+
+        8.3.1.5 Creation
         If the type is is not in the factory we raise UVMFactoryError
         """
         new_type = self.__find_override(requested_type, parent_inst_path, name)
@@ -233,12 +236,13 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     def create_object_by_name(self, requested_type_name,
                               parent_inst_path="", name=""):
         """
-        Create an object using a string to define its uvm_object type.
-
         :param requested_type_name: the type that could be overridden
         :param parent_inst_path: A path if we are checking for inst overrides
         :param name: The name of the new object.
+        :raises: UVMFactoryError if the type is not in the factory
         :return: A uvm_object with the name given
+
+        Create an object using a string to define its uvm_object type.
         """
         try:
             requested_type = utility_classes.FactoryData().classes[requested_type_name] # noqa
@@ -259,7 +263,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param name: Concatenated with parent_inst_path if it
             exists for inst overrides
         :param parent: The parent component
-
+        :raises: UVMFactoryError if the type is not in the factory
         :return: a uvm_component with the name an parent given.
 
         Create a component of the requested uvm_component type.
@@ -289,6 +293,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param parent_inst_path: A path if we are checking for inst overrides
         :param name: The name of the new object.
         :param parent: The component's parent component
+        :raises: UVMFactoryError if the type is not in the factory
         :return: A uvm_object with the name given
         """
         if name is None:
@@ -308,11 +313,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.6.1
     def set_type_alias(self, alias_type_name, original_type):
         """
-        Not implemented as it does not seem to exist in SystemVerilog UVM
-
         :param alias_type_name:A string that will reference the original type
         :param original_type:The original type toe be referenced
+        :raises: UVMNotImplemented Not implemented as it does not seem
+            to exist in the SystemVerilog UVM
         :return:None
+
         """
         # This method does not seem to be implemented in SystemVerilog
         # so I'm skipping it now.
@@ -322,12 +328,13 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.6.2
     def set_inst_alias(self, alias_type_name, original_type, full_inst_path):
         """
-        Not implemented as it does not seem to exist in SystemVerilog UVM
-
         :param alias_type_name:A string that will reference the original type
         :param original_type:The original type toe be referenced
         :param full_inst_path: The instance path where this alias is active
+        :raises: UVMNotImplemented  Not implemented as it does
+            not seem to exist in SystemVerilog UVM
         :return:None
+
         """
         # This method does not seem to be implemented in SystemVerilog
         # so I'm skipping it now.
@@ -339,11 +346,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.7.1
     def find_override_by_type(self, requested_type, full_inst_path):
         """
-        Given a type and instance path, return the override class object.
-
         :param requested_type: The type whose override you want
         :param full_inst_path: The inst path where one looks
+        :raises: UVMFactoryError if the type is not in the factory
         :return: class object
+
+        Given a type and instance path, return the override class object.
         """
         override = self.__find_override(requested_type, full_inst_path)
         return override
@@ -351,11 +359,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.7.1
     def find_override_by_name(self, requested_type_name, full_inst_path):
         """
-        Given a path and the name of a class return its overriding class object
-
         :param requested_type_name:
         :param full_inst_path:
+        :raises: UVMFactoryError if the type is not in the factory
         :return: class object
+
+        Given a path and the name of a class return its overriding class object
         """
         assert (isinstance(requested_type_name, str)), \
             f"requested_type_name must be a string not a {type(requested_type_name)}"  # noqa
@@ -370,7 +379,9 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.7.2
     def find_wrapper_by_name(self):
         """
-        There are no wrappers in pyuvm so this is not implemented.
+        :raises: UVMNotImplemented There are no wrappers in
+            **pyuvm** so this is not implemented.
+
         """
         raise error_classes.UVMNotImplemented(
             "There are no wrappers in pyuvm. "
@@ -379,10 +390,10 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.7.3
     def is_type_name_registered(self, type_name):
         """
-        Checks that a type of this name is registered with the factory.
-
         :param type_name: string that is name of a type
-        :return: boolean
+        :return: boolean True if type is registered
+
+        Checks that a type of this name is registered with the factory.
         """
         assert (isinstance(type_name, str)), \
             ("is_type_name_registered() takes a"
@@ -392,11 +403,13 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.7.4
     def is_type_registered(self, uvm_type):
         """
+        :param uvm_type: The type to be checked
+        :return: boolean True if type is registered
+
         Checks that a type is registered. The argument is named "obj" in
         the spec, but that name is ridiculous and confusing.
 
-        :param uvm_type: The type to be checked
-        :return: boolean
+
         """
         assert (issubclass(uvm_type, utility_classes.uvm_void)), \
             ("is_type_registered() takes a subclass of uvm_void "
@@ -406,18 +419,18 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     @property
     def debug_level(self):
         """
-        uvm_factory().debug_level = 0 : overrides
-        uvm_factory().debug_level = 1 : user defined types + above
-        uvm_factory().debug_level = 2 : uvm_* types + above
+        * uvm_factory().debug_level = 0 : overrides
+        * uvm_factory().debug_level = 1 : user defined types + above
+        * uvm_factory().debug_level = 2 : uvm_* types + above
         """
         return self.__debug_level
 
     @debug_level.setter
     def debug_level(self, debug_level):
         """
-        uvm_factory().debug_level = 0 : overrides
-        uvm_factory().debug_level = 1 : user defined types + above
-        uvm_factory().debug_level = 2 : uvm_* types + above
+        * uvm_factory().debug_level = 0 : overrides
+        * uvm_factory().debug_level = 1 : user defined types + above
+        * uvm_factory().debug_level = 2 : uvm_* types + above
         """
         assert (0 <= debug_level <= 2), \
             "uvm_factory().all_type must be 0, 1, or 2"
@@ -467,15 +480,15 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # 8.3.1.7.5
     def print(self, debug_level=1):
         """
+        :param debug_level:
+            * ``debug_level`` = 0 : overrides
+            * ``debug_level`` = 1 : user defined types + above ( default)
+            * ``debug_level`` = 2 : uvm_* types + above
+        :return: None
+
         Prints the factory data using debug_level to
         control the amount of output. The uvm_factory().debug_level
         variable can control this for __str__()
-
-        debug_level = 0 : overrides
-        debug_level = 1 : user defined types + above
-        debug_level = 2 : uvm_* types + above
-
-        :return: None
         """
         saved_debug_level = self.debug_level  # Avoiding a side effect
         self.debug_level = debug_level
