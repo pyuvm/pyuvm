@@ -4,6 +4,7 @@ import inspect
 import cocotb
 
 from pyuvm import uvm_root
+from pyuvm._utils import cocotb_version_info
 
 
 def test(
@@ -14,21 +15,12 @@ def test(
     skip=False,
     stage=None,
     keep_singletons=False,
-    keep_set=set()
+    keep_set=set(),
 ):
-    cocotb_ver_str = cocotb.__version__.split(".")
-    cocotb_ver_int = []
-    for xx in cocotb_ver_str:
-        try:
-            cocotb_ver_int.append(int(xx))  # for strings like 'dev0'
-        except ValueError:
-            pass
-    version_info = tuple(cocotb_ver_int)
-    if version_info >= (1, 7, 0) and stage is None:
+    if cocotb_version_info >= (1, 7, 0) and stage is None:
         stage = 0
 
     def decorator(cls):
-
         # create cocotb.test object to be picked up RegressionManager
         @cocotb.test(
             timeout_time=timeout_time,
@@ -40,14 +32,15 @@ def test(
         )
         @functools.wraps(cls)
         async def test(_):
-            await uvm_root().run_test(cls,
-                                      keep_singletons=keep_singletons,
-                                      keep_set=keep_set)
+            await uvm_root().run_test(
+                cls, keep_singletons=keep_singletons, keep_set=keep_set
+            )
 
-        # adds cocotb.test object to caller's module
-        caller_frame = inspect.stack()[1]
-        caller_module = inspect.getmodule(caller_frame[0])
-        setattr(caller_module, f"test_{test._id}", test)
+        if cocotb_version_info < (2, 0):
+            # adds cocotb.test object to caller's module
+            caller_frame = inspect.stack()[1]
+            caller_module = inspect.getmodule(caller_frame[0])
+            setattr(caller_module, f"test_{test._id}", test)
 
         # returns decorator class unmodified
         return cls
