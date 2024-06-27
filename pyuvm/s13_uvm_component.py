@@ -6,7 +6,7 @@ from pyuvm import utility_classes
 import logging
 import fnmatch
 import string
-from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
+from cocotb.logging import SimColourLogFormatter, SimTimeContextFilter
 
 
 # 13.1.1
