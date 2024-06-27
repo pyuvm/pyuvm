@@ -17,10 +17,18 @@ from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET, NullHandler  
 
 class PyuvmFormatter(SimColourLogFormatter):
     def __init__(self, full_name):
+        """
+        :param full_name: The full name of the object
+
+        """
         self.full_name = full_name
         super().__init__()
 
     def format(self, record):
+        """
+        :param record: The log record
+
+        """
         new_msg = f"[{self.full_name}]: {record.msg}"
         record.msg = new_msg
         name_temp = record.name
@@ -38,6 +46,11 @@ class uvm_report_object(uvm_object):
     __default_logging_level = logging.INFO
     """ The basis of all classes that can report """
     def __init__(self, name):
+        """
+        :param name: The name of the object
+        :returns: None
+        
+        """
         super().__init__(name)
         uvm_root_logger = logging.getLogger('uvm')
         # Every object gets its own logger
@@ -57,18 +70,35 @@ class uvm_report_object(uvm_object):
 
     @staticmethod
     def set_default_logging_level(default_logging_level):
+        """
+        :param default_logging_level: The default logging level
+        :returns: None
+
+        """
         uvm_report_object.__default_logging_level = default_logging_level
 
     @staticmethod
     def get_default_logging_level():
+        """
+        :returns: The default logging level
+
+        """
         return uvm_report_object.__default_logging_level
 
     def set_logging_level(self, logging_level):
-        """ Sets the logger level """
+        """
+        :param logging_level: The logging level
+        :returns: None
+
+        """
         self.logger.setLevel(logging_level)
 
     def add_logging_handler(self, handler):
-        """ Adds a handler """
+        """
+        :param handler: The logging handler
+        :returns: None
+
+        """
         assert isinstance(handler, logging.Handler), \
             f"You must pass a logging.Handler not {type(handler)}"
         if handler.formatter is None:
@@ -77,14 +107,28 @@ class uvm_report_object(uvm_object):
         self.logger.addHandler(handler)
 
     def remove_logging_handler(self, handler):
-        """ Removes a specific handler  """
+        """
+        :param handler: The logging handler to remove
+        :returns: None
+
+        """
         assert isinstance(handler, logging.Handler), \
             f"You must pass a logging.Handler not {type(handler)}"
         self.logger.removeHandler(handler)
 
     def remove_streaming_handler(self):
+        """
+        :returns: None
+
+        Removes the streaming handler
+        """
         self.logger.removeHandler(self._streaming_handler)
 
     def disable_logging(self):
+        """
+        :returns: None
+
+        Disables logging
+        """
         self.remove_streaming_handler()
         self.add_logging_handler(NullHandler())
