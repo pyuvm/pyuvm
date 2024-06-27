@@ -6,13 +6,36 @@
 # uvm_warning, and uvm_fatal, but it would be best to
 # first see how the native Python logging system does the job.
 
-from pyuvm.s05_base_classes import uvm_object
 import logging
 import sys
-from cocotb.log import SimTimeContextFilter
-from cocotb.log import SimLogFormatter, SimColourLogFormatter
-from cocotb.utils import want_color_output
-from logging import DEBUG, CRITICAL, ERROR, WARNING, INFO, NOTSET, NullHandler   # noqa: F401, E501
+
+from pyuvm._utils import cocotb_version_info
+from pyuvm.s05_base_classes import uvm_object
+
+if cocotb_version_info < (2, 0):
+    from cocotb.log import (
+        SimColourLogFormatter,
+        SimLogFormatter,
+        SimTimeContextFilter,
+    )
+    from cocotb.utils import want_color_output
+else:
+    from cocotb._utils import want_color_output
+    from cocotb.logging import (
+        SimColourLogFormatter,
+        SimLogFormatter,
+        SimTimeContextFilter,
+    )
+
+from logging import (  # noqa: F401, E501
+    CRITICAL,
+    DEBUG,
+    ERROR,
+    INFO,
+    NOTSET,
+    WARNING,
+    NullHandler,
+)
 
 
 class PyuvmFormatter(SimColourLogFormatter):

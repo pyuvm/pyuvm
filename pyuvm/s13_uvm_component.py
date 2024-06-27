@@ -1,17 +1,21 @@
+import fnmatch
+import logging
+import string
+
+from pyuvm import INFO, error_classes, utility_classes
+from pyuvm._utils import cocotb_version_info
 from pyuvm.s06_reporting_classes import uvm_report_object
 from pyuvm.s08_factory_classes import uvm_factory
-from pyuvm.s09_phasing import uvm_common_phases, uvm_run_phase, uvm_build_phase
-from pyuvm import error_classes, INFO
-from pyuvm import utility_classes
-import logging
-import fnmatch
-import string
-from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
+from pyuvm.s09_phasing import uvm_build_phase, uvm_common_phases, uvm_run_phase
+
+if cocotb_version_info < (2, 0):
+    from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
+else:
+    from cocotb.logging import SimColourLogFormatter, SimTimeContextFilter
 
 
 # 13.1.1
 class uvm_component(uvm_report_object):
-
     component_dict = {}
 
     @classmethod
