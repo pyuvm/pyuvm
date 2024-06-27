@@ -1,5 +1,5 @@
-# The UVM TLM class hierarchy wraps the behavior of objects (usually Queues) in
-# a set of classes and objects.
+# The UVM TLM class hierarchy wraps the behavior of objects
+# (usually cocotb.Queues) in a set of classes and objects.
 #
 # The UVM LRM calls for three levels of classes to
 # implement TLM: ports, exports, and imp:
@@ -55,6 +55,7 @@ from cocotb.queue import QueueEmpty, QueueFull
 
 # uvm_export_base provides the provided_to
 # associative array.
+
 class uvm_export_base(uvm_component):
     def __init__(self, name, parent):
         super().__init__(name, parent)
@@ -63,16 +64,16 @@ class uvm_export_base(uvm_component):
 
 class uvm_port_base(uvm_export_base):
     """
-    A uvm_port_base is a uvm_component with a connect() function.
-    The connect function creates an __export data member that
+    A ``uvm_port_base`` is a uvm_component with a ``connect()`` function.
+    The ``connect`` function creates an ``__export`` data member that
     implements the put/get,etc methods.
 
-    We'll build functionality from uvm_port_base to create the
+    We'll build functionality from ``uvm_port_base`` to create the
     other combinations of ports through multiple inheritance.
 
-    pyuvm will make extensive use of Pythons "ask forgiveness" policy
+    **pyuvm** will make extensive use of Pythons "ask forgiveness" policy
     If you try to use the wrong method for the port you created
-    then you'll get a exception, maybe a missing attribute one, though
+    then you'll get a exception, maybe a missing attribute exception, though
     we could catch that one and deliver a more useful message.
 
     Unlike the SV implementation of UVM we return results from get and peek
@@ -94,7 +95,6 @@ class uvm_port_base(uvm_export_base):
         self.connected_to = {}
         self.export = None
         self.needed_methods = []
-
         # Compare the list of all tlm methods to the
         # methods in this class to create a list of
         # needed
@@ -102,7 +102,7 @@ class uvm_port_base(uvm_export_base):
             if hasattr(self, method):
                 self.needed_methods.append(method)
 
-    def check_export(self, export):
+    def _check_export(self, export):
         """Check that the export implements needed methods"""
         if not isinstance(export, uvm_export_base):
             raise UVMTLMConnectionError(
@@ -115,12 +115,13 @@ class uvm_port_base(uvm_export_base):
 
     def connect(self, export):
         """
-        Attach this port to the associated export.
+        :param export: The export that has the functions
+        :return: None
+        :raises: UVMTLMConnectionError if there is a connect error
+            Attach this port to the associated export.
 
-        :param export:
-        :return:
         """
-        self.check_export(export)
+        self._check_export(export)
         try:
             self.export = export
             self.connected_to[export.get_full_name()] = export
@@ -143,8 +144,10 @@ class uvm_blocking_put_port(uvm_port_base):
     async def put(self, datum):
         """
             :param datum: Datum to put
+            :raises: UVMTLMConnectionError if export is missing
             :return: None
 
+        put the datum
         """
         try:
             await self.export.put(datum)
@@ -163,11 +166,12 @@ class uvm_nonblocking_put_port(uvm_port_base):
     # 12.2.4.2.4
     def try_put(self, data):
         """
+        :param data: data to deliver
+        :raises: UVMTLMConnectionError if export is missing
+        :return: boolean True = success
+
         Tries to put data on a port, but if the
         port is full it returns False
-
-        :param data: data to deliver
-        :return: True = success
         """
         try:
             success = self.export.try_put(data)
@@ -183,7 +187,7 @@ class uvm_nonblocking_put_port(uvm_port_base):
         Returns true if there is room for data to
         be put on the port
 
-        :return: bool
+        :return: True if there is room to put
         """
         try:
             can_do_it = self.export.can_put()
@@ -210,9 +214,10 @@ class uvm_blocking_get_port(uvm_port_base):
     # 12.2.4.2.2
     async def get(self):
         """
+        :raises: UVMTLMConnectionError if export is missing
+        :return: data
 
         A blocking get that returns the data got
-        :return: data
         """
         try:
             data = await self.export.get()
@@ -231,6 +236,9 @@ class uvm_nonblocking_get_port(uvm_port_base):
 
     def try_get(self):
         """
+        :raises: UVMTLMConnectionError if export is missing
+        :return: (success, data)
+
         12.2.4.2.6
         Returns a tuple containing success and the data
         This is different than SV UVM that returns the
@@ -250,9 +258,9 @@ class uvm_nonblocking_get_port(uvm_port_base):
     # 12.2.4.2.7
     def can_get(self):
         """
-        Returns true if there is data to get
+        :raises: UVMTLMConnectionError if export is missing
+        :return: bool Returns true if there is data to get
 
-        :return: bool
         """
         try:
             can = self.export.can_get()
@@ -278,10 +286,10 @@ class uvm_blocking_peek_port(uvm_port_base):
     # 12.2.4.2.3
     async def peek(self):
         """
-        A blocking peek that returns data without
-        consuming it.
-
+        :raises: UVMTLMConnectionError if export is missing
         :return: datum
+
+        A blocking peek that returns data without consuming it.
         """
         try:
             datum = await self.export.peek()
@@ -301,10 +309,11 @@ class uvm_nonblocking_peek_port(uvm_port_base):
     # 12.2.4.2.8
     def try_peek(self):
         """
+        :raises: UVMTLMConnectionError if export is missing
+        :return: (success, data)
 
         Tries to peek for data and returns
         a tuple with success and the data
-        :return: (success, data)
         """
         try:
             success, data = self.export.try_peek()
@@ -317,9 +326,10 @@ class uvm_nonblocking_peek_port(uvm_port_base):
     # 12.2.4.2.9
     def can_peek(self):
         """
-        Checks if peeking will be successful
-
+        :raises: UVMTLMConnectionError if export is missing
         :return: True if can peek
+
+        Checks if peeking will be successful
         """
         can = self.export.can_peek()
         return can
@@ -351,6 +361,14 @@ class uvm_blocking_transport_port(uvm_port_base):
         super().__init__(name, parent)
 
     async def transport(self, put_data):
+        """
+        :param put_data: data to send
+        :raises: UVMTLMConnectionError if export is missing
+        :return: data received
+
+        Puts data and blocks if there is no room, then blocks
+        if there is no data to get and gets data.
+        """
         try:
             get_data = await self.export.transport(put_data)
         except AttributeError:
@@ -366,6 +384,14 @@ class uvm_nonblocking_transport_port(uvm_port_base):
         super().__init__(name, parent)
 
     def nb_transport(self, put_data):
+        """
+        :param put_data: data to send
+        :raises: UVMTLMConnectionError if export is missing
+        :return: (success, data)
+
+        Non-blocking transport.  Returns a tuple with success
+        if the transport was successful and the data could be returned
+        """
         try:
             success, get_data = self.export.nb_transport(put_data)
         except AttributeError:
@@ -420,7 +446,11 @@ class uvm_analysis_port(uvm_port_base):
     def write(self, datum):
         """
         :param datum: data to send
+        :raises: UVMTLMConnectionError if export is missing
         :return: None
+
+        Write to all connected analysis ports. This is a broadcast.
+        Returns regardless of whether there are any subscribers.
         """
         for export in self.subscribers:
             if not hasattr(export, "write"):
@@ -429,7 +459,7 @@ class uvm_analysis_port(uvm_port_base):
             export.write(datum)
 
     def connect(self, export):
-        self.check_export(export)
+        self._check_export(export)
         self.subscribers.append(export)
 
 
@@ -538,7 +568,7 @@ class uvm_analysis_export(uvm_export_base):
 # 12.2.8 FIFO Classes
 #
 # These classes provide synchronization control between
-# threads using the Queue class.
+# threads using the ``cocotb.Queue`` class.
 #
 # One note.  The RLM has only 12.2.8.1.3 and 12.2.8.1.4, put_export
 # and get_peek_export, but the UVM code has all the variants
@@ -569,6 +599,13 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class uvm_BlockingPutExport(uvm_QueueAccessor, uvm_blocking_put_export):
         async def put(self, item):
+            """
+            :param item: item to put
+            :return: None
+
+            A coroutine that blocks if the FIFO is full.
+
+            """
             self.logger.log(FIFO_DEBUG, f"blocking put: {item}")
             await self.queue.put(item)
             self.logger.log(FIFO_DEBUG, f"success put {item}")
@@ -579,9 +616,20 @@ class uvm_tlm_fifo_base(uvm_component):
                                    uvm_nonblocking_put_export):
 
         def can_put(self):
+            """
+            :return: True if can put
+            """
             return not self.queue.full()
 
         def try_put(self, item):
+            """
+            :param item: item to put
+            :raises: QueueFull if the queue is full
+            :return: True if successful
+
+            The ``try_put`` is implemented with an exception
+            rather than returning a boolean.
+            """
             try:
                 self.queue.put_nowait(item)
                 self.ap.write(item)
@@ -594,6 +642,11 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class uvm_BlockingGetExport(uvm_QueueAccessor, uvm_blocking_get_export):
         async def get(self):
+            """
+            :return: item
+
+            A coroutine that blocks if the FIFO is empty
+            """
             self.logger.log(FIFO_DEBUG, "Attempting blocking get")
             item = await self.queue.get()
             self.logger.log(FIFO_DEBUG, f"got {item}")
@@ -603,10 +656,16 @@ class uvm_tlm_fifo_base(uvm_component):
     class uvm_NonBlockingGetExport(uvm_QueueAccessor,
                                    uvm_nonblocking_get_export):
         def can_get(self):
+            """
+            :return: True if can get
+            """
             get_ok = not self.queue.empty()
             return get_ok
 
         def try_get(self):
+            """
+            :return: (success, item)
+            """
             try:
                 item = self.queue.get_nowait()
                 self.ap.write(item)
@@ -619,6 +678,11 @@ class uvm_tlm_fifo_base(uvm_component):
 
     class uvm_BlockingPeekExport(uvm_QueueAccessor, uvm_blocking_peek_export):
         async def peek(self):
+            """
+            :return: item
+
+            A coroutine that blocks if the FIFO is empty
+            """
             self.logger.log(FIFO_DEBUG, "Attempting blocking peek")
             peek_data = await self.queue.peek()
             self.logger.log(FIFO_DEBUG, f"peeked at {peek_data}")
@@ -627,9 +691,15 @@ class uvm_tlm_fifo_base(uvm_component):
     class uvm_NonBlockingPeekExport(uvm_QueueAccessor,
                                     uvm_nonblocking_peek_export):
         def can_peek(self):
+            """
+            :return: True if can peek
+            """
             return not self.queue.empty()
 
         def try_peek(self):
+            """
+            :return: (success, item)
+            """
             try:
                 datum = self.queue.peek_nowait()
                 return True, datum
@@ -686,30 +756,64 @@ class uvm_tlm_fifo_base(uvm_component):
         self.get_peek_export = self.uvm_GetPeekExport("get_peek_export", self, self.queue, self.get_ap)  # noqa: E501
 
     async def put(self, item):
+        """
+        :param item: item to put
+
+        Blocking put coroutine
+        """
         await self.put_export.put(item)
 
     def can_put(self):
+        """
+        :return: True if can put
+        """
         return self.put_export.can_put()
 
     def try_put(self, item):
+        """
+        :param item: item to put
+        :return: True if successful
+        """
         return self.put_export.try_put(item)
 
     async def get(self):
+        """
+        :return: item
+
+        coroutine that blocks if FIFO is empty
+        """
         return await self.get_export.get()
 
     def can_get(self):
+        """
+        :return: True if can get
+        """
         return self.get_export.can_get()
 
     def try_get(self):
+        """
+        :return: (success, item)
+        """
         return self.get_export.try_get()
 
     async def peek(self):
+        """
+        :return: item
+
+        A coroutine that blocks if FIFO is empty
+        """
         return await self.peek_export.peek()
 
     def can_peek(self):
+        """
+        :return: True if can peek
+        """
         return self.peek_export.can_peek()
 
     def try_peek(self):
+        """
+        :return: (success, item)
+        """
         return self.peek_export.try_peek()
 
 
@@ -723,18 +827,19 @@ class uvm_tlm_fifo(uvm_tlm_fifo_base):
     # 12.2.8.2.2
     def size(self):
         """
-        Return the size of the fifo
-
         :return: size of FIFO
+
+        Return the size of the fifo
         """
         return self.queue.maxsize
 
     # 12.2.8.2.3
     def used(self):
         """
+        :return: Number of items in the FIFO
+
         How much of the FIFO is being used?
 
-        :return: Size of the FIFO
         """
         return self.queue.qsize()
 
@@ -776,6 +881,12 @@ class uvm_tlm_fifo(uvm_tlm_fifo_base):
 class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
     class uvm_AnalysisExport(uvm_QueueAccessor, uvm_analysis_port):
         def write(self, item):
+            """
+            :param item: item to write
+
+            Writes the item to all the subscribers, or no one if
+            there are no subscribers.
+            """
             try:
                 self.queue.put_nowait(item)
             except QueueFull:
@@ -799,21 +910,44 @@ class uvm_tlm_req_rsp_channel(uvm_component):
             self.get_peek_export = get_peek_export
 
         async def put(self, item):
+            """
+            :param item: item to put
+
+            A coroutine that blocks if the FIFO is full
+            """
             await self.put_export.put(item)
 
         def can_put(self):
+            """
+            :return: True if can put
+            """
             return self.put_export.can_put()
 
         def try_put(self, item):
+            """
+            :param item: item to put
+            :return: True if successful
+            """
             return self.put_export.try_put(item)
 
         async def get(self):
+            """
+            :return: item
+
+            A coroutine that blocks if the FIFO is empty
+            """
             return await self.get_peek_export.get()
 
         def can_get(self):
+            """
+            :return: True if can get
+            """
             return self.get_peek_export.can_get()
 
         def try_get(self):
+            """
+            :return: (success, item)
+            """
             return self.get_peek_export.try_get
 
     def __init__(self, name, parent=None, request_fifo_size=1,

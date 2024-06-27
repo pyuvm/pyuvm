@@ -317,6 +317,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param original_type:The original type toe be referenced
         :raises: UVMNotImplemented Not implemented as it does not seem
             to exist in the SystemVerilog UVM
+
         :return:None
 
         """
