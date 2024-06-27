@@ -231,7 +231,12 @@ class uvm_seq_item_port(uvm_port_base):
         super().connect(export)
 
     async def put_req(self, item):
-        """Put a request item in the request queue"""
+        """
+        Put a request item in the request queue
+        :param item: The request item
+
+        A coroutine that blocks until the request is put in the queue
+        """
         await self.export.put_req(item)
 
     def put_response(self, item):

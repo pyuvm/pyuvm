@@ -315,9 +315,8 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         :param alias_type_name:A string that will reference the original type
         :param original_type:The original type toe be referenced
-        :raises: UVMNotImplemented Not implemented as it does not seem
-            to exist in the SystemVerilog UVM
-
+        :raises: UVMNotImplemented Not implemented as it does not seem to
+        exist in the SystemVerilog UVM
         :return:None
 
         """
@@ -333,7 +332,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :param original_type:The original type toe be referenced
         :param full_inst_path: The instance path where this alias is active
         :raises: UVMNotImplemented  Not implemented as it does
-            not seem to exist in SystemVerilog UVM
+        not seem to exist in SystemVerilog UVM
         :return:None
 
         """
