@@ -49,7 +49,7 @@ class uvm_report_object(uvm_object):
         """
         :param name: The name of the object
         :returns: None
-        
+
         """
         super().__init__(name)
         uvm_root_logger = logging.getLogger('uvm')
