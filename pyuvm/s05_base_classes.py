@@ -19,6 +19,9 @@ class uvm_object(utility_classes.uvm_void):
 
     # 5.3.2
     def __init__(self, name=''):
+        """
+        :param name: Name of the object. Default is empty string.
+        """
         assert (isinstance(name, str)), \
             f"{name} is not a string it is a {type(name)}"
         self.set_name(name)
@@ -31,7 +34,9 @@ class uvm_object(utility_classes.uvm_void):
 
     # 5.3.3.2
     def set_uvm_seeding(self, enable):
-        """ Not implemented """
+        """
+        Not implemented
+        """
         raise error_classes.UVMNotImplemented(
             'set_uvm_seeding not implemented')
 
@@ -43,6 +48,8 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.3.4
     def get_name(self):
         """
+        :return: String with name of uvm_object.
+
         Return the name of this object as passed by the constructor
         """
         assert (self._obj_name is not None), \
@@ -52,6 +59,8 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.4.1
     def set_name(self, name):
         """
+        :param name: Name of the object
+
         Set the name
         """
         assert (isinstance(name, str)), "Must set the name to a string"
@@ -60,6 +69,8 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.4.3
     def get_full_name(self):
         """
+        :return: The full path and name of the object
+
         The full name for a uvm_object is simply the name
         """
         return self.get_name()
@@ -67,8 +78,9 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.4.4
     def get_inst_id(self):
         """
-        Returns the python ID which fits the bill
-        for what the ID is supposed to be.
+        :return: The python ID which fits the bill for what the ID
+            is supposed to be.
+
         """
         return id(self)
 
@@ -95,7 +107,8 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.4.7
     def get_type_name(self):
         """
-        Returns types  __name__ magic variable
+        :return: Returns the type's ``__name__`` magic variable
+
         """
         return type(self).__name__
 
@@ -111,9 +124,8 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.5.2
     def clone(self):
         """
-        Unlike the clone in the SystemVerilog UVM, this clone()
-        uses copy.deepcopy so the user does not need to override
-        do_copy()
+        :return: A new object with the same name and data as this object.
+
         """
         new = self.__class__(self.get_name())
         new.copy(self)
@@ -143,10 +155,9 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.6.4
     def convert2string(self):
         """
-        :return: __str__()
+        :return: The result of ``__str__()``
 
-        Returns the result of self.__str__().
-        Perhaps better to just use __str__() directly?
+        Override if you want something different than ``__str__()``
         """
 
         return self.__str__()
@@ -154,10 +165,10 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.7
     def record(self):
         """
-        Not implemented as we are not in a simulator.
+        Not implemented.
         """
         raise error_classes.UVMNotImplemented(
-            'Python does not run in the simulator, so no recording')
+            'Perhaps a future project?')
 
     # 5.3.7.2
     def do_record(self):
@@ -165,19 +176,27 @@ class uvm_object(utility_classes.uvm_void):
         Not implemented as we are not in a simulator
         """
         raise error_classes.UVMNotImplemented(
-            'Python does not run in the simulator, so no recording')
+            'No recording')
 
     # 5.3.8.1
     def copy(self, rhs):
         """
-        Copy fields from rhs to this object
+        :param rhs: The object to copy from
+        :return: None
+
+        Copy fields from rhs to this object using ``self.do_copy()``
+
         """
         self.do_copy(rhs)
 
     # 5.3.8.2
     def do_copy(self, rhs):
         """
-        Copies name. Override to copy additional data members
+        :param rhs: The object to copy from
+        :return: None
+
+        By default we copy the name. Override this function
+        to copy the rest of the object members.
         """
         self.set_name(rhs.get_name())
 
@@ -196,14 +215,18 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.9.2
     def do_compare(self, rhs):
         """
-        Recommend overriding __eq__() rather than this method.
+        :param rhs: The object being compared.
+        :returns: True if the objects are the same.
+
+        Uses ``__eq__()`` to compare the objects.  Override this
+        to change the compare behavior.
         """
         return self.__eq__(rhs)
 
     # 5.3.10.1
     def pack(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -211,7 +234,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.10.1
     def pack_bytes(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -219,7 +242,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.10.1
     def pack_ints(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -227,7 +250,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.10.1
     def pack_longints(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -235,7 +258,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.10.2
     def do_pack(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -243,7 +266,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.11.1
     def unpack(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use pickle, json, or yaml.")
@@ -251,7 +274,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.14.1
     def push_active_policy(self):
         """
-        Not implemented yet.
+        Not implemented.
         """
         raise error_classes.UVMNotImplemented(
             "policies not implemented yet")
@@ -259,21 +282,21 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.14.2
     def pop_active_policy(self):
         """
-        Not implemented yet.
+        Not implemented.
         """
         raise error_classes.UVMNotImplemented("policies not implemented yet")
 
     # 5.3.14.3
     def get_active_policy(self):
         """
-        Not implemented yet.
+        Not implemented.
         """
         raise error_classes.UVMNotImplemented("policies not implemented yet")
 
     # 5.3.11.1
     def unpack_bytes(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -281,7 +304,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.11.1
     def unpack_ints(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -289,7 +312,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.11.1
     def unpack_longints(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -297,7 +320,7 @@ class uvm_object(utility_classes.uvm_void):
     # 5.3.11.2
     def do_unpack(self):
         """
-        Not implemented yet. There are Pythonic solutions to this.
+        Not implemented. There are Pythonic solutions to this.
         """
         raise error_classes.UsePythonMethod(
             "use struct, pickle, json, or yaml.")
@@ -356,7 +379,7 @@ class uvm_transaction(uvm_object):
     def __init__(self, name="", initiator=None):
         """
         :param name: Object name
-        :param initiator: component that is initiator
+        :param initiator: component that is the initiator
         """
         super().__init__(name)
         self.set_initiator(initiator)
@@ -367,7 +390,7 @@ class uvm_transaction(uvm_object):
 
     def set_id_info(self, other):
         """
-        :param other: uvm_transaction
+        :param other: uvm_transaction with transaction_id
         :return: None
 
         Set transaction_id from other
@@ -399,8 +422,9 @@ class uvm_transaction(uvm_object):
     # 5.4.2.2
     def accept_tr(self, accept_time=0):
         """
-        5.4.2.2
-        :param time: simulation time
+        :param accept_time: Simulation time when the transaction is accepted
+
+        IEEE 1800.2 5.4.2.2
         """
         if (accept_time is not None) and (accept_time != 0):
             self._accept_time = accept_time
@@ -412,7 +436,7 @@ class uvm_transaction(uvm_object):
     # 5.4.2.3
     def do_accept_tr(self):
         """
-        User definable method
+        User definable method to add to ``accept_tr()``
         """
         pass
 
@@ -532,26 +556,31 @@ class uvm_transaction(uvm_object):
     # 5.4.2.16
     def get_accept_time(self) -> int:
         """
-        Returns the Accept time of transaction
+        :return: Accept time of transaction
+
         """
         return self._accept_time
 
     def get_begin_time(self) -> int:
         """
-        Returns the Begin time of transaction
+        :return: Begin time of transaction
+
         """
         return self._begin_time
 
     def get_end_time(self) -> int:
         """
-        Returns the End time of transaction
+        :return: End time of transaction
+
         """
         return self._end_time
 
     # 5.4.2.17
     def set_transaction_id(self, txn_id):
         """
-        Sets  variable transaction_id
+        :param txn_id: Transaction ID
+
+        Sets transaction's transaction_id
         """
         assert (isinstance(txn_id, int)), "Transaction ID must be an integer."
         self.transaction_id = txn_id
@@ -559,7 +588,9 @@ class uvm_transaction(uvm_object):
     # 5.4.2.18
     def get_transaction_id(self):
         """
-        Returns  variable transaction_id
+        :return: Transaction ID
+
+        Returns transaction_id
         """
         if self.transaction_id is None:
             return id(self)
