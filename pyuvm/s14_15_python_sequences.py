@@ -227,7 +227,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
 
 class uvm_seq_item_port(uvm_port_base):
     def connect(self, export):
-        self.check_export(export)
+        self._check_export(export)
         super().connect(export)
 
     async def put_req(self, item):
