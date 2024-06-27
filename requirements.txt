@@ -1,4 +1,4 @@
 pylint
 pytest
 sphinx
-cocotb
+cocotb<1.9.0
