@@ -115,12 +115,14 @@ class uvm_port_base(uvm_export_base):
 
     def connect(self, export):
         """
-        :param export: The export that has the functions
-        :return: None
-        :raises: UVMTLMConnectionError if there is a connect error
+            :param export: The export that has the functions
+            :raises: UVMTLMConnectionError if there is a connect error
+            :return: None
+
             Attach this port to the associated export.
 
         """
+
         self._check_export(export)
         try:
             self.export = export
@@ -362,12 +364,12 @@ class uvm_blocking_transport_port(uvm_port_base):
 
     async def transport(self, put_data):
         """
+        Puts data and blocks if there is no room, then blocks
+        if there is no data to get and gets data.
+
         :param put_data: data to send
         :raises: UVMTLMConnectionError if export is missing
         :return: data received
-
-        Puts data and blocks if there is no room, then blocks
-        if there is no data to get and gets data.
         """
         try:
             get_data = await self.export.transport(put_data)
@@ -385,12 +387,12 @@ class uvm_nonblocking_transport_port(uvm_port_base):
 
     def nb_transport(self, put_data):
         """
+        Non-blocking transport.  Returns a tuple with success
+        if the transport was successful and the data could be returned
+
         :param put_data: data to send
         :raises: UVMTLMConnectionError if export is missing
         :return: (success, data)
-
-        Non-blocking transport.  Returns a tuple with success
-        if the transport was successful and the data could be returned
         """
         try:
             success, get_data = self.export.nb_transport(put_data)
@@ -445,12 +447,13 @@ class uvm_analysis_port(uvm_port_base):
     # 12.2.8.1
     def write(self, datum):
         """
+        Write to all connected analysis ports. This is a broadcast.
+        Returns regardless of whether there are any subscribers.
+
         :param datum: data to send
         :raises: UVMTLMConnectionError if export is missing
         :return: None
 
-        Write to all connected analysis ports. This is a broadcast.
-        Returns regardless of whether there are any subscribers.
         """
         for export in self.subscribers:
             if not hasattr(export, "write"):
