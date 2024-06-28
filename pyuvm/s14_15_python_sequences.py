@@ -95,7 +95,8 @@ from cocotb.triggers import Event as CocotbEvent
 
 class ResponseQueue(UVMQueue):
     """
-    Returns either the next response or the item with the id.
+    The ``ResponseQueue`` is a queue that can cherry-pick an item
+    using an id number, or simply return the next item in the queue.
     """
 
     def __init__(self, maxsize: int = 0):
@@ -103,11 +104,28 @@ class ResponseQueue(UVMQueue):
         self.put_event = CocotbEvent("put event")
 
     def put_nowait(self, item):
+        """
+        Extend the ``cocotb.queue.Queue.put_nowait`` method to set the
+        ``put_event`` flag.  This flag is used to signal that an item has
+        been put in the queue so that get_response can be unblocked.
+
+        :param item: The item to put in the queue
+        :raises QueueFull: If the queue is full
+        """
         super().put_nowait(item)
         self.put_event.set()
         self.put_event.clear()
 
     async def get_response(self, txn_id=None):
+        """
+        A coroutine that will either get a response item with
+        the given transaction_id, or return the next item in the queue.
+
+        :param txn_id: (Optional) The transaction ID of the response you want
+        to pluck from the queue.
+        :return: The response item
+
+        """
         if txn_id is None:
             return await self.get()
         else:
@@ -131,7 +149,7 @@ class ResponseQueue(UVMQueue):
 
 class uvm_sequence_item(uvm_transaction):
     """
-    The pyuvm uvm_sequence_item has conditions to
+    The pyuvm uvm_sequence_item has events to
     implement start_item() and finish_item()
     """
 
@@ -149,7 +167,7 @@ class uvm_sequence_item(uvm_transaction):
         rsp.set_context(req)
 
         :param item: The request transaction
-        :return:
+        :return: None
         """
         self.response_id = (item.parent_sequence_id, item.get_transaction_id())
 
@@ -168,26 +186,30 @@ class uvm_seq_item_export(uvm_blocking_put_export):
 
     async def put_req(self, item):
         """
-        put request into request queue
+        put request into request queue. Block if the queue is full.
 
         :param item: request item
-        :return:
+        :return: None
         """
         await self.req_q.put(item)
 
     def put_response(self, item):
         """
-        Put response into response queue
+        Put response into response queue. Do not block.
 
         :param item: response item
+        :raise QueueFull: If the queue is full
         :return:
         """
         self.rsp_q.put_nowait(item)
 
     async def get_next_item(self):
         """
-        Get the next item out of the item queue
+        A couroutine that gets the next item out of the item queue
+        and blocks if the queue is empty.
+
         :return: item to process
+
         """
         if self.current_item is not None:
             raise error_classes.UVMSequenceError(
@@ -200,10 +222,10 @@ class uvm_seq_item_export(uvm_blocking_put_export):
 
     def item_done(self, rsp=None):
         """
-        Signal that the item has been completed. If item is not none
+        Signal that the item has been completed. If ``rsp`` is not ``None``
         put it into the response queue.
 
-        :param rsp: item to put in response queue if not None
+        :param rsp: (optional) item to put in response queue if not None
         """
         if self.current_item is None:
             raise error_classes.UVMSequenceError(
@@ -216,10 +238,14 @@ class uvm_seq_item_export(uvm_blocking_put_export):
 
     async def get_response(self, transaction_id=None):
         """
-        If transaction_id is not none, block until a
+        A couroutine that will block if there is no transaction
+        available 
+        
+        If ``transaction_id`` is not ``None``, block until a
         response with the transaction id becomes available.
+
         :param transaction_id: The transaction ID of the response
-        :return:
+        :return: The response item
         """
         datum = await self.rsp_q.get_response(transaction_id)
         return datum
@@ -232,15 +258,22 @@ class uvm_seq_item_port(uvm_port_base):
 
     async def put_req(self, item):
         """
-        Put a request item in the request queue
+        A coroutine that blocks until the request is put in the queue
+
         :param item: The request item
 
-        A coroutine that blocks until the request is put in the queue
         """
         await self.export.put_req(item)
 
     def put_response(self, item):
-        """Put a response back in the queue. aka put_response"""
+        """
+        Put a response back in the queue. aka put_response
+
+        :param item: The response item
+        :Raises UVMFatalError: If the item is not a subclass of 
+        uvm_sequence_item
+        """
+
         try:
             assert issubclass(type(item), uvm_sequence_item)
         except AssertionError:
@@ -249,7 +282,12 @@ class uvm_seq_item_port(uvm_port_base):
         self.export.put_response(item)
 
     async def get_next_item(self):
-        """get the next sequence item from the request queue
+        """
+        A coroutine that get the next sequence item from the request queue
+        and blocks if the queue is empty.
+
+        :return: The next sequence item
+
         """
         try:
             return await self.export.get_next_item()
@@ -258,7 +296,13 @@ class uvm_seq_item_port(uvm_port_base):
             raise
 
     def item_done(self, rsp=None):
-        """Notify finish_item that the item is complete"""
+        """
+        Notify the driver that it can get the next sequence. If 
+        ``rsp`` is not ``None``, put it in the response queue.
+
+        :param rsp: (optional) The response item
+        :raise UVMFatalError: If ``rsp`` is not a subclass of uvm_sequence_item
+        """
         if rsp is not None:
             try:
                 assert issubclass(type(rsp), uvm_sequence_item)
@@ -269,13 +313,14 @@ class uvm_seq_item_port(uvm_port_base):
 
     async def get_response(self, transaction_id=None):
         """
-        Either get a response item with the given transaction_id,
-        or get the first one in the queue.
+        A coroutine that will ither get a response item with the
+        given transaction_id, or get the first response item
+        in the queue. Otherwise it will block until a response
+        is ready.
 
-        Removes the found transaction.
+        :param transaction_id: The transaction ID of the response you want
+        :return: The response item
 
-        If there is no transaction in the queue with transaction_id,
-        block until it appears.
         """
         datum = await self.export.get_response(transaction_id)
         return datum
@@ -343,10 +388,17 @@ class uvm_sequence(uvm_object):
     async def body(self):
         """
         This function gets launched in a thread when you run start()
-        You generally override it in any extension.
+        You generally override it.
         """
 
     async def start(self, seqr=None):
+        """
+        Launch this sequence on the sequencer. Seqr cannot be None.
+        
+        :param seqr: The sequencer to launch this sequence on.
+        :raise AssertionError: If seqr is None
+        
+        """
         if seqr is not None:
             assert (isinstance(seqr, uvm_sequencer)), \
                 "Tried to start a sequence with a non-sequencer"
