@@ -302,6 +302,7 @@ class uvm_seq_item_port(uvm_port_base):
 
         :param rsp: (optional) The response item
         :raise UVMFatalError: If ``rsp`` is not a subclass of uvm_sequence_item
+
         """
         if rsp is not None:
             try:
