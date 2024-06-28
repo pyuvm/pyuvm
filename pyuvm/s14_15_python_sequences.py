@@ -239,8 +239,8 @@ class uvm_seq_item_export(uvm_blocking_put_export):
     async def get_response(self, transaction_id=None):
         """
         A couroutine that will block if there is no transaction
-        available 
-        
+        available
+
         If ``transaction_id`` is not ``None``, block until a
         response with the transaction id becomes available.
 
@@ -270,7 +270,7 @@ class uvm_seq_item_port(uvm_port_base):
         Put a response back in the queue. aka put_response
 
         :param item: The response item
-        :Raises UVMFatalError: If the item is not a subclass of 
+        :Raises UVMFatalError: If the item is not a subclass of
         uvm_sequence_item
         """
 
@@ -297,7 +297,7 @@ class uvm_seq_item_port(uvm_port_base):
 
     def item_done(self, rsp=None):
         """
-        Notify the driver that it can get the next sequence. If 
+        Notify the driver that it can get the next sequence. If
         ``rsp`` is not ``None``, put it in the response queue.
 
         :param rsp: (optional) The response item
@@ -394,10 +394,10 @@ class uvm_sequence(uvm_object):
     async def start(self, seqr=None):
         """
         Launch this sequence on the sequencer. Seqr cannot be None.
-        
+
         :param seqr: The sequencer to launch this sequence on.
         :raise AssertionError: If seqr is None
-        
+
         """
         if seqr is not None:
             assert (isinstance(seqr, uvm_sequencer)), \
