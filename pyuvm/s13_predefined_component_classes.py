@@ -56,6 +56,14 @@ class uvm_agent(uvm_component):
     """
 
     def build_phase(self):
+        """
+        This ``build_phase()`` implements agent-specific behavior.
+            * It sets the agent's ``is_active`` property to ``UVM_ACTIVE``
+            * It allows the user to override the ``is_active`` property using
+              the ``cdb_get()`` method.
+            * It logs a warning if the user sets an illegal value for
+              ``is_active`` and sets the value to ``UVM_ACTIVE``.
+        """
         super().build_phase()
         self.is_active = uvm_active_passive_enum.UVM_ACTIVE
         try:
@@ -108,6 +116,13 @@ class uvm_subscriber(uvm_component):
             self.write_fn = write_fn
 
         def write(self, tt):
+            """
+            Write a transaction to all the connected subscribers.
+
+            :param tt: The transaction to write
+            :return: None
+
+            """
             self.write_fn(tt)
 
     def __init__(self, name, parent):
@@ -117,6 +132,9 @@ class uvm_subscriber(uvm_component):
                                                     self.write)
 
     def write(self, tt):
+        """
+        Force the user to implement the write method.
+        """
         raise error_classes.UVMFatalError(
             "You must override the write() method in"
             f"uvm_subscriber {self.get_full_name()}")
