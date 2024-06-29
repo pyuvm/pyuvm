@@ -140,7 +140,7 @@ module TinyALUreg #(
     // next hardware value
 
     //! main storage
-    always_ff @ (posedge clk, negedge resetn)
+    always @ (posedge clk, negedge resetn)
     if (~resetn) begin
         SRC_data0_q <= 0;
     end else begin
@@ -160,7 +160,7 @@ module TinyALUreg #(
     // next hardware value
 
     //! main storage
-    always_ff @ (posedge clk, negedge resetn)
+    always @ (posedge clk, negedge resetn)
     if (~resetn) begin
         SRC_data1_q <= 0;
     end else begin
@@ -241,7 +241,7 @@ module TinyALUreg #(
     // next hardware value
 
     //! main storage
-    always_ff @ (posedge clk, negedge resetn)
+    always @ (posedge clk, negedge resetn)
     if (~resetn) begin
         CMD_op_q <= 0;
     end else begin
@@ -261,7 +261,7 @@ module TinyALUreg #(
     // next hardware value
 
     //! main storage
-    always_ff @ (posedge clk, negedge resetn)
+    always @ (posedge clk, negedge resetn)
     if (~resetn) begin
         CMD_start_q <= 0;
     end else begin
@@ -293,7 +293,7 @@ module TinyALUreg #(
     assign CMD_reserved_next = CMD_reserved_wdata;
 
     //! main storage
-    always_ff @ (posedge clk, negedge resetn)
+    always @ (posedge clk, negedge resetn)
     if (~resetn) begin
         CMD_reserved_q <= 0;
     end else begin
