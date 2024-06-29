@@ -17,7 +17,7 @@ from pyuvm import UVMNotImplemented
 from pyuvm import ConfigDB, uvm_root
 from pyuvm import CRITICAL
 from cocotb.clock import Clock
-from cocotb.triggers import Join, Combine, RisingEdge
+from cocotb.triggers import Join, Combine
 import random
 import cocotb
 import pyuvm
@@ -46,20 +46,20 @@ REG_WIDTH = 16
 ALU_REG_SRC_ADDR = "0x0"
 ALU_REG_SRC_ADDR_DATA0_S = 0
 ALU_REG_SRC_ADDR_DATA1_S = 8
-ALU_REG_SRC_ADDR_DATA0_M = 2**8-1
-ALU_REG_SRC_ADDR_DATA1_M = 2**8-1
+ALU_REG_SRC_ADDR_DATA0_M = 2 ** 8 - 1
+ALU_REG_SRC_ADDR_DATA1_M = 2 ** 8 - 1
 ALU_REG_RESULT_ADDR = "0x2"
 ALU_REG_RESULT_DATA_S = 0
-ALU_REG_RESULT_DATA_M = 2**16-1
+ALU_REG_RESULT_DATA_M = 2 ** 16 - 1
 ALU_REG_CMD_ADDR = "0x4"
 ALU_REG_CMD_OP_S = 0
 ALU_REG_CMD_START_S = 5
 ALU_REG_CMD_DONE_S = 6
 ALU_REG_CMD_RESERVED_S = 7
-ALU_REG_CMD_OP_M = 2*5-1
-ALU_REG_CMD_START_M = 2*1-1
-ALU_REG_CMD_DONE_M = 2*1-1
-ALU_REG_CMD_RESERVED_M = 2*9-1
+ALU_REG_CMD_OP_M = 2 * 5 - 1
+ALU_REG_CMD_START_M = 2 * 1 - 1
+ALU_REG_CMD_DONE_M = 2 * 1 - 1
+ALU_REG_CMD_RESERVED_M = 2 * 9 - 1
 
 
 ##############################################################################
@@ -221,7 +221,8 @@ class AluSeqItem(uvm_sequence_item):
         return same
 
     def __str__(self):
-        return f"{self.get_name()} : A: 0x{self.A:02x} OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"
+        return f"{self.get_name()} : A: 0x{self.A:02x} OP: {self.op.name}"
+        f" ({self.op.value}) B: 0x{self.B:02x}"
 
 
 ##############################################################################
@@ -241,18 +242,20 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
             return True
         else:
             return False
-        
+
     def seq_print(self, msg: str):
-        #self.logger.info(msg)
+        # self.logger.info(msg)
         uvm_root().logger.info(msg)
 
     def print_w_access(self, reg_addr: int, wdata: int):
         reg = self.map.get_reg_by_offset(reg_addr)
-        self.seq_print(f"Write access to register {reg.get_name()} at address {reg.get_address()} with data {wdata}")
+        self.seq_print(f"Write access to register {reg.get_name()}"
+                       f" at address {reg.get_address()} with data {wdata}")
 
     def print_r_access(self, reg_addr: int, read_data: int):
         reg = self.map.get_reg_by_offset(reg_addr)
-        self.seq_print(f"Read access to register {reg.get_name()} at address {reg.get_address()} with data {read_data}")
+        self.seq_print(f"Read access to register {reg.get_name()}"
+                       f"address: {reg.get_address()} data: {read_data}")
 
     async def reg_write(self, reg_addr: int, write_data: int):
         target_reg = self.map.get_reg_by_offset(reg_addr)
@@ -273,7 +276,7 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
     async def program_alu_reg(self, item: AluSeqItem):
         if (self.ral is None):
             raise UVMError("program_alu_reg -- RAL cannot be None")
-        self.seq_print("##########################################################")
+        self.seq_print("#####################################################")
         self.seq_print("START -- program_alu_reg")
 
         # Clear
@@ -309,7 +312,7 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
         self.print_r_access(ALU_REG_RESULT_ADDR, rdata)
         # Load result back
         item.result = rdata
-        self.seq_print("##########################################################")
+        self.seq_print("#####################################################")
 
 
 class RandomSeq(AluReg_base_sequence):
@@ -445,7 +448,8 @@ class Coverage(uvm_subscriber):
             disable_errors = False
         if not disable_errors:
             if len(set(Ops) - self.cvg) > 0:
-                self.logger.critical(f"Functional coverage error. Missed: {set(Ops)-self.cvg}")
+                self.logger.critical(f"Functional coverage error."
+                                     f" Missed: {set(Ops)-self.cvg}")
                 assert False
             else:
                 self.logger.info("Covered all operations")
@@ -511,34 +515,36 @@ class Scoreboard(uvm_component):
             cmd = await self.result_fifo.get()
             (A, B, op_numb, actual_result) = (cmd.A, cmd.B, cmd.op, cmd.result)
             predicted_result = alu_prediction(A, B, op_numb, self.errors)
-            if(self.errors is True):
+            if (self.errors is True):
                 if predicted_result != actual_result:
-                    self.logger.info(   f"Error scenario PASSED: 0x{A:02x} "
-                                        f"{op_numb.name} " 
-                                        f"0x{B:02x} = "
-                                        f"0x{actual_result:04x}")
+                    self.logger.info(f"Error scenario PASSED: 0x{A:02x} "
+                                     f"{op_numb.name} "
+                                     f"0x{B:02x} = "
+                                     f"0x{actual_result:04x}")
                 else:
-                    self.logger.error(  f"Error scenario FAILED: 0x{A:02x} "
-                                        f"{op_numb.name} " 
-                                        f"0x{B:02x} "
-                                        f"= 0x{actual_result:04x} "
-                                        f"expected 0x{predicted_result:04x}")                
+                    self.logger.error(f"Error scenario FAILED: 0x{A:02x} "
+                                      f"{op_numb.name} "
+                                      f"0x{B:02x} "
+                                      f"= 0x{actual_result:04x} "
+                                      f"expected 0x{predicted_result:04x}")
             else:
                 if predicted_result == actual_result:
-                    self.logger.info(   f"PASSED: 0x{A:02x} "
-                                        f"{op_numb.name} " 
-                                        f"0x{B:02x} = "
-                                        f"0x{actual_result:04x}")
+                    self.logger.info(f"PASSED: 0x{A:02x} "
+                                     f"{op_numb.name} "
+                                     f"0x{B:02x} = "
+                                     f"0x{actual_result:04x}")
                 else:
-                    self.logger.error(  f"FAILED: 0x{A:02x} "
-                                        f"{op_numb.name} " 
-                                        f"0x{B:02x} "
-                                        f"= 0x{actual_result:04x} "
-                                        f"expected 0x{predicted_result:04x}")
-        
+                    self.logger.error(f"FAILED: 0x{A:02x} "
+                                      f"{op_numb.name} "
+                                      f"0x{B:02x} "
+                                      f"= 0x{actual_result:04x} "
+                                      f"expected 0x{predicted_result:04x}")
+
     def check_phase(self):
         if (self.result_fifo.size() != 0):
-            self.logger.critical(f"TEST FAILED main result fifo is not Empty, there are {self.result_fifo.size()} left to be compared")
+            self.logger.critical(f"TEST FAILED main result fifo is not"
+                                 f" Empty, there are {self.result_fifo.size()}"
+                                 f" left to be compared")
 
 ##############################################################################
 # ENVIRONMENT
