@@ -6,6 +6,11 @@ IEEE defined the UVM in the [*IEEE Standard for Universal Verification Methodolo
 
 While the industry defined the 1800.2 standard in terms of SystemVerilog, there is little in the standard that requires us to implement the UVM library in SystemVerilog.  It could be implemented in any language with sufficient object oriented support---for example, Python.
 
+
+## API Documenation
+
+You can read the API documenation for **pyuvm** on [GitHub Pages](https://pyuvm.github.io/pyuvm/).
+
 ## Python and IEEE 1800.2
 
 **pyuvm** is the Universal Verification Methodology implemented in Python instead of SystemVerilog. **pyuvm** uses [**cocotb**][cocotbLink] to interact with simulators and schedule simulation events.
@@ -471,7 +476,7 @@ Credits:
 
 # License
 
-Copyright 2020 Siemens EDA
+Copyright 2020 Siemens EDA and Ray Salemi
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

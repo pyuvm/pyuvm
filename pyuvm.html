@@ -285,7 +285,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_peek_export"><code class="docutils literal notranslate"><span class="pre">uvm_peek_export</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_peek_port"><code class="docutils literal notranslate"><span class="pre">uvm_peek_port</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_port_base"><code class="docutils literal notranslate"><span class="pre">uvm_port_base</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_port_base.check_export"><code class="docutils literal notranslate"><span class="pre">uvm_port_base.check_export()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_port_base.connect"><code class="docutils literal notranslate"><span class="pre">uvm_port_base.connect()</span></code></a></li>
 </ul>
 </li>
@@ -825,6 +824,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#pyuvm.utility_classes.UVM_ROOT_Singleton.singleton"><code class="docutils literal notranslate"><span class="pre">UVM_ROOT_Singleton.singleton</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#pyuvm.utility_classes.count_bits"><code class="docutils literal notranslate"><span class="pre">count_bits()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pyuvm.utility_classes.uvm_void"><code class="docutils literal notranslate"><span class="pre">uvm_void</span></code></a></li>
 </ul>
 </li>
@@ -940,7 +940,7 @@ method rather than a UVM method.</p>
 <span id="pyuvm-extension-classes-module"></span><h2>pyuvm.extension_classes module<a class="headerlink" href="#module-pyuvm.extension_classes" title="Link to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="pyuvm.extension_classes.test">
-<span class="sig-prename descclassname"><span class="pre">pyuvm.extension_classes.</span></span><span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'step'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expect_fail</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expect_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.extension_classes.test" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">pyuvm.extension_classes.</span></span><span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'step'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expect_fail</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expect_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_singletons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.extension_classes.test" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 </section>
@@ -964,9 +964,11 @@ that can better be implemented using Python functionality.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.clone">
 <span class="sig-name descname"><span class="pre">clone</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.clone" title="Link to this definition"></a></dt>
-<dd><p>Unlike the clone in the SystemVerilog UVM, this clone()
-uses copy.deepcopy so the user does not need to override
-do_copy()</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new object with the same name and data as this object.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -990,17 +992,24 @@ the user-overridden <code class="docutils literal notranslate"><span class="pre"
 <span class="sig-name descname"><span class="pre">convert2string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.convert2string" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>__str__()</p>
+<dd class="field-odd"><p>The result of <code class="docutils literal notranslate"><span class="pre">__str__()</span></code></p>
 </dd>
 </dl>
-<p>Returns the result of self.__str__().
-Perhaps better to just use __str__() directly?</p>
+<p>Override if you want something different than <code class="docutils literal notranslate"><span class="pre">__str__()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.copy" title="Link to this definition"></a></dt>
-<dd><p>Copy fields from rhs to this object</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rhs</strong> – The object to copy from</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>Copy fields from rhs to this object using <code class="docutils literal notranslate"><span class="pre">self.do_copy()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
@@ -1016,13 +1025,31 @@ Perhaps better to just use __str__() directly?</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.do_compare">
 <span class="sig-name descname"><span class="pre">do_compare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.do_compare" title="Link to this definition"></a></dt>
-<dd><p>Recommend overriding __eq__() rather than this method.</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rhs</strong> – The object being compared.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the objects are the same.</p>
+</dd>
+</dl>
+<p>Uses <code class="docutils literal notranslate"><span class="pre">__eq__()</span></code> to compare the objects.  Override this
+to change the compare behavior.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.do_copy">
 <span class="sig-name descname"><span class="pre">do_copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.do_copy" title="Link to this definition"></a></dt>
-<dd><p>Copies name. Override to copy additional data members</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rhs</strong> – The object to copy from</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>By default we copy the name. Override this function
+to copy the rest of the object members.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1034,7 +1061,7 @@ Perhaps better to just use __str__() directly?</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.do_pack">
 <span class="sig-name descname"><span class="pre">do_pack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.do_pack" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1052,32 +1079,46 @@ Perhaps better to just use __str__() directly?</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.do_unpack">
 <span class="sig-name descname"><span class="pre">do_unpack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.do_unpack" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.get_active_policy">
 <span class="sig-name descname"><span class="pre">get_active_policy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.get_active_policy" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet.</p>
+<dd><p>Not implemented.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.get_full_name">
 <span class="sig-name descname"><span class="pre">get_full_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.get_full_name" title="Link to this definition"></a></dt>
-<dd><p>The full name for a uvm_object is simply the name</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The full path and name of the object</p>
+</dd>
+</dl>
+<p>The full name for a uvm_object is simply the name</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.get_inst_id">
 <span class="sig-name descname"><span class="pre">get_inst_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.get_inst_id" title="Link to this definition"></a></dt>
-<dd><p>Returns the python ID which fits the bill
-for what the ID is supposed to be.</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The python ID which fits the bill for what the ID
+is supposed to be.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.get_name">
 <span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.get_name" title="Link to this definition"></a></dt>
-<dd><p>Return the name of this object as passed by the constructor</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>String with name of uvm_object.</p>
+</dd>
+</dl>
+<p>Return the name of this object as passed by the constructor</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1097,7 +1138,11 @@ these shenanigans.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.get_type_name">
 <span class="sig-name descname"><span class="pre">get_type_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.get_type_name" title="Link to this definition"></a></dt>
-<dd><p>Returns types  __name__ magic variable</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Returns the type’s <code class="docutils literal notranslate"><span class="pre">__name__</span></code> magic variable</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1109,31 +1154,31 @@ these shenanigans.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.pack">
 <span class="sig-name descname"><span class="pre">pack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.pack" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.pack_bytes">
 <span class="sig-name descname"><span class="pre">pack_bytes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.pack_bytes" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.pack_ints">
 <span class="sig-name descname"><span class="pre">pack_ints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.pack_ints" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.pack_longints">
 <span class="sig-name descname"><span class="pre">pack_longints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.pack_longints" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.pop_active_policy">
 <span class="sig-name descname"><span class="pre">pop_active_policy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.pop_active_policy" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet.</p>
+<dd><p>Not implemented.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1145,13 +1190,13 @@ these shenanigans.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.push_active_policy">
 <span class="sig-name descname"><span class="pre">push_active_policy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.push_active_policy" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet.</p>
+<dd><p>Not implemented.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.record">
 <span class="sig-name descname"><span class="pre">record</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.record" title="Link to this definition"></a></dt>
-<dd><p>Not implemented as we are not in a simulator.</p>
+<dd><p>Not implemented.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1169,7 +1214,12 @@ these shenanigans.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.set_name">
 <span class="sig-name descname"><span class="pre">set_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.set_name" title="Link to this definition"></a></dt>
-<dd><p>Set the name</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – Name of the object</p>
+</dd>
+</dl>
+<p>Set the name</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1187,25 +1237,25 @@ these shenanigans.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.unpack">
 <span class="sig-name descname"><span class="pre">unpack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.unpack" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.unpack_bytes">
 <span class="sig-name descname"><span class="pre">unpack_bytes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.unpack_bytes" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.unpack_ints">
 <span class="sig-name descname"><span class="pre">unpack_ints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.unpack_ints" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_object.unpack_longints">
 <span class="sig-name descname"><span class="pre">unpack_longints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_object.unpack_longints" title="Link to this definition"></a></dt>
-<dd><p>Not implemented yet. There are Pythonic solutions to this.</p>
+<dd><p>Not implemented. There are Pythonic solutions to this.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1227,8 +1277,12 @@ in Python. It is not needed in pyuvm.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_transaction.accept_tr">
 <span class="sig-name descname"><span class="pre">accept_tr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">accept_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_transaction.accept_tr" title="Link to this definition"></a></dt>
-<dd><p>5.4.2.2
-:param time: simulation time</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>accept_time</strong> – Simulation time when the transaction is accepted</p>
+</dd>
+</dl>
+<p>IEEE 1800.2 5.4.2.2</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1254,7 +1308,7 @@ the transaction is acted upon by the driver</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_transaction.do_accept_tr">
 <span class="sig-name descname"><span class="pre">do_accept_tr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_transaction.do_accept_tr" title="Link to this definition"></a></dt>
-<dd><p>User definable method</p>
+<dd><p>User definable method to add to <code class="docutils literal notranslate"><span class="pre">accept_tr()</span></code></p>
 </dd></dl>
 
 <dl class="py method">
@@ -1295,19 +1349,31 @@ is marked as acted upon</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_transaction.get_accept_time">
 <span class="sig-name descname"><span class="pre">get_accept_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_transaction.get_accept_time" title="Link to this definition"></a></dt>
-<dd><p>Returns the Accept time of transaction</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Accept time of transaction</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_transaction.get_begin_time">
 <span class="sig-name descname"><span class="pre">get_begin_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_transaction.get_begin_time" title="Link to this definition"></a></dt>
-<dd><p>Returns the Begin time of transaction</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Begin time of transaction</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_transaction.get_end_time">
 <span class="sig-name descname"><span class="pre">get_end_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_transaction.get_end_time" title="Link to this definition"></a></dt>
-<dd><p>Returns the End time of transaction</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>End time of transaction</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1336,7 +1402,12 @@ is marked as acted upon</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_transaction.get_transaction_id">
 <span class="sig-name descname"><span class="pre">get_transaction_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_transaction.get_transaction_id" title="Link to this definition"></a></dt>
-<dd><p>Returns  variable transaction_id</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Transaction ID</p>
+</dd>
+</dl>
+<p>Returns transaction_id</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1356,7 +1427,7 @@ is marked as acted upon</p></li>
 <span class="sig-name descname"><span class="pre">set_id_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_transaction.set_id_info" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>other</strong> – uvm_transaction</p>
+<dd class="field-odd"><p><strong>other</strong> – uvm_transaction with transaction_id</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -1382,7 +1453,12 @@ is marked as acted upon</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s05_base_classes.uvm_transaction.set_transaction_id">
 <span class="sig-name descname"><span class="pre">set_transaction_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s05_base_classes.uvm_transaction.set_transaction_id" title="Link to this definition"></a></dt>
-<dd><p>Sets  variable transaction_id</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>txn_id</strong> – Transaction ID</p>
+</dd>
+</dl>
+<p>Sets transaction’s transaction_id</p>
 </dd></dl>
 
 </dd></dl>
@@ -1397,7 +1473,11 @@ is marked as acted upon</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.PyuvmFormatter.format">
 <span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.PyuvmFormatter.format" title="Link to this definition"></a></dt>
-<dd><p>Prettify the log output, annotate with simulation time</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>record</strong> – The log record</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1409,39 +1489,85 @@ is marked as acted upon</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.uvm_report_object.add_logging_handler">
 <span class="sig-name descname"><span class="pre">add_logging_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.uvm_report_object.add_logging_handler" title="Link to this definition"></a></dt>
-<dd><p>Adds a handler</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>handler</strong> – The logging handler</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.uvm_report_object.disable_logging">
 <span class="sig-name descname"><span class="pre">disable_logging</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.uvm_report_object.disable_logging" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p>Disables logging</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.uvm_report_object.get_default_logging_level">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_default_logging_level</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.uvm_report_object.get_default_logging_level" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The default logging level</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.uvm_report_object.remove_logging_handler">
 <span class="sig-name descname"><span class="pre">remove_logging_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.uvm_report_object.remove_logging_handler" title="Link to this definition"></a></dt>
-<dd><p>Removes a specific handler</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>handler</strong> – The logging handler to remove</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.uvm_report_object.remove_streaming_handler">
 <span class="sig-name descname"><span class="pre">remove_streaming_handler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.uvm_report_object.remove_streaming_handler" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p>Removes the streaming handler</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.uvm_report_object.set_default_logging_level">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">set_default_logging_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_logging_level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.uvm_report_object.set_default_logging_level" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>default_logging_level</strong> – The default logging level</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.uvm_report_object.set_logging_level">
 <span class="sig-name descname"><span class="pre">set_logging_level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logging_level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.uvm_report_object.set_logging_level" title="Link to this definition"></a></dt>
-<dd><p>Sets the logger level</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>logging_level</strong> – The logging level</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1453,16 +1579,18 @@ is marked as acted upon</p></li>
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyuvm.s08_factory_classes.</span></span><span class="sig-name descname"><span class="pre">uvm_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>The uvm_factory is a singleton that delivers all factory functions.</p>
+<p>The uvm_factory is a singleton that delivers all UVM factory functions.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.clear_all">
 <span class="sig-name descname"><span class="pre">clear_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.clear_all" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Clear all the classes and overrides from the factory</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.clear_overrides">
 <span class="sig-name descname"><span class="pre">clear_overrides</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.clear_overrides" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Clear all the overrides from the factory</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.create_component_by_name">
@@ -1477,8 +1605,11 @@ is marked as acted upon</p></li>
 <li><p><strong>parent</strong> – The component’s parent component</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A uvm_object with the name given</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMFactoryError if the type is not in the factory</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A uvm_object with the name given</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1497,8 +1628,11 @@ exists for inst overrides</p></li>
 <li><p><strong>parent</strong> – The parent component</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>a uvm_component with the name an parent given.</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMFactoryError if the type is not in the factory</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a uvm_component with the name an parent given.</p>
 </dd>
 </dl>
 <p>Create a component of the requested uvm_component type.
@@ -1508,8 +1642,7 @@ If the type is is not in the factory we raise UVMFactoryError</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.create_object_by_name">
 <span class="sig-name descname"><span class="pre">create_object_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_type_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_inst_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.create_object_by_name" title="Link to this definition"></a></dt>
-<dd><p>Create an object using a string to define its uvm_object type.</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>requested_type_name</strong> – the type that could be overridden</p></li>
@@ -1517,153 +1650,207 @@ If the type is is not in the factory we raise UVMFactoryError</p>
 <li><p><strong>name</strong> – The name of the new object.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A uvm_object with the name given</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMFactoryError if the type is not in the factory</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A uvm_object with the name given</p>
 </dd>
 </dl>
+<p>Create an object using a string to define its uvm_object type.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.create_object_by_type">
 <span class="sig-name descname"><span class="pre">create_object_by_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_inst_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.create_object_by_type" title="Link to this definition"></a></dt>
-<dd><p>8.3.1.5 Creation
-:param requested_type: The type that we request but that can be
-overridden
-:param parent_inst_path: The get_full_name path of the parent
-:param name: The name of the instance requested_type(“name”)
-:return: Type that is child of uvm_object.
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>requested_type</strong> – The type that we request but that can be
+overridden</p></li>
+<li><p><strong>parent_inst_path</strong> – The get_full_name path of the parent</p></li>
+<li><p><strong>name</strong> – The name of the instance requested_type(“name”)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMFactoryError if the type is not in the factory</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Type that is child of uvm_object.</p>
+</dd>
+</dl>
+<p>8.3.1.5 Creation
 If the type is is not in the factory we raise UVMFactoryError</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.debug_level">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">debug_level</span></span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.debug_level" title="Link to this definition"></a></dt>
-<dd><p>uvm_factory().debug_level = 0 : overrides
-uvm_factory().debug_level = 1 : user defined types + above
-uvm_factory().debug_level = 2 : uvm_* types + above</p>
+<dd><ul class="simple">
+<li><p>uvm_factory().debug_level = 0 : overrides</p></li>
+<li><p>uvm_factory().debug_level = 1 : user defined types + above</p></li>
+<li><p>uvm_factory().debug_level = 2 : uvm_* types + above</p></li>
+</ul>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.find_override_by_name">
 <span class="sig-name descname"><span class="pre">find_override_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_type_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_inst_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.find_override_by_name" title="Link to this definition"></a></dt>
-<dd><p>Given a path and the name of a class return its overriding class object</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>requested_type_name</strong></p></li>
 <li><p><strong>full_inst_path</strong></p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>class object</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMFactoryError if the type is not in the factory</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>class object</p>
 </dd>
 </dl>
+<p>Given a path and the name of a class return its overriding class object</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.find_override_by_type">
 <span class="sig-name descname"><span class="pre">find_override_by_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_inst_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.find_override_by_type" title="Link to this definition"></a></dt>
-<dd><p>Given a type and instance path, return the override class object.</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>requested_type</strong> – The type whose override you want</p></li>
 <li><p><strong>full_inst_path</strong> – The inst path where one looks</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>class object</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMFactoryError if the type is not in the factory</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>class object</p>
 </dd>
 </dl>
+<p>Given a type and instance path, return the override class object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.find_wrapper_by_name">
 <span class="sig-name descname"><span class="pre">find_wrapper_by_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.find_wrapper_by_name" title="Link to this definition"></a></dt>
-<dd><p>There are no wrappers in pyuvm so this is not implemented.</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UVMNotImplemented There are no wrappers in
+<strong>pyuvm</strong> so this is not implemented.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.is_type_name_registered">
 <span class="sig-name descname"><span class="pre">is_type_name_registered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.is_type_name_registered" title="Link to this definition"></a></dt>
-<dd><p>Checks that a type of this name is registered with the factory.</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>type_name</strong> – string that is name of a type</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>boolean</p>
+<dd class="field-even"><p>boolean True if type is registered</p>
 </dd>
 </dl>
+<p>Checks that a type of this name is registered with the factory.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.is_type_registered">
 <span class="sig-name descname"><span class="pre">is_type_registered</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uvm_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.is_type_registered" title="Link to this definition"></a></dt>
-<dd><p>Checks that a type is registered. The argument is named “obj” in
-the spec, but that name is ridiculous and confusing.</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>uvm_type</strong> – The type to be checked</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>boolean</p>
+<dd class="field-even"><p>boolean True if type is registered</p>
 </dd>
 </dl>
+<p>Checks that a type is registered. The argument is named “obj” in
+the spec, but that name is ridiculous and confusing.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.print">
 <span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debug_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.print" title="Link to this definition"></a></dt>
-<dd><p>Prints the factory data using debug_level to
-control the amount of output. The uvm_factory().debug_level
-variable can control this for __str__()</p>
-<p>debug_level = 0 : overrides
-debug_level = 1 : user defined types + above
-debug_level = 2 : uvm_* types + above</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>debug_level</strong> – <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">debug_level</span></code> = 0 : overrides</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">debug_level</span></code> = 1 : user defined types + above ( default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">debug_level</span></code> = 2 : uvm_* types + above</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
+<p>Prints the factory data using debug_level to
+control the amount of output. The uvm_factory().debug_level
+variable can control this for __str__()</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.set_inst_alias">
 <span class="sig-name descname"><span class="pre">set_inst_alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias_type_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_inst_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.set_inst_alias" title="Link to this definition"></a></dt>
-<dd><p>Not implemented as it does not seem to exist in SystemVerilog UVM</p>
-<p>:param alias_type_name:A string that will reference the original type
+<dd><p>:param alias_type_name:A string that will reference the original type
 :param original_type:The original type toe be referenced
 :param full_inst_path: The instance path where this alias is active
-:return:None</p>
+:raises: UVMNotImplemented  Not implemented as it does</p>
+<blockquote>
+<div><p>not seem to exist in SystemVerilog UVM</p>
+</div></blockquote>
+<p>:return:None</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.set_inst_override_by_name">
 <span class="sig-name descname"><span class="pre">set_inst_override_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_type_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override_type_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_inst_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.set_inst_override_by_name" title="Link to this definition"></a></dt>
-<dd><p>Override a specific instance  using strings that contain
-the names of the types.
-:param original_type_name: the name of type being replaced
-:param override_type_name: the name of the substitute type
-:param full_inst_path: The path to the instance
-:return:</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>original_type_name</strong> – the name of type being replaced</p></li>
+<li><p><strong>override_type_name</strong> – the name of the substitute type</p></li>
+<li><p><strong>full_inst_path</strong> – The path to the instance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>Override a specific instance  using strings that contain
+the names of the types.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.set_inst_override_by_type">
 <span class="sig-name descname"><span class="pre">set_inst_override_by_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_inst_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.set_inst_override_by_type" title="Link to this definition"></a></dt>
-<dd><p>Override an instance with a new type if original type is at that path
-:param original_type: The original type being overridden
-:param override_type: The overriding type
-:param full_inst_path: The inst where this happens.</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>original_type</strong> – The original type being overridden</p></li>
+<li><p><strong>override_type</strong> – The overriding type</p></li>
+<li><p><strong>full_inst_path</strong> – The inst where this happens</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>Override an instance with a new type if original type is at that path</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s08_factory_classes.uvm_factory.set_type_alias">
 <span class="sig-name descname"><span class="pre">set_type_alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alias_type_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">original_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s08_factory_classes.uvm_factory.set_type_alias" title="Link to this definition"></a></dt>
-<dd><p>Not implemented as it does not seem to exist in SystemVerilog UVM</p>
-<p>:param alias_type_name:A string that will reference the original type
+<dd><p>:param alias_type_name:A string that will reference the original type
 :param original_type:The original type toe be referenced
+:raises: UVMNotImplemented Not implemented as it does not seem to
+exist in the SystemVerilog UVM
 :return:None</p>
 </dd></dl>
 
@@ -1694,12 +1881,14 @@ containing the type names.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>original_type</strong> – The original type to be overridden</p></li>
 <li><p><strong>override_type</strong> – The new type that will override it</p></li>
-<li><p><strong>replace</strong> – <p>If the override exists, only replace it if this is True</p>
-<p>Override one type with another type globally</p>
-</p></li>
+<li><p><strong>replace</strong> – If the override exists, only replace it if this is True</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
 </dl>
+<p>Override one type with another type globally</p>
 </dd></dl>
 
 </dd></dl>
@@ -1715,7 +1904,14 @@ containing the type names.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s09_phasing.uvm_bottomup_phase.traverse">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">traverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s09_phasing.uvm_bottomup_phase.traverse" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>comp</strong> – The component whose hierarchy will be traversed</p>
+</dd>
+</dl>
+<p>Given a component, we traverse the component tree
+bottom to top calling the phase functions as we go</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1816,13 +2012,13 @@ join all the threads.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s09_phasing.uvm_topdown_phase.traverse">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">traverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">comp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s09_phasing.uvm_topdown_phase.traverse" title="Link to this definition"></a></dt>
-<dd><p>Given a component, we traverse the component tree
-top to bottom calling the phase functions as we go</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>comp</strong> – The component whose hierarchy will be traversed</p>
 </dd>
 </dl>
+<p>Given a component, we traverse the component tree
+top to bottom calling the phase functions as we go</p>
 </dd></dl>
 
 </dd></dl>
@@ -1849,26 +2045,34 @@ top to bottom calling the phase functions as we go</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_analysis_port.connect">
 <span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">export</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_analysis_port.connect" title="Link to this definition"></a></dt>
-<dd><p>Attach this port to the associated export.</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>export</strong></p>
+<dd class="field-odd"><p><strong>export</strong> – The export that has the functions</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if there is a connect error</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
+<p>Attach this port to the associated export.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_analysis_port.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_analysis_port.write" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Write to all connected analysis ports. This is a broadcast.
+Returns regardless of whether there are any subscribers.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>datum</strong> – data to send</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1901,8 +2105,15 @@ top to bottom calling the phase functions as we go</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_get_port.get">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_get_port.get" title="Link to this definition"></a></dt>
-<dd><p>A blocking get that returns the data got
-:return: data</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>data</p>
+</dd>
+</dl>
+<p>A blocking get that returns the data got</p>
 </dd></dl>
 
 </dd></dl>
@@ -1933,13 +2144,15 @@ top to bottom calling the phase functions as we go</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_peek_port.peek">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_peek_port.peek" title="Link to this definition"></a></dt>
-<dd><p>A blocking peek that returns data without
-consuming it.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datum</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>datum</p>
 </dd>
 </dl>
+<p>A blocking peek that returns data without consuming it.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1958,14 +2171,20 @@ consuming it.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_put_port.put">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datum</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_put_port.put" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>datum</strong> – Datum to put</p>
+<dd><blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">param datum<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Datum to put</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-odd">return<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
+</div></blockquote>
+<p>put the datum</p>
 </dd></dl>
 
 </dd></dl>
@@ -1995,7 +2214,20 @@ consuming it.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_transport_port.transport">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">put_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_blocking_transport_port.transport" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Puts data and blocks if there is no room, then blocks
+if there is no data to get and gets data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>put_data</strong> – data to send</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>data received</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -2067,10 +2299,12 @@ consuming it.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_get_port.can_get">
 <span class="sig-name descname"><span class="pre">can_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_get_port.can_get" title="Link to this definition"></a></dt>
-<dd><p>Returns true if there is data to get</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool Returns true if there is data to get</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2078,7 +2312,15 @@ consuming it.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_get_port.try_get">
 <span class="sig-name descname"><span class="pre">try_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_get_port.try_get" title="Link to this definition"></a></dt>
-<dd><p>12.2.4.2.6
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(success, data)</p>
+</dd>
+</dl>
+<p>12.2.4.2.6
 Returns a tuple containing success and the data
 This is different than SV UVM that returns the
 data through the argument list.
@@ -2113,20 +2355,30 @@ data through the argument list.
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_peek_port.can_peek">
 <span class="sig-name descname"><span class="pre">can_peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_peek_port.can_peek" title="Link to this definition"></a></dt>
-<dd><p>Checks if peeking will be successful</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>True if can peek</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if can peek</p>
 </dd>
 </dl>
+<p>Checks if peeking will be successful</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_peek_port.try_peek">
 <span class="sig-name descname"><span class="pre">try_peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_peek_port.try_peek" title="Link to this definition"></a></dt>
-<dd><p>Tries to peek for data and returns
-a tuple with success and the data
-:return: (success, data)</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(success, data)</p>
+</dd>
+</dl>
+<p>Tries to peek for data and returns
+a tuple with success and the data</p>
 </dd></dl>
 
 </dd></dl>
@@ -2149,7 +2401,7 @@ a tuple with success and the data
 be put on the port</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
+<dd class="field-odd"><p>True if there is room to put</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2157,16 +2409,19 @@ be put on the port</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_put_port.try_put">
 <span class="sig-name descname"><span class="pre">try_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_put_port.try_put" title="Link to this definition"></a></dt>
-<dd><p>Tries to put data on a port, but if the
-port is full it returns False</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data</strong> – data to deliver</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>True = success</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>boolean True = success</p>
 </dd>
 </dl>
+<p>Tries to put data on a port, but if the
+port is full it returns False</p>
 </dd></dl>
 
 </dd></dl>
@@ -2196,7 +2451,20 @@ port is full it returns False</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_transport_port.nb_transport">
 <span class="sig-name descname"><span class="pre">nb_transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">put_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_nonblocking_transport_port.nb_transport" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Non-blocking transport.  Returns a tuple with success
+if the transport was successful and the data could be returned</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>put_data</strong> – data to send</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(success, data)</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -2216,35 +2484,32 @@ port is full it returns False</p>
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_port_base">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyuvm.s12_uvm_tlm_interfaces.</span></span><span class="sig-name descname"><span class="pre">uvm_port_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_port_base" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_export_base" title="pyuvm.s12_uvm_tlm_interfaces.uvm_export_base"><code class="xref py py-class docutils literal notranslate"><span class="pre">uvm_export_base</span></code></a></p>
-<p>A uvm_port_base is a uvm_component with a connect() function.
-The connect function creates an __export data member that
+<p>A <code class="docutils literal notranslate"><span class="pre">uvm_port_base</span></code> is a uvm_component with a <code class="docutils literal notranslate"><span class="pre">connect()</span></code> function.
+The <code class="docutils literal notranslate"><span class="pre">connect</span></code> function creates an <code class="docutils literal notranslate"><span class="pre">__export</span></code> data member that
 implements the put/get,etc methods.</p>
-<p>We’ll build functionality from uvm_port_base to create the
+<p>We’ll build functionality from <code class="docutils literal notranslate"><span class="pre">uvm_port_base</span></code> to create the
 other combinations of ports through multiple inheritance.</p>
-<p>pyuvm will make extensive use of Pythons “ask forgiveness” policy
+<p><strong>pyuvm</strong> will make extensive use of Pythons “ask forgiveness” policy
 If you try to use the wrong method for the port you created
-then you’ll get a exception, maybe a missing attribute one, though
+then you’ll get a exception, maybe a missing attribute exception, though
 we could catch that one and deliver a more useful message.</p>
 <p>Unlike the SV implementation of UVM we return results from get and peek
 as function call returns. This is more pythonic.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_port_base.check_export">
-<span class="sig-name descname"><span class="pre">check_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">export</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_port_base.check_export" title="Link to this definition"></a></dt>
-<dd><p>Check that the export implements needed methods</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_port_base.connect">
 <span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">export</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_port_base.connect" title="Link to this definition"></a></dt>
-<dd><p>Attach this port to the associated export.</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>export</strong></p>
+<dd class="field-odd"><p><strong>export</strong> – The export that has the functions</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if there is a connect error</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
+<p>Attach this port to the associated export.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2286,12 +2551,11 @@ as function call returns. This is more pythonic.</p>
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_analysis_fifo.uvm_AnalysisExport.write" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>datum</strong> – data to send</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-odd"><p><strong>item</strong> – item to write</p>
 </dd>
 </dl>
+<p>Writes the item to all the subscribers, or no one if
+there are no subscribers.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2333,23 +2597,23 @@ as function call returns. This is more pythonic.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo.size">
 <span class="sig-name descname"><span class="pre">size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo.size" title="Link to this definition"></a></dt>
-<dd><p>Return the size of the fifo</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>size of FIFO</p>
 </dd>
 </dl>
+<p>Return the size of the fifo</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo.used">
 <span class="sig-name descname"><span class="pre">used</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo.used" title="Link to this definition"></a></dt>
-<dd><p>How much of the FIFO is being used?</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Size of the FIFO</p>
+<dd class="field-odd"><p>Number of items in the FIFO</p>
 </dd>
 </dl>
+<p>How much of the FIFO is being used?</p>
 </dd></dl>
 
 </dd></dl>
@@ -2363,47 +2627,98 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.can_get">
 <span class="sig-name descname"><span class="pre">can_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.can_get" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if can get</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.can_peek">
 <span class="sig-name descname"><span class="pre">can_peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.can_peek" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if can peek</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.can_put">
 <span class="sig-name descname"><span class="pre">can_put</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.can_put" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if can put</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.get">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.get" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>item</p>
+</dd>
+</dl>
+<p>coroutine that blocks if FIFO is empty</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.peek">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.peek" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>item</p>
+</dd>
+</dl>
+<p>A coroutine that blocks if FIFO is empty</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.put">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.put" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – item to put</p>
+</dd>
+</dl>
+<p>Blocking put coroutine</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.try_get">
 <span class="sig-name descname"><span class="pre">try_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.try_get" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(success, item)</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.try_peek">
 <span class="sig-name descname"><span class="pre">try_peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.try_peek" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(success, item)</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.try_put">
 <span class="sig-name descname"><span class="pre">try_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.try_put" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – item to put</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if successful</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_BlockingGetExport">
@@ -2412,7 +2727,13 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_BlockingGetExport.get">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_BlockingGetExport.get" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>item</p>
+</dd>
+</dl>
+<p>A coroutine that blocks if the FIFO is empty</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -2429,7 +2750,13 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_BlockingPeekExport.peek">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_BlockingPeekExport.peek" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>item</p>
+</dd>
+</dl>
+<p>A coroutine that blocks if the FIFO is empty</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -2440,7 +2767,16 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_BlockingPutExport.put">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_BlockingPutExport.put" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – item to put</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>A coroutine that blocks if the FIFO is full.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -2463,12 +2799,22 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingGetExport.can_get">
 <span class="sig-name descname"><span class="pre">can_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingGetExport.can_get" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if can get</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingGetExport.try_get">
 <span class="sig-name descname"><span class="pre">try_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingGetExport.try_get" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(success, item)</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -2485,12 +2831,22 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingPeekExport.can_peek">
 <span class="sig-name descname"><span class="pre">can_peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingPeekExport.can_peek" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if can peek</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingPeekExport.try_peek">
 <span class="sig-name descname"><span class="pre">try_peek</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingPeekExport.try_peek" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(success, item)</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -2501,12 +2857,30 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingPutExport.can_put">
 <span class="sig-name descname"><span class="pre">can_put</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingPutExport.can_put" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if can put</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingPutExport.try_put">
 <span class="sig-name descname"><span class="pre">try_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_fifo_base.uvm_NonBlockingPutExport.try_put" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – item to put</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>QueueFull if the queue is full</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if successful</p>
+</dd>
+</dl>
+<p>The <code class="docutils literal notranslate"><span class="pre">try_put</span></code> is implemented with an exception
+rather than returning a boolean.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -2540,10 +2914,9 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.can_get">
 <span class="sig-name descname"><span class="pre">can_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.can_get" title="Link to this definition"></a></dt>
-<dd><p>Returns true if there is data to get</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
+<dd class="field-odd"><p>True if can get</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2551,11 +2924,9 @@ through the Queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.can_put">
 <span class="sig-name descname"><span class="pre">can_put</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.can_put" title="Link to this definition"></a></dt>
-<dd><p>Returns true if there is room for data to
-be put on the port</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
+<dd class="field-odd"><p>True if can put</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2563,8 +2934,12 @@ be put on the port</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.get">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.get" title="Link to this definition"></a></dt>
-<dd><p>A blocking get that returns the data got
-:return: data</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>item</p>
+</dd>
+</dl>
+<p>A coroutine that blocks if the FIFO is empty</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2572,35 +2947,31 @@ be put on the port</p>
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.put" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>datum</strong> – Datum to put</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-odd"><p><strong>item</strong> – item to put</p>
 </dd>
 </dl>
+<p>A coroutine that blocks if the FIFO is full</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.try_get">
 <span class="sig-name descname"><span class="pre">try_get</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.try_get" title="Link to this definition"></a></dt>
-<dd><p>12.2.4.2.6
-Returns a tuple containing success and the data
-This is different than SV UVM that returns the
-data through the argument list.
-:return: (success, data)</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(success, item)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.try_put">
 <span class="sig-name descname"><span class="pre">try_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_req_rsp_channel.uvm_MasterSlaveExport.try_put" title="Link to this definition"></a></dt>
-<dd><p>Tries to put data on a port, but if the
-port is full it returns False</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> – data to deliver</p>
+<dd class="field-odd"><p><strong>item</strong> – item to put</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>True = success</p>
+<dd class="field-even"><p>True if successful</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2620,12 +2991,38 @@ port is full it returns False</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_transport_channel.uvm_TransportExport.nb_transport">
 <span class="sig-name descname"><span class="pre">nb_transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">req</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_transport_channel.uvm_TransportExport.nb_transport" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Non-blocking transport.  Returns a tuple with success
+if the transport was successful and the data could be returned</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>put_data</strong> – data to send</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(success, data)</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_transport_channel.uvm_TransportExport.transport">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">req</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s12_uvm_tlm_interfaces.uvm_tlm_transport_channel.uvm_TransportExport.transport" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Puts data and blocks if there is no room, then blocks
+if there is no data to get and gets data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>put_data</strong> – data to send</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if export is missing</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>data received</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -2676,7 +3073,17 @@ port is full it returns False</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_predefined_component_classes.uvm_agent.build_phase">
 <span class="sig-name descname"><span class="pre">build_phase</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_predefined_component_classes.uvm_agent.build_phase" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="simple">
+<dt>This <code class="docutils literal notranslate"><span class="pre">build_phase()</span></code> implements agent-specific behavior.</dt><dd><ul class="simple">
+<li><p>It sets the agent’s <code class="docutils literal notranslate"><span class="pre">is_active</span></code> property to <code class="docutils literal notranslate"><span class="pre">UVM_ACTIVE</span></code></p></li>
+<li><p>It allows the user to override the <code class="docutils literal notranslate"><span class="pre">is_active</span></code> property using
+the <code class="docutils literal notranslate"><span class="pre">cdb_get()</span></code> method.</p></li>
+<li><p>It logs a warning if the user sets an illegal value for
+<code class="docutils literal notranslate"><span class="pre">is_active</span></code> and sets the value to <code class="docutils literal notranslate"><span class="pre">UVM_ACTIVE</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_predefined_component_classes.uvm_agent.get_is_active">
@@ -2721,14 +3128,24 @@ port is full it returns False</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_predefined_component_classes.uvm_subscriber.uvm_AnalysisImp.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_predefined_component_classes.uvm_subscriber.uvm_AnalysisImp.write" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Write a transaction to all the connected subscribers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tt</strong> – The transaction to write</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_predefined_component_classes.uvm_subscriber.write">
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_predefined_component_classes.uvm_subscriber.write" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Force the user to implement the write method.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -2765,11 +3182,19 @@ port is full it returns False</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.ConfigDB.exists">
 <span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.ConfigDB.exists" title="Link to this definition"></a></dt>
-<dd><p>Returns true if there is data in the database at this location
-:param context: None or uvm_component
-:param inst_name: instance name string in context
-:param field_name: key name for location
-:return: True if exists</p>
+<dd><p>Returns true if there is data in the database at this location</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – None or uvm_component</p></li>
+<li><p><strong>inst_name</strong> – instance name string in context</p></li>
+<li><p><strong>field_name</strong> – key name for location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if exists</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2778,7 +3203,7 @@ port is full it returns False</p>
 <dd><p>The component path matches against the paths in the ConfigDB. The path
 cannot have wildcards, but can match against keys with wildcards.
 Return the value stored at key. If the key is missing, returns default
-or raises UVMConfigItemNotFound.</p>
+or raises <code class="docutils literal notranslate"><span class="pre">UVMConfigItemNotFound</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2789,10 +3214,12 @@ or raises UVMConfigItemNotFound.</p>
 default_get</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>value found at location</p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyuvm.error_classes.UVMConfigItemNotFound" title="pyuvm.error_classes.UVMConfigItemNotFound"><strong>UVMConfigItemNotFound</strong></a> – if the key is not found and the</p>
 </dd>
 </dl>
+<p>default is not set
+:return: value found at location</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2806,23 +3233,37 @@ default_get</p></li>
 <span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.ConfigDB.set" title="Link to this definition"></a></dt>
 <dd><p>Stores an object in the db using the context and
 inst_name to create a retrieval path, and the key
-name.
-:param context: A handle to a component
-:param inst_name: The instance name within the component
-:param field_name: The key we’re setting
-:param value: The object to be stored
-:return: None</p>
+name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – A handle to a component</p></li>
+<li><p><strong>inst_name</strong> – The instance name within the component</p></li>
+<li><p><strong>field_name</strong> – The key we’re setting</p></li>
+<li><p><strong>value</strong> – The object to be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.ConfigDB.trace">
 <span class="sig-name descname"><span class="pre">trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.ConfigDB.trace" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Output the ConfigDB activity if tracing is on.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.ConfigDB.wait_modified">
 <span class="sig-name descname"><span class="pre">wait_modified</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.ConfigDB.wait_modified" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyuvm.error_classes.UVMNotImplemented" title="pyuvm.error_classes.UVMNotImplemented"><strong>UVMNotImplemented</strong></a> – This is not implemented in pyuvm</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -2838,9 +3279,15 @@ name.
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.add_logging_handler_hier">
 <span class="sig-name descname"><span class="pre">add_logging_handler_hier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.add_logging_handler_hier" title="Link to this definition"></a></dt>
-<dd><p>Add an additional handler all the way down the component hierarchy
-:param handler: A logging.Handler object
-:return: None</p>
+<dd><p>Add an additional handler all the way down the component hierarchy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>handler</strong> – A logging.Handler object</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2851,8 +3298,9 @@ name.
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.cdb_get">
 <span class="sig-name descname"><span class="pre">cdb_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.cdb_get" title="Link to this definition"></a></dt>
-<dd><p>Retrieve an object from the config_db using this components
-get_full_name() path. Can find objects stored with wildcards</p>
+<dd><p>A convenience routine that retrieves an object from
+the config_db using this component’s
+<code class="docutils literal notranslate"><span class="pre">get_full_name()</span></code> path. Can find objects stored with wildcards</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2869,7 +3317,8 @@ get_full_name() path. Can find objects stored with wildcards</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.cdb_set">
 <span class="sig-name descname"><span class="pre">cdb_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inst_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'*'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.cdb_set" title="Link to this definition"></a></dt>
-<dd><p>Store an object in the config_db.</p>
+<dd><p>A convenience routing to store an object in the config_db using
+this component’s <code class="docutils literal notranslate"><span class="pre">get_full_name()</span></code> path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2892,13 +3341,15 @@ the get_full_name() path</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">children</span></span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.children" title="Link to this definition"></a></dt>
 <dd><p>13.1.3.4
 Implements the intention of this requirement
-without the approach taken in the UVM</p>
+without the approach taken in the UVM  We use a
+generator instead.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.clear_children">
 <span class="sig-name descname"><span class="pre">clear_children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.clear_children" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Removes the direct children from this component.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.clear_components">
@@ -2908,7 +3359,8 @@ without the approach taken in the UVM</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.clear_hierarchy">
 <span class="sig-name descname"><span class="pre">clear_hierarchy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.clear_hierarchy" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Removes self from the UVM hierarchy</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.component_dict">
@@ -2933,7 +3385,8 @@ without the approach taken in the UVM</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.disable_logging_hier">
 <span class="sig-name descname"><span class="pre">disable_logging_hier</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.disable_logging_hier" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Disable logging for this component and all the way down the hierarchy</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.do_execute_op">
@@ -2944,7 +3397,8 @@ without the approach taken in the UVM</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.drop_objection">
 <span class="sig-name descname"><span class="pre">drop_objection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.drop_objection" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Drop an objection, usually at the end of the <code class="docutils literal notranslate"><span class="pre">run_phase()</span></code></p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.end_of_elaboration_phase">
@@ -2966,24 +3420,27 @@ without the approach taken in the UVM</p>
 <span class="sig-name descname"><span class="pre">get_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.get_child" title="Link to this definition"></a></dt>
 <dd><p>13.1.3.4
 :param self:
-:param name: child string
-:return: uvm_component of that name</p>
+:param name: child’s name
+:return: child <code class="docutils literal notranslate"><span class="pre">uvm_component</span></code> of that name</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.get_children">
 <span class="sig-name descname"><span class="pre">get_children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.get_children" title="Link to this definition"></a></dt>
 <dd><p>13.1.3.3
-:return: dict with children</p>
+:return: A dict containing children objects</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.get_depth">
 <span class="sig-name descname"><span class="pre">get_depth</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.get_depth" title="Link to this definition"></a></dt>
 <dd><p>13.1.3.8
-Get the depth that I am from the top component. uvm_root is 0.
-:param self: That’s me
-:return: depth</p>
+Get the depth that I am from the top component. uvm_root is 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The hierarchy depth from me to the bottom.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2991,7 +3448,7 @@ Get the depth that I am from the top component. uvm_root is 0.
 <span class="sig-name descname"><span class="pre">get_full_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.get_full_name" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Name concatenated to parent name.</p>
+<dd class="field-odd"><p>This component’s name concatenated to parent name.</p>
 </dd>
 </dl>
 <p>13.1.3.2</p>
@@ -3002,7 +3459,7 @@ Get the depth that I am from the top component. uvm_root is 0.
 <span class="sig-name descname"><span class="pre">get_num_children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.get_num_children" title="Link to this definition"></a></dt>
 <dd><p>13.1.3.5
 :param self:
-:return: Number of children in component</p>
+:return: The number of children in component</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3013,15 +3470,14 @@ Get the depth that I am from the top component. uvm_root is 0.
 <dd class="field-odd"><p>parent object</p>
 </dd>
 </dl>
-<p>13.1.3.1— No “get” prefix</p>
+<p>13.1.3.1</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.has_child">
 <span class="sig-name descname"><span class="pre">has_child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.has_child" title="Link to this definition"></a></dt>
 <dd><p>13.1.3.6
-:param self:
-:param name: Name of child object
+:param name: Name of child the object
 :return: True if exists, False otherwise</p>
 </dd></dl>
 
@@ -3029,8 +3485,12 @@ Get the depth that I am from the top component. uvm_root is 0.
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.hierarchy">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hierarchy</span></span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.hierarchy" title="Link to this definition"></a></dt>
 <dd><p>We return a generator to find the children.
-This is more pythonic and saves memory for large hierarchies.
-:return: An ordered list of components top to bottom.</p>
+This is more pythonic and saves memory for large hierarchies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A generator that returns the children.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -3038,9 +3498,15 @@ This is more pythonic and saves memory for large hierarchies.
 <span class="sig-name descname"><span class="pre">lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.lookup" title="Link to this definition"></a></dt>
 <dd><p>13.1.3.7
 Return a component base on the path. If . then
-use full name from root otherwise relative
-:param name: The search name
-:return: either the component or None</p>
+use full name from root otherwise relative</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – The search name</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>either the component or None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -3056,20 +3522,29 @@ use full name from root otherwise relative
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.raise_objection">
 <span class="sig-name descname"><span class="pre">raise_objection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.raise_objection" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Raise an objection, usually at the start of the <code class="docutils literal notranslate"><span class="pre">run_phase()</span></code></p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.remove_logging_handler_hier">
 <span class="sig-name descname"><span class="pre">remove_logging_handler_hier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.remove_logging_handler_hier" title="Link to this definition"></a></dt>
-<dd><p>Remove a handler from all loggers below this component
-:param handler: logging handler
-:return: None</p>
+<dd><p>Remove a handler from all loggers below this component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>handler</strong> – logging handler</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.remove_streaming_handler_hier">
 <span class="sig-name descname"><span class="pre">remove_streaming_handler_hier</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.remove_streaming_handler_hier" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Remove this component’s streaming handler and all the way down
+the hierarchy</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.report_phase">
@@ -3085,9 +3560,15 @@ use full name from root otherwise relative
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_component.set_logging_level_hier">
 <span class="sig-name descname"><span class="pre">set_logging_level_hier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logging_level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_component.set_logging_level_hier" title="Link to this definition"></a></dt>
 <dd><p>Set the logging level for this component’s logger
-and all the way down the hierarchy
-:param logging_level: typically a constant from logging module
-:return: None</p>
+and all the way down the hierarchy</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>logging_level</strong> – typically a constant from logging module</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -3101,19 +3582,20 @@ and all the way down the hierarchy
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_root">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyuvm.s13_uvm_component.</span></span><span class="sig-name descname"><span class="pre">uvm_root</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_root" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyuvm.s13_uvm_component.uvm_component" title="pyuvm.s13_uvm_component.uvm_component"><code class="xref py py-class docutils literal notranslate"><span class="pre">uvm_component</span></code></a></p>
-<p>F.7.  We do not use uvm_pkg to hold uvm_root.  Instead it
+<p>F.7.  We do not use <code class="docutils literal notranslate"><span class="pre">uvm_pkg</span></code> to hold <code class="docutils literal notranslate"><span class="pre">uvm_root</span></code>.  Instead it
 is a class variable of uvm_component.  This avoids
 circular reference issues regarding uvm_pkg.</p>
 <p>Plus, it’s cleaner.</p>
-<p>uvm_root is still a singleton that you access through its
-constructor instead of through a get() method.</p>
+<p><code class="docutils literal notranslate"><span class="pre">uvm_root</span></code> is still a singleton that you access through its
+constructor instead of through a <code class="docutils literal notranslate"><span class="pre">get()</span></code> method.</p>
 <p>Much of the functionality in Annex F delivers functionality
 in SystemVerilog that is already built into Python. So we’re
 going to skip much of that Annex.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_root.clear_singletons">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clear_singletons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keep_set</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s13_uvm_component.uvm_root.clear_singletons" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Clear the singletons in the system.  This is used for testing</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s13_uvm_component.uvm_root.run_test">
@@ -3123,7 +3605,8 @@ going to skip much of that Annex.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>test_name</strong> – The uvm test name or test class</p></li>
 <li><p><strong>keep_singletons</strong> – If True do not clear singletons (default False)</p></li>
-<li><p><strong>keep_set</strong> – Set of singleton classes to keep</p></li>
+<li><p><strong>keep_set</strong> – Set of singleton classes to keep
+if keep_singletons is False. Pass a list of singletons to <cite>set()</cite></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -3148,17 +3631,36 @@ going to skip much of that Annex.</p>
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.ResponseQueue">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyuvm.s14_15_python_sequences.</span></span><span class="sig-name descname"><span class="pre">ResponseQueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.ResponseQueue" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyuvm.utility_classes.UVMQueue" title="pyuvm.utility_classes.UVMQueue"><code class="xref py py-class docutils literal notranslate"><span class="pre">UVMQueue</span></code></a></p>
-<p>Returns either the next response or the item with the id.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ResponseQueue</span></code> is a queue that can cherry-pick an item
+using an id number, or simply return the next item in the queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.ResponseQueue.get_response">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txn_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.ResponseQueue.get_response" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>A coroutine that will either get a response item with
+the given transaction_id, or return the next item in the queue.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>txn_id</strong> – (Optional) The transaction ID of the response you want</p>
+</dd>
+</dl>
+<p>to pluck from the queue.
+:return: The response item</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.ResponseQueue.put_nowait">
 <span class="sig-name descname"><span class="pre">put_nowait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.ResponseQueue.put_nowait" title="Link to this definition"></a></dt>
-<dd><p>Put an <em>item</em> into the queue without blocking.</p>
-<p>If no free slot is immediately available, raise <code class="xref py py-exc docutils literal notranslate"><span class="pre">asyncio.QueueFull</span></code>.</p>
+<dd><p>Extend the <code class="docutils literal notranslate"><span class="pre">cocotb.queue.Queue.put_nowait</span></code> method to set the
+<code class="docutils literal notranslate"><span class="pre">put_event</span></code> flag.  This flag is used to signal that an item has
+been put in the queue so that get_response can be unblocked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – The item to put in the queue</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>QueueFull</strong> – If the queue is full</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3172,27 +3674,40 @@ a response queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_export.get_next_item">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_next_item</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_export.get_next_item" title="Link to this definition"></a></dt>
-<dd><p>Get the next item out of the item queue
-:return: item to process</p>
+<dd><p>A couroutine that gets the next item out of the item queue
+and blocks if the queue is empty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>item to process</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_export.get_response">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_export.get_response" title="Link to this definition"></a></dt>
-<dd><p>If transaction_id is not none, block until a
-response with the transaction id becomes available.
-:param transaction_id: The transaction ID of the response
-:return:</p>
+<dd><p>A couroutine that will block if there is no transaction
+available</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">transaction_id</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, block until a
+response with the transaction id becomes available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transaction_id</strong> – The transaction ID of the response</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The response item</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_export.item_done">
 <span class="sig-name descname"><span class="pre">item_done</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rsp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_export.item_done" title="Link to this definition"></a></dt>
-<dd><p>Signal that the item has been completed. If item is not none
+<dd><p>Signal that the item has been completed. If <code class="docutils literal notranslate"><span class="pre">rsp</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>
 put it into the response queue.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rsp</strong> – item to put in response queue if not None</p>
+<dd class="field-odd"><p><strong>rsp</strong> – (optional) item to put in response queue if not None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3200,13 +3715,13 @@ put it into the response queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_export.put_req">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">put_req</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_export.put_req" title="Link to this definition"></a></dt>
-<dd><p>put request into request queue</p>
+<dd><p>put request into request queue. Block if the queue is full.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>item</strong> – request item</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3214,13 +3729,16 @@ put it into the response queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_export.put_response">
 <span class="sig-name descname"><span class="pre">put_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_export.put_response" title="Link to this definition"></a></dt>
-<dd><p>Put response into response queue</p>
+<dd><p>Put response into response queue. Do not block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>item</strong> – response item</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>QueueFull</strong> – If the queue is full</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p>
 </dd>
 </dl>
 </dd></dl>
@@ -3234,49 +3752,88 @@ put it into the response queue.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_port.connect">
 <span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">export</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_port.connect" title="Link to this definition"></a></dt>
-<dd><p>Attach this port to the associated export.</p>
-<dl class="field-list simple">
+<dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>export</strong></p>
+<dd class="field-odd"><p><strong>export</strong> – The export that has the functions</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p>UVMTLMConnectionError if there is a connect error</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
+<p>Attach this port to the associated export.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_port.get_next_item">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_next_item</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_port.get_next_item" title="Link to this definition"></a></dt>
-<dd><p>get the next sequence item from the request queue</p>
+<dd><p>A coroutine that get the next sequence item from the request queue
+and blocks if the queue is empty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The next sequence item</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_port.get_response">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transaction_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_port.get_response" title="Link to this definition"></a></dt>
-<dd><p>Either get a response item with the given transaction_id,
-or get the first one in the queue.</p>
-<p>Removes the found transaction.</p>
-<p>If there is no transaction in the queue with transaction_id,
-block until it appears.</p>
+<dd><p>A coroutine that will ither get a response item with the
+given transaction_id, or get the first response item
+in the queue. Otherwise it will block until a response
+is ready.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transaction_id</strong> – The transaction ID of the response you want</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The response item</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_port.item_done">
 <span class="sig-name descname"><span class="pre">item_done</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rsp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_port.item_done" title="Link to this definition"></a></dt>
-<dd><p>Notify finish_item that the item is complete</p>
+<dd><p>Notify the driver that it can get the next sequence. If
+<code class="docutils literal notranslate"><span class="pre">rsp</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, put it in the response queue.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rsp</strong> – (optional) The response item</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyuvm.error_classes.UVMFatalError" title="pyuvm.error_classes.UVMFatalError"><strong>UVMFatalError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">rsp</span></code> is not a subclass of uvm_sequence_item</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_port.put_req">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">put_req</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_port.put_req" title="Link to this definition"></a></dt>
-<dd><p>Put a request item in the request queue</p>
+<dd><p>A coroutine that blocks until the request is put in the queue</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – The request item</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_seq_item_port.put_response">
 <span class="sig-name descname"><span class="pre">put_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_seq_item_port.put_response" title="Link to this definition"></a></dt>
 <dd><p>Put a response back in the queue. aka put_response</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> – The response item</p>
+</dd>
+<dt class="field-even">Raises UVMFatalError<span class="colon">:</span></dt>
+<dd class="field-even"><p>If the item is not a subclass of</p>
+</dd>
+</dl>
+<p>uvm_sequence_item</p>
 </dd></dl>
 
 </dd></dl>
@@ -3294,7 +3851,7 @@ body() gets launched in a thread at start.</p>
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_sequence.body">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">body</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_sequence.body" title="Link to this definition"></a></dt>
 <dd><p>This function gets launched in a thread when you run start()
-You generally override it in any extension.</p>
+You generally override it.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3310,7 +3867,16 @@ You generally override it in any extension.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_sequence.start">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seqr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_sequence.start" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Launch this sequence on the sequencer. Seqr cannot be None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>seqr</strong> – The sequencer to launch this sequence on.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If seqr is None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_sequence.start_item">
@@ -3330,7 +3896,7 @@ when the item has been selected to be run.</p>
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_sequence_item">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyuvm.s14_15_python_sequences.</span></span><span class="sig-name descname"><span class="pre">uvm_sequence_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s14_15_python_sequences.uvm_sequence_item" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pyuvm.s05_base_classes.uvm_transaction" title="pyuvm.s05_base_classes.uvm_transaction"><code class="xref py py-class docutils literal notranslate"><span class="pre">uvm_transaction</span></code></a></p>
-<p>The pyuvm uvm_sequence_item has conditions to
+<p>The pyuvm uvm_sequence_item has events to
 implement start_item() and finish_item()</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s14_15_python_sequences.uvm_sequence_item.set_context">
@@ -3342,7 +3908,7 @@ rsp.set_context(req)</p>
 <dd class="field-odd"><p><strong>item</strong> – The request transaction</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3879,7 +4445,12 @@ items with the sequencer.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s19_uvm_reg_field.uvm_reg_field.get_full_name">
 <span class="sig-name descname"><span class="pre">get_full_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s19_uvm_reg_field.uvm_reg_field.get_full_name" title="Link to this definition"></a></dt>
-<dd><p>The full name for a uvm_object is simply the name</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The full path and name of the object</p>
+</dd>
+</dl>
+<p>The full name for a uvm_object is simply the name</p>
 </dd></dl>
 
 <dl class="py method">
@@ -4041,7 +4612,12 @@ create each fields and invoke the configure from each field</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s20_uvm_reg.uvm_reg.get_name">
 <span class="sig-name descname"><span class="pre">get_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#pyuvm.s20_uvm_reg.uvm_reg.get_name" title="Link to this definition"></a></dt>
-<dd><p>Return the name of this object as passed by the constructor</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>String with name of uvm_object.</p>
+</dd>
+</dl>
+<p>Return the name of this object as passed by the constructor</p>
 </dd></dl>
 
 <dl class="py method">
@@ -4254,7 +4830,16 @@ create each fields and invoke the configure from each field</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="pyuvm.s23_uvm_reg_item.uvm_reg_item.do_copy">
 <span class="sig-name descname"><span class="pre">do_copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s23_uvm_reg_item.uvm_reg_item.do_copy" title="Link to this definition"></a></dt>
-<dd><p>Copies name. Override to copy additional data members</p>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rhs</strong> – The object to copy from</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>By default we copy the name. Override this function
+to copy the rest of the object members.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -4836,6 +5421,20 @@ Return an item if one is immediately available, else raise
 <span class="sig-name descname"><span class="pre">singleton</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#pyuvm.utility_classes.UVM_ROOT_Singleton.singleton" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="pyuvm.utility_classes.count_bits">
+<span class="sig-prename descclassname"><span class="pre">pyuvm.utility_classes.</span></span><span class="sig-name descname"><span class="pre">count_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.utility_classes.count_bits" title="Link to this definition"></a></dt>
+<dd><p>Count the number of bits in a number</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nn</strong> – The number to count the bits in</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The number of bits</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
