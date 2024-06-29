@@ -164,7 +164,8 @@ class simple_bus_adapter(uvm_reg_adapter):
         # Set addr
         rw.addr = bus_item.addr
         # Set nbits
-        rw.n_bits = bus_item.wmask.bit_count()
+        print("**** WMASK TYPE:", type(bus_item.wmask))
+        rw.n_bits = pyuvm.count_bits(bus_item.wmask)
         # Set byte_en
         rw.byte_en = bus_item.wmask
         # Set status

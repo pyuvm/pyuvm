@@ -11,6 +11,17 @@ logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
 logging.addLevelName(PYUVM_DEBUG, "PYUVM_DEBUG")
 
 
+def count_bits(nn):
+    """
+    Count the number of bits in a number
+
+    :param nn: The number to count the bits in
+    :return: The number of bits
+    """
+    # Convert the absolute value of n to binary and count the '1's
+    return bin(abs(nn)).count('1')
+
+
 class Singleton(type):
     _instances = {}
 
