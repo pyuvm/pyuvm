@@ -88,7 +88,7 @@ module TinyALUreg #(
     assign rdata    = sw_rdata;
 
     // convert byte mask to bit mask
-    always_comb begin
+    always @(wmask) begin
         int byte_idx;
         for (byte_idx = 0; byte_idx < DATA_WIDTH/8; byte_idx+=1) begin
             sw_mask[8*(byte_idx+1)-1 -: 8] = {8{wmask[byte_idx]}};
@@ -121,7 +121,7 @@ module TinyALUreg #(
     assign SRC_sw_wr = sw_wr && SRC_decode;
     assign SRC_sw_rd = sw_rd && SRC_decode;
 
-    always_comb begin
+    always @(SRC_data0_q) begin
         SRC_q = '0;
         SRC_q[ 7: 0] = SRC_data0_q;
         SRC_q[15: 8] = SRC_data1_q;
@@ -184,7 +184,7 @@ module TinyALUreg #(
     assign RESULT_sw_wr = sw_wr && RESULT_decode;
     assign RESULT_sw_rd = sw_rd && RESULT_decode;
 
-    always_comb begin
+    always @(RESULT_data_q) begin
         RESULT_q = '0;
         RESULT_q[15: 0] = RESULT_data_q;
     end
@@ -220,7 +220,7 @@ module TinyALUreg #(
     assign CMD_sw_wr = sw_wr && CMD_decode;
     assign CMD_sw_rd = sw_rd && CMD_decode;
 
-    always_comb begin
+    always @(CMD_op_q or CMD_start_q or CMD_done_q or CMD_reserved_q) begin
         CMD_q = '0;
         CMD_q[ 4: 0] = CMD_op_q;
         CMD_q[ 5: 5] = CMD_start_q;
