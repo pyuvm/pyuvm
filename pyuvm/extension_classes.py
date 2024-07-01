@@ -44,10 +44,11 @@ def test(
                                       keep_singletons=keep_singletons,
                                       keep_set=keep_set)
 
-        # adds cocotb.test object to caller's module
-        caller_frame = inspect.stack()[1]
-        caller_module = inspect.getmodule(caller_frame[0])
-        setattr(caller_module, f"test_{test._id}", test)
+        if version_info < (2, 0):
+            # adds cocotb.test object to caller's module
+            caller_frame = inspect.stack()[1]
+            caller_module = inspect.getmodule(caller_frame[0])
+            setattr(caller_module, f"test_{test._id}", test)
 
         # returns decorator class unmodified
         return cls
