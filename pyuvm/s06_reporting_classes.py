@@ -54,7 +54,7 @@ class uvm_report_object(uvm_object):
         super().__init__(name)
         uvm_root_logger = logging.getLogger('uvm')
         # Every object gets its own logger
-        logger_name = self.get_logger_name()
+        logger_name = self.get_initial_logger_name()
         self.logger = uvm_root_logger.getChild(logger_name)
         self.logger.setLevel(
             level=uvm_report_object.get_default_logging_level())
@@ -68,7 +68,7 @@ class uvm_report_object(uvm_object):
         self._uvm_formatter = PyuvmFormatter(self.get_full_name())
         self.add_logging_handler(self._streaming_handler)
 
-    def get_logger_name(self):
+    def get_initial_logger_name(self):
         """
         :returns: The name of the initial logger
 
@@ -82,8 +82,6 @@ class uvm_report_object(uvm_object):
 
         """
         return self.get_full_name() + str(id(self))
-
-        return self.get_full_name()
 
     @staticmethod
     def set_default_logging_level(default_logging_level):
