@@ -34,22 +34,22 @@ Pythonizing the UVM
 Much of the UVM specification in IEEE-1800.2-2017 is driven by elements of
 the SystemVerilog programming language.  Blindly implementing all that is in
 the UVM specification is not only impossible (there are no parameters in Class
-declarations, for example) but also unwise.
+declarations, for example), but also unwise.
 
 Many elements of Python make it much easier to create testbench code using
-Python than SystemVerilog.  For example there are no arcane issues of typing, and
-Python already has common tools for logging and interprocess communication.
+Python than SystemVerilog.  For example, there are no arcane issues of typing, and
+Python readily provides generic tools for logging and interprocess communication.
 
-Rather than try to mimic the UVM completely, this implementation delivers the
-functionality of the UVM even if this changes the details of delivering the 
-functionalty.  This section examines some differences that we'll see in 
-this implementation.
+Rather than attempting to mimic the UVM completely, this implementation focuses on delivering the
+functionality of the UVM, even if this changes the details of how functionality is 
+delivered.  This section examines some differences between 
+the implementations.
 
 Static Typing vs. Duck Typing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-SystemVerilog is a statically typed language, you declare variables to be of 
-a certain type in the source code before using them.  It is also a relatively 
+SystemVerilog is a statically typed language. You declare variables to be of 
+a certain type in the source code before using them.  It is a relatively 
 weakly typed languaged (relative to VHDL).  You can declare a variable to be
 a ``short int`` and another to be an ``integer`` and still add them with no problem.
 

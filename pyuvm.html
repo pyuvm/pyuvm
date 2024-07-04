@@ -151,6 +151,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.uvm_report_object.add_logging_handler"><code class="docutils literal notranslate"><span class="pre">uvm_report_object.add_logging_handler()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.uvm_report_object.disable_logging"><code class="docutils literal notranslate"><span class="pre">uvm_report_object.disable_logging()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.uvm_report_object.get_default_logging_level"><code class="docutils literal notranslate"><span class="pre">uvm_report_object.get_default_logging_level()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.uvm_report_object.get_initial_logger_name"><code class="docutils literal notranslate"><span class="pre">uvm_report_object.get_initial_logger_name()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.uvm_report_object.remove_logging_handler"><code class="docutils literal notranslate"><span class="pre">uvm_report_object.remove_logging_handler()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.uvm_report_object.remove_streaming_handler"><code class="docutils literal notranslate"><span class="pre">uvm_report_object.remove_streaming_handler()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pyuvm.s06_reporting_classes.uvm_report_object.set_default_logging_level"><code class="docutils literal notranslate"><span class="pre">uvm_report_object.set_default_logging_level()</span></code></a></li>
@@ -1518,6 +1519,19 @@ is marked as acted upon</p></li>
 <dd class="field-odd"><p>The default logging level</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyuvm.s06_reporting_classes.uvm_report_object.get_initial_logger_name">
+<span class="sig-name descname"><span class="pre">get_initial_logger_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyuvm.s06_reporting_classes.uvm_report_object.get_initial_logger_name" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The name of the initial logger</p>
+</dd>
+</dl>
+<p>Override this method if you want to change the way the logger name is
+generated.</p>
+<p>The default looks like this:</p>
 </dd></dl>
 
 <dl class="py method">

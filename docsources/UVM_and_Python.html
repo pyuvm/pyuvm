@@ -132,18 +132,18 @@ the best of both worlds.</p>
 <p>Much of the UVM specification in IEEE-1800.2-2017 is driven by elements of
 the SystemVerilog programming language.  Blindly implementing all that is in
 the UVM specification is not only impossible (there are no parameters in Class
-declarations, for example) but also unwise.</p>
+declarations, for example), but also unwise.</p>
 <p>Many elements of Python make it much easier to create testbench code using
-Python than SystemVerilog.  For example there are no arcane issues of typing, and
-Python already has common tools for logging and interprocess communication.</p>
-<p>Rather than try to mimic the UVM completely, this implementation delivers the
-functionality of the UVM even if this changes the details of delivering the
-functionalty.  This section examines some differences that we’ll see in
-this implementation.</p>
+Python than SystemVerilog.  For example, there are no arcane issues of typing, and
+Python readily provides generic tools for logging and interprocess communication.</p>
+<p>Rather than attempting to mimic the UVM completely, this implementation focuses on delivering the
+functionality of the UVM, even if this changes the details of how functionality is
+delivered.  This section examines some differences between
+the implementations.</p>
 <section id="static-typing-vs-duck-typing">
 <h3>Static Typing vs. Duck Typing<a class="headerlink" href="#static-typing-vs-duck-typing" title="Link to this heading"></a></h3>
-<p>SystemVerilog is a statically typed language, you declare variables to be of
-a certain type in the source code before using them.  It is also a relatively
+<p>SystemVerilog is a statically typed language. You declare variables to be of
+a certain type in the source code before using them.  It is a relatively
 weakly typed languaged (relative to VHDL).  You can declare a variable to be
 a <code class="docutils literal notranslate"><span class="pre">short</span> <span class="pre">int</span></code> and another to be an <code class="docutils literal notranslate"><span class="pre">integer</span></code> and still add them with no problem.</p>
 <p>Python using Duck Typing, which is form of dynamic typing.  Duck typing says
