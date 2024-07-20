@@ -90,8 +90,8 @@ architecture rtl of tinyalu is
 begin
 
 CLOCK:
-clk <=  '1' after 0.5 ns when clk = '0' else
-        '0' after 0.5 ns when clk = '1';
+clk <=  '1' after 1 us when clk = '0' else
+        '0' after 1 us when clk = '1';
 
 -- purpose: This block shunts the start signal to the correct block. 
 -- The multiply only sees the start signal when op(2) is '1'
