@@ -358,7 +358,7 @@ class uvm_reg_field(uvm_object):
         if self.get_access() == "RO":
             self._field_mirrored = self._reset
         if self.get_access() == "RW":
-            self._field_mirrored = wr_val & _mask
+            self._field_mirrored = wr_val
         if self.get_access() == "RC":
             self._field_mirrored = self._field_mirrored
         if self.get_access() == "RS":
@@ -396,7 +396,7 @@ class uvm_reg_field(uvm_object):
         if self.get_access() == "W0CRS":
             self._field_mirrored = self._field_mirrored & wr_val
         if self.get_access() == "WO":
-            self._field_mirrored = wr_val & _mask
+            self._field_mirrored = wr_val
         if self.get_access() == "WOC":
             self._field_mirrored = 0
         if self.get_access() == "WOS":
