@@ -1,5 +1,5 @@
 import inspect
-import test_12_uvm_tlm_interfaces as test_mod
+import test_ext_classes as test_mod
 from pyuvm import *
 import pyuvm
 import cocotb
