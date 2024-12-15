@@ -17,7 +17,7 @@ from pyuvm import UVMNotImplemented
 from pyuvm import ConfigDB, uvm_root
 from pyuvm import CRITICAL
 from cocotb.clock import Clock
-from cocotb.triggers import Join, Combine
+from cocotb.triggers import Combine
 import random
 import cocotb
 import pyuvm
@@ -342,7 +342,7 @@ class TestAllForkSeq(AluReg_base_sequence):
         max = MaxSeq("max")
         random_task = cocotb.start_soon(random.start())
         max_task = cocotb.start_soon(max.start())
-        await Combine(Join(random_task), Join(max_task))
+        await Combine(random_task, max_task)
 
 
 class OpSeq(AluReg_base_sequence):

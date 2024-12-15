@@ -1,4 +1,4 @@
-from cocotb.triggers import Join, Combine
+from cocotb.triggers import Combine
 from pyuvm import *
 import random
 import cocotb
@@ -73,7 +73,7 @@ class TestAllForkSeq(uvm_sequence):
         max = MaxSeq("max")
         random_task = cocotb.start_soon(random.start(seqr))
         max_task = cocotb.start_soon(max.start(seqr))
-        await Combine(Join(random_task), Join(max_task))
+        await Combine(random_task, max_task)
 
 # Sequence library example
 
