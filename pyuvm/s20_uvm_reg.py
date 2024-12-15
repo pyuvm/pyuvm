@@ -165,7 +165,7 @@ class uvm_reg(uvm_object):
     def predict(self, value: int, direction: access_e):
         for f in self.get_fields():
             f.field_predict((
-                value >> f.get_lsb_pos() & ((1 << f.get_n_bits()) - 1)), 
+                value >> f.get_lsb_pos() & ((1 << f.get_n_bits()) - 1)),
                     path_t.FRONTDOOR, direction)
 
     # set prediction from parent to fields
