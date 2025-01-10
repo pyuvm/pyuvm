@@ -52,6 +52,7 @@ class PyuvmFormatter(SimColourLogFormatter):
         :param record: The log record
 
         """
+        msg_temp = record.msg
         new_msg = f"[{self.full_name}]: {record.msg}"
         record.msg = new_msg
         name_temp = record.name
@@ -60,6 +61,7 @@ class PyuvmFormatter(SimColourLogFormatter):
             formatted_msg = super().format(record)
         else:
             formatted_msg = SimLogFormatter.format(self, record)
+        record.msg = msg_temp
         record.name = name_temp
         return formatted_msg
 
