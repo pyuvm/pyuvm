@@ -20,7 +20,6 @@ class uvm_reg(uvm_object):
         self._desired: int = 0
         self._reset: int = 0
         self._sum: int = 0
-        self._name: str = name
         self._header: str = name + " -- "
         self._address: str = "0x0"
         self._path: str = ""
@@ -199,10 +198,6 @@ class uvm_reg(uvm_object):
             # placeholder to fix Flake8 line error
             value = (f.get_value() << f.get_lsb_pos())
             self._mirrored = self._mirrored | value
-
-    # get_name
-    def get_name(self) -> str:
-        return self._name
 
     # Build internal function
     def build(self):
