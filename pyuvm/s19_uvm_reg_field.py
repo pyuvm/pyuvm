@@ -80,7 +80,7 @@ class uvm_reg_field(uvm_object):
         # check the reset value is not beyond the MAX
         if (self._reset >= (2**self._size)):
             uvm_error(self._header, f"Reset value for REG \
-                      feild : {self._name} is [{self._reset}] \
+                      feild : {self.get_name()} is [{self._reset}] \
                       is beyond the MAX valoue given \
                       by the size [{((2**self._size)-1)}]")
         # Add field
@@ -122,7 +122,7 @@ class uvm_reg_field(uvm_object):
 
     # get_full_name
     def get_full_name(self):
-        return self._parent + "." + self._name
+        return self._parent.get_full_name() + "." + self.get_name()
 
     # get_parent
     def get_parent(self):
