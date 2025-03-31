@@ -251,6 +251,42 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
         await uvm_root().run_test("SeqTest")
         self.assertTrue(DataHolder().datum)
 
+    async def test_seq_pre_post_body(self):
+        ObjectionHandler().run_phase_done_flag = None
+
+        class Seq(uvm_sequence):
+            def __init__(self, name="uvm_sequence"):
+                super().__init__(name)
+                self.op = None
+
+            async def pre_body(self):
+                self.op = SeqItem("op")
+
+            async def body(self):
+                await self.start_item(self.op)
+                self.op.data = 0
+                await self.finish_item(self.op)
+
+            async def post_body(self):
+                DataHolder().datum = True
+
+        class SeqTest(uvm_test):
+            def build_phase(self):
+                self.seqr = uvm_sequencer("seqr", self)
+                self.driver = ItemDoneRespSeqDriver("driver", self)
+
+            def connect_phase(self):
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
+
+            async def run_phase(self):
+                self.raise_objection()
+                seq = Seq("seq")
+                await seq.start(self.seqr)
+                self.drop_objection()
+
+        await uvm_root().run_test("SeqTest")
+        self.assertTrue(DataHolder().datum)
+
     async def test_item_done_response(self):
         ObjectionHandler().run_phase_done_flag = None
 
