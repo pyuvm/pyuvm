@@ -388,13 +388,17 @@ class uvm_sequence(uvm_object):
 
     async def pre_body(self):
         """
-        This function gets launced BEFORE the function body() is started following a start() call.
+        This function gets launced BEFORE the function body() is started
+        following a start() call.
+
         This method should not be called directly by the user.
         """
 
     async def post_body(self):
         """
-        This function gets launced AFTER the function body() is started following a start() call.
+        This function gets launced AFTER the function body() is started
+        following a start() call.
+
         This method should not be called directly by the user.
         """
 
@@ -409,8 +413,8 @@ class uvm_sequence(uvm_object):
         Launch this sequence on the sequencer. Seqr cannot be None.
 
         :param seqr: The sequencer to launch this sequence on.
-        :param call_pre_post: If set to true (default), then the pre_body and post_body
-        tasks will be called before and after the sequence body is called.
+        :param call_pre_post: If set to true (default), then pre_body and
+        post_body are called before and after the sequence body is called.
         :raise AssertionError: If seqr is None
 
         """
