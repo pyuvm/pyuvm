@@ -408,7 +408,7 @@ class uvm_sequence(uvm_object):
         You generally override it.
         """
 
-    async def start(self, seqr=None, call_pre_post = True):
+    async def start(self, seqr=None, call_pre_post=True):
         """
         Launch this sequence on the sequencer. Seqr cannot be None.
 
