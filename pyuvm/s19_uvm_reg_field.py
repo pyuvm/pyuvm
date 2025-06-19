@@ -327,64 +327,34 @@ class uvm_reg_field(uvm_object):
         # Define an all 1 values
         _mask = int("".join(["1"] * self._size), 2)
         # Return value based on the access type
-        if self.get_access() == "RO":
+        field_access = self.get_access()
+        if field_access in ("RO", "NOACCESS"):
             self._field_mirrored = self._reset
-        if self.get_access() == "RW":
+        elif field_access in ("RW", "WRC", "WRS", "WO"):
             self._field_mirrored = wr_val
-        if self.get_access() == "RC":
+        elif field_access in ("RC", "RS"):
             self._field_mirrored = self._field_mirrored
-        if self.get_access() == "RS":
-            self._field_mirrored = self._field_mirrored
-        if self.get_access() == "WC":
+        elif field_access in ("WC", "WCRS", "WOC"):
             self._field_mirrored = 0
-        if self.get_access() == "WS":
+        elif field_access in ("WS", "WSRC", "WOS"):
             self._field_mirrored = _mask
-        if self.get_access() == "WRC":
-            self._field_mirrored = wr_val
-        if self.get_access() == "WRS":
-            self._field_mirrored = wr_val
-        if self.get_access() == "WSRC":
-            self._field_mirrored = _mask
-        if self.get_access() == "WCRS":
-            self._field_mirrored = 0
-        if self.get_access() == "W1C":
+        elif field_access in ("W1C", "W1CRS"):
             self._field_mirrored = self._field_mirrored & (~wr_val)
-        if self.get_access() == "W1S":
+        elif field_access in ("W1S", "W1SRC"):
             self._field_mirrored = self._field_mirrored | wr_val
-        if self.get_access() == "W1T":
+        elif field_access == "W1T":
             self._field_mirrored = self._field_mirrored ^ wr_val
-        if self.get_access() == "W0C":
+        elif field_access in ("W0C", "W0CRS"):
             self._field_mirrored = self._field_mirrored & wr_val
-        if self.get_access() == "W0S":
+        elif field_access in ("W0S", "W0SRC"):
             self._field_mirrored = self._field_mirrored | (~wr_val & _mask)
-        if self.get_access() == "W0T":
+        elif field_access == "W0T":
             self._field_mirrored = self._field_mirrored ^ (~wr_val & _mask)
-        if self.get_access() == "W1SRC":
-            self._field_mirrored = self._field_mirrored | wr_val
-        if self.get_access() == "W1CRS":
-            self._field_mirrored = self._field_mirrored & (~wr_val)
-        if self.get_access() == "W0SRC":
-            self._field_mirrored = self._field_mirrored | (~wr_val & _mask)
-        if self.get_access() == "W0CRS":
-            self._field_mirrored = self._field_mirrored & wr_val
-        if self.get_access() == "WO":
-            self._field_mirrored = wr_val
-        if self.get_access() == "WOC":
-            self._field_mirrored = 0
-        if self.get_access() == "WOS":
-            self._field_mirrored = _mask
-        if self.get_access() == "W1":
+        elif field_access in ("W1", "WO1"):
             if self._has_been_writ is True:
                 self._field_mirrored = self._field_mirrored
             else:
                 self._field_mirrored = wr_val
-        if self.get_access() == "WO1":
-            if self._has_been_writ is True:
-                self._field_mirrored = self._field_mirrored
-            else:
-                self._field_mirrored = wr_val
-        if self.get_access() == "NOACCESS":
-            self._field_mirrored = self._reset
 
     # atomic predict value based on the operation (READ)
     # Where error is mentioned it depends on _error_on_read flag, no effect
