@@ -264,61 +264,33 @@ class uvm_reg_field(uvm_object):
         #
         #
 
+        field_access = self.get_access()
         # Return value based on the access
-        if self.get_access() == "RO":
+        if field_access in ("RO", "RC", "RS", "NOACCESS"):
             self._desired = self._desired  # Leave the desired value stable
-        if self.get_access() == "RW":
+        elif field_access in ("RW", "WRC", "WRS", "WO"):
             self._desired = value
-        if self.get_access() == "RC":
-            self._desired = self._desired  # Leave the desired value stable
-        if self.get_access() == "RS":
-            self._desired = self._desired  # Leave the desired value stable
-        if self.get_access() == "WC":
+        elif field_access in ("WC", "WCRS", "WOC"):
             self._desired = 0
-        if self.get_access() == "WS":
+        elif field_access in ("WS", "WSRC", "WOS"):
             self._desired = _mask
-        if self.get_access() == "WRC":
-            self._desired = value
-        if self.get_access() == "WRS":
-            self._desired = value
-        if self.get_access() == "WSRC":
-            self._desired = _mask
-        if self.get_access() == "WCRS":
-            self._desired = 0
-        if self.get_access() == "W1C":
+        elif field_access in ("W1C", "W1CRS"):
             self._desired = self._desired & (~value)
-        if self.get_access() == "W1S":
+        elif field_access in ("W1S", "W1SRC"):
             self._desired = self._desired | value
-        if self.get_access() == "W1T":
+        elif field_access == "W1T":
             self._desired = self._desired ^ value
-        if self.get_access() == "W0C":
+        elif field_access in ("W0C", "W0CRS"):
             self._desired = self._desired & value
-        if self.get_access() == "W0S":
+        elif field_access in ("W0S", "W0SRC"):
             self._desired = self._desired | (~value & _mask)
-        if self.get_access() == "W0T":
+        elif field_access == "W0T":
             self._desired = self._desired ^ (~value & _mask)
-        if self.get_access() == "W1SRC":
-            self._desired = self._desired | value
-        if self.get_access() == "W1CRS":
-            self._desired = self._desired & (~value)
-        if self.get_access() == "W0SRC":
-            self._desired = self._desired | (~value & _mask)
-        if self.get_access() == "W0CRS":
-            self._desired = self._desired & value
-        if self.get_access() == "WO":
+        elif field_access in ("W1", "WO1"):
+            if self._has_been_writ is False:
+                self._desired = value
+        else:
             self._desired = value
-        if self.get_access() == "WOC":
-            self._desired = 0
-        if self.get_access() == "WOS":
-            self._desired = _mask
-        if self.get_access() == "W1":
-            if self._has_been_writ is False:
-                self._desired = value
-        if self.get_access() == "WO1":
-            if self._has_been_writ is False:
-                self._desired = value
-        if self.get_access() == "NOACCESS":
-            self._desired = self._desired  # Leave the desired value stable
 
     # Since there is no Switch case in python we use a simple switch case
     # Where error is mentioned it depends on _error_on_write flag, no effect
