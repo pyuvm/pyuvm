@@ -37,7 +37,7 @@ class uvm_reg_field(uvm_object):
         self._value = 0
         # Keep desired value as 0
         # TODO: add eventually support for PYVSC for randomization
-        self._desidered = 0
+        self._desired = 0
         self._config_done = False
         self._has_been_writ = False
         self._prediction = predict_t
@@ -63,7 +63,7 @@ class uvm_reg_field(uvm_object):
         # Ignore randomization if the field is known not to be writeable
         # i.e. not "RW", "WRC", "WRS", "WO", "W1", "WO1"
         # TODO: add eventually support for PYVSC for randomization
-        self._desidered = 0
+        self._desired = 0
         # Check if size is 0
         if (self._size == 0):
             uvm_fatal(self._header, "Size of a filed \
@@ -210,7 +210,7 @@ class uvm_reg_field(uvm_object):
 
     # atomic get value
     def get(self):
-        return self._desidered
+        return self._desired
 
     # atomic reset value
     def reset(self):
@@ -266,59 +266,59 @@ class uvm_reg_field(uvm_object):
 
         # Return value based on the access
         if self.get_access() == "RO":
-            self._desidered = self._desidered  # Leave the desired value stable
+            self._desired = self._desired  # Leave the desired value stable
         if self.get_access() == "RW":
-            self._desidered = value
+            self._desired = value
         if self.get_access() == "RC":
-            self._desidered = self._desidered  # Leave the desired value stable
+            self._desired = self._desired  # Leave the desired value stable
         if self.get_access() == "RS":
-            self._desidered = self._desidered  # Leave the desired value stable
+            self._desired = self._desired  # Leave the desired value stable
         if self.get_access() == "WC":
-            self._desidered = 0
+            self._desired = 0
         if self.get_access() == "WS":
-            self._desidered = _mask
+            self._desired = _mask
         if self.get_access() == "WRC":
-            self._desidered = value
+            self._desired = value
         if self.get_access() == "WRS":
-            self._desidered = value
+            self._desired = value
         if self.get_access() == "WSRC":
-            self._desidered = _mask
+            self._desired = _mask
         if self.get_access() == "WCRS":
-            self._desidered = 0
+            self._desired = 0
         if self.get_access() == "W1C":
-            self._desidered = self._desidered & (~value)
+            self._desired = self._desired & (~value)
         if self.get_access() == "W1S":
-            self._desidered = self._desidered | value
+            self._desired = self._desired | value
         if self.get_access() == "W1T":
-            self._desidered = self._desidered ^ value
+            self._desired = self._desired ^ value
         if self.get_access() == "W0C":
-            self._desidered = self._desidered & value
+            self._desired = self._desired & value
         if self.get_access() == "W0S":
-            self._desidered = self._desidered | (~value & _mask)
+            self._desired = self._desired | (~value & _mask)
         if self.get_access() == "W0T":
-            self._desidered = self._desidered ^ (~value & _mask)
+            self._desired = self._desired ^ (~value & _mask)
         if self.get_access() == "W1SRC":
-            self._desidered = self._desidered | value
+            self._desired = self._desired | value
         if self.get_access() == "W1CRS":
-            self._desidered = self._desidered & (~value)
+            self._desired = self._desired & (~value)
         if self.get_access() == "W0SRC":
-            self._desidered = self._desidered | (~value & _mask)
+            self._desired = self._desired | (~value & _mask)
         if self.get_access() == "W0CRS":
-            self._desidered = self._desidered & value
+            self._desired = self._desired & value
         if self.get_access() == "WO":
-            self._desidered = value
+            self._desired = value
         if self.get_access() == "WOC":
-            self._desidered = 0
+            self._desired = 0
         if self.get_access() == "WOS":
-            self._desidered = _mask
+            self._desired = _mask
         if self.get_access() == "W1":
             if self._has_been_writ is False:
-                self._desidered = value
+                self._desired = value
         if self.get_access() == "WO1":
             if self._has_been_writ is False:
-                self._desidered = value
+                self._desired = value
         if self.get_access() == "NOACCESS":
-            self._desidered = self._desidered  # Leave the desired value stable
+            self._desired = self._desired  # Leave the desired value stable
 
     # Since there is no Switch case in python we use a simple switch case
     # Where error is mentioned it depends on _error_on_write flag, no effect
