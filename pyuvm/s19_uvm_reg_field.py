@@ -82,7 +82,7 @@ class uvm_reg_field(uvm_object):
             uvm_error(self._header, f"Reset value for REG \
                       feild : {self.get_name()} is [{self._reset}] \
                       is beyond the MAX valoue given \
-                      by the size [{((2**self._size)-1)}]")
+                      by the size [{((2**self._size) - 1)}]")
         # Add field
         parent._add_field(self)
 
