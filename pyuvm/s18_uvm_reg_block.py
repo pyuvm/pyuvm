@@ -65,7 +65,7 @@ class uvm_reg_block(uvm_object):
 
     # gen_message
     def gen_message(self, txt="") -> str:
-        return f"{self.header,txt}"
+        return f"{self.header, txt}"
 
     # clear_hdl_path
     def clear_hdl_path(self, kind="RTL"):
@@ -271,16 +271,16 @@ class uvm_reg_block(uvm_object):
     # similar to convert2string
     def __str__(self) -> str:
         return f"   {self.gen_message} \
-                    self._regs          : {self._regs      } \
-                    self.def_map        : {self.def_map    } \
-                    self._is_locked     : {self._is_locked } \
-                    self.hdl_paths      : {self.hdl_paths  } \
-                    self.fields         : {self.fields     } \
-                    self.root_path      : {self.root_path  } \
-                    self.child_blk      : {self.child_blk  } \
-                    self.maps           : {self.maps       } \
-                    self.parent_blk     : {self.parent_blk } \
-                    self.blk_maping     : {self.blk_maping } \
+                    self._regs          : {self._regs} \
+                    self.def_map        : {self.def_map} \
+                    self._is_locked     : {self._is_locked} \
+                    self.hdl_paths      : {self.hdl_paths} \
+                    self.fields         : {self.fields} \
+                    self.root_path      : {self.root_path} \
+                    self.child_blk      : {self.child_blk} \
+                    self.maps           : {self.maps} \
+                    self.parent_blk     : {self.parent_blk} \
+                    self.blk_maping     : {self.blk_maping} \
                     self.map_mapping    : {self.map_mapping} \
                     self.reg_mapping    : {self.reg_mapping} \
-                    self.blk_name       : {self.blk_name   }"
+                    self.blk_name       : {self.blk_name}"
