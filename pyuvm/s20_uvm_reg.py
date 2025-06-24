@@ -146,7 +146,7 @@ class uvm_reg(uvm_object):
                 error_out(self._header, f"_add_field: \
                 Fields {field.get_name()} overlap \
                 with field \
-                {self._fields[self._fields.index(field)-1].get_name()}")
+                {self._fields[self._fields.index(field) - 1].get_name()}")
                 self._add_error(
                     uvm_reg_error_decoder.FIELD_OVERLAPPING_ERROR.name)
 
