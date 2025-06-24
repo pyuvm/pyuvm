@@ -13,32 +13,11 @@ on:
 
 jobs:
 
-# I've moved flake into tox, so it should not be needed here.
-# I'll delete this code in a later version.
-
-#  lint-flake8:
-#    runs-on: ubuntu-latest
-#    name: flake8
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [3.8]
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: Set up Python ${{matrix.python-version}}
-#      uses: actions/setup-python@v2
-#      with:
-#        python-version: ${{matrix.python-version}}
-#    - name: flake8
-#      continue-on-error: false
-#      run: |
-#        pip install flake8
-#        flake8 pyuvm
 
   tests:
 
     name: Python ${{matrix.python-version}}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
