@@ -167,8 +167,9 @@ class uvm_reg_block(uvm_object):
                                        be locked"))
         return local_reg_collector
 
-    # blk_get_fields
-    def blk_get_fields(self) -> list:
+    # get_fields
+    # 18.1.3.8
+    def get_fields(self) -> list:
         local_field_collector = []
         for r in self.get_registers():
             local_field_collector.append(r.get_fields())
