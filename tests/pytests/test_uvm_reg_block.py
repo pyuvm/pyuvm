@@ -56,7 +56,6 @@ def test_reg_block_with_single_reg():
     assert block.get_registers() == [reg]
 
 
-
 @pytest.mark.reg_block_with_multiple_regs
 def test_reg_block_with_multiple_regs():
     class temp_reg(uvm_reg):
@@ -76,8 +75,8 @@ def test_reg_block_with_multiple_regs():
     assert block.get_registers() == [reg0, reg1]
 
 
-@pytest.mark.reg_block_get_field_name_empty_reg
-def test_reg_block_get_field_name_empty_reg():
+@pytest.mark.reg_block_get_field_empty_reg
+def test_reg_block_get_field_empty_reg():
     class temp_reg(uvm_reg):
         def __init__(self, name="temp_reg", reg_width=32):
             super().__init__(name, reg_width)
@@ -93,8 +92,8 @@ def test_reg_block_get_field_name_empty_reg():
     assert block.get_fields() == []
 
 
-@pytest.mark.reg_block_get_field_name_single_reg
-def test_reg_block_get_field_name_single_reg():
+@pytest.mark.reg_block_get_field_single_reg
+def test_reg_block_get_field_single_reg():
     class temp_reg(uvm_reg):
         def __init__(self, name="temp_reg", reg_width=32):
             super().__init__(name, reg_width)
@@ -112,8 +111,8 @@ def test_reg_block_get_field_name_single_reg():
     assert block.get_fields() == [reg0.TEST_FIELD_1]
 
 
-@pytest.mark.reg_block_get_field_name_multiple_regs
-def test_reg_block_get_field_name_multiple_regs():
+@pytest.mark.reg_block_get_field_multiple_regs
+def test_reg_block_get_field_multiple_regs():
     # FIRST REGISTER
     class temp_reg_1(uvm_reg):
         def __init__(self, name="temp_reg_1", reg_width=32):
