@@ -154,15 +154,16 @@ class uvm_reg_block(uvm_object):
 
     # get_registers
     # 18.1.3.7
-    def get_registers(self) -> list:
+    def get_registers(self, hier = uvm_hier_e.UVM_HIER) -> list:
         local_reg_collector = []
         if self.is_locked() is True:
             for r in self._regs:
                 if self.blk_is_reg_mapped(r) is True:
                     local_reg_collector.append(r)
-            if len(self.child_blk) != 0:
+            if (hier == uvm_hier_e.UVM_HIER) and (len(self.child_blk) != 0):
                 for b in self.child_blk:
-                    local_reg_collector.append(b.get_registers())
+                    for r in b.get_registers(hier):
+                        local_reg_collector.append(r)
         else:
             uvm_fatal(self.gen_message("get_registers -- register block must \
                                        be locked"))
@@ -172,12 +173,12 @@ class uvm_reg_block(uvm_object):
     # 18.1.3.8
     def get_fields(self, hier = uvm_hier_e.UVM_HIER) -> list:
         local_field_collector = []
-        for r in self.get_registers():
+        for r in self.get_registers(hier):
             for f in r.get_fields():
                 local_field_collector.append(f)
         if hier == uvm_hier_e.UVM_HIER:
             for blk in self.get_all_child_blk():
-                for f in blk.get_fields():
+                for f in blk.get_fields(hier):
                     local_field_collector.append(f)
         return local_field_collector
 
