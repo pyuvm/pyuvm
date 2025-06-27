@@ -172,7 +172,8 @@ class uvm_reg_block(uvm_object):
     def get_fields(self) -> list:
         local_field_collector = []
         for r in self.get_registers():
-            local_field_collector.append(r.get_fields())
+            for f in r.get_fields():
+                local_field_collector.append(f)
         return local_field_collector
 
     # get_all_child_blk
