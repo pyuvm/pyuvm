@@ -151,8 +151,9 @@ class uvm_reg_block(uvm_object):
         else:
             self.parent_blk + "." + self.blk_name
 
-    # blk_get_registers
-    def _get_registers(self) -> list:
+    # get_registers
+    # 18.1.3.7
+    def get_registers(self) -> list:
         local_reg_collector = []
         if self.is_locked() is True:
             for r in self._regs:
@@ -160,16 +161,16 @@ class uvm_reg_block(uvm_object):
                     local_reg_collector.append(r)
             if len(self.child_blk) != 0:
                 for b in self.child_blk:
-                    local_reg_collector.append(b.blk_get_registers())
+                    local_reg_collector.append(b.get_registers())
         else:
-            uvm_fatal(self.gen_message("_get_registers -- register block must \
+            uvm_fatal(self.gen_message("get_registers -- register block must \
                                        be locked"))
         return local_reg_collector
 
     # blk_get_fields
     def blk_get_fields(self) -> list:
         local_field_collector = []
-        for r in self.blk_get_registers():
+        for r in self.get_registers():
             local_field_collector.append(r.get_fields())
         return local_field_collector
 

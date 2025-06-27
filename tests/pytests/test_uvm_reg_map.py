@@ -53,7 +53,7 @@ def test_reg_block_with_single_reg():
     reg = temp_reg()
     reg.configure(block, "0x4", "")
     block.set_lock()
-    assert block._get_registers() == [reg]
+    assert block.get_registers() == [reg]
 
 
 @pytest.mark.test_reg_block_with_multiple_regs
@@ -72,7 +72,7 @@ def test_reg_block_with_multiple_regs():
     reg1 = temp_reg()
     reg1.configure(block, "0x8", "")
     block.set_lock()
-    assert block._get_registers() == [reg0, reg1]
+    assert block.get_registers() == [reg0, reg1]
 
 
 @pytest.mark.test_reg_map_get_name
