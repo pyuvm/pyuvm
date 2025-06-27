@@ -2,6 +2,7 @@ from pyuvm import uvm_object
 from pyuvm.s20_uvm_reg import uvm_reg
 from pyuvm.s21_uvm_reg_map import uvm_reg_map
 from pyuvm.s24_uvm_reg_includes import uvm_fatal, uvm_not_implemeneted
+from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
 
 '''
     TODO: the following must be completed
@@ -169,11 +170,15 @@ class uvm_reg_block(uvm_object):
 
     # get_fields
     # 18.1.3.8
-    def get_fields(self) -> list:
+    def get_fields(self, hier = uvm_hier_e.UVM_HIER) -> list:
         local_field_collector = []
         for r in self.get_registers():
             for f in r.get_fields():
                 local_field_collector.append(f)
+        if hier == uvm_hier_e.UVM_HIER:
+            for blk in self.get_all_child_blk():
+                for f in blk.get_fields():
+                    local_field_collector.append(f)
         return local_field_collector
 
     # get_all_child_blk
