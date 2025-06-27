@@ -4,6 +4,7 @@ import pytest
 from pyuvm.s27_uvm_reg_pkg import uvm_reg_block, uvm_reg, uvm_reg_map
 from pyuvm.s27_uvm_reg_pkg import uvm_reg_field
 from pyuvm.s24_uvm_reg_includes import access_e, predict_t
+from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
 
 ##############################################################################
 # TIPS
@@ -147,6 +148,69 @@ def test_reg_block_get_field_multiple_regs():
     reg1.configure(block, "0x8", "")
     block.set_lock()
     assert block.get_fields() == [reg0.TEST_FIELD_1, reg0.TEST_FIELD_2, reg1.TEST_FIELD_3, reg1.TEST_FIELD_4, reg1.TEST_FIELD_5]
+
+
+@pytest.mark.reg_block_get_field_sub_reg_block
+def test_reg_block_get_field_sub_reg_block():
+    # FIRST REGISTER
+    class temp_reg_1(uvm_reg):
+        def __init__(self, name="temp_reg_1", reg_width=32):
+            super().__init__(name, reg_width)
+            self.TEST_FIELD_1 = uvm_reg_field("TEST_FIELD_1")
+            self.TEST_FIELD_2 = uvm_reg_field("TEST_FIELD_2")
+
+        def build(self):
+            self.TEST_FIELD_1.configure(self, 8, 0, 'RW', 0, 0)
+            self.TEST_FIELD_2.configure(self, 16, 8, 'RW', 0, 0)
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # SECOND REGISTER
+    class temp_reg_2(uvm_reg):
+        def __init__(self, name="temp_reg_2", reg_width=32):
+            super().__init__(name, reg_width)
+            self.TEST_FIELD_3 = uvm_reg_field("TEST_FIELD_3")
+            self.TEST_FIELD_4 = uvm_reg_field("TEST_FIELD_4")
+            self.TEST_FIELD_5 = uvm_reg_field("TEST_FIELD_5")
+
+        def build(self):
+            self.TEST_FIELD_3.configure(self, 8, 0, 'RW', 0, 0)
+            self.TEST_FIELD_4.configure(self, 8, 8, 'RW', 0, 0)
+            self.TEST_FIELD_5.configure(self, 8, 16, 'RW', 0, 0)
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    class temp_reg_3(uvm_reg):
+        def __init__(self, name="temp_reg_3", reg_width=32):
+            super().__init__(name, reg_width)
+            self.TEST_FIELD_6 = uvm_reg_field("TEST_FIELD_6")
+            self.TEST_FIELD_7 = uvm_reg_field("TEST_FIELD_7")
+
+        def build(self):
+            self.TEST_FIELD_6.configure(self, 8, 0, 'RW', 0, 0)
+            self.TEST_FIELD_7.configure(self, 8, 8, 'RW', 0, 0)
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # BLOCK
+    class temp_blk_1(uvm_reg_block):
+        def __init__(self, name="temp_blk_1"):
+            super().__init__(name)
+            self.def_map = uvm_reg_map("blk_1_map")
+            self.def_map.configure(self, 0)
+
+            self.TEST_REG_1 = temp_reg_3("TEST_REG_1")
+            self.TEST_REG_1.configure(self, "0xC", "")
+            self.def_map.add_reg(self.TEST_REG_1, "0x0", 'RW')
+    # START
+    block = uvm_reg_block()
+    reg0 = temp_reg_1()
+    reg0.configure(block, "0x4", "")
+    reg1 = temp_reg_2()
+    reg1.configure(block, "0x8", "")
+    blk0 = temp_blk_1()
+    blk0.set_lock()
+    block.add_block(blk0)
+    block.set_lock()
+    assert block.get_fields() == [reg0.TEST_FIELD_1, reg0.TEST_FIELD_2, reg1.TEST_FIELD_3, reg1.TEST_FIELD_4, reg1.TEST_FIELD_5, blk0.TEST_REG_1.TEST_FIELD_6, blk0.TEST_REG_1.TEST_FIELD_7]
+    assert block.get_fields(hier=uvm_hier_e.UVM_NO_HIER) == [reg0.TEST_FIELD_1, reg0.TEST_FIELD_2, reg1.TEST_FIELD_3, reg1.TEST_FIELD_4, reg1.TEST_FIELD_5]
 
 
 def test_reg_map_get_name():
