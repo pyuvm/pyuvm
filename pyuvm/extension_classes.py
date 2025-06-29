@@ -1,5 +1,4 @@
 import functools
-import inspect
 
 import cocotb
 
@@ -31,18 +30,11 @@ def test(
             stage=stage,
         )
         @functools.wraps(cls)
-        async def test(_):
+        async def test_obj(_):
             await uvm_root().run_test(
                 cls, keep_singletons=keep_singletons, keep_set=keep_set
             )
 
-        if cocotb_version_info < (2, 0):
-            # adds cocotb.test object to caller's module
-            caller_frame = inspect.stack()[1]
-            caller_module = inspect.getmodule(caller_frame[0])
-            setattr(caller_module, f"test_{test._id}", test)
-
-        # returns decorator class unmodified
-        return cls
+        return test_obj
 
     return decorator

@@ -256,9 +256,8 @@ class AluEnv(uvm_env):
         self.driver.ap.connect(self.scoreboard.result_export)
 
 
-@pyuvm.test()
-class AluTest(uvm_test):
-    """Test ALU with random and max values"""
+class AluTestBase(uvm_test):
+    """Base class for ALU tests with random and max values"""
 
     def build_phase(self):
         self.env = AluEnv("env", self)
@@ -271,9 +270,13 @@ class AluTest(uvm_test):
         await self.test_all.start()
         self.drop_objection()
 
+@pyuvm.test()
+class AluTest(AluTestBase):
+    """Test ALU with random and max values"""
+
 
 @pyuvm.test()
-class ParallelTest(AluTest):
+class ParallelTest(AluTestBase):
     """Test ALU random and max forked"""
 
     def build_phase(self):
@@ -282,7 +285,7 @@ class ParallelTest(AluTest):
 
 
 @pyuvm.test()
-class FibonacciTest(AluTest):
+class FibonacciTest(AluTestBase):
     """Run Fibonacci program"""
 
     def build_phase(self):
@@ -292,7 +295,7 @@ class FibonacciTest(AluTest):
 
 
 @pyuvm.test(expect_fail=True)
-class AluTestErrors(AluTest):
+class AluTestErrors(AluTestBase):
     """Test ALU with errors on all operations"""
 
     def start_of_simulation_phase(self):
