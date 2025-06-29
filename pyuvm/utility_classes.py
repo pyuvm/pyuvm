@@ -11,6 +11,13 @@ logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
 logging.addLevelName(PYUVM_DEBUG, "PYUVM_DEBUG")
 
 
+if int(cocotb.__version__.split('.')[0]) >= 2:
+    from cocotb.task import current_task
+else:
+    def current_task():
+        return cocotb.scheduler._current_task
+
+
 def count_bits(nn):
     """
     Count the number of bits in a number
@@ -287,7 +294,7 @@ class UVMQueue(cocotb.queue.Queue):
         """
         while self.empty():
             event = Event('{} peek'.format(type(self).__name__))
-            self._getters.append((event, cocotb.scheduler._current_task))
+            self._getters.append((event, current_task()))
             await event.wait()
         return self.peek_nowait()
 
