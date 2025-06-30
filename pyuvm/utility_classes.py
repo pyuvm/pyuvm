@@ -225,7 +225,7 @@ class ObjectionHandler(metaclass=Singleton):
 
     def __init__(self):
         self.__objections = {}
-        self._objection_event = Event("objection changed")
+        self._objection_event = Event()
         self.objection_raised = False
         self.run_phase_done_flag = None  # used in test suites
         self.printed_warning = False
@@ -293,7 +293,7 @@ class UVMQueue(cocotb.queue.Queue):
         If the queue is empty, wait until an item is available.
         """
         while self.empty():
-            event = Event('{} peek'.format(type(self).__name__))
+            event = Event()
             self._getters.append((event, current_task()))
             await event.wait()
         return self.peek_nowait()

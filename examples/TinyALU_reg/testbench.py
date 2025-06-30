@@ -592,7 +592,7 @@ class AluTestBase(uvm_test):
 
         if LANGUAGE == "verilog":
             # Start clock
-            clock = Clock(cocotb.top.clk, 1, units="ns")
+            clock = Clock(cocotb.top.clk, 1, "ns")
             cocotb.start_soon(clock.start())
 
         await self.test_all.start()

@@ -87,7 +87,7 @@ def run_uvm_test(test_name):
 # noinspection PyArgumentList,PyAsyncCall
 # @cocotb.test()
 async def test_alu(dut):
-    clock = Clock(dut.clk, 2, units="us")
+    clock = Clock(dut.clk, 2, "us")
     cocotb.start_soon(clock.start())
     proxy = CocotbProxy(dut, "PROXY")
     await proxy.reset()
@@ -144,7 +144,7 @@ async def delay_peek(qq, delay):
 @cocotb.test()
 async def wait_on_queue(dut):
     """Test put and get with waits"""
-    clock = Clock(dut.clk, 2, units="us") #make the simualtor wait
+    clock = Clock(dut.clk, 2, "us")  # make the simulator wait
     cocotb.start_soon(clock.start())
     qq = utility_classes.UVMQueue(maxsize=1)
     send_data = [

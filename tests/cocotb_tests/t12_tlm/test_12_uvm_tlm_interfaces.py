@@ -5,7 +5,7 @@ from cocotb.triggers import Timer
 
 
 async def waitabit(abit=5):
-    await Timer(1, units="us")
+    await Timer(1, "us")
 class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -597,7 +597,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         self.assertFalse(success)
         self.assertIsNone(data)
         cocotb.start_soon(self.do_nonblocking_put(pp, put_data))
-        await Timer(1, units="us")
+        await Timer(1, "us")
         self.assertTrue(pk.can_peek())
         await self.do_nonblocking_peek(gpp, peek_data)
         success, data = peek_data.pop()
