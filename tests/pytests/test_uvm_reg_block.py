@@ -109,7 +109,7 @@ def test_reg_block_with_sub_blocks():
             self.def_map = uvm_reg_map("blk_1_map")
             self.def_map.configure(self, 0)
 
-            self.reg0 = temp_reg_3("TEST_REG_1")
+            self.reg0 = temp_reg_3("test_reg_3")
             self.reg0.configure(self, "0xC", "")
             self.def_map.add_reg(self.reg0, "0x0", 'RW')
     # START
@@ -148,10 +148,10 @@ def test_reg_block_get_field_single_reg():
     class temp_reg(uvm_reg):
         def __init__(self, name="temp_reg", reg_width=32):
             super().__init__(name, reg_width)
-            self.TEST_FIELD_1 = uvm_reg_field("TEST_FIELD_1")
+            self.test_field_1 = uvm_reg_field("test_field_1")
 
         def build(self):
-            self.TEST_FIELD_1.configure(self, 8, 0, 'RW', 0, 0)
+            self.test_field_1.configure(self, 8, 0, 'RW', 0, 0)
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
     # START
@@ -159,7 +159,7 @@ def test_reg_block_get_field_single_reg():
     reg0 = temp_reg()
     reg0.configure(block, "0x4", "")
     block.set_lock()
-    assert block.get_fields() == [reg0.TEST_FIELD_1]
+    assert block.get_fields() == [reg0.test_field_1]
 
 
 @pytest.mark.reg_block_get_field_multiple_regs
@@ -168,26 +168,26 @@ def test_reg_block_get_field_multiple_regs():
     class temp_reg_1(uvm_reg):
         def __init__(self, name="temp_reg_1", reg_width=32):
             super().__init__(name, reg_width)
-            self.TEST_FIELD_1 = uvm_reg_field("TEST_FIELD_1")
-            self.TEST_FIELD_2 = uvm_reg_field("TEST_FIELD_2")
+            self.test_field_1 = uvm_reg_field("test_field_1")
+            self.test_field_2 = uvm_reg_field("test_field_2")
 
         def build(self):
-            self.TEST_FIELD_1.configure(self, 8, 0, 'RW', 0, 0)
-            self.TEST_FIELD_2.configure(self, 16, 8, 'RW', 0, 0)
+            self.test_field_1.configure(self, 8, 0, 'RW', 0, 0)
+            self.test_field_2.configure(self, 16, 8, 'RW', 0, 0)
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
     # SECOND REGISTER
     class temp_reg_2(uvm_reg):
         def __init__(self, name="temp_reg_2", reg_width=32):
             super().__init__(name, reg_width)
-            self.TEST_FIELD_3 = uvm_reg_field("TEST_FIELD_3")
-            self.TEST_FIELD_4 = uvm_reg_field("TEST_FIELD_4")
-            self.TEST_FIELD_5 = uvm_reg_field("TEST_FIELD_5")
+            self.test_field_3 = uvm_reg_field("test_field_3")
+            self.test_field_4 = uvm_reg_field("test_field_4")
+            self.test_field_5 = uvm_reg_field("test_field_5")
 
         def build(self):
-            self.TEST_FIELD_3.configure(self, 8, 0, 'RW', 0, 0)
-            self.TEST_FIELD_4.configure(self, 8, 8, 'RW', 0, 0)
-            self.TEST_FIELD_5.configure(self, 8, 16, 'RW', 0, 0)
+            self.test_field_3.configure(self, 8, 0, 'RW', 0, 0)
+            self.test_field_4.configure(self, 8, 8, 'RW', 0, 0)
+            self.test_field_5.configure(self, 8, 16, 'RW', 0, 0)
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
     # START
@@ -197,7 +197,7 @@ def test_reg_block_get_field_multiple_regs():
     reg1 = temp_reg_2()
     reg1.configure(block, "0x8", "")
     block.set_lock()
-    assert block.get_fields() == [reg0.TEST_FIELD_1, reg0.TEST_FIELD_2, reg1.TEST_FIELD_3, reg1.TEST_FIELD_4, reg1.TEST_FIELD_5]
+    assert block.get_fields() == [reg0.test_field_1, reg0.test_field_2, reg1.test_field_3, reg1.test_field_4, reg1.test_field_5]
 
 
 @pytest.mark.reg_block_get_field_sub_reg_block
@@ -206,38 +206,38 @@ def test_reg_block_get_field_sub_reg_block():
     class temp_reg_1(uvm_reg):
         def __init__(self, name="temp_reg_1", reg_width=32):
             super().__init__(name, reg_width)
-            self.TEST_FIELD_1 = uvm_reg_field("TEST_FIELD_1")
-            self.TEST_FIELD_2 = uvm_reg_field("TEST_FIELD_2")
+            self.test_field_1 = uvm_reg_field("test_field_1")
+            self.test_field_2 = uvm_reg_field("test_field_2")
 
         def build(self):
-            self.TEST_FIELD_1.configure(self, 8, 0, 'RW', 0, 0)
-            self.TEST_FIELD_2.configure(self, 16, 8, 'RW', 0, 0)
+            self.test_field_1.configure(self, 8, 0, 'RW', 0, 0)
+            self.test_field_2.configure(self, 16, 8, 'RW', 0, 0)
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
     # SECOND REGISTER
     class temp_reg_2(uvm_reg):
         def __init__(self, name="temp_reg_2", reg_width=32):
             super().__init__(name, reg_width)
-            self.TEST_FIELD_3 = uvm_reg_field("TEST_FIELD_3")
-            self.TEST_FIELD_4 = uvm_reg_field("TEST_FIELD_4")
-            self.TEST_FIELD_5 = uvm_reg_field("TEST_FIELD_5")
+            self.test_field_3 = uvm_reg_field("test_field_3")
+            self.test_field_4 = uvm_reg_field("test_field_4")
+            self.test_field_5 = uvm_reg_field("test_field_5")
 
         def build(self):
-            self.TEST_FIELD_3.configure(self, 8, 0, 'RW', 0, 0)
-            self.TEST_FIELD_4.configure(self, 8, 8, 'RW', 0, 0)
-            self.TEST_FIELD_5.configure(self, 8, 16, 'RW', 0, 0)
+            self.test_field_3.configure(self, 8, 0, 'RW', 0, 0)
+            self.test_field_4.configure(self, 8, 8, 'RW', 0, 0)
+            self.test_field_5.configure(self, 8, 16, 'RW', 0, 0)
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
     # THIRD REGISTER
     class temp_reg_3(uvm_reg):
         def __init__(self, name="temp_reg_3", reg_width=32):
             super().__init__(name, reg_width)
-            self.TEST_FIELD_6 = uvm_reg_field("TEST_FIELD_6")
-            self.TEST_FIELD_7 = uvm_reg_field("TEST_FIELD_7")
+            self.test_field_6 = uvm_reg_field("test_field_6")
+            self.test_field_7 = uvm_reg_field("test_field_7")
 
         def build(self):
-            self.TEST_FIELD_6.configure(self, 8, 0, 'RW', 0, 0)
-            self.TEST_FIELD_7.configure(self, 8, 8, 'RW', 0, 0)
+            self.test_field_6.configure(self, 8, 0, 'RW', 0, 0)
+            self.test_field_7.configure(self, 8, 8, 'RW', 0, 0)
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
     # SUB REG BLOCK
@@ -247,9 +247,9 @@ def test_reg_block_get_field_sub_reg_block():
             self.def_map = uvm_reg_map("blk_1_map")
             self.def_map.configure(self, 0)
 
-            self.TEST_REG_1 = temp_reg_3("TEST_REG_1")
-            self.TEST_REG_1.configure(self, "0xC", "")
-            self.def_map.add_reg(self.TEST_REG_1, "0x0", 'RW')
+            self.test_reg_1 = temp_reg_3("test_reg_3")
+            self.test_reg_1.configure(self, "0xC", "")
+            self.def_map.add_reg(self.test_reg_1, "0x0", 'RW')
     # START
     block = uvm_reg_block()
     reg0 = temp_reg_1()
@@ -260,8 +260,8 @@ def test_reg_block_get_field_sub_reg_block():
     blk0.set_lock()
     block.add_block(blk0)
     block.set_lock()
-    assert block.get_fields() == [reg0.TEST_FIELD_1, reg0.TEST_FIELD_2, reg1.TEST_FIELD_3, reg1.TEST_FIELD_4, reg1.TEST_FIELD_5, blk0.TEST_REG_1.TEST_FIELD_6, blk0.TEST_REG_1.TEST_FIELD_7]
-    assert block.get_fields(hier=uvm_hier_e.UVM_NO_HIER) == [reg0.TEST_FIELD_1, reg0.TEST_FIELD_2, reg1.TEST_FIELD_3, reg1.TEST_FIELD_4, reg1.TEST_FIELD_5]
+    assert block.get_fields() == [reg0.test_field_1, reg0.test_field_2, reg1.test_field_3, reg1.test_field_4, reg1.test_field_5, blk0.test_reg_1.test_field_6, blk0.test_reg_1.test_field_7]
+    assert block.get_fields(hier=uvm_hier_e.UVM_NO_HIER) == [reg0.test_field_1, reg0.test_field_2, reg1.test_field_3, reg1.test_field_4, reg1.test_field_5]
 
 
 def test_reg_map_get_name():
