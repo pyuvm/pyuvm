@@ -154,7 +154,7 @@ class uvm_reg_block(uvm_object):
 
     # get_registers
     # 18.1.3.7
-    def get_registers(self, hier = uvm_hier_e.UVM_HIER) -> list:
+    def get_registers(self, hier=uvm_hier_e.UVM_HIER) -> list:
         local_reg_collector = []
         if self.is_locked() is True:
             for r in self._regs:
@@ -171,7 +171,7 @@ class uvm_reg_block(uvm_object):
 
     # get_fields
     # 18.1.3.8
-    def get_fields(self, hier = uvm_hier_e.UVM_HIER) -> list:
+    def get_fields(self, hier=uvm_hier_e.UVM_HIER) -> list:
         local_field_collector = []
         for r in self.get_registers(hier):
             for f in r.get_fields():
@@ -186,7 +186,7 @@ class uvm_reg_block(uvm_object):
     def get_all_child_blk(self) -> list:
         local_blk_collector = []
         for b in self.child_blk:
-            if (self.blk_is_child_mapped(b) is True):
+            if self.blk_is_child_mapped(b) is True:
                 local_blk_collector.append(b)
                 local_blk_collector.append(b.get_all_child_blk())
         return local_blk_collector
