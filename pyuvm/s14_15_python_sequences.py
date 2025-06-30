@@ -101,7 +101,7 @@ class ResponseQueue(UVMQueue):
 
     def __init__(self, maxsize: int = 0):
         super().__init__(maxsize=maxsize)
-        self.put_event = CocotbEvent("put event")
+        self.put_event = CocotbEvent()
 
     def put_nowait(self, item):
         """

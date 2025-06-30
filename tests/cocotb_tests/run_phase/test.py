@@ -24,7 +24,7 @@ class my_no_objection(uvm_test):
 class nested_parent(uvm_test):
     async def run_phase(self):
         self.raise_objection()
-        await Timer(1, units="ms")
+        await Timer(1, "ms")
         self.drop_objection()
 
 
@@ -32,11 +32,11 @@ class nested_objections(nested_parent):
     async def run_phase(self):
         self.raise_objection()
         await super().run_phase()
-        await Timer(10, units="ms")
+        await Timer(10, "ms")
         self.drop_objection()
 
     def check_phase(self):
-        assert get_sim_time(units="ms") > 10
+        assert get_sim_time("ms") > 10
 
 
 class TopTest(uvm_test):
@@ -46,7 +46,7 @@ class TopTest(uvm_test):
 
     async def run_phase(self):
         self.raise_objection()
-        await Timer(10, units="ms")
+        await Timer(10, "ms")
         self.drop_objection()
 
 
@@ -58,12 +58,12 @@ class SubComponent(uvm_component):
         self.raise_objection()
 
         # sub component takes longer than TopTest
-        await Timer(50, units="ms")
+        await Timer(50, "ms")
 
         self.drop_objection()
 
     def check_phase(self):
-        assert get_sim_time(units="ms") >= 50
+        assert get_sim_time("ms") >= 50
 
 
 @cocotb.test()
