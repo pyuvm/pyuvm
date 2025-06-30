@@ -92,8 +92,7 @@ class CheckDatumis442(uvm_test):
         self.raise_objection()
         self.drop_objection()
 
-@pyuvm.test()
-class SetMultipleSingletons(uvm_test):
+class SetMultipleSingletonsBase(uvm_test):
     def build_phase(self):
         self.mysingleton = MySingleton()
         self.mysingleton2 = MySingleton2()
@@ -105,6 +104,10 @@ class SetMultipleSingletons(uvm_test):
         self.mysingleton2.datum = 222
         self.mysingleton3.datum = 333
         self.drop_objection()
+
+@pyuvm.test()
+class SetMultipleSingletons(SetMultipleSingletonsBase):
+    ...
 
 pyuvm.test()
 class CheckMultipleSingletonAreNone(uvm_test):
@@ -123,7 +126,7 @@ class CheckMultipleSingletonAreNone(uvm_test):
         self.drop_objection()
 
 @pyuvm.test()
-class SetMultipleSingletonsAgain(SetMultipleSingletons):
+class SetMultipleSingletonsAgain(SetMultipleSingletonsBase):
     pass
 
 @pyuvm.test(keep_singletons=True)
