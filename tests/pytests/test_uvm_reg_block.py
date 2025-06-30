@@ -76,6 +76,56 @@ def test_reg_block_with_multiple_regs():
     assert block.get_registers() == [reg0, reg1]
 
 
+@pytest.mark.reg_block_with_sub_blocks
+def test_reg_block_with_sub_blocks():
+    # FIRST REGISTER
+    class temp_reg_1(uvm_reg):
+        def __init__(self, name="temp_reg_1", reg_width=32):
+            super().__init__(name, reg_width)
+
+        def build(self):
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # SECOND REGISTER
+    class temp_reg_2(uvm_reg):
+        def __init__(self, name="temp_reg_2", reg_width=32):
+            super().__init__(name, reg_width)
+
+        def build(self):
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # THIRD REGISTER
+    class temp_reg_3(uvm_reg):
+        def __init__(self, name="temp_reg_3", reg_width=32):
+            super().__init__(name, reg_width)
+
+        def build(self):
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # BLOCK
+    class temp_blk_1(uvm_reg_block):
+        def __init__(self, name="temp_blk_1"):
+            super().__init__(name)
+            self.def_map = uvm_reg_map("blk_1_map")
+            self.def_map.configure(self, 0)
+
+            self.reg0 = temp_reg_3("TEST_REG_1")
+            self.reg0.configure(self, "0xC", "")
+            self.def_map.add_reg(self.reg0, "0x0", 'RW')
+    # START
+    block = uvm_reg_block()
+    reg0 = temp_reg_1()
+    reg0.configure(block, "0x4", "")
+    reg1 = temp_reg_2()
+    reg1.configure(block, "0x8", "")
+    blk0 = temp_blk_1()
+    blk0.set_lock()
+    block.add_block(blk0)
+    block.set_lock()
+    assert block.get_registers() == [reg0, reg1, blk0.reg0]
+    assert block.get_registers(hier=uvm_hier_e.UVM_NO_HIER) == [reg0, reg1]
+
+
 @pytest.mark.reg_block_get_field_empty_reg
 def test_reg_block_get_field_empty_reg():
     class temp_reg(uvm_reg):
