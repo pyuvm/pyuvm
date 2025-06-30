@@ -102,7 +102,7 @@ def test_reg_block_with_sub_blocks():
         def build(self):
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
-    # BLOCK
+    # SUB REG BLOCK
     class temp_blk_1(uvm_reg_block):
         def __init__(self, name="temp_blk_1"):
             super().__init__(name)
@@ -228,6 +228,7 @@ def test_reg_block_get_field_sub_reg_block():
             self.TEST_FIELD_5.configure(self, 8, 16, 'RW', 0, 0)
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
+    # THIRD REGISTER
     class temp_reg_3(uvm_reg):
         def __init__(self, name="temp_reg_3", reg_width=32):
             super().__init__(name, reg_width)
@@ -239,7 +240,7 @@ def test_reg_block_get_field_sub_reg_block():
             self.TEST_FIELD_7.configure(self, 8, 8, 'RW', 0, 0)
             self._set_lock()
             self.set_prediction(predict_t.PREDICT_DIRECT)
-    # BLOCK
+    # SUB REG BLOCK
     class temp_blk_1(uvm_reg_block):
         def __init__(self, name="temp_blk_1"):
             super().__init__(name)
