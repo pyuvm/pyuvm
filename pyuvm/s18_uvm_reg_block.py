@@ -243,16 +243,8 @@ class uvm_reg_block(uvm_object):
     # get_field_by_name
     # 18.1.3.15
     def get_field_by_name(self, namei: str) -> uvm_reg_field:
-        for r in self._regs:
-            for f in r.get_fields():
-                if f.get_name() == namei:
-                    return f
-        for b in self.child_blk:
-            for r in b.get_registers():
-                for f in r.get_fields():
-                    if f.get_name() == namei:
-                        return f
-        return None
+        field_list = list(filter(lambda l: l.get_name() == namei, self.get_fields()))
+        return field_list[0] if field_list else None
 
     # set_coverage
     def set_coverage(self, is_on: bool):
