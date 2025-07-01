@@ -235,12 +235,10 @@ class uvm_reg_block(uvm_object):
             return None
 
     # get_reg_by_name
-    def get_reg_by_name(self, namei: str):
-        if self.reg_mapping[namei] == 1:
-            return [r for r in self._regs if (r.get_name() == namei)]
-            # TODO: search into child_blk maps
-        else:
-            return None
+    # 18.1.3.14
+    def get_reg_by_name(self, namei: str) -> uvm_reg:
+        reg_list = list(filter(lambda r: r.get_name() == namei, self.get_registers()))
+        return reg_list[0] if reg_list else None
 
     # get_field_by_name
     # 18.1.3.15
