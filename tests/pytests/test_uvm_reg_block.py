@@ -296,6 +296,99 @@ def test_reg_map_with_multiple_regs():
     assert reg_map.get_reg_by_offset("0xf") == reg0
     assert reg_map.get_reg_by_offset("0xff") == reg1
 
+
+def test_reg_block_get_field_by_name():
+    # FIRST REGISTER
+    class temp_reg_1(uvm_reg):
+        def __init__(self, name="temp_reg_1", reg_width=32):
+            super().__init__(name, reg_width)
+            self.fieldA = uvm_reg_field("fieldA")
+            self.fieldB = uvm_reg_field("fieldB")
+
+        def build(self):
+            self.fieldA.configure(self, 8, 0, 'RW', 0, 0)
+            self.fieldB.configure(self, 16, 8, 'RW', 0, 0)
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # SECOND REGISTER
+    class temp_reg_2(uvm_reg):
+        def __init__(self, name="temp_reg_2", reg_width=32):
+            super().__init__(name, reg_width)
+            self.fieldC = uvm_reg_field("fieldC")
+            self.fieldD = uvm_reg_field("fieldD")
+            self.fieldE = uvm_reg_field("fieldE")
+
+        def build(self):
+            self.fieldC.configure(self, 8, 0, 'RW', 0, 0)
+            self.fieldD.configure(self, 8, 8, 'RW', 0, 0)
+            self.fieldE.configure(self, 8, 16, 'RW', 0, 0)
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # THIRD REGISTER
+    class temp_reg_3(uvm_reg):
+        def __init__(self, name="temp_reg_3", reg_width=32):
+            super().__init__(name, reg_width)
+            self.fieldF = uvm_reg_field("fieldF")
+            self.fieldG = uvm_reg_field("fieldG")
+
+        def build(self):
+            self.fieldF.configure(self, 8, 0, 'RW', 0, 0)
+            self.fieldG.configure(self, 8, 8, 'RW', 0, 0)
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # FOUTH REGISTER
+    class temp_reg_4(uvm_reg):
+        def __init__(self, name="temp_reg_4", reg_width=32):
+            super().__init__(name, reg_width)
+            self.fieldH = uvm_reg_field("fieldH")
+            self.fieldI = uvm_reg_field("fieldI")
+
+        def build(self):
+            self.fieldH.configure(self, 8, 0, 'RW', 0, 0)
+            self.fieldI.configure(self, 8, 8, 'RW', 0, 0)
+            self._set_lock()
+            self.set_prediction(predict_t.PREDICT_DIRECT)
+    # FIRST SUB REG BLOCK
+    class temp_blk_1(uvm_reg_block):
+        def __init__(self, name="temp_blk_1"):
+            super().__init__(name)
+            self.def_map = uvm_reg_map("blk_1_map")
+            self.def_map.configure(self, 0)
+
+            self.reg0 = temp_reg_2("reg2")
+            self.reg0.configure(self, "0x8", "")
+            self.reg1 = temp_reg_3("reg3")
+            self.reg1.configure(self, "0xC", "")
+            self.def_map.add_reg(self.reg0, "0x0", 'RW')
+            self.def_map.add_reg(self.reg1, "0x0", 'RW')
+    # SECOND SUB REG BLOCK
+    class temp_blk_2(uvm_reg_block):
+        def __init__(self, name="temp_blk_2"):
+            super().__init__(name)
+            self.def_map = uvm_reg_map("blk_2_map")
+            self.def_map.configure(self, 0)
+
+            self.reg0 = temp_reg_4("reg4")
+            self.reg0.configure(self, "0x10", "")
+            self.def_map.add_reg(self.reg0, "0x0", 'RW')
+
+            self.blk1 = temp_blk_1()
+            self.blk1.set_lock()
+            self.add_block(self.blk1)
+    # START
+    block = uvm_reg_block()
+    reg0 = temp_reg_1()
+    reg0.configure(block, "0x4", "")
+    blk0 = temp_blk_2()
+    blk0.set_lock()
+    block.add_block(blk0)
+    block.set_lock()
+    assert block.get_field_by_name("fieldB") == reg0.fieldB
+    assert block.get_field_by_name("fieldC") == blk0.blk1.reg0.fieldC
+    assert block.get_field_by_name("fieldF") == blk0.blk1.reg1.fieldF
+    assert block.get_field_by_name("fieldH") == blk0.reg0.fieldH
+    assert block.get_field_by_name("fieldX") == None
+
 ##############################################################################
 # TESTS UVM_REG
 ##############################################################################

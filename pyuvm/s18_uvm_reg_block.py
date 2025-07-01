@@ -1,5 +1,6 @@
 from pyuvm import uvm_object
 from pyuvm.s20_uvm_reg import uvm_reg
+from pyuvm.s19_uvm_reg_field import uvm_reg_field
 from pyuvm.s21_uvm_reg_map import uvm_reg_map
 from pyuvm.s24_uvm_reg_includes import uvm_fatal, uvm_not_implemeneted
 from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
@@ -240,6 +241,20 @@ class uvm_reg_block(uvm_object):
             # TODO: search into child_blk maps
         else:
             return None
+
+    # get_field_by_name
+    # 18.1.3.15
+    def get_field_by_name(self, namei: str) -> uvm_reg_field:
+        for r in self._regs:
+            for f in r.get_fields():
+                if f.get_name() == namei:
+                    return f
+        for b in self.child_blk:
+            for r in b.get_registers():
+                for f in r.get_fields():
+                    if f.get_name() == namei:
+                        return f
+        return None
 
     # set_coverage
     def set_coverage(self, is_on: bool):
