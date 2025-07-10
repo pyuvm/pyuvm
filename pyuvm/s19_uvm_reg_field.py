@@ -47,6 +47,8 @@ class uvm_reg_field(uvm_object):
         # since are part of the parent register
         self._error_on_read = False
         self._error_on_write = False
+        self._fname = ""
+        self._lineno = 0
 
     # configure
     def configure(self, parent: uvm_reg, size: int, lsb_pos: int, access: str,

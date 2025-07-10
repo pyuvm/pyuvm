@@ -37,6 +37,8 @@ class uvm_reg(uvm_object):
         self._cover_on: bool = False
         self._maps = []  # Collection to the maps owning the specific register
         self._access_policy: str = "RW"
+        self._fname = ""
+        self._lineno = 0
 
     # configure
     def configure(self,
