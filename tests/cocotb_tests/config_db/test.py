@@ -53,4 +53,4 @@ async def create_config_db(_):
     config_db_id = id(ConfigDB())
     await uvm_root().run_test("Test")
     second_id = id(ConfigDB())
-    assert not config_db_id == second_id
+    assert config_db_id is not second_id

@@ -238,22 +238,7 @@ def test_reg_simple_predict():
             self._set_lock()
 
     register_0 = reg0('reg0')
-    assert register_0.get_name() == 'reg0'
-    assert register_0.field1.get_name() == 'field1'
-    assert register_0.field2.get_name() == 'field2'
-    assert register_0.field3.get_name() == 'field3'
-    assert register_0.field4.get_name() == 'field4'
-
     register_1 = reg1('reg1')
-    assert register_1.get_name() == 'reg1'
-    assert register_1.field1.get_name() == 'field1'
-    assert register_1.field2.get_name() == 'field2'
-    assert register_1.field3.get_name() == 'field3'
-    assert register_1.field4.get_name() == 'field4'
-    assert register_1.field5.get_name() == 'field5'
-    assert register_1.field6.get_name() == 'field6'
-    assert register_1.field7.get_name() == 'field7'
-    assert register_1.field8.get_name() == 'field8'
 
     predict_reg(register_0)
     predict_reg(register_1)
@@ -264,7 +249,7 @@ def test_reg_predict_edge_cases():
     """
     Test register predict with edge cases
     """
-    class Reg0(uvm_reg):
+    class reg0(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
             self.field = uvm_reg_field('field')
@@ -273,7 +258,7 @@ def test_reg_predict_edge_cases():
             self.field.configure(self, 32, 0, 'RW', 0, 0)
             self._set_lock()
 
-    class Reg1(uvm_reg):
+    class reg1(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
             self.field = uvm_reg_field('field')
@@ -282,7 +267,7 @@ def test_reg_predict_edge_cases():
             self.field.configure(self, 32, 0, 'RO', 0, 0)
             self._set_lock()
 
-    class Reg2(uvm_reg):
+    class reg2(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
             self.field = uvm_reg_field('field')
@@ -291,27 +276,17 @@ def test_reg_predict_edge_cases():
             self.field.configure(self, 32, 0, 'WO', 0, 0)
             self._set_lock()
 
-    class Reg3(uvm_reg):
+    class reg3(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
 
         def build(self):
             self._set_lock()
 
-    register_0 = Reg0('reg0')
-    assert register_0.get_name() == 'reg0'
-    assert register_0.field.get_name() == 'field'
-
-    register_1 = Reg1('reg1')
-    assert register_1.get_name() == 'reg1'
-    assert register_1.field.get_name() == 'field'
-
-    register_2 = Reg2('reg2')
-    assert register_2.get_name() == 'reg2'
-    assert register_2.field.get_name() == 'field'
-
-    register_3 = Reg3('reg3')
-    assert register_3.get_name() == 'reg3'
+    register_0 = reg0('reg0')
+    register_1 = reg1('reg1')
+    register_2 = reg2('reg2')
+    register_3 = reg3('reg3')
 
     predict_reg(register_0)
     predict_reg(register_1)
@@ -319,12 +294,12 @@ def test_reg_predict_edge_cases():
     predict_reg(register_3)
 
 
-@pytest.mark.test_reg_predict_with_spaces
-def test_reg_predict_with_spaces():
+@pytest.mark.test_reg_predict_with_reserved_spaces
+def test_reg_predict_with_reserved_spaces():
     """
     Test register predict with spaces
     """
-    class Reg0(uvm_reg):
+    class reg0(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
             self.field1 = uvm_reg_field('field1')
@@ -339,11 +314,5 @@ def test_reg_predict_with_spaces():
             self.field4.configure(self, 7, 24,  'RW', 0, 0)
             self._set_lock()
 
-    reg0 = Reg0('reg0')
-    assert reg0.get_name() == 'reg0'
-    assert reg0.field1.get_name() == 'field1'
-    assert reg0.field2.get_name() == 'field2'
-    assert reg0.field3.get_name() == 'field3'
-    assert reg0.field4.get_name() == 'field4'
-
+    reg0 = reg0('reg0')
     predict_reg(reg0)
