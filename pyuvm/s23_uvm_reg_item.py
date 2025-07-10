@@ -102,12 +102,14 @@ class uvm_reg_item(uvm_sequence_item):
         return self.kind
 
     # set_value
-    def set_value(self, value):
-        self.value.append(value)
+    def set_value(self, value, idx=0):
+        if idx >= len(self.value):
+            self.value += [0] * (idx - len(self.value) + 1)
+        self.value[idx] = value
 
     # get_value
-    def get_value(self, idx):
-        if (idx < self.value.size()):
+    def get_value(self, idx=0):
+        if idx < len(self.value):
             return self.value[idx]
         else:
             error_out(self.header, "Index out of LIST")
@@ -118,7 +120,7 @@ class uvm_reg_item(uvm_sequence_item):
 
     # get_value_size
     def get_value_size(self):
-        return self.value.size()
+        return len(self.value)
 
     # set_value_array
     def set_value_array(self, v):
