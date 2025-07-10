@@ -80,8 +80,6 @@ class ALU_REG_SRC(uvm_reg):
         self.DATA0.configure(self, 8, 0, 'RW', 0, 0)
         self.DATA1.configure(self, 8, 8, 'RW', 0, 0)
         self._set_lock()
-        self.set_prediction(predict_t.PREDICT_DIRECT)
-
 
 class ALU_REG_RESULT(uvm_reg):
     def __init__(self, name="ALU_REG_RESULT", reg_width=REG_WIDTH):
@@ -91,8 +89,6 @@ class ALU_REG_RESULT(uvm_reg):
     def build(self):
         self.DATA.configure(self, 16, 0, 'RW', 0, 0)
         self._set_lock()
-        self.set_prediction(predict_t.PREDICT_DIRECT)
-
 
 class ALU_REG_CMD(uvm_reg):
     def __init__(self, name="ALU_REG_CMD", reg_width=REG_WIDTH):
@@ -108,8 +104,6 @@ class ALU_REG_CMD(uvm_reg):
         self.DONE.configure(self, 1, 6, 'RO', 0, 1)
         self.RESERVED.configure(self, 8, 7, 'RW', 0, 1)
         self._set_lock()
-        self.set_prediction(predict_t.PREDICT_DIRECT)
-
 
 class ALU_REG_REG_BLOCK(uvm_reg_block):
     def __init__(self, name="ALU_REG_REG_BLOCK"):
