@@ -61,6 +61,8 @@ class uvm_reg_item(uvm_sequence_item):
         self.data = 0
         self.n_bits = 0
         self.header = "PYUVM_REG_ITEM -- "
+        self.fname: str = ""
+        self.lineno: int = 0
 
     ########################################################
     # Internal Methods
@@ -193,3 +195,23 @@ class uvm_reg_item(uvm_sequence_item):
     # get_bd_kind
     def get_bd_kind(self):
         return self.bd_kind
+
+    # set_fname
+    # 19.1.1.2.13
+    def set_fname(self, fname: str):
+        self.fname = fname
+
+    # get_fname
+    # 19.1.1.2.13
+    def get_fname(self) -> str:
+        return self.fname
+
+    # set_line
+    # 19.1.1.2.14
+    def set_line(self, line: int):
+        self.lineno = line
+
+    # get_line
+    # 19.1.1.2.14
+    def get_line(self):
+        return self.lineno
