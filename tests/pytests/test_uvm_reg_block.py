@@ -5,6 +5,7 @@ from pyuvm.s27_uvm_reg_pkg import uvm_reg_block, uvm_reg, uvm_reg_map
 from pyuvm.s27_uvm_reg_pkg import uvm_reg_field
 from pyuvm.s24_uvm_reg_includes import access_e, predict_t
 from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
+from pyuvm.s17_uvm_reg_enumerations import uvm_predict_e
 
 ##############################################################################
 # TIPS
@@ -48,7 +49,6 @@ def test_reg_block_with_single_reg():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # START
     block = uvm_reg_block()
     reg = temp_reg()
@@ -65,7 +65,6 @@ def test_reg_block_with_multiple_regs():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # START
     block = uvm_reg_block()
     reg0 = temp_reg()
@@ -85,7 +84,6 @@ def test_reg_block_with_sub_blocks():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # SECOND REGISTER
     class temp_reg_2(uvm_reg):
         def __init__(self, name="temp_reg_2", reg_width=32):
@@ -93,7 +91,6 @@ def test_reg_block_with_sub_blocks():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # THIRD REGISTER
     class temp_reg_3(uvm_reg):
         def __init__(self, name="temp_reg_3", reg_width=32):
@@ -101,7 +98,6 @@ def test_reg_block_with_sub_blocks():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # SUB REG BLOCK
     class temp_blk_1(uvm_reg_block):
         def __init__(self, name="temp_blk_1"):
@@ -134,7 +130,6 @@ def test_reg_block_get_field_empty_reg():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # START
     block = uvm_reg_block()
     reg0 = temp_reg()
@@ -153,7 +148,6 @@ def test_reg_block_get_field_single_reg():
         def build(self):
             self.test_field_1.configure(self, 8, 0, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # START
     block = uvm_reg_block()
     reg0 = temp_reg()
@@ -175,7 +169,6 @@ def test_reg_block_get_field_multiple_regs():
             self.test_field_1.configure(self, 8, 0, 'RW', 0, 0)
             self.test_field_2.configure(self, 16, 8, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # SECOND REGISTER
     class temp_reg_2(uvm_reg):
         def __init__(self, name="temp_reg_2", reg_width=32):
@@ -189,7 +182,6 @@ def test_reg_block_get_field_multiple_regs():
             self.test_field_4.configure(self, 8, 8, 'RW', 0, 0)
             self.test_field_5.configure(self, 8, 16, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # START
     block = uvm_reg_block()
     reg0 = temp_reg_1()
@@ -213,7 +205,6 @@ def test_reg_block_get_field_sub_reg_block():
             self.test_field_1.configure(self, 8, 0, 'RW', 0, 0)
             self.test_field_2.configure(self, 16, 8, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # SECOND REGISTER
     class temp_reg_2(uvm_reg):
         def __init__(self, name="temp_reg_2", reg_width=32):
@@ -227,7 +218,6 @@ def test_reg_block_get_field_sub_reg_block():
             self.test_field_4.configure(self, 8, 8, 'RW', 0, 0)
             self.test_field_5.configure(self, 8, 16, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # THIRD REGISTER
     class temp_reg_3(uvm_reg):
         def __init__(self, name="temp_reg_3", reg_width=32):
@@ -239,7 +229,6 @@ def test_reg_block_get_field_sub_reg_block():
             self.test_field_6.configure(self, 8, 0, 'RW', 0, 0)
             self.test_field_7.configure(self, 8, 8, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # SUB REG BLOCK
     class temp_blk_1(uvm_reg_block):
         def __init__(self, name="temp_blk_1"):
@@ -305,7 +294,6 @@ def test_reg_block_get_reg_by_name():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # SECOND REGISTER
     class temp_reg_2(uvm_reg):
         def __init__(self, name="temp_reg_2", reg_width=32):
@@ -313,7 +301,6 @@ def test_reg_block_get_reg_by_name():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # THIRD REGISTER
     class temp_reg_3(uvm_reg):
         def __init__(self, name="temp_reg_3", reg_width=32):
@@ -321,7 +308,6 @@ def test_reg_block_get_reg_by_name():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # FOUTH REGISTER
     class temp_reg_4(uvm_reg):
         def __init__(self, name="temp_reg_4", reg_width=32):
@@ -329,7 +315,6 @@ def test_reg_block_get_reg_by_name():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # FIRST SUB REG BLOCK
     class temp_blk_1(uvm_reg_block):
         def __init__(self, name="temp_blk_1"):
@@ -385,7 +370,6 @@ def test_reg_block_get_field_by_name():
             self.fieldA.configure(self, 8, 0, 'RW', 0, 0)
             self.fieldB.configure(self, 16, 8, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # SECOND REGISTER
     class temp_reg_2(uvm_reg):
         def __init__(self, name="temp_reg_2", reg_width=32):
@@ -399,7 +383,6 @@ def test_reg_block_get_field_by_name():
             self.fieldD.configure(self, 8, 8, 'RW', 0, 0)
             self.fieldE.configure(self, 8, 16, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # THIRD REGISTER
     class temp_reg_3(uvm_reg):
         def __init__(self, name="temp_reg_3", reg_width=32):
@@ -411,7 +394,6 @@ def test_reg_block_get_field_by_name():
             self.fieldF.configure(self, 8, 0, 'RW', 0, 0)
             self.fieldG.configure(self, 8, 8, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # FOUTH REGISTER
     class temp_reg_4(uvm_reg):
         def __init__(self, name="temp_reg_4", reg_width=32):
@@ -423,7 +405,6 @@ def test_reg_block_get_field_by_name():
             self.fieldH.configure(self, 8, 0, 'RW', 0, 0)
             self.fieldI.configure(self, 8, 8, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # FIRST SUB REG BLOCK
     class temp_blk_1(uvm_reg_block):
         def __init__(self, name="temp_blk_1"):
@@ -482,7 +463,6 @@ def test_reg_configure():
 
         def build(self):
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
     # START
     reg = temp_reg()
     parent = uvm_reg_block()
@@ -558,7 +538,6 @@ def test_simple_reg_model():
             self.PEN.configure(self, 1, 3, 'RW', 0, 0)
             self.EPS.configure(self, 1, 4, 'RW', 0, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
 
     class LineStatusRegister(uvm_reg):
         def __init__(self, name="LineStatusRegister", reg_width=32):
@@ -574,7 +553,6 @@ def test_simple_reg_model():
             self.PE.configure(self, 1, 2, 'RW', 1, 0)
             self.FE.configure(self, 1, 3, 'RW', 1, 0)
             self._set_lock()
-            self.set_prediction(predict_t.PREDICT_DIRECT)
 
     class Regs(uvm_reg_block):
         def __init__(self, name):
@@ -643,7 +621,10 @@ def test_simple_reg_model():
 
     LSR.reset()
     assert LSR.get_mirrored_value() == 0
-    LSR.predict(12, access_e.UVM_WRITE)
+    LSR.predict(12, kind=uvm_predict_e.UVM_PREDICT_WRITE)
     assert LSR.get_mirrored_value() == 12
     for field in LSR.get_fields():
         print(field.get_value())
+
+    LSR.predict(12, kind=uvm_predict_e.UVM_PREDICT_READ)
+    assert LSR.get_mirrored_value() == 12

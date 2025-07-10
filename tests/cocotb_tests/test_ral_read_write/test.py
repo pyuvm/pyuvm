@@ -25,8 +25,6 @@ class command_reg(uvm_reg):
         self.PEN.configure(self, 1, 3, 'RW', 0, (2**1) - 1)
         self.EPS.configure(self, 4, 4, 'RW', 0, (2**4) - 1)
         self._set_lock()
-        self.set_prediction(predict_t.PREDICT_DIRECT)
-
 
 # Single REG
 class status_reg(uvm_reg):
@@ -43,8 +41,6 @@ class status_reg(uvm_reg):
         self.PE.configure(self, 1, 2, 'RO', 1, 1)
         self.FE.configure(self, 1, 3, 'RO', 1, 1)
         self._set_lock()
-        self.set_prediction(predict_t.PREDICT_DIRECT)
-
 
 # Register model with 2 Regs and 1 Map
 class cmd_ral(uvm_reg_block):
