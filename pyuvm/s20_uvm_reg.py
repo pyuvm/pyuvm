@@ -1,10 +1,14 @@
 # Main Packages same as import uvm_pkg or uvm_defines.svh
 from pyuvm import uvm_object
+from pyuvm.s17_uvm_reg_enumerations import uvm_status_e, uvm_reg_data_t
+from pyuvm.s17_uvm_reg_enumerations import uvm_predict_e, uvm_reg_byte_en_t
+from pyuvm.s17_uvm_reg_enumerations import uvm_door_e
 from pyuvm.s21_uvm_reg_map import uvm_reg_map
+from pyuvm.s23_uvm_reg_item import uvm_reg_item
 from pyuvm.s24_uvm_reg_includes import uvm_reg_error_decoder, error_out
-from pyuvm.s24_uvm_reg_includes import access_e, path_t, uvm_fatal
+from pyuvm.s24_uvm_reg_includes import path_t, uvm_fatal
 from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted
-from pyuvm.s24_uvm_reg_includes import uvm_resp_t, check_t, predict_t
+from pyuvm.s24_uvm_reg_includes import uvm_resp_t, check_t
 from pyuvm.s17_uvm_reg_enumerations import uvm_reg_policy_t
 
 
@@ -162,17 +166,46 @@ class uvm_reg(uvm_object):
         for _f in self._fields:
             _f.field_unlock()
 
-    # Predict
-    def predict(self, value: int, direction: access_e):
-        for f in self.get_fields():
-            f.field_predict((
-                value >> f.get_lsb_pos() & ((1 << f.get_n_bits()) - 1)),
-                path_t.FRONTDOOR, direction)
+    # 18.4.4.15
+    # predict
+    def predict(self,
+                value: uvm_reg_data_t,
+                be: uvm_reg_byte_en_t = -1,
+                kind: uvm_predict_e = uvm_predict_e.UVM_PREDICT_DIRECT,
+                path: uvm_door_e = uvm_door_e.UVM_FRONTDOOR,
+                map: uvm_reg_map = None,
+                fname: str = "",
+                lineno: int = 0) -> bool:
+        rw = uvm_reg_item()
+        rw.set_value(value)
+        rw.set_door(path)
+        rw.set_map(map)
+        rw.set_fname(fname)
+        rw.set_line(lineno)
+        self.do_predict(rw, kind, be)
+        if rw.get_status() == uvm_status_e.UVM_NOT_OK:
+            return False
+        return True
 
-    # set prediction from parent to fields
-    def set_prediction(self, pred_type: predict_t):
-        for f in self.get_fields():
-            f.set_prediction(pred_type)
+    # do_predict
+    def do_predict(self,
+                   rw: uvm_reg_item,
+                   kind: uvm_predict_e = uvm_predict_e.UVM_PREDICT_DIRECT,
+                   be: uvm_reg_byte_en_t = -1):
+        reg_value = rw.get_value(0)
+
+        self._fname = rw.get_fname()
+        self._lineno = rw.get_line()
+
+        if rw.get_status() == uvm_status_e.UVM_IS_OK:
+            # Here reg busy check
+            for field in self.get_fields():
+                rw.set_value((reg_value >> field.get_lsb_pos()) & (
+                    (1 << field.get_n_bits()) - 1))
+                field.do_predict(rw,
+                                 kind,
+                                 (be >> int(field.get_lsb_pos() / 8)))
+            rw.set_value(reg_value)
 
     # Get mirrored value
     def get_mirrored_value(self):
