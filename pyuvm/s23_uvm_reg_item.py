@@ -2,8 +2,9 @@
 from pyuvm import uvm_sequence_item
 from copy import deepcopy
 from pyuvm import uvm_object
+from pyuvm.s17_uvm_reg_enumerations import uvm_status_e
 from pyuvm.s24_uvm_reg_includes import elem_kind_e, access_e
-from pyuvm.s24_uvm_reg_includes import status_t, path_t
+from pyuvm.s24_uvm_reg_includes import path_t
 from pyuvm.s24_uvm_reg_includes import error_out
 
 
@@ -32,7 +33,7 @@ class uvm_reg_item(uvm_sequence_item):
         # and get_offset() accessor methods
         self.offset = 0
         # The result of the transaction: IS_OK, HAS_X, or ERROR.
-        self.status: status_t
+        self.status = uvm_status_e.UVM_IS_OK
         # The local map used to obtain addresses. Users may customize
         # address-translation using this map. Access to the sequencer
         # and bus adapter can be obtained by getting this map's root map,
@@ -137,7 +138,7 @@ class uvm_reg_item(uvm_sequence_item):
 
     # set_status
     def set_status(self, status):
-        if ~isinstance(status, status_t):
+        if not isinstance(status, uvm_status_e):
             error_out(self.header, "Wrong assignment to status Enum")
         else:
             self.status = status
