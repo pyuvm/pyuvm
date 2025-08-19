@@ -1,5 +1,5 @@
 import logging
-from cocotb.log import default_config
+from cocotb.logging import default_config
 
 try:
     default_config()
