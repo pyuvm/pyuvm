@@ -55,7 +55,17 @@ class uvm_env(uvm_component):
 # 13.4
 class uvm_agent(uvm_component):
     """
-    Contains controls for individual agents
+    The :class:`!uvm_agent` virtual class should be used as the base class for
+    the user-defined agents. Deriving from :class:`!uvm_agent` will allow you
+    to distinguish agents from other component types also using its
+    inheritance. Such agents will automatically inherit features that may be
+    added to :class:`!uvm_agent` in the future.
+
+    While an agent's build function, inherited from :class:`~uvm_component`,
+    can be implemented to define any agent topology, an agent typically
+    contains three subcomponents: a driver, sequencer, and monitor. If the
+    agent is active, subtypes should contain all three subcomponents. If the
+    agent is passive, subtypes should contain only the monitor.
     """
 
     def build_phase(self):
@@ -82,6 +92,15 @@ class uvm_agent(uvm_component):
             self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 
     def get_is_active(self):
+        """
+        Returns :data:`~uvm_active_passive_enum.UVM_ACTIVE` if the agent is
+        acting as an active agent and
+        :data:`~uvm_active_passive_enum.UVM_PASSIVE` if it is acting as a
+        passive agent. The default implementation is to just return the
+        ``is_active`` flag, but the component developer may override this
+        behavior if a more complex algorithm is needed to determine the
+        active/passive nature of the agent.
+        """
         return self.is_active
 
     def active(self):
