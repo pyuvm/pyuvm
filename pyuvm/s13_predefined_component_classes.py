@@ -136,8 +136,30 @@ class uvm_scoreboard(uvm_component):
 
 # 13.7
 class uvm_driver(uvm_component):
+    """
+    The base class for drivers that initiate requests for new transactions via
+    a :class:`~uvm_seq_item_pull_port`. The ports are typically connected to
+    the exports of an appropriate sequencer component.
+
+    This driver operates in pull mode. Its ports are typically connected to
+    the corresponding exports in a pull sequencer as follows:
+
+    .. code-block:: python
+
+        driver.seq_item_port.connect(sequencer.seq_item_export)
+        driver.rsp_port.connect(sequencer.rsp_export)
+
+    The ``rsp_port`` needs connecting only if the driver will use it to write
+    responses to the analysis export in the sequencer.
+    """
 
     def __init__(self, name, parent):
+        """
+        Creates and initializes an instance of this class using the normal
+        constructor arguments for :class:`~uvm_component`: *name* is the name
+        of the instance, and *parent* is the handle to the hierarchical
+        parent, if any.
+        """
         super().__init__(name, parent)
         self.seq_item_port = uvm_seq_item_port("seq_item_port", self)
 
