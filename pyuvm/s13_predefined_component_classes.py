@@ -109,6 +109,14 @@ class uvm_agent(uvm_component):
 
 # 13.5
 class uvm_monitor(uvm_component):
+    """
+    This class should be used as the base class for user-defined monitors.
+
+    Deriving from :class:`!uvm_monitor` allows you to distinguish monitors
+    from generic component types inheriting from :class:`~uvm_component`. Such
+    monitors will automatically inherit features that may be added to
+    :class:`!uvm_monitor` in the future.
+    """
     ...
 
 
