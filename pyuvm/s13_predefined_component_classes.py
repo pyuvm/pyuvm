@@ -45,7 +45,10 @@ class uvm_test(uvm_component):
 # 13.3
 class uvm_env(uvm_component):
     """
-    A container for agents and what-not
+    The base class for hierarchical containers of other components that
+    together comprise a complete environment. The environment may
+    initially consist of the entire testbench. Later, it can be reused as
+    a sub-environment in even larger system-level environments.
     """
 
 
