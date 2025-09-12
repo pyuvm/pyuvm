@@ -171,6 +171,16 @@ class uvm_driver(uvm_component):
 
 # 13.9
 class uvm_subscriber(uvm_component):
+    """
+    This class provides an analysis export for receiving transactions from a
+    connected analysis export. Making such a connection "subscribes" this
+    component to any transactions emitted by the connected analysis port.
+
+    Subtypes of this class must define the write method to process the
+    incoming transactions. This class is particularly useful when designing a
+    coverage collector that attaches to a monitor.
+    """
+
     class uvm_AnalysisImp(uvm_analysis_export):
         def __init__(self, name, parent, write_fn):
             super().__init__(name, parent)
@@ -194,7 +204,8 @@ class uvm_subscriber(uvm_component):
 
     def write(self, tt):
         """
-        Force the user to implement the write method.
+        Method that must be defined in each subclass. Access to this method by
+        outside components should be done via the :any:`analysis_export`.
         """
         raise error_classes.UVMFatalError(
             "You must override the write() method in"
