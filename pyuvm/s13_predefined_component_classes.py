@@ -122,6 +122,15 @@ class uvm_monitor(uvm_component):
 
 # 13.6
 class uvm_scoreboard(uvm_component):
+    """
+    This class should be used as the base class for user-defined scoreboards.
+
+    Deriving from :class:`!uvm_scoreboard` will allow you to distinguish
+    scoreboards from other component types inheriting directly from
+    :class:`~uvm_component`. Such scoreboards will automatically inherit and
+    benefit from features that may be added to :class:`!uvm_scoreboard` in the
+    future.
+    """
     ...
 
 
