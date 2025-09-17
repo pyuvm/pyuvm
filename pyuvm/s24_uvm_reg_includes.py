@@ -129,7 +129,7 @@ def uvm_error(header="", message=""):
     '''
     Used to error out based on header and message
     '''
-    raise UVMError(f"{header+message}")
+    raise UVMError(f"{header + message}")
 
 
 #
@@ -138,7 +138,7 @@ def uvm_fatal(header="", message=""):
     Used to fatal out based on header and message
     '''
     if (disable_code_interruption_fatal is False):
-        raise UVMFatalError(f"{header+message}")
+        raise UVMFatalError(f"{header + message}")
 
 
 #
@@ -147,7 +147,7 @@ def uvm_not_implemeneted(header="", message=""):
     Used to fatal out based on header and message
     '''
     if (disable_code_interruption_fatal is False):
-        raise UVMNotImplemented(f"{header+message}")
+        raise UVMNotImplemented(f"{header + message}")
 
 
 #

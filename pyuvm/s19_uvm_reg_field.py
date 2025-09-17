@@ -1,11 +1,16 @@
 # Main Packages same as import uvm_pkg or uvm_defines.
 from pyuvm import uvm_object
-from pyuvm.s17_uvm_reg_enumerations import uvm_reg_policy_t
+from pyuvm.s17_uvm_reg_enumerations import uvm_reg_policy_t, uvm_reg_byte_en_t
+from pyuvm.s17_uvm_reg_enumerations import uvm_predict_e, uvm_door_e
+from pyuvm.s17_uvm_reg_enumerations import uvm_status_e, uvm_reg_data_t
+from pyuvm.s20_uvm_reg import uvm_reg
+from pyuvm.s21_uvm_reg_map import uvm_reg_map
+from pyuvm.s23_uvm_reg_item import uvm_reg_item
 from pyuvm.s24_uvm_reg_includes import uvm_resp_t, path_t
-from pyuvm.s24_uvm_reg_includes import predict_t, check_t, uvm_fatal
+from pyuvm.s24_uvm_reg_includes import check_t, uvm_fatal
 from pyuvm.s24_uvm_reg_includes import error_out, access_e
 from pyuvm.s24_uvm_reg_includes import uvm_error, uvm_reg_field_error_decoder
-from pyuvm.s20_uvm_reg import uvm_reg
+from typing import Tuple
 
 ############################################
 # Yet to be implemeneted TODO:
@@ -37,16 +42,17 @@ class uvm_reg_field(uvm_object):
         self._value = 0
         # Keep desired value as 0
         # TODO: add eventually support for PYVSC for randomization
-        self._desidered = 0
+        self._desired = 0
         self._config_done = False
         self._has_been_writ = False
-        self._prediction = predict_t
         self._response = uvm_resp_t
         self._header = name + " -- "
         # These 2 flags cannot change for fields
         # since are part of the parent register
         self._error_on_read = False
         self._error_on_write = False
+        self._fname = ""
+        self._lineno = 0
 
     # configure
     def configure(self, parent: uvm_reg, size: int, lsb_pos: int, access: str,
@@ -63,7 +69,7 @@ class uvm_reg_field(uvm_object):
         # Ignore randomization if the field is known not to be writeable
         # i.e. not "RW", "WRC", "WRS", "WO", "W1", "WO1"
         # TODO: add eventually support for PYVSC for randomization
-        self._desidered = 0
+        self._desired = 0
         # Check if size is 0
         if (self._size == 0):
             uvm_fatal(self._header, "Size of a filed \
@@ -80,9 +86,9 @@ class uvm_reg_field(uvm_object):
         # check the reset value is not beyond the MAX
         if (self._reset >= (2**self._size)):
             uvm_error(self._header, f"Reset value for REG \
-                      feild : {self._name} is [{self._reset}] \
+                      feild : {self.get_name()} is [{self._reset}] \
                       is beyond the MAX valoue given \
-                      by the size [{((2**self._size)-1)}]")
+                      by the size [{((2**self._size) - 1)}]")
         # Add field
         parent._add_field(self)
 
@@ -122,7 +128,7 @@ class uvm_reg_field(uvm_object):
 
     # get_full_name
     def get_full_name(self):
-        return self._parent + "." + self._name
+        return self._parent.get_full_name() + "." + self.get_name()
 
     # get_parent
     def get_parent(self):
@@ -210,7 +216,7 @@ class uvm_reg_field(uvm_object):
 
     # atomic get value
     def get(self):
-        return self._desidered
+        return self._desired
 
     # atomic reset value
     def reset(self):
@@ -243,10 +249,6 @@ class uvm_reg_field(uvm_object):
     def set_response(self, f_response: uvm_resp_t):
         self._response = f_response
 
-    # Atomic set prediction type for field. This comes from the register parent
-    def set_prediction(self, pred_type: predict_t):
-        self._prediction = pred_type
-
     # Atomic get status from fields
     def get_response(self):
         return self._response
@@ -254,7 +256,7 @@ class uvm_reg_field(uvm_object):
     # atomic set value
     def field_set(self, value: int):
         # Define an all 1 values
-        _mask = int("".join(["1"] * self._size), 2)
+        _mask = (1 << self._size) - 1
         # check if value given is bigger than the size of field
 
         # Ideally the set value should be checked against the parent
@@ -264,61 +266,58 @@ class uvm_reg_field(uvm_object):
         #
         #
 
+        field_access = self.get_access()
         # Return value based on the access
-        if self.get_access() == "RO":
-            self._desidered = self._desidered  # Leave the desired value stable
-        if self.get_access() == "RW":
-            self._desidered = value
-        if self.get_access() == "RC":
-            self._desidered = self._desidered  # Leave the desired value stable
-        if self.get_access() == "RS":
-            self._desidered = self._desidered  # Leave the desired value stable
-        if self.get_access() == "WC":
-            self._desidered = 0
-        if self.get_access() == "WS":
-            self._desidered = _mask
-        if self.get_access() == "WRC":
-            self._desidered = value
-        if self.get_access() == "WRS":
-            self._desidered = value
-        if self.get_access() == "WSRC":
-            self._desidered = _mask
-        if self.get_access() == "WCRS":
-            self._desidered = 0
-        if self.get_access() == "W1C":
-            self._desidered = self._desidered & (~value)
-        if self.get_access() == "W1S":
-            self._desidered = self._desidered | value
-        if self.get_access() == "W1T":
-            self._desidered = self._desidered ^ value
-        if self.get_access() == "W0C":
-            self._desidered = self._desidered & value
-        if self.get_access() == "W0S":
-            self._desidered = self._desidered | (~value & _mask)
-        if self.get_access() == "W0T":
-            self._desidered = self._desidered ^ (~value & _mask)
-        if self.get_access() == "W1SRC":
-            self._desidered = self._desidered | value
-        if self.get_access() == "W1CRS":
-            self._desidered = self._desidered & (~value)
-        if self.get_access() == "W0SRC":
-            self._desidered = self._desidered | (~value & _mask)
-        if self.get_access() == "W0CRS":
-            self._desidered = self._desidered & value
-        if self.get_access() == "WO":
-            self._desidered = value
-        if self.get_access() == "WOC":
-            self._desidered = 0
-        if self.get_access() == "WOS":
-            self._desidered = _mask
-        if self.get_access() == "W1":
+        if field_access in ("RO", "RC", "RS", "NOACCESS"):
+            self._desired = self._desired  # Leave the desired value stable
+        elif field_access in ("RW", "WRC", "WRS", "WO"):
+            self._desired = value
+        elif field_access in ("WC", "WCRS", "WOC"):
+            self._desired = 0
+        elif field_access in ("WS", "WSRC", "WOS"):
+            self._desired = _mask
+        elif field_access in ("W1C", "W1CRS"):
+            self._desired = self._desired & (~value)
+        elif field_access in ("W1S", "W1SRC"):
+            self._desired = self._desired | value
+        elif field_access == "W1T":
+            self._desired = self._desired ^ value
+        elif field_access in ("W0C", "W0CRS"):
+            self._desired = self._desired & value
+        elif field_access in ("W0S", "W0SRC"):
+            self._desired = self._desired | (~value & _mask)
+        elif field_access == "W0T":
+            self._desired = self._desired ^ (~value & _mask)
+        elif field_access in ("W1", "WO1"):
             if self._has_been_writ is False:
-                self._desidered = value
-        if self.get_access() == "WO1":
-            if self._has_been_writ is False:
-                self._desidered = value
-        if self.get_access() == "NOACCESS":
-            self._desidered = self._desidered  # Leave the desired value stable
+                self._desired = value
+        else:
+            self._desired = value
+
+    # Check the Direction and the access type along with the enable error
+    # flags (if error is supposed to be thown then send it out)
+    def predict_response(self, path: path_t, direction: access_e):
+        # Check the Direction and the access type along with the enable error
+        # flags (if error is supposed to be thown then send it out)
+        # if we try to write a 1 when the access on write will require the 0
+        # to generate some effect
+        if ((direction == uvm_predict_e.UVM_PREDICT_WRITE) & (
+                self.get_access() in ["RO", "RW", "RC", "RS"]) & (
+                    path == uvm_door_e.UVM_FRONTDOOR)):
+            self.set_response(uvm_resp_t.PASS_RESP if (
+                self._error_on_write is False) else uvm_resp_t.ERROR_RESP)
+        elif ((direction == uvm_predict_e.UVM_PREDICT_READ) & (
+                self.get_access() in ["WO", "WOC", "WOS", "WO1",
+                                      "NOACCESS", "W1", "W1T",
+                                      "W0T", "WC", "WS", "W1C",
+                                      "W1S",
+                                      "W0C",
+                                      "W0S"]) & (
+                                          path == uvm_door_e.UVM_FRONTDOOR)):
+            self.set_response(uvm_resp_t.PASS_RESP if (
+                self._error_on_read is False) else uvm_resp_t.ERROR_RESP)
+        else:  # This will include the BACKDOOR
+            self.set_response(uvm_resp_t.PASS_RESP)
 
     # Since there is no Switch case in python we use a simple switch case
     # Where error is mentioned it depends on _error_on_write flag, no effect
@@ -351,68 +350,38 @@ class uvm_reg_field(uvm_object):
     # "WO1"      - W: first one after ~HARD~ reset is as-is,
     #                 other W have no effects, R: error
     # "NOACCESS" - W: no effect, R: no effect
-    def predict_based_on_write(self, wr_val):
+    def predict_write(self, cur_val, wr_val) -> int:
         # Define an all 1 values
-        _mask = int("".join(["1"] * self._size), 2)
+        mask = (1 << self._size) - 1
         # Return value based on the access type
-        if self.get_access() == "RO":
-            self._field_mirrored = self._reset
-        if self.get_access() == "RW":
-            self._field_mirrored = wr_val
-        if self.get_access() == "RC":
-            self._field_mirrored = self._field_mirrored
-        if self.get_access() == "RS":
-            self._field_mirrored = self._field_mirrored
-        if self.get_access() == "WC":
-            self._field_mirrored = 0
-        if self.get_access() == "WS":
-            self._field_mirrored = _mask
-        if self.get_access() == "WRC":
-            self._field_mirrored = wr_val
-        if self.get_access() == "WRS":
-            self._field_mirrored = wr_val
-        if self.get_access() == "WSRC":
-            self._field_mirrored = _mask
-        if self.get_access() == "WCRS":
-            self._field_mirrored = 0
-        if self.get_access() == "W1C":
-            self._field_mirrored = self._field_mirrored & (~wr_val)
-        if self.get_access() == "W1S":
-            self._field_mirrored = self._field_mirrored | wr_val
-        if self.get_access() == "W1T":
-            self._field_mirrored = self._field_mirrored ^ wr_val
-        if self.get_access() == "W0C":
-            self._field_mirrored = self._field_mirrored & wr_val
-        if self.get_access() == "W0S":
-            self._field_mirrored = self._field_mirrored | (~wr_val & _mask)
-        if self.get_access() == "W0T":
-            self._field_mirrored = self._field_mirrored ^ (~wr_val & _mask)
-        if self.get_access() == "W1SRC":
-            self._field_mirrored = self._field_mirrored | wr_val
-        if self.get_access() == "W1CRS":
-            self._field_mirrored = self._field_mirrored & (~wr_val)
-        if self.get_access() == "W0SRC":
-            self._field_mirrored = self._field_mirrored | (~wr_val & _mask)
-        if self.get_access() == "W0CRS":
-            self._field_mirrored = self._field_mirrored & wr_val
-        if self.get_access() == "WO":
-            self._field_mirrored = wr_val
-        if self.get_access() == "WOC":
-            self._field_mirrored = 0
-        if self.get_access() == "WOS":
-            self._field_mirrored = _mask
-        if self.get_access() == "W1":
-            if self._has_been_writ is True:
-                self._field_mirrored = self._field_mirrored
+        field_access = self.get_access()
+        if field_access in ("RO", "RC", "RS", "NOACCESS"):
+            return cur_val
+        elif field_access in ("RW", "WRC", "WRS", "WO"):
+            return wr_val
+        elif field_access in ("WC", "WCRS", "WOC"):
+            return 0
+        elif field_access in ("WS", "WSRC", "WOS"):
+            return mask
+        elif field_access in ("W1C", "W1CRS"):
+            return cur_val & (~wr_val)
+        elif field_access in ("W1S", "W1SRC"):
+            return cur_val | wr_val
+        elif field_access in ("W1T"):
+            return cur_val ^ wr_val
+        elif field_access in ("W0C", "W0CRS"):
+            return cur_val & wr_val
+        elif field_access in ("W0S", "W0SRC"):
+            return cur_val | (~wr_val & mask)
+        elif field_access in ("W0T"):
+            return cur_val ^ (~wr_val & mask)
+        elif field_access in ("W1", "WO1"):
+            if self._has_been_writ:
+                return cur_val
             else:
-                self._field_mirrored = wr_val
-        if self.get_access() == "WO1":
-            if self._has_been_writ is True:
-                self._field_mirrored = self._field_mirrored
-            else:
-                self._field_mirrored = wr_val
-        if self.get_access() == "NOACCESS":
-            self._field_mirrored = self._reset
+                return wr_val
+        else:
+            return wr_val
 
     # atomic predict value based on the operation (READ)
     # Where error is mentioned it depends on _error_on_read flag, no effect
@@ -446,74 +415,91 @@ class uvm_reg_field(uvm_object):
     # "WO1"      - W: first one after ~HARD~ reset is as-is, other W have no
     #                 effects, R: error
     # "NOACCESS" - W: no effect, R: no effect
-    def predict_based_on_read(self, value):
-        # FRONTDOOR
-        if self.get_access() in ["RC", "WRC", "WSRC", "W1SRC", "W0SRC"]:
+    def predict_read(self) -> Tuple[bool, int]:
+        acc: str = self.get_access()
+        if acc in ["RC", "WRC", "WSRC", "W1SRC", "W0SRC"]:
             # Set Value to 0 since READ will clear
-            self._field_mirrored = 0
-        elif self.get_access() in ["RS", "WRS", "WCRS", "W1CRS", "W0CRS"]:
+            return True, 0
+        elif acc in ["RS", "WRS", "WCRS", "W1CRS", "W0CRS"]:
             # Set Value to 1 since READ will set to 1
-            self._field_mirrored = int("".join(["1"] * self._size), 2)
-        elif self.get_access() in ["WO", "WOC", "WOS", "WO1", "NOACCESS",
-                                   "W1", "W1T", "W0T", "WC", "WS", "W1C",
-                                   "W1S", "W0C", "W0S"]:
+            return True, (1 << self._size) - 1
+        elif acc in ["WO", "WOC", "WOS", "WO1", "NOACCESS",
+                     "W1", "W1T", "W0T", "WC", "WS", "W1C",
+                     "W1S", "W0C", "W0S"]:
             # Set Value to the reset since READ will have no effect
-            self._field_mirrored = self._reset
-        else:
-            self._add_error(uvm_reg_field_error_decoder.
-                            WRONG_ACCESS_FOR_PREDICT_READ)
-            uvm_error(self._header, "Wrong Access set on \
-                      predict_based_on_read")
+            return True, self._reset
+        return False, 0
 
-    # Check the Direction and the access type along with the enable error
-    # flags (if error is supposed to be thown then send it out)
-    def predict_response(self, value, path: path_t, direction: access_e):
-        # Check the Direction and the access type along with the enable error
-        # flags (if error is supposed to be thown then send it out)
-        # if we try to write a 1 when the access on write will require the 0
-        # to generate some effect
-        if ((direction == access_e.UVM_WRITE) & (
-            self.get_access() in ["RO", "RW", "RC", "RS"]) & (path == path_t.
-                                                              FRONTDOOR)):
-            self.set_response(uvm_resp_t.PASS_RESP if (
-                self._error_on_write is False) else uvm_resp_t.ERROR_RESP)
-        elif ((direction == access_e.UVM_READ) & (self.get_access() in
-                                                  ["WO", "WOC", "WOS", "WO1",
-                                                   "NOACCESS", "W1", "W1T",
-                                                   "W0T", "WC", "WS", "W1C",
-                                                   "W1S",
-                                                   "W0C",
-                                                   "W0S"]) & (path == path_t.
-                                                              FRONTDOOR)):
-            self.set_response(uvm_resp_t.PASS_RESP if (
-                self._error_on_read is False) else uvm_resp_t.ERROR_RESP)
-        else:  # This will include the BACKDOOR
-            self.set_response(uvm_resp_t.PASS_RESP)
+    # Proccess of predictiong
+    def do_predict(self,
+                   rw: uvm_reg_item,
+                   kind: uvm_predict_e = uvm_predict_e.UVM_PREDICT_DIRECT,
+                   be: uvm_reg_byte_en_t = -1):
+        field_val = rw.get_value(0) & ((1 << self._size) - 1)
 
-    # Main field prediction function to be used to predict
-    # mirrored value for pyuvm_fields
-    def field_predict(self, value, path: path_t, direction: access_e):
-        # Predict the status based on the flags
-        self.predict_response(value, path, direction)
-        # WRITE prediction and prediction is ether on write and Direct
-        if ((direction == access_e.UVM_WRITE) & (path == path_t.FRONTDOOR) & (
-            self._prediction in [predict_t.PREDICT_DIRECT,
-                                 predict_t.PREDICT_WRITE])):
-            self.predict_based_on_write(value)
-        # READ prediction and prediction is ether on read and Direct
-        elif ((direction == access_e.UVM_READ) & (path == path_t.FRONTDOOR) & (
-            self._prediction in [predict_t.PREDICT_DIRECT, predict_t.
-                                 PREDICT_READ])):
-            self.predict_based_on_read(value)
-        elif (path == path_t.BACKDOOR):
-            self._field_mirrored = value
-            self.set_response(uvm_resp_t.PASS_RESP)
+        self.predict_response(rw.get_door(), kind)
+
+        if rw.get_status() != uvm_status_e.UVM_NOT_OK:
+            rw.set_status(uvm_status_e.UVM_IS_OK)
+
+        if not be & 0b1:
+            return
+
+        self._fname = rw.get_fname()
+        self._lineno = rw.get_line()
+
+        if kind == uvm_predict_e.UVM_PREDICT_WRITE:
+            if rw.get_door() == uvm_door_e.UVM_FRONTDOOR \
+                    or rw.get_door() == uvm_door_e.UVM_PREDICT:
+                field_val = self.predict_write(self._field_mirrored, field_val)
+            self._has_been_writ = True
+            # here need to do uvm_reg_field_cb_iter logic
+            field_val &= (1 << self._size) - 1
+        elif kind == uvm_predict_e.UVM_PREDICT_READ:
+            if rw.get_door() == uvm_door_e.UVM_FRONTDOOR \
+                    or rw.get_door() == uvm_door_e.UVM_PREDICT:
+                predict_valid, tmp_val = self.predict_read()
+                if predict_valid:
+                    field_val = tmp_val
+            # here need to do uvm_reg_field_cb_iter logic
+            field_val &= (1 << self._size) - 1
+        elif kind == uvm_predict_e.UVM_PREDICT_DIRECT:
+            # There should be a check for the register's busy status,
+            # but since there is no 'busy' field in the register class,
+            # there is no such check here.
+            pass
         else:
             self._add_error(uvm_reg_field_error_decoder.
                             WRONG_COMBINATION_PREDICTION_DIRECTION)
             uvm_error(self._header, "Wrong combination of PATH \
                        - PREDICTION TYPE and DIRECTION on pyuvm_field \
                        -- field_predict function")
+        self._field_mirrored = field_val
+        self._desired = field_val
+        self._value = field_val
+
+    # Main field prediction function to be used to predict
+    # mirrored value for pyuvm_fields
+    # 18.5.5.17
+    def predict(self,
+                value: uvm_reg_data_t,
+                be: uvm_reg_byte_en_t = -1,
+                kind: uvm_predict_e = uvm_predict_e.UVM_PREDICT_DIRECT,
+                path: uvm_door_e = uvm_door_e.UVM_FRONTDOOR,
+                map: uvm_reg_map = None,
+                fname: str = "",
+                lineno: int = 0) -> bool:
+
+        rw = uvm_reg_item()
+        rw.set_value(value)
+        rw.set_door(path)
+        rw.set_map(map)
+        rw.set_fname(fname)
+        rw.set_line(lineno)
+        self.do_predict(rw, kind, be)
+        if rw.get_status() == uvm_status_e.UVM_NOT_OK:
+            return False
+        return True
 
     # String representation of pyuvm_reg_filed class content
     def __str__(self) -> str:

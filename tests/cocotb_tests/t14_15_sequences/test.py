@@ -37,6 +37,6 @@ async def run_tests(dut):
 @cocotb.test()  # pylint: disable=no-value-for-parameter
 async def test_14_sequences(dut):
     """Tests the Sequences"""
-    clock = Clock(dut.clk, 2, units="us")
+    clock = Clock(dut.clk, 2, "us")
     cocotb.start_soon(clock.start())
     await run_tests(dut)

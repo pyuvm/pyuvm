@@ -29,6 +29,9 @@ from pathlib import Path
 sys.path.append(str(Path("..").resolve()))
 from tinyalu_utils import TinyAluBfm, Ops, alu_prediction  # noqa: E402
 
+import os
+LANGUAGE = os.getenv("TOPLEVEL_LANG", "verilog")
+
 ##############################################################################
 # TESTS ENTIRE RAL of an ALU
 # The ALU has 2 SRC input operands stored into 2 flops
@@ -77,8 +80,6 @@ class ALU_REG_SRC(uvm_reg):
         self.DATA0.configure(self, 8, 0, 'RW', 0, 0)
         self.DATA1.configure(self, 8, 8, 'RW', 0, 0)
         self._set_lock()
-        self.set_prediction(predict_t.PREDICT_DIRECT)
-
 
 class ALU_REG_RESULT(uvm_reg):
     def __init__(self, name="ALU_REG_RESULT", reg_width=REG_WIDTH):
@@ -88,8 +89,6 @@ class ALU_REG_RESULT(uvm_reg):
     def build(self):
         self.DATA.configure(self, 16, 0, 'RW', 0, 0)
         self._set_lock()
-        self.set_prediction(predict_t.PREDICT_DIRECT)
-
 
 class ALU_REG_CMD(uvm_reg):
     def __init__(self, name="ALU_REG_CMD", reg_width=REG_WIDTH):
@@ -105,8 +104,6 @@ class ALU_REG_CMD(uvm_reg):
         self.DONE.configure(self, 1, 6, 'RO', 0, 1)
         self.RESERVED.configure(self, 8, 7, 'RW', 0, 1)
         self._set_lock()
-        self.set_prediction(predict_t.PREDICT_DIRECT)
-
 
 class ALU_REG_REG_BLOCK(uvm_reg_block):
     def __init__(self, name="ALU_REG_REG_BLOCK"):
@@ -575,10 +572,8 @@ class AluEnv(uvm_env):
 # TESTS
 ##############################################################################
 
-
-@pyuvm.test()
-class AluTest(uvm_test):
-    """Test ALU with random and max values"""
+class AluTestBase(uvm_test):
+    """Base class for ALU tests with random and max values"""
 
     def build_phase(self):
         self.env = AluEnv("env", self)
@@ -589,17 +584,21 @@ class AluTest(uvm_test):
     async def run_phase(self):
         self.raise_objection()
 
-        if cocotb.LANGUAGE == "verilog":
+        if LANGUAGE == "verilog":
             # Start clock
-            clock = Clock(cocotb.top.clk, 1, units="ns")
+            clock = Clock(cocotb.top.clk, 1, "ns")
             cocotb.start_soon(clock.start())
 
         await self.test_all.start()
         self.drop_objection()
 
+@pyuvm.test()
+class AluTest(AluTestBase):
+    """Test ALU with random and max values"""
+
 
 # @pyuvm.test()
-# class ParallelTest(AluTest):
+# class ParallelTest(AluTestBase):
 #     """Test ALU random and max forked"""
 
 #     def build_phase(self):
@@ -608,7 +607,7 @@ class AluTest(uvm_test):
 
 
 @pyuvm.test()
-class FibonacciTest(AluTest):
+class FibonacciTest(AluTestBase):
     """Run Fibonacci program"""
 
     def build_phase(self):
@@ -618,7 +617,7 @@ class FibonacciTest(AluTest):
 
 
 @pyuvm.test()
-class AluTestErrors(AluTest):
+class AluTestErrors(AluTestBase):
     """Test ALU with errors on all operations"""
 
     def build_phase(self):

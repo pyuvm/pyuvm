@@ -102,10 +102,7 @@ class ResponseQueue(UVMQueue):
 
     def __init__(self, maxsize: int = 0):
         super().__init__(maxsize=maxsize)
-        if cocotb_version_info < (2, 0):
-            self.put_event = CocotbEvent("put event")
-        else:
-            self.put_event = CocotbEvent()
+        self.put_event = CocotbEvent()
 
     def put_nowait(self, item):
         """
@@ -390,17 +387,35 @@ class uvm_sequence(uvm_object):
         self.running_item = None
         self.sequence_id = id(self)
 
+    async def pre_body(self):
+        """
+        This function gets launced BEFORE the function body() is started
+        following a start() call.
+
+        This method should not be called directly by the user.
+        """
+
+    async def post_body(self):
+        """
+        This function gets launced AFTER the function body() is started
+        following a start() call.
+
+        This method should not be called directly by the user.
+        """
+
     async def body(self):
         """
         This function gets launched in a thread when you run start()
         You generally override it.
         """
 
-    async def start(self, seqr=None):
+    async def start(self, seqr=None, call_pre_post=True):
         """
         Launch this sequence on the sequencer. Seqr cannot be None.
 
         :param seqr: The sequencer to launch this sequence on.
+        :param call_pre_post: If set to true (default), then pre_body and
+        post_body are called before and after the sequence body is called.
         :raise AssertionError: If seqr is None
 
         """
@@ -408,7 +423,11 @@ class uvm_sequence(uvm_object):
             assert (isinstance(seqr, uvm_sequencer)), \
                 "Tried to start a sequence with a non-sequencer"
         self.sequencer = seqr
+        if call_pre_post:
+            await self.pre_body()
         await self.body()
+        if call_pre_post:
+            await self.post_body()
 
     async def start_item(self, item):
         """

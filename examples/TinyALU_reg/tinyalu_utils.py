@@ -60,7 +60,7 @@ class TinyAluBfm(metaclass=utility_classes.Singleton):
         self.dut.addr.value = sw_addr
         await FallingEdge(self.dut.clk)
         self.dut.valid.value = 0
-        return self.dut.rdata.value.integer
+        return int(self.dut.rdata.value)
 
     async def SW_WRITE(self, sw_addr: int, sw_data: int):
         await FallingEdge(self.dut.clk)
@@ -90,19 +90,19 @@ class TinyAluBfm(metaclass=utility_classes.Singleton):
         return hex(self.dut.addr.value)
 
     def get_src0(self):
-        return self.dut.regblock.SRC_data0_q.value.integer
+        return int(self.dut.regblock.SRC_data0_q.value)
 
     def get_src1(self):
-        return self.dut.regblock.SRC_data1_q.value.integer
+        return int(self.dut.regblock.SRC_data1_q.value)
 
     def get_op(self):
         if (self.dut.regblock.CMD_op_q.value != 0):
-            return Ops(self.dut.regblock.CMD_op_q.value.integer)
+            return Ops(int(self.dut.regblock.CMD_op_q.value))
         else:
             return 0
 
     def get_result(self):
-        return self.dut.result.value.integer
+        return int(self.dut.result.value)
 
     def get_reset(self):
         return self.dut.reset_n.value

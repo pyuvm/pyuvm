@@ -1,7 +1,9 @@
 from pyuvm import uvm_object
 from pyuvm.s20_uvm_reg import uvm_reg
+from pyuvm.s19_uvm_reg_field import uvm_reg_field
 from pyuvm.s21_uvm_reg_map import uvm_reg_map
 from pyuvm.s24_uvm_reg_includes import uvm_fatal, uvm_not_implemeneted
+from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
 
 '''
     TODO: the following must be completed
@@ -65,7 +67,7 @@ class uvm_reg_block(uvm_object):
 
     # gen_message
     def gen_message(self, txt="") -> str:
-        return f"{self.header,txt}"
+        return f"{self.header, txt}"
 
     # clear_hdl_path
     def clear_hdl_path(self, kind="RTL"):
@@ -151,33 +153,41 @@ class uvm_reg_block(uvm_object):
         else:
             self.parent_blk + "." + self.blk_name
 
-    # blk_get_registers
-    def _get_registers(self) -> list:
+    # get_registers
+    # 18.1.3.7
+    def get_registers(self, hier=uvm_hier_e.UVM_HIER) -> list:
         local_reg_collector = []
         if self.is_locked() is True:
             for r in self._regs:
                 if self.blk_is_reg_mapped(r) is True:
                     local_reg_collector.append(r)
-            if len(self.child_blk) != 0:
+            if (hier == uvm_hier_e.UVM_HIER) and (len(self.child_blk) != 0):
                 for b in self.child_blk:
-                    local_reg_collector.append(b.blk_get_registers())
+                    for r in b.get_registers(hier):
+                        local_reg_collector.append(r)
         else:
-            uvm_fatal(self.gen_message("_get_registers -- register block must \
+            uvm_fatal(self.gen_message("get_registers -- register block must \
                                        be locked"))
         return local_reg_collector
 
-    # blk_get_fields
-    def blk_get_fields(self) -> list:
+    # get_fields
+    # 18.1.3.8
+    def get_fields(self, hier=uvm_hier_e.UVM_HIER) -> list:
         local_field_collector = []
-        for r in self.blk_get_registers():
-            local_field_collector.append(r.get_fields())
+        for r in self.get_registers(hier):
+            for f in r.get_fields():
+                local_field_collector.append(f)
+        if hier == uvm_hier_e.UVM_HIER:
+            for blk in self.get_all_child_blk():
+                for f in blk.get_fields(hier):
+                    local_field_collector.append(f)
         return local_field_collector
 
     # get_all_child_blk
     def get_all_child_blk(self) -> list:
         local_blk_collector = []
         for b in self.child_blk:
-            if (self.blk_is_child_mapped(b) is True):
+            if self.blk_is_child_mapped(b) is True:
                 local_blk_collector.append(b)
                 local_blk_collector.append(b.get_all_child_blk())
         return local_blk_collector
@@ -225,12 +235,18 @@ class uvm_reg_block(uvm_object):
             return None
 
     # get_reg_by_name
-    def get_reg_by_name(self, namei: str):
-        if self.reg_mapping[namei] == 1:
-            return [r for r in self._regs if (r.get_name() == namei)]
-            # TODO: search into child_blk maps
-        else:
-            return None
+    # 18.1.3.14
+    def get_reg_by_name(self, namei: str) -> uvm_reg:
+        reg_list = list(filter(lambda reg: reg.get_name() == namei,
+                               self.get_registers()))
+        return reg_list[0] if reg_list else None
+
+    # get_field_by_name
+    # 18.1.3.15
+    def get_field_by_name(self, namei: str) -> uvm_reg_field:
+        field_list = list(filter(lambda field: field.get_name() == namei,
+                                 self.get_fields()))
+        return field_list[0] if field_list else None
 
     # set_coverage
     def set_coverage(self, is_on: bool):
@@ -271,16 +287,16 @@ class uvm_reg_block(uvm_object):
     # similar to convert2string
     def __str__(self) -> str:
         return f"   {self.gen_message} \
-                    self._regs          : {self._regs      } \
-                    self.def_map        : {self.def_map    } \
-                    self._is_locked     : {self._is_locked } \
-                    self.hdl_paths      : {self.hdl_paths  } \
-                    self.fields         : {self.fields     } \
-                    self.root_path      : {self.root_path  } \
-                    self.child_blk      : {self.child_blk  } \
-                    self.maps           : {self.maps       } \
-                    self.parent_blk     : {self.parent_blk } \
-                    self.blk_maping     : {self.blk_maping } \
+                    self._regs          : {self._regs} \
+                    self.def_map        : {self.def_map} \
+                    self._is_locked     : {self._is_locked} \
+                    self.hdl_paths      : {self.hdl_paths} \
+                    self.fields         : {self.fields} \
+                    self.root_path      : {self.root_path} \
+                    self.child_blk      : {self.child_blk} \
+                    self.maps           : {self.maps} \
+                    self.parent_blk     : {self.parent_blk} \
+                    self.blk_maping     : {self.blk_maping} \
                     self.map_mapping    : {self.map_mapping} \
                     self.reg_mapping    : {self.reg_mapping} \
-                    self.blk_name       : {self.blk_name   }"
+                    self.blk_name       : {self.blk_name}"

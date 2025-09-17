@@ -48,7 +48,7 @@ def run_test(test):
 
 @cocotb.test()
 async def test_alu(dut):
-    clock = Clock(dut.clk, 2, units="us")
+    clock = Clock(dut.clk, 2, "us")
     cocotb.start_soon(clock.start())
     bfm = CocoTBBFM(dut)
     stim = test_sw.Stim(5,dut, bfm)

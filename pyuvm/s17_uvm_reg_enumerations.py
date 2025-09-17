@@ -46,6 +46,9 @@ uvm_reg_policy_t = [
     "NOACCESS"  # no effect, R: no effect.
 ]
 
+# 17.2.1.5 uvm_reg_byte_en_t
+uvm_reg_byte_en_t = int
+
 uvm_reg_field_ignore_rand_mode = ["RW", "WRC", "WRS", "WO", "W1", "WO1"]
 
 

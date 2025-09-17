@@ -17,11 +17,10 @@ from pyuvm.s23_uvm_reg_item import uvm_reg_item
     4.  implement get_memories
     5.  implement get_virtual_registers
     6.  implement get_virtual_fields
-    7.  implement get_full_name
-    8.  implement get_mem_map_info
-    9.  implement get_reg_map_info
-    10. implement set_base_addr
-    11. implement get_size
+    7.  implement get_mem_map_info
+    8.  implement get_reg_map_info
+    9.  implement set_base_addr
+    10. implement get_size
 '''
 
 
@@ -35,7 +34,6 @@ class uvm_reg_map(uvm_object):
         # this is equivalent to offset in uvm map refernce
         self._offset = 0
         self._regs = {}
-        self.name = name
         self.header = name + " -- "
         self._submaps = {}
         # this is set in case of this map is a submap of another map
@@ -73,6 +71,10 @@ class uvm_reg_map(uvm_object):
     # gen_message
     def gen_message(self, txt="") -> str:
         return f"{self.header} {txt}"
+
+    # get_full_name
+    def get_full_name(self):
+        return self._parent.get_full_name() + "." + self.get_name()
 
     # get_parent
     def get_parent(self):
@@ -382,4 +384,4 @@ class uvm_reg_map(uvm_object):
                     self._parent    : {self._parent} \
                     self._offset    : {self._offset} \
                     self._regs      : {self._regs} \
-                    self.name       : {self.name }"
+                    self.name       : {self.get_name()}"

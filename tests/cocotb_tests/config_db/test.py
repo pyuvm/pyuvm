@@ -37,7 +37,7 @@ async def run_tests(dut):
 @cocotb.test()  # pylint: disable=no-value-for-parameter
 async def test_12_tlm(dut):
     """Tests the TLM FIFOS"""
-    clock = Clock(dut.clk, 2, units="us")
+    clock = Clock(dut.clk, 2, "us")
     cocotb.start_soon(clock.start())
     await run_tests(dut)
 
@@ -53,4 +53,4 @@ async def create_config_db(_):
     config_db_id = id(ConfigDB())
     await uvm_root().run_test("Test")
     second_id = id(ConfigDB())
-    assert not config_db_id == second_id
+    assert config_db_id is not second_id

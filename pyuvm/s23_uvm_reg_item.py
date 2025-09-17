@@ -2,8 +2,9 @@
 from pyuvm import uvm_sequence_item
 from copy import deepcopy
 from pyuvm import uvm_object
+from pyuvm.s17_uvm_reg_enumerations import uvm_status_e
 from pyuvm.s24_uvm_reg_includes import elem_kind_e, access_e
-from pyuvm.s24_uvm_reg_includes import status_t, path_t
+from pyuvm.s24_uvm_reg_includes import path_t
 from pyuvm.s24_uvm_reg_includes import error_out
 
 
@@ -32,7 +33,7 @@ class uvm_reg_item(uvm_sequence_item):
         # and get_offset() accessor methods
         self.offset = 0
         # The result of the transaction: IS_OK, HAS_X, or ERROR.
-        self.status: status_t
+        self.status = uvm_status_e.UVM_IS_OK
         # The local map used to obtain addresses. Users may customize
         # address-translation using this map. Access to the sequencer
         # and bus adapter can be obtained by getting this map's root map,
@@ -60,6 +61,8 @@ class uvm_reg_item(uvm_sequence_item):
         self.data = 0
         self.n_bits = 0
         self.header = "PYUVM_REG_ITEM -- "
+        self.fname: str = ""
+        self.lineno: int = 0
 
     ########################################################
     # Internal Methods
@@ -101,12 +104,14 @@ class uvm_reg_item(uvm_sequence_item):
         return self.kind
 
     # set_value
-    def set_value(self, value):
-        self.value.append(value)
+    def set_value(self, value, idx=0):
+        if idx >= len(self.value):
+            self.value += [0] * (idx - len(self.value) + 1)
+        self.value[idx] = value
 
     # get_value
-    def get_value(self, idx):
-        if (idx < self.value.size()):
+    def get_value(self, idx=0):
+        if idx < len(self.value):
             return self.value[idx]
         else:
             error_out(self.header, "Index out of LIST")
@@ -117,7 +122,7 @@ class uvm_reg_item(uvm_sequence_item):
 
     # get_value_size
     def get_value_size(self):
-        return self.value.size()
+        return len(self.value)
 
     # set_value_array
     def set_value_array(self, v):
@@ -137,7 +142,7 @@ class uvm_reg_item(uvm_sequence_item):
 
     # set_status
     def set_status(self, status):
-        if ~isinstance(status, status_t):
+        if not isinstance(status, uvm_status_e):
             error_out(self.header, "Wrong assignment to status Enum")
         else:
             self.status = status
@@ -190,3 +195,23 @@ class uvm_reg_item(uvm_sequence_item):
     # get_bd_kind
     def get_bd_kind(self):
         return self.bd_kind
+
+    # set_fname
+    # 19.1.1.2.13
+    def set_fname(self, fname: str):
+        self.fname = fname
+
+    # get_fname
+    # 19.1.1.2.13
+    def get_fname(self) -> str:
+        return self.fname
+
+    # set_line
+    # 19.1.1.2.14
+    def set_line(self, line: int):
+        self.lineno = line
+
+    # get_line
+    # 19.1.1.2.14
+    def get_line(self):
+        return self.lineno

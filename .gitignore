@@ -22,3 +22,7 @@ results.xml
 sim_build
 docs/_build/*
 docs/generated/*
+examples/TinyALU/e~tinyalu.o
+examples/TinyALU/tinyalu
+.env
+.editorconfig

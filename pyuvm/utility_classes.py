@@ -12,6 +12,13 @@ logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
 logging.addLevelName(PYUVM_DEBUG, "PYUVM_DEBUG")
 
 
+if int(cocotb.__version__.split('.')[0]) >= 2:
+    from cocotb.task import current_task
+else:
+    def current_task():
+        return cocotb.scheduler._current_task
+
+
 def count_bits(nn):
     """
     Count the number of bits in a number
@@ -219,10 +226,7 @@ class ObjectionHandler(metaclass=Singleton):
 
     def __init__(self):
         self.__objections = {}
-        if cocotb_version_info < (2, 0):
-            self._objection_event = Event("objection event")
-        else:
-            self._objection_event = Event()
+        self._objection_event = Event()
         self.objection_raised = False
         self.run_phase_done_flag = None  # used in test suites
         self.printed_warning = False
@@ -290,8 +294,8 @@ class UVMQueue(cocotb.queue.Queue):
         If the queue is empty, wait until an item is available.
         """
         while self.empty():
-            event = Event('{} peek'.format(type(self).__name__))
-            self._getters.append((event, cocotb.scheduler._current_task))
+            event = Event()
+            self._getters.append((event, current_task()))
             await event.wait()
         return self.peek_nowait()
 

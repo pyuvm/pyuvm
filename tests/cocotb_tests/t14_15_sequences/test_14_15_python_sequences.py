@@ -251,6 +251,42 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
         await uvm_root().run_test("SeqTest")
         self.assertTrue(DataHolder().datum)
 
+    async def test_seq_pre_post_body(self):
+        ObjectionHandler().run_phase_done_flag = None
+
+        class Seq(uvm_sequence):
+            def __init__(self, name="uvm_sequence"):
+                super().__init__(name)
+                self.op = None
+
+            async def pre_body(self):
+                self.op = SeqItem("op")
+
+            async def body(self):
+                await self.start_item(self.op)
+                self.op.data = 0
+                await self.finish_item(self.op)
+
+            async def post_body(self):
+                DataHolder().datum = True
+
+        class SeqTest(uvm_test):
+            def build_phase(self):
+                self.seqr = uvm_sequencer("seqr", self)
+                self.driver = ItemDoneRespSeqDriver("driver", self)
+
+            def connect_phase(self):
+                self.driver.seq_item_port.connect(self.seqr.seq_item_export)
+
+            async def run_phase(self):
+                self.raise_objection()
+                seq = Seq("seq")
+                await seq.start(self.seqr)
+                self.drop_objection()
+
+        await uvm_root().run_test("SeqTest")
+        self.assertTrue(DataHolder().datum)
+
     async def test_item_done_response(self):
         ObjectionHandler().run_phase_done_flag = None
 
@@ -451,24 +487,24 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
 
             async def run_phase(self):
                 while True:
-                    await Timer(self.start_delay_ns, units="ns")
+                    await Timer(self.start_delay_ns, "ns")
                     op_item = await self.seq_item_port.get_next_item()
                     op_item.result = op_item.data + 1
-                    await Timer(self.finish_delay_ns, units="ns")
+                    await Timer(self.finish_delay_ns, "ns")
                     self.seq_item_port.item_done()
 
         class Seq(uvm_sequence):
             async def body(self):
                 op = SeqItem("op")
-                DataHolder().start_item_call_time = get_sim_time(units="ns")
+                DataHolder().start_item_call_time = get_sim_time("ns")
                 uvm_root().logger.info("CALLING START_ITEM")
                 await self.start_item(op)
                 uvm_root().logger.info("BACK FROM START_ITEM")
-                DataHolder().start_item_return_time = get_sim_time(units="ns")
+                DataHolder().start_item_return_time = get_sim_time("ns")
                 op.data = 0
-                DataHolder().finish_item_call_time = get_sim_time(units="ns")
+                DataHolder().finish_item_call_time = get_sim_time("ns")
                 await self.finish_item(op)
-                DataHolder().finish_item_return_time = get_sim_time(units="ns")
+                DataHolder().finish_item_return_time = get_sim_time("ns")
                 DataHolder().datum = (op.result == (op.data + 1))
 
         class SeqTest(uvm_test):
