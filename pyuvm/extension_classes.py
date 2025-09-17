@@ -40,7 +40,13 @@ def test(
             # adds cocotb.test object to caller's module
             caller_frame = inspect.stack()[1]
             caller_module = inspect.getmodule(caller_frame[0])
-            setattr(caller_module, f"test_{test._id}", test)
+            setattr(caller_module, f"test_{test.name}", test)
+
+        else:
+            # adds cocotb.test object to caller's module
+            caller_frame = inspect.stack()[1]
+            caller_module = inspect.getmodule(caller_frame[0])
+            setattr(caller_module, f"test_{test.name}", test)
 
         # returns decorator class unmodified
         return cls
