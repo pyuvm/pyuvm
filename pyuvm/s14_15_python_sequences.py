@@ -10,6 +10,7 @@
 from pyuvm.s05_base_classes import *
 from pyuvm.s12_uvm_tlm_interfaces import *
 from pyuvm.error_classes import *
+from pyuvm._utils import cocotb_version_info
 from cocotb.triggers import Event as CocotbEvent
 
 # The sequence system allows users to create and populate sequence
@@ -101,7 +102,10 @@ class ResponseQueue(UVMQueue):
 
     def __init__(self, maxsize: int = 0):
         super().__init__(maxsize=maxsize)
-        self.put_event = CocotbEvent("put event")
+        if cocotb_version_info < (2, 0):
+            self.put_event = CocotbEvent("put event")
+        else:
+            self.put_event = CocotbEvent()
 
     def put_nowait(self, item):
         """

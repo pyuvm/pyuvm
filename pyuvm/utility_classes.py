@@ -4,6 +4,7 @@ import fnmatch
 import cocotb.queue
 from cocotb.triggers import Event, NullTrigger
 from cocotb.queue import QueueEmpty
+from pyuvm._utils import cocotb_version_info
 
 FIFO_DEBUG = 5
 PYUVM_DEBUG = 4
@@ -218,7 +219,10 @@ class ObjectionHandler(metaclass=Singleton):
 
     def __init__(self):
         self.__objections = {}
-        self._objection_event = Event("objection changed")
+        if cocotb_version_info < (2, 0):
+            self._objection_event = Event("objection event")
+        else:
+            self._objection_event = Event()
         self.objection_raised = False
         self.run_phase_done_flag = None  # used in test suites
         self.printed_warning = False
