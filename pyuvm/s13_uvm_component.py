@@ -523,7 +523,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         if cocotb_version_info < (2, 0):
             configdb_formatter = SimColourLogFormatter()
         else:
-            configdb_formatter = SimLogFormatter(strip_ansi=False)
+            configdb_formatter = SimLogFormatter()
         configdb_handler.setFormatter(configdb_formatter)
         self.logger_holder.add_logging_handler(configdb_handler)
         self.logger_holder.logger.propagate = False

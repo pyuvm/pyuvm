@@ -53,7 +53,7 @@ class PyuvmFormatter(_PyuvmFormatterBase):
         if cocotb_version_info < (2, 0):
             super().__init__()
         else:
-            super().__init__(strip_ansi=False)
+            super().__init__()
 
     def format(self, record):
         """
