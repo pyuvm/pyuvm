@@ -4,7 +4,6 @@ import fnmatch
 import cocotb.queue
 from cocotb.triggers import Event, NullTrigger
 from cocotb.queue import QueueEmpty
-from pyuvm._utils import cocotb_version_info
 
 FIFO_DEBUG = 5
 PYUVM_DEBUG = 4

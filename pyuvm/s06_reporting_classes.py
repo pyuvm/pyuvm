@@ -21,7 +21,6 @@ if cocotb_version_info < (2, 0):
     from cocotb.utils import want_color_output
 else:
     from cocotb.logging import (
-        SimColourLogFormatter,
         SimLogFormatter,
         SimTimeContextFilter,
     )
