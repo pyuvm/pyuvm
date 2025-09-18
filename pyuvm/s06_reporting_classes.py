@@ -50,10 +50,7 @@ class PyuvmFormatter(_PyuvmFormatterBase):
 
         """
         self.full_name = full_name
-        if cocotb_version_info < (2, 0):
-            super().__init__()
-        else:
-            super().__init__()
+        super().__init__()
 
     def format(self, record):
         """
