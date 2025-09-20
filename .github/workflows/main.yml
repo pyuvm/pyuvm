@@ -46,10 +46,19 @@ jobs:
       run: choco install iverilog
 
     - name: Install GHDL
+      if: runner.os == 'Linux' || runner.os == 'Windows'
       uses: ghdl/setup-ghdl@v1.2.1
       with:
         version: 5.0.1
         backend: mcode
+        investigate: true
+        
+    - name: Install GHDL on macOS
+      if: runner.os == 'macOS'
+      uses: ghdl/setup-ghdl@v1.2.1
+      with:
+        version: 5.0.1
+        backend: llvm
         investigate: true
         
     - name: Run Tests
