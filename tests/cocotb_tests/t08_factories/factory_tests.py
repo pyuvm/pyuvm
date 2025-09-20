@@ -378,6 +378,23 @@ class s08_factory_classes_TestCase():
         # other tests being run. This catches the basic functionality.
         assert len(ss2) > len(ss1) > len(ss0)
 
+    def test_factory_str_long_pathes(self):
+        """Test, whether an overrides with a long instance paths produce correct output"""
+        self.factory.set_inst_override_by_name("original_comp", "comp_2", "top.sib.orig.some_really_long_named_instance")
+        self.factory.set_inst_override_by_name("original_comp", "comp_3", "top.mid.orig.another_really_long_named_instance")
+        self.factory.debug_level = 0
+        ss0 = self.factory.__str__()
+        assert ss0.find("top.sib.orig.some_really")
+        assert ss0.find("top.sib.orig.another_rea")
+        self.factory.debug_level = 1
+        ss1 = self.factory.__str__()
+        assert ss1.find("top.sib.orig.some_really")
+        assert ss1.find("top.sib.orig.another_rea")
+        self.factory.debug_level = 2
+        ss2 = self.factory.__str__()
+        assert ss2.find("top.sib.orig.some_really")
+        assert ss2.find("top.sib.orig.another_rea")
+
     def test_object_creation(self):
         new_obj = uvm_object.create("claribel")
         assert isinstance(new_obj, uvm_object)
