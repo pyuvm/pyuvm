@@ -20,9 +20,7 @@ if cocotb_version_info < (2, 0):
     )
     from cocotb.utils import want_color_output
 else:
-    from cocotb._utils import want_color_output
     from cocotb.logging import (
-        SimColourLogFormatter,
         SimLogFormatter,
         SimTimeContextFilter,
     )
@@ -38,7 +36,14 @@ from logging import (  # noqa: F401, E501
 )
 
 
-class PyuvmFormatter(SimColourLogFormatter):
+# Determine the base class based on cocotb version
+if cocotb_version_info < (2, 0):
+    _PyuvmFormatterBase = SimColourLogFormatter
+else:
+    _PyuvmFormatterBase = SimLogFormatter
+
+
+class PyuvmFormatter(_PyuvmFormatterBase):
     def __init__(self, full_name):
         """
         :param full_name: The full name of the object
@@ -57,10 +62,13 @@ class PyuvmFormatter(SimColourLogFormatter):
         record.msg = new_msg
         name_temp = record.name
         record.name = f"{record.pathname}({record.lineno})"
-        if want_color_output():
-            formatted_msg = super().format(record)
+        if cocotb_version_info < (2, 0):
+            if want_color_output():
+                formatted_msg = super().format(record)
+            else:
+                formatted_msg = SimLogFormatter.format(self, record)
         else:
-            formatted_msg = SimLogFormatter.format(self, record)
+            formatted_msg = super().format(record)
         record.msg = msg_temp
         record.name = name_temp
         return formatted_msg

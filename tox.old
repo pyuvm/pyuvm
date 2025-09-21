@@ -40,9 +40,6 @@ platform =
 setenv =
    PYTHONPATH = {toxinidir}:{toxinidir}/tests/pytests
    COCOTB_REDUCED_LOG_FMT=1
-   # Use environment variables for Windows builds instead of deprecated flags
-   windows: CC=x86_64-w64-mingw32-gcc
-   windows: CXX=x86_64-w64-mingw32-g++
 
 passenv =
   SIM
@@ -53,6 +50,10 @@ deps =
     cocotb
     pytest
     flake8
+
+install_command =
+    windows: python -m pip install --global-option build_ext --global-option --compiler=mingw32 {opts} {packages}
+    python -m pip install {opts} {packages}
 
 commands =
     flake8 pyuvm
