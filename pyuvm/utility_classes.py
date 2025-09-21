@@ -79,16 +79,12 @@ class Override:
         else:
             to = "Type Override: None"
         ss = f"{to:25}" + " || "
-        if self.inst_overrides is not None:
-            ss += "Instance Overrides: "
-            first = True
-            for inst in self.inst_overrides:
-                if not first:
-                    ss += " | "
-                first = False
-                if len(inst) > 29:
-                    inst = inst[:29]
-                ss += inst + f" => {self.inst_overrides[inst].__name__}"
+        io = " | ".join([
+            (f"{inst_path[:29] if len(inst_path) > 29 else inst_path}"
+             f" => {inst_override.__name__}")
+            for inst_path, inst_override in self.inst_overrides.items()
+        ])
+        ss += f"Instance Overrides: {io}" if io else ""
 
         return ss
 
