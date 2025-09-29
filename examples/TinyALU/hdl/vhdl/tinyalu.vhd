@@ -19,7 +19,7 @@ entity tinyalu is
   port(
     A       : in  unsigned ( 7 downto 0 );
     B       : in  unsigned ( 7 downto 0 );
-    clk     : in  std_logic;
+    -- clk     : in  std_logic;
     op      : in  std_logic_vector ( 2 downto 0 );
     reset_n : in  std_logic;
     start   : in  std_logic;
@@ -48,6 +48,7 @@ architecture rtl of tinyalu is
   signal result_mult : unsigned(15 downto 0);
   signal start_single : std_logic;      -- Start signal for single cycle ops
   signal start_mult : std_logic;        -- start signal for multiply
+  signal clk: std_logic := '0';
 
   -- Implicit buffer signal declarations
   signal done_internal : std_logic;
@@ -87,6 +88,10 @@ architecture rtl of tinyalu is
 
 
 begin
+
+CLOCK:
+clk <=  '1' after 1 us when clk = '0' else
+        '0' after 1 us when clk = '1';
 
 -- purpose: This block shunts the start signal to the correct block.
 -- The multiply only sees the start signal when op(2) is '1'

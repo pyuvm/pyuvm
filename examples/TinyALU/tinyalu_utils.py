@@ -119,7 +119,7 @@ class TinyAluBfm(metaclass=utility_classes.Singleton):
             prev_done = done
 
     def start_bfm(self):
-        cocotb.start_soon(Clock(self.dut.clk, 2, unit="us").start())
+        cocotb.start_soon(Clock(self.dut.clk, 2000000, unit="ps").start())
         cocotb.start_soon(self.driver_bfm())
         cocotb.start_soon(self.cmd_mon_bfm())
         cocotb.start_soon(self.result_mon_bfm())
