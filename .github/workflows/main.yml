@@ -43,7 +43,7 @@ jobs:
 
     - name: Install Icarus Verilog on Windows
       if: runner.os == 'Windows'
-      run: choco install iverilog
+      run: choco install iverilog -y
 
     - name: Install GHDL
       if: runner.os == 'Linux' || runner.os == 'Windows'
