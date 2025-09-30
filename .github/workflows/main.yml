@@ -12,54 +12,38 @@ on:
   workflow_dispatch:
 
 jobs:
+
+
   tests:
-    name: Python ${{matrix.python-version}} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+
+    name: Python ${{matrix.python-version}}
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        
+        include:
+          - python-version: 3.8
+
     steps:
     - uses: actions/checkout@v2
-    
     - name: Set up Python ${{matrix.python-version}}
       uses: actions/setup-python@v2
       with:
         python-version: ${{matrix.python-version}}
 
     - name: Install Python testing dependencies
-      run: pip install tox tox-gh-actions
+      run: |
+        pip install tox tox-gh-actions
 
     - name: Install Icarus Verilog
-      if: runner.os == 'Linux'
-      run: sudo apt-get update && sudo apt install -y --no-install-recommends iverilog
-    
-    - name: Install Icarus Verilog on macOS
-      if: runner.os == 'macOS'
-      run: brew install icarus-verilog
-
-    - name: Install Icarus Verilog on Windows
-      if: runner.os == 'Windows'
-      run: choco install iverilog -y
+      run: |
+        sudo apt install -y --no-install-recommends iverilog
 
     - name: Install GHDL
-      if: runner.os == 'Linux' || runner.os == 'Windows'
-      uses: ghdl/setup-ghdl@v1.2.1
-      with:
-        version: 5.0.1
-        backend: mcode
-        investigate: true
-        
-    - name: Install GHDL on macOS
-      if: runner.os == 'macOS'
-      uses: ghdl/setup-ghdl@v1.2.1
-      with:
-        version: 5.0.1
-        backend: llvm
-        investigate: true
-        
-    - name: Run Tests
-      run: tox
+      run: |
+        sudo apt install -y --no-install-recommends ghdl-mcode ghdl
+
+    - name: Test
+      run: |
+        tox
