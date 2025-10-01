@@ -1,6 +1,27 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
+requires = ["setuptools>=42","wheel"]
 build-backend = "setuptools.build_meta"
+
+
+[tool.ruff]
+target-version = "py37"
+
+[tool.ruff.lint]
+extend-select = [
+    "F",        # pyflakes
+]
+ignore = [
+    "E741",    # ambiguous variable name (preference)
+    "E501",    # line too long (preference)
+    "F405",    # Undefined local with import star usage (preference)
+    "F403",    # Undefined local with import star (preference)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "pyuvm",
+]
+known-third-party = [
+    "pytest",
+    "cocotb",
+]
