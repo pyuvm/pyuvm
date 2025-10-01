@@ -9,9 +9,17 @@ from pyuvm.s08_factory_classes import uvm_factory
 from pyuvm.s09_phasing import uvm_build_phase, uvm_common_phases, uvm_run_phase
 
 if cocotb_version_info < (2, 0):
-    from cocotb.log import SimColourLogFormatter, SimTimeContextFilter
+    from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
+    from cocotb.utils import want_color_output
+
+    if want_color_output():
+        LogFormatter = SimColourLogFormatter
+    else:
+        LogFormatter = SimLogFormatter
 else:
-    from cocotb.logging import SimColourLogFormatter, SimTimeContextFilter
+    from cocotb.logging import SimLogFormatter, SimTimeContextFilter
+
+    LogFormatter = SimLogFormatter
 
 
 # 13.1.1
@@ -518,7 +526,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         # Don't let the handler interfere with logger level
         configdb_handler.setLevel(logging.NOTSET)
         # Make log messages look like UVM messages
-        configdb_formatter = SimColourLogFormatter()
+        configdb_formatter = LogFormatter()
         configdb_handler.setFormatter(configdb_formatter)
         self.logger_holder.add_logging_handler(configdb_handler)
         self.logger_holder.logger.propagate = False
