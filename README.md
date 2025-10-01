@@ -28,7 +28,7 @@ You can read the API documentation for **pyuvm** on [GitHub Pages](https://pyuvm
 |8|Factory Classes|**pyuvm** implements all the UVM factory functionality without using the macros needed in SystemVerilog.  The factory supports any class extended from `uvm_void`.|
 |9|Phasing|IEEE 1800.2 describes basic phasing that everyone uses and a complicated custom phasing system that almost nobody uses.  **pyuvm** only implmenents the phasing that everyone uses, but you can extend phasing using Python OOP techniques.|
 |12|UVM TLM Interfaces|**pyuvm** fully implements the UVM *Transaction Level Modeling* (TLM) system. |
-|13|Predefined Component Classes|**pyuvm** implements uvm_component with hierarchy, the uvm_root singleton, and the run_test() task. It simplifies the `uvm_config_db` to the Python-friendly `Config` class. 
+|13|Predefined Component Classes|**pyuvm** implements uvm_component with hierarchy, the uvm_root singleton, and the run_test() task. It simplifies the `uvm_config_db` to the Python-friendly `Config` class.
 |14 & 15|Sequences, sequencer, sequence_item|**pyuvm** refactored the sequencer functionality to create a simpler implementation of the UVM Sequence functionality.|
 |17|UVM Register Enum|**pyuvm** implements all the basic Enum types in the **pyuvm** *Register Access Layer* (RAL)|
 |18|UVM Register Block|**pyuvm** implements the RAL register block classes|

@@ -87,4 +87,3 @@ begin
 
   done_aax <= done_aax_int;
 end architecture add_and_xor;
-

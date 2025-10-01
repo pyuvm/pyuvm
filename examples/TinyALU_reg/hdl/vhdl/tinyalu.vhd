@@ -93,7 +93,7 @@ CLOCK:
 clk <=  '1' after 0.5 ns when clk = '0' else
         '0' after 0.5 ns when clk = '1';
 
--- purpose: This block shunts the start signal to the correct block. 
+-- purpose: This block shunts the start signal to the correct block.
 -- The multiply only sees the start signal when op(2) is '1'
 -- type   : combinational
 -- inputs : op(2),start
@@ -109,9 +109,9 @@ begin  -- process start_demux
       start_mult <= start;
     when others => null;
   end case;
-   
+
 end process start_demux;
-  
+
 
   result_mux : process(result_aax, result_mult, op)
   begin
