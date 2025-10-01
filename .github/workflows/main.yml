@@ -22,8 +22,8 @@ jobs:
       matrix:
         include:
           # Test all Python versions with latest cocotb
-          - python-version: "3.6"
-            cocotb-version: "1.9"
+          # - python-version: "3.6"  # Disabled until we can move away from GHDL for this test
+          #   cocotb-version: "1.9"
           - python-version: "3.7"
             cocotb-version: "1.9"
           - python-version: "3.8"
