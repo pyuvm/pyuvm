@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import cocotb
+from cocotb.clock import Clock
 from cocotb.triggers import Combine
 
 import pyuvm
@@ -243,6 +244,8 @@ class Monitor(uvm_component):
 
 class AluEnv(uvm_env):
     def build_phase(self):
+        self.clk_drv = Clock(cocotb.top.clk, 2, "us")
+        cocotb.start_soon(self.clk_drv.start())
         self.seqr = uvm_sequencer("seqr", self)
         ConfigDB().set(None, "*", "SEQR", self.seqr)
         self.driver = Driver.create("driver", self)
