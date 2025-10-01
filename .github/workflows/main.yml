@@ -80,3 +80,7 @@ jobs:
     - name: Test
       run: |
         COCOTB_VERSION=${{matrix.cocotb-version}} tox
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !contains(github.ref, 'master') }}
