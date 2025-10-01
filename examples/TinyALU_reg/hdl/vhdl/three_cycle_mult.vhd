@@ -19,7 +19,7 @@ USE ieee.std_logic_1164.all;
 USE ieee.std_logic_arith.all;
 
 ENTITY three_cycle IS
-   PORT( 
+   PORT(
       A           : IN     unsigned ( 7 DOWNTO 0 );
       B           : IN     unsigned ( 7 DOWNTO 0 );
       clk         : IN     std_logic;
@@ -50,7 +50,7 @@ begin
       done3 <= '0';
       done2 <= '0';
       done1 <= '0';
-      
+
 	  a_int <= "00000000";
 	  b_int <= "00000000";
       mult1 <= "0000000000000000";
@@ -70,4 +70,3 @@ begin
   end process multiplier;
   done_mult <= done_mult_int;
 end architecture mult;
-

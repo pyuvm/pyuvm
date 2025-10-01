@@ -42,4 +42,3 @@ cocotb_tests:
 	make -C examples/TinyALU sim checkclean
 	make -C examples/TinyALU_reg sim checkclean
 	make SIM=ghdl TOPLEVEL_LANG=vhdl -C examples/TinyALU sim checkclean
-

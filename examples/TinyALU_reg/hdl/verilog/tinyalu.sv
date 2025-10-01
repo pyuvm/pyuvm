@@ -16,7 +16,7 @@ module tinyalu (
       input  logic [3:0] wmask,     //! Write mask
       /* verilator lint_on UNUSED */
       output logic [31:0] rdata,    //! Read data
-      output logic [15:0] result    //! final result 
+      output logic [15:0] result    //! final result
   );
 
     localparam ADDR_WIDTH     = 32;
@@ -53,13 +53,13 @@ module tinyalu (
     assign start_single = CMD_start_q & ~op_from_rf[2];
     assign start_mult   = CMD_start_q & op_from_rf[2];
 
-    single_cycle and_add_xor (  .A(SRC_data0_q), .B(SRC_data1_q), 
-                                .op(op_from_rf), .clk, .reset_n, 
+    single_cycle and_add_xor (  .A(SRC_data0_q), .B(SRC_data1_q),
+                                .op(op_from_rf), .clk, .reset_n,
                                 .start(start_single),
 	   	                          .done(done_aax), .result(result_aax));
 
-    three_cycle mult (  .A(SRC_data0_q), .B(SRC_data1_q), 
-                        .op(op_from_rf), .clk, .reset_n, 
+    three_cycle mult (  .A(SRC_data0_q), .B(SRC_data1_q),
+                        .op(op_from_rf), .clk, .reset_n,
                         .start(start_mult),
 	                      .done(done_mult), .result(result_mult));
 

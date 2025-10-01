@@ -2,7 +2,7 @@
 ===============
 
 .. automodule:: s05_base_classes
-   
+
    .. rubric:: Classes
 
    .. autoclass:: uvm_field_op
@@ -16,4 +16,3 @@
 
    .. autoclass:: uvm_transaction
       :members:
- 

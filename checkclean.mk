@@ -11,4 +11,3 @@ testclean: clean
 	@rm -rf transcript
 
 checkclean: check testclean
-

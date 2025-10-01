@@ -102,11 +102,11 @@ module TinyALUreg #(
     logic                     [DATA_WIDTH-1:0] CMD_rdata;
 
     assign sw_rdata = // or of each register return (masked)
-                   SRC_rdata | 
-                   RESULT_rdata | 
+                   SRC_rdata |
+                   RESULT_rdata |
                    CMD_rdata;
-            
-        
+
+
     // ============================================================
     // Register: SRC
     //    [ 7: 0]                data0: hw=r     sw=rw    reset=0x0
@@ -169,8 +169,8 @@ module TinyALUreg #(
             SRC_data1_q <=  sw_masked_data[15: 8] | (SRC_data1_q & ~sw_mask[15: 8]);
         end
     end
-            
-        
+
+
     // ============================================================
     // Register: RESULT
     //    [15: 0]                 data: hw=w     sw=r     reset=0x0
@@ -202,8 +202,8 @@ module TinyALUreg #(
     // next hardware value
     assign RESULT_data_next = RESULT_data_wdata;
     assign RESULT_data_q = RESULT_data_next;
-            
-        
+
+
     // ============================================================
     // Register: CMD
     //    [ 4: 0]                   op: hw=r     sw=rw    reset=0x0
