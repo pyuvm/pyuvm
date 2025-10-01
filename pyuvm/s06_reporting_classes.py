@@ -13,19 +13,17 @@ from pyuvm._utils import cocotb_version_info
 from pyuvm.s05_base_classes import uvm_object
 
 if cocotb_version_info < (2, 0):
-    from cocotb.log import (
-        SimColourLogFormatter,
-        SimLogFormatter,
-        SimTimeContextFilter,
-    )
+    from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
     from cocotb.utils import want_color_output
+
+    if want_color_output():
+        FormatterBase = SimColourLogFormatter
+    else:
+        FormatterBase = SimLogFormatter
 else:
-    from cocotb._utils import want_color_output
-    from cocotb.logging import (
-        SimColourLogFormatter,
-        SimLogFormatter,
-        SimTimeContextFilter,
-    )
+    from cocotb.logging import SimLogFormatter, SimTimeContextFilter
+
+    FormatterBase = SimLogFormatter
 
 from logging import (  # noqa: F401, E501
     CRITICAL,
@@ -38,7 +36,7 @@ from logging import (  # noqa: F401, E501
 )
 
 
-class PyuvmFormatter(SimColourLogFormatter):
+class PyuvmFormatter(FormatterBase):
     def __init__(self, full_name):
         """
         :param full_name: The full name of the object
@@ -57,10 +55,7 @@ class PyuvmFormatter(SimColourLogFormatter):
         record.msg = new_msg
         name_temp = record.name
         record.name = f"{record.pathname}({record.lineno})"
-        if want_color_output():
-            formatted_msg = super().format(record)
-        else:
-            formatted_msg = SimLogFormatter.format(self, record)
+        formatted_msg = super().format(record)
         record.msg = msg_temp
         record.name = name_temp
         return formatted_msg
