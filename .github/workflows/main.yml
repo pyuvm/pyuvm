@@ -25,19 +25,19 @@ jobs:
           # - python-version: "3.6"  # Disabled until we can move away from GHDL for this test
           #   cocotb-version: "1.9"
           - python-version: "3.7"
-            cocotb-version: "1.9"
+            cocotb-version: "2.0"
           - python-version: "3.8"
-            cocotb-version: "1.9"
+            cocotb-version: "2.0"
           - python-version: "3.9"
-            cocotb-version: "1.9"
+            cocotb-version: "2.0"
           - python-version: "3.10"
-            cocotb-version: "1.9"
+            cocotb-version: "2.0"
           - python-version: "3.11"
-            cocotb-version: "1.9"
+            cocotb-version: "2.0"
           - python-version: "3.12"
-            cocotb-version: "1.9"
+            cocotb-version: "2.0"
           - python-version: "3.13"
-            cocotb-version: "1.9"
+            cocotb-version: "2.0"
           # Test other cocotb versions
           - python-version: "3.8"
             cocotb-version: "1.6"
@@ -45,6 +45,8 @@ jobs:
             cocotb-version: "1.7"
           - python-version: "3.8"
             cocotb-version: "1.8"
+          - python-version: "3.8"
+            cocotb-version: "1.9"
 
     steps:
     - uses: actions/checkout@v2
