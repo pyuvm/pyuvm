@@ -1,4 +1,4 @@
-from pyuvm import uvm_object
+from pyuvm.s05_base_classes import uvm_object
 from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
 from pyuvm.s19_uvm_reg_field import uvm_reg_field
 from pyuvm.s20_uvm_reg import uvm_reg

@@ -31,7 +31,7 @@ def test_basic_creation():
     uvf = uvm_factory()
     mof = uvf.fd.classes["my_object"]("factory")
     moi = my_object("name")
-    assert type(mof) == type(moi)
+    assert type(mof) is type(moi)
 
 
 # Testing specification
@@ -93,7 +93,7 @@ def test_creation():
     # 5.3.5.1
     new_mo = mo.create("new_mo")
     assert "new_mo" == new_mo.get_name()
-    assert type(new_mo) == type(mo)
+    assert type(new_mo) is type(mo)
     # 5.3.5.2
     mo.val = 5
     cln_mo = copy.deepcopy(mo)

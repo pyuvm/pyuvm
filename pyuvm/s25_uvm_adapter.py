@@ -1,5 +1,6 @@
 # Import Main Package
-from pyuvm import uvm_object, uvm_sequence, uvm_sequence_item
+from pyuvm.s05_base_classes import uvm_object
+from pyuvm.s14_15_python_sequences import uvm_sequence, uvm_sequence_item
 from pyuvm.s23_uvm_reg_item import uvm_reg_item
 from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted, uvm_reg_bus_op
 

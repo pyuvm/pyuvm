@@ -1,5 +1,5 @@
 # Import Main Package
-from pyuvm import uvm_object
+from pyuvm.s05_base_classes import uvm_object
 
 
 # Main Class
