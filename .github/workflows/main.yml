@@ -74,8 +74,10 @@ jobs:
         sudo apt install -y --no-install-recommends iverilog
 
     - name: Install GHDL
-      run: |
-        sudo apt install -y --no-install-recommends ghdl-mcode ghdl
+      uses: ghdl/setup-ghdl@v1
+      with:
+        version: latest
+        backend: mcode
 
     - name: Test
       run: |
