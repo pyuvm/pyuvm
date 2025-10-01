@@ -1,35 +1,49 @@
-from pyuvm import uvm_reg, uvm_reg_field, uvm_reg_map
-from pyuvm import uvm_reg_block
-from pyuvm import predict_t
-from pyuvm import uvm_sequence_item
-from pyuvm import uvm_sequence, uvm_report_object
-from pyuvm import uvm_component, uvm_test
-from pyuvm import uvm_reg_adapter
-from pyuvm import uvm_reg_bus_op
-from pyuvm.s24_uvm_reg_includes import access_e, status_t
-from pyuvm.s24_uvm_reg_includes import path_t, check_t
-from pyuvm import uvm_driver, uvm_subscriber
-from pyuvm import uvm_env, uvm_sequencer, uvm_factory
-from pyuvm import uvm_tlm_analysis_fifo
-from pyuvm import uvm_analysis_port, UVMError
-from pyuvm import UVMConfigItemNotFound
-from pyuvm import UVMNotImplemented
-from pyuvm import ConfigDB, uvm_root
-from pyuvm import CRITICAL
-from cocotb.clock import Clock
-from cocotb.triggers import Combine
 import random
-import cocotb
-import pyuvm
 
 # All testbenches use tinyalu_utils, so store it in a central
 # place and add its path to the sys path so we can import it
 import sys
 from pathlib import Path
-sys.path.append(str(Path("..").resolve()))
-from tinyalu_utils import TinyAluBfm, Ops, alu_prediction  # noqa: E402
 
+import cocotb
+from cocotb.clock import Clock
+from cocotb.triggers import Combine
+
+import pyuvm
+from pyuvm import (
+    CRITICAL,
+    ConfigDB,
+    UVMConfigItemNotFound,
+    UVMError,
+    UVMNotImplemented,
+    predict_t,
+    uvm_analysis_port,
+    uvm_component,
+    uvm_driver,
+    uvm_env,
+    uvm_factory,
+    uvm_reg,
+    uvm_reg_adapter,
+    uvm_reg_block,
+    uvm_reg_bus_op,
+    uvm_reg_field,
+    uvm_reg_map,
+    uvm_report_object,
+    uvm_root,
+    uvm_sequence,
+    uvm_sequence_item,
+    uvm_sequencer,
+    uvm_subscriber,
+    uvm_test,
+    uvm_tlm_analysis_fifo,
+)
+from pyuvm.s24_uvm_reg_includes import access_e, check_t, path_t, status_t
+
+sys.path.append(str(Path("..").resolve()))
 import os
+
+from tinyalu_utils import Ops, TinyAluBfm, alu_prediction  # noqa: E402
+
 LANGUAGE = os.getenv("TOPLEVEL_LANG", "verilog")
 
 ##############################################################################
@@ -471,7 +485,7 @@ class Monitor(uvm_component):
         while True:
             # Wait for one clock
             await self.bfm.wait_clock()
-            if self.bfm.get_reset() == 1:
+            if str(self.bfm.get_reset()) == "1":
                 self.done = False
                 await self.bfm.capture_valid()
                 self.logger.info("Monitor Got a Valid")
