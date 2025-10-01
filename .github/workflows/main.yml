@@ -26,27 +26,39 @@ jobs:
           #   cocotb-version: "1.9"
           - python-version: "3.7"
             cocotb-version: "2.0"
+            vhdl-sim: "nvc"
           - python-version: "3.8"
             cocotb-version: "2.0"
+            vhdl-sim: "nvc"
           - python-version: "3.9"
             cocotb-version: "2.0"
+            vhdl-sim: "nvc"
           - python-version: "3.10"
             cocotb-version: "2.0"
+            vhdl-sim: "nvc"
           - python-version: "3.11"
             cocotb-version: "2.0"
+            vhdl-sim: "nvc"
           - python-version: "3.12"
             cocotb-version: "2.0"
+            vhdl-sim: "nvc"
           - python-version: "3.13"
             cocotb-version: "2.0"
+            vhdl-sim: "nvc"
           # Test other cocotb versions
+          # Must use GHDL as VHDL simulator as NVC is only supported in cocotb 1.9+
           - python-version: "3.8"
             cocotb-version: "1.6"
+            vhdl-sim: "ghdl"
           - python-version: "3.8"
             cocotb-version: "1.7"
+            vhdl-sim: "ghdl"
           - python-version: "3.8"
             cocotb-version: "1.8"
+            vhdl-sim: "ghdl"
           - python-version: "3.8"
             cocotb-version: "1.9"
+            vhdl-sim: "nvc"
 
     steps:
     - uses: actions/checkout@v5
@@ -76,14 +88,24 @@ jobs:
         sudo apt install -y --no-install-recommends iverilog
 
     - name: Install GHDL
+      if: matrix.vhdl-sim == 'ghdl'
       uses: ghdl/setup-ghdl@v1
       with:
         version: latest
         backend: mcode
 
+    - name: Install NVC
+      if: matrix.vhdl-sim == 'nvc'
+      uses: nickg/setup-nvc@v1
+      with:
+        version: latest
+
     - name: Test
       run: |
-        COCOTB_VERSION=${{matrix.cocotb-version}} tox
+        COCOTB_VERSION=${{matrix.cocotb-version}} \
+        VERILOG_SIM=icarus \
+        VHDL_SIM=${{matrix.vhdl-sim}} \
+        tox
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
