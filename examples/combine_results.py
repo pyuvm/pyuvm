@@ -140,10 +140,7 @@ def main():
                         )
                     )
 
-    print(
-        "Ran a total of %d TestSuites and %d TestCases"
-        % (testsuite_count, testcase_count)
-    )
+    print(f"Ran a total of {testsuite_count} TestSuites and {testcase_count} TestCases")
 
     ET.ElementTree(result).write(args.output_file, encoding="UTF-8")
     return rc

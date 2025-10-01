@@ -2,17 +2,11 @@
 This file defines the UVM base classes
 """
 
-import sys
+from cocotb.utils import get_sim_time
 
-try:
-    from cocotb.utils import get_sim_time
-
-    import pyuvm.error_classes as error_classes
-    import pyuvm.utility_classes as utility_classes
-    from pyuvm.s08_factory_classes import uvm_factory
-except ModuleNotFoundError as mnf:
-    print(mnf)
-    sys.exit(1)
+import pyuvm.error_classes as error_classes
+import pyuvm.utility_classes as utility_classes
+from pyuvm.s08_factory_classes import uvm_factory
 
 
 # 5.3.1

@@ -2,7 +2,7 @@ import fnmatch
 import logging
 import string
 
-from pyuvm import INFO, error_classes, utility_classes
+from pyuvm import error_classes, utility_classes
 from pyuvm._utils import cocotb_version_info
 from pyuvm.s06_reporting_classes import uvm_report_object
 from pyuvm.s08_factory_classes import uvm_factory
@@ -459,7 +459,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """
         factory = uvm_factory()
         if not keep_singletons:
-            uvm_report_object.set_default_logging_level(INFO)
+            uvm_report_object.set_default_logging_level(logging.INFO)
             self.clear_singletons(keep_set)
             factory.clear_overrides()
         self.clear_children()

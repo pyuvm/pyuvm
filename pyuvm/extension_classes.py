@@ -2,8 +2,8 @@ import functools
 
 import cocotb
 
-from pyuvm import uvm_root
 from pyuvm._utils import cocotb_version_info
+from pyuvm.s13_uvm_component import uvm_root
 
 
 def test(
