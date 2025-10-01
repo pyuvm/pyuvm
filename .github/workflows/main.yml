@@ -47,7 +47,7 @@ jobs:
             cocotb-version: "1.8"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v5
     - name: Set up Python ${{matrix.python-version}} (setup-python)
       if: matrix.python-version != 3.6 && matrix.python-version != 3.7
       uses: actions/setup-python@v6
