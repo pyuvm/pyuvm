@@ -14,13 +14,37 @@ on:
 jobs:
 
   tests:
-    name: Python ${{matrix.python-version}}
+    name: Python ${{matrix.python-version}} | cocotb ${{matrix.cocotb-version}}
     runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        include:
+          # Test all Python versions with latest cocotb
+          - python-version: "3.6"
+            cocotb-version: "1.9"
+          - python-version: "3.7"
+            cocotb-version: "1.9"
+          - python-version: "3.8"
+            cocotb-version: "1.9"
+          - python-version: "3.9"
+            cocotb-version: "1.9"
+          - python-version: "3.10"
+            cocotb-version: "1.9"
+          - python-version: "3.11"
+            cocotb-version: "1.9"
+          - python-version: "3.12"
+            cocotb-version: "1.9"
+          - python-version: "3.13"
+            cocotb-version: "1.9"
+          # Test other cocotb versions
+          - python-version: "3.8"
+            cocotb-version: "1.6"
+          - python-version: "3.8"
+            cocotb-version: "1.7"
+          - python-version: "3.8"
+            cocotb-version: "1.8"
 
     steps:
     - uses: actions/checkout@v2
@@ -55,4 +79,4 @@ jobs:
 
     - name: Test
       run: |
-        tox
+        COCOTB_VERSION=${{matrix.cocotb-version}} tox
