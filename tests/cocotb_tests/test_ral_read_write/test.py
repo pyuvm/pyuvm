@@ -1,9 +1,10 @@
 # Main Packages for the entire RAL model
-from pyuvm import *
-from cocotb.binary import BinaryValue
+from random import choice, randint
+
 from cocotb import test
-from random import randint
-from random import choice
+from cocotb.binary import BinaryValue
+
+from pyuvm import *
 
 ##############################################################################
 # TESTS ENTIRE RAL READ operation
@@ -14,33 +15,35 @@ from random import choice
 class command_reg(uvm_reg):
     def __init__(self, name="command_reg", reg_width=32):
         super().__init__(name, reg_width)
-        self.WLS = uvm_reg_field('WLS')
-        self.STB = uvm_reg_field('STB')
-        self.PEN = uvm_reg_field('PEN')
-        self.EPS = uvm_reg_field('EPS')
+        self.WLS = uvm_reg_field("WLS")
+        self.STB = uvm_reg_field("STB")
+        self.PEN = uvm_reg_field("PEN")
+        self.EPS = uvm_reg_field("EPS")
 
     def build(self):
-        self.WLS.configure(self, 2, 0, 'RW', 0, (2**2) - 1)
-        self.STB.configure(self, 1, 2, 'RW', 0, (2**1) - 1)
-        self.PEN.configure(self, 1, 3, 'RW', 0, (2**1) - 1)
-        self.EPS.configure(self, 4, 4, 'RW', 0, (2**4) - 1)
+        self.WLS.configure(self, 2, 0, "RW", 0, (2**2) - 1)
+        self.STB.configure(self, 1, 2, "RW", 0, (2**1) - 1)
+        self.PEN.configure(self, 1, 3, "RW", 0, (2**1) - 1)
+        self.EPS.configure(self, 4, 4, "RW", 0, (2**4) - 1)
         self._set_lock()
+
 
 # Single REG
 class status_reg(uvm_reg):
     def __init__(self, name="status_reg", reg_width=32):
         super().__init__(name, reg_width)
-        self.DR = uvm_reg_field('DR')
-        self.OE = uvm_reg_field('OE')
-        self.PE = uvm_reg_field('PE')
-        self.FE = uvm_reg_field('FE')
+        self.DR = uvm_reg_field("DR")
+        self.OE = uvm_reg_field("OE")
+        self.PE = uvm_reg_field("PE")
+        self.FE = uvm_reg_field("FE")
 
     def build(self):
-        self.DR.configure(self, 1, 0, 'RO', 1, 1)
-        self.OE.configure(self, 1, 1, 'RO', 1, 1)
-        self.PE.configure(self, 1, 2, 'RO', 1, 1)
-        self.FE.configure(self, 1, 3, 'RO', 1, 1)
+        self.DR.configure(self, 1, 0, "RO", 1, 1)
+        self.OE.configure(self, 1, 1, "RO", 1, 1)
+        self.PE.configure(self, 1, 2, "RO", 1, 1)
+        self.FE.configure(self, 1, 3, "RO", 1, 1)
         self._set_lock()
+
 
 # Register model with 2 Regs and 1 Map
 class cmd_ral(uvm_reg_block):
@@ -48,12 +51,12 @@ class cmd_ral(uvm_reg_block):
         super().__init__(name)
         # do not use create map if only the default one
         # is intended to be used
-        self.def_map = uvm_reg_map('map')
+        self.def_map = uvm_reg_map("map")
         self.def_map.configure(self, 0)
-        self.CMD = command_reg('CMD')
+        self.CMD = command_reg("CMD")
         self.CMD.configure(self, "0x100c", "", False, False)
         self.def_map.add_reg(self.CMD, "0x0", "RW")
-        self.ST = status_reg('ST')
+        self.ST = status_reg("ST")
         self.ST.configure(self, "0x1014", "", False, False)
         self.def_map.add_reg(self.ST, "0x0", "RO")
 
@@ -129,16 +132,16 @@ class cmd_driver(uvm_driver):
             else:
                 print("cmd_driver -- addr: 0x100c")
             print(f"cmd_driver -- policy: {self.reg_target.get_access_policy()}")
-            if (cmd.WR_RD.integer == 0):
+            if cmd.WR_RD.integer == 0:
                 print("cmd_driver -- READ_CMD")
                 cmd.set_read_data(5)
                 self.RW = False
             else:
                 print("cmd_driver -- WRITE_CMD")
                 self.RW = True
-            cmd_item.status=True
-            if ((self.RW is True) and (self.reg_target.get_access_policy() == "RO")):
-                cmd_item.status=False
+            cmd_item.status = True
+            if (self.RW is True) and (self.reg_target.get_access_policy() == "RO"):
+                cmd_item.status = False
             self.seq_item_port.item_done()
             self.drop_objection()
 
@@ -160,7 +163,7 @@ class cmd_adapter(uvm_reg_adapter):
         return cmdItem
 
     def bus2reg(self, bus_item: uvm_sequence_item, rw: uvm_reg_bus_op):
-        if (bus_item.WR_RD == 0):
+        if bus_item.WR_RD == 0:
             rw.kind = access_e.UVM_READ
             rw.data = bus_item.read_data
         else:
@@ -168,8 +171,9 @@ class cmd_adapter(uvm_reg_adapter):
             rw.data = bus_item.write_data
         rw.addr = bus_item.addr
         rw.status = status_t.IS_OK
-        if (cmd_item.status is False):
+        if cmd_item.status is False:
             rw.status = status_t.IS_NOT_OK
+
 
 # UVM Environment
 class cmd_env(uvm_env):
@@ -201,20 +205,20 @@ class ral_test_rd(uvm_test):
         print(registers)
         for rg in registers:
             print(rg.get_address())
-            if (isinstance(rg, uvm_reg)):
-                (status, data) = await rg.read(self.ral_map,
-                                               path_t.FRONTDOOR,
-                                               check_t.NO_CHECK)
+            if isinstance(rg, uvm_reg):
+                (status, data) = await rg.read(
+                    self.ral_map, path_t.FRONTDOOR, check_t.NO_CHECK
+                )
                 print(f"Status: {status.name} -- Data: {data}")
         for rg in registers:
-            if (isinstance(rg, uvm_reg)):
-                wdata = randint(0 ,200)
-                status = await rg.write(wdata,
-                                        self.ral_map,
-                                        path_t.FRONTDOOR,
-                                        check_t.NO_CHECK)
+            if isinstance(rg, uvm_reg):
+                wdata = randint(0, 200)
+                status = await rg.write(
+                    wdata, self.ral_map, path_t.FRONTDOOR, check_t.NO_CHECK
+                )
                 print(f"Status: {status.name} -- Data: {wdata}")
         self.drop_objection()
+
 
 @test()
 async def test_start(dut):

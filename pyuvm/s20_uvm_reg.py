@@ -1,15 +1,24 @@
 # Main Packages same as import uvm_pkg or uvm_defines.svh
 from pyuvm import uvm_object
-from pyuvm.s17_uvm_reg_enumerations import uvm_status_e, uvm_reg_data_t
-from pyuvm.s17_uvm_reg_enumerations import uvm_predict_e, uvm_reg_byte_en_t
-from pyuvm.s17_uvm_reg_enumerations import uvm_door_e
+from pyuvm.s17_uvm_reg_enumerations import (
+    uvm_door_e,
+    uvm_predict_e,
+    uvm_reg_byte_en_t,
+    uvm_reg_data_t,
+    uvm_reg_policy_t,
+    uvm_status_e,
+)
 from pyuvm.s21_uvm_reg_map import uvm_reg_map
 from pyuvm.s23_uvm_reg_item import uvm_reg_item
-from pyuvm.s24_uvm_reg_includes import uvm_reg_error_decoder, error_out
-from pyuvm.s24_uvm_reg_includes import path_t, uvm_fatal
-from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted
-from pyuvm.s24_uvm_reg_includes import uvm_resp_t, check_t
-from pyuvm.s17_uvm_reg_enumerations import uvm_reg_policy_t
+from pyuvm.s24_uvm_reg_includes import (
+    check_t,
+    error_out,
+    path_t,
+    uvm_fatal,
+    uvm_not_implemeneted,
+    uvm_reg_error_decoder,
+    uvm_resp_t,
+)
 
 
 # Class declaration
@@ -45,12 +54,14 @@ class uvm_reg(uvm_object):
         self._lineno = 0
 
     # configure
-    def configure(self,
-                  parent,
-                  address: str,
-                  hdl_path: str,
-                  throw_error_on_read: bool = False,
-                  throw_error_on_write: bool = False):
+    def configure(
+        self,
+        parent,
+        address: str,
+        hdl_path: str,
+        throw_error_on_read: bool = False,
+        throw_error_on_write: bool = False,
+    ):
         self._parent = parent
         self._address = address
         self._path = hdl_path
@@ -84,9 +95,9 @@ class uvm_reg(uvm_object):
 
     # checking mechanims for error list
     def check_err_list(self):
-        if (len(self._err_list) > 0):
+        if len(self._err_list) > 0:
             for el in range(len(self._err_list)):
-                print("List has error[{}]: {}".format(el, self._err_list[el]))
+                print(f"List has error[{el}]: {self._err_list[el]}")
         else:
             print("No error in list")
 
@@ -96,11 +107,15 @@ class uvm_reg(uvm_object):
 
     # set_access_policy
     def set_access_policy(self, policy: str = "RW"):
-        if (policy in uvm_reg_policy_t):
+        if policy in uvm_reg_policy_t:
             self._access_policy = policy
         else:
-            uvm_fatal(self.gen_message(f"given access \
-                                       policy not correct: {policy}"))
+            uvm_fatal(
+                self.gen_message(
+                    f"given access \
+                                       policy not correct: {policy}"
+                )
+            )
 
     # set_access_policy
     def get_access_policy(self) -> str:
@@ -112,7 +127,7 @@ class uvm_reg(uvm_object):
 
     # get size function
     def get_reg_size(self) -> int:
-        if (self._width == 0):
+        if self._width == 0:
             error_out(self._header, "_width cannot be 0")
             self._add_error(uvm_reg_error_decoder.REG_SIZE_CANNOT_BE_ZERO.name)
             return 0
@@ -123,38 +138,45 @@ class uvm_reg(uvm_object):
     # avoid using the Value in write
     def set_desired(self, value):
         for f in self._fields:
-            f.field_set((value >> f.get_lsb_pos()))
+            f.field_set(value >> f.get_lsb_pos())
 
     # _add_field
     def _add_field(self, field):
         # - field not None
-        if (field is None):
+        if field is None:
             error_out(self._header, "_add_field Fields cannot be None")
             self._add_error(uvm_reg_error_decoder.FIELD_CANNOT_BE_NONE.name)
         # - field not already added
-        if (field in self._fields):
-            error_out(self._header, f"_add_field: Fields {field.get_name()} \
-                      is already added")
+        if field in self._fields:
+            error_out(
+                self._header,
+                f"_add_field: Fields {field.get_name()} \
+                      is already added",
+            )
             self._add_error(uvm_reg_error_decoder.FIELD_ALREADY_ADDED.name)
         # - if we did not error out we can append the field to the list
         self._fields.append(field)
         # - field fits in reg
         self._sum += field.get_n_bits()
-        if (self._width < self._sum):
-            error_out(self._header, f"_add_field: Fields {field.get_name()} \
-                      doesn't fit into a {self._width} bits register")
-            self._add_error(
-                uvm_reg_error_decoder.FIELD_DOESNT_FIT_INTO_REG.name)
+        if self._width < self._sum:
+            error_out(
+                self._header,
+                f"_add_field: Fields {field.get_name()} \
+                      doesn't fit into a {self._width} bits register",
+            )
+            self._add_error(uvm_reg_error_decoder.FIELD_DOESNT_FIT_INTO_REG.name)
         # - field doesn't overlap with any other field
-        if (len(self._fields) > 1):
+        if len(self._fields) > 1:
             msb_pos = self._fields[self._fields.index(field) - 1].get_msb_pos()
-            if (field.get_lsb_pos() - msb_pos <= 0):
-                error_out(self._header, f"_add_field: \
+            if field.get_lsb_pos() - msb_pos <= 0:
+                error_out(
+                    self._header,
+                    f"_add_field: \
                 Fields {field.get_name()} overlap \
                 with field \
-                {self._fields[self._fields.index(field) - 1].get_name()}")
-                self._add_error(
-                    uvm_reg_error_decoder.FIELD_OVERLAPPING_ERROR.name)
+                {self._fields[self._fields.index(field) - 1].get_name()}",
+                )
+                self._add_error(uvm_reg_error_decoder.FIELD_OVERLAPPING_ERROR.name)
 
     # _set_lock
     def _set_lock(self):
@@ -168,14 +190,16 @@ class uvm_reg(uvm_object):
 
     # 18.4.4.15
     # predict
-    def predict(self,
-                value: uvm_reg_data_t,
-                be: uvm_reg_byte_en_t = -1,
-                kind: uvm_predict_e = uvm_predict_e.UVM_PREDICT_DIRECT,
-                path: uvm_door_e = uvm_door_e.UVM_FRONTDOOR,
-                map: uvm_reg_map = None,
-                fname: str = "",
-                lineno: int = 0) -> bool:
+    def predict(
+        self,
+        value: uvm_reg_data_t,
+        be: uvm_reg_byte_en_t = -1,
+        kind: uvm_predict_e = uvm_predict_e.UVM_PREDICT_DIRECT,
+        path: uvm_door_e = uvm_door_e.UVM_FRONTDOOR,
+        map: uvm_reg_map = None,
+        fname: str = "",
+        lineno: int = 0,
+    ) -> bool:
         rw = uvm_reg_item()
         rw.set_value(value)
         rw.set_door(path)
@@ -188,10 +212,12 @@ class uvm_reg(uvm_object):
         return True
 
     # do_predict
-    def do_predict(self,
-                   rw: uvm_reg_item,
-                   kind: uvm_predict_e = uvm_predict_e.UVM_PREDICT_DIRECT,
-                   be: uvm_reg_byte_en_t = -1):
+    def do_predict(
+        self,
+        rw: uvm_reg_item,
+        kind: uvm_predict_e = uvm_predict_e.UVM_PREDICT_DIRECT,
+        be: uvm_reg_byte_en_t = -1,
+    ):
         reg_value = rw.get_value(0)
 
         self._fname = rw.get_fname()
@@ -200,19 +226,18 @@ class uvm_reg(uvm_object):
         if rw.get_status() == uvm_status_e.UVM_IS_OK:
             # Here reg busy check
             for field in self.get_fields():
-                rw.set_value((reg_value >> field.get_lsb_pos()) & (
-                    (1 << field.get_n_bits()) - 1))
-                field.do_predict(rw,
-                                 kind,
-                                 (be >> int(field.get_lsb_pos() / 8)))
+                rw.set_value(
+                    (reg_value >> field.get_lsb_pos()) & ((1 << field.get_n_bits()) - 1)
+                )
+                field.do_predict(rw, kind, (be >> int(field.get_lsb_pos() / 8)))
             rw.set_value(reg_value)
 
     # Get mirrored value
     def get_mirrored_value(self):
         self._mirrored = 0
         for f in self.get_fields():
-            updt_v = (f.get_value() << f.get_lsb_pos())
-            self._mirrored = (self._mirrored | updt_v)
+            updt_v = f.get_value() << f.get_lsb_pos()
+            self._mirrored = self._mirrored | updt_v
         return self._mirrored
 
     # get_address
@@ -231,24 +256,26 @@ class uvm_reg(uvm_object):
         for f in self._fields:
             f.reset()
             # placeholder to fix Flake8 line error
-            value = (f.get_value() << f.get_lsb_pos())
+            value = f.get_value() << f.get_lsb_pos()
             self._mirrored = self._mirrored | value
 
     # Build internal function
     def build(self):
-        '''
+        """
         This function needs to be implemented into the child class
         create each fields and invoke the configure from each field
-        '''
-        uvm_not_implemeneted(self.gen_message("Calling Build when not \
-                                              implemented by the user"))
+        """
+        uvm_not_implemeneted(
+            self.gen_message(
+                "Calling Build when not \
+                                              implemented by the user"
+            )
+        )
 
     # Write Method (TASK)
-    async def write(self,
-                    value: int,
-                    map: uvm_reg_map,
-                    path: path_t,
-                    check: check_t) -> uvm_resp_t:
+    async def write(
+        self, value: int, map: uvm_reg_map, path: path_t, check: check_t
+    ) -> uvm_resp_t:
         # This Task should implement the main read method via only FRONTDOOR
         # TODO: BACKDOOT and USER FRONTDOOR are missing
         # This Task returns only the operation status
@@ -266,22 +293,27 @@ class uvm_reg(uvm_object):
         # to the specific target register
         # the access should be carried out on each MAP
         # check if any operation is in progress for the given register
-        if (self._op_in_progress is False):
+        if self._op_in_progress is False:
             self._op_in_progress = True
             # TODO: Implement as FOR LOOP
             if map is not None:
                 if value is not None:
                     status = await map.process_write_operation(
-                        self.get_address(), value, path, check)
-                elif (value is None):
+                        self.get_address(), value, path, check
+                    )
+                elif value is None:
                     status = await map.process_write_operation(
-                        self.get_address(), self.get_desired(), path, check)
+                        self.get_address(), self.get_desired(), path, check
+                    )
             else:
                 error_out(self._header, "WRITE: map cannot be NULL")
             self._op_in_progress = False
         else:
-            uvm_fatal(self._header, "write cannot perform an operation while \
-                      another is in progress")
+            uvm_fatal(
+                self._header,
+                "write cannot perform an operation while \
+                      another is in progress",
+            )
         # Return from Task
         return status
 
@@ -305,19 +337,23 @@ class uvm_reg(uvm_object):
         # to the specific target register
         # the access should be carried out on each MAP
         # check if any operation is in progress for the given register
-        if (self._op_in_progress is False):
+        if self._op_in_progress is False:
             self._op_in_progress = True
             if map is not None:
                 status, read_data = await map.process_read_operation(
-                    self.get_address(), path, check)
+                    self.get_address(), path, check
+                )
                 if status == uvm_resp_t.ERROR_RESP:
                     read_data = 0
             else:
                 error_out(self._header, "READ: map cannot be NULL")
             self._op_in_progress = False
         else:
-            uvm_fatal(self._header, "read cannot perform an operation while \
-                      another is in progress")
+            uvm_fatal(
+                self._header,
+                "read cannot perform an operation while \
+                      another is in progress",
+            )
         # Return from Task
         return status, read_data
 
@@ -328,5 +364,9 @@ class uvm_reg(uvm_object):
 
     # sample_values
     def sample_values(self):
-        uvm_not_implemeneted(self.gen_message("sample_values \
-                                              used but not implemented"))
+        uvm_not_implemeneted(
+            self.gen_message(
+                "sample_values \
+                                              used but not implemented"
+            )
+        )

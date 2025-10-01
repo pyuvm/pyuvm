@@ -1,14 +1,14 @@
+import threading
+from queue import Empty, Queue
+
 import cocotb
 import test_sw
-from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge
-from queue import Queue, Empty
 import tester
-import threading
+from cocotb.clock import Clock
+from cocotb.triggers import FallingEdge, RisingEdge
 
 
-class CocoTBBFM():
-
+class CocoTBBFM:
     def __init__(self, dut):
         self.dut = dut
         self.queue = Queue(maxsize=1)
@@ -51,13 +51,11 @@ async def test_alu(dut):
     clock = Clock(dut.clk, 2, "us")
     cocotb.start_soon(clock.start())
     bfm = CocoTBBFM(dut)
-    stim = test_sw.Stim(5,dut, bfm)
+    stim = test_sw.Stim(5, dut, bfm)
     await bfm.reset()
     cocotb.start_soon(bfm.start())
-    tt = threading.Thread(target=run_test, args=(stim.numb_gen_test,), name="Run Thread")
+    tt = threading.Thread(
+        target=run_test, args=(stim.numb_gen_test,), name="Run Thread"
+    )
     tt.start()
     await bfm.done.wait()
-
-
-
-

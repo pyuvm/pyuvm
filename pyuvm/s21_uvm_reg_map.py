@@ -1,15 +1,20 @@
 # Import Main Packages
-from pyuvm import uvm_object, uvm_sequencer, uvm_sequence
-from pyuvm.s24_uvm_reg_includes import uvm_error
-from pyuvm.s24_uvm_reg_includes import access_e, path_t, check_t
-from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted, uvm_fatal
-from pyuvm.s24_uvm_reg_includes import enable_auto_predict
-from pyuvm.s24_uvm_reg_includes import uvm_reg_bus_op
+from pyuvm import uvm_object, uvm_sequence, uvm_sequencer
+from pyuvm.s23_uvm_reg_item import uvm_reg_item
+from pyuvm.s24_uvm_reg_includes import (
+    access_e,
+    check_t,
+    enable_auto_predict,
+    path_t,
+    uvm_error,
+    uvm_fatal,
+    uvm_not_implemeneted,
+    uvm_reg_bus_op,
+)
 from pyuvm.s25_uvm_adapter import uvm_reg_adapter
 from pyuvm.s26_uvm_predictor import uvm_reg_predictor
-from pyuvm.s23_uvm_reg_item import uvm_reg_item
 
-'''
+"""
     TODO: the following must be completed
     1.  implement add_mem
     2.  implement m_set_mem_offset
@@ -21,7 +26,7 @@ from pyuvm.s23_uvm_reg_item import uvm_reg_item
     8.  implement get_reg_map_info
     9.  implement set_base_addr
     10. implement get_size
-'''
+"""
 
 
 # Class declaration: uvm_reg_map
@@ -57,8 +62,11 @@ class uvm_reg_map(uvm_object):
             # if there is a parent map then this map is automatically a submap
             self._parent_map.add_submap(self)
         else:
-            uvm_error(self.header, "add_parent_map -- cannot add parent map \
-                if the parentmap is already set")
+            uvm_error(
+                self.header,
+                "add_parent_map -- cannot add parent map \
+                if the parentmap is already set",
+            )
 
     # str2int
     def _str2int(self, istr: str = "") -> int:
@@ -114,12 +122,15 @@ class uvm_reg_map(uvm_object):
         if isinstance(predictor, uvm_reg_predictor):
             self.predictor = predictor
         else:
-            uvm_error(self.header, "predictor should be \
-                      type of uvm_reg_predictor")
+            uvm_error(
+                self.header,
+                "predictor should be \
+                      type of uvm_reg_predictor",
+            )
 
     # get_predictor
     def get_predictor(self):
-        if (self.predictor is None):
+        if self.predictor is None:
             # TODO: this should be only a warning since depends
             # on the prediction type
             if enable_auto_predict is True:
@@ -136,7 +147,7 @@ class uvm_reg_map(uvm_object):
 
     # get_adapter
     def get_adapter(self):
-        if (self.adapter is None):
+        if self.adapter is None:
             uvm_error(self.header, "Adapter Not set")
         else:
             return self.adapter
@@ -150,7 +161,7 @@ class uvm_reg_map(uvm_object):
 
     # get_sequencer
     def get_sequencer(self):
-        if (self.sequencer is None):
+        if self.sequencer is None:
             uvm_error(self.header, "uvm_reg_map sequencer is not set")
         else:
             return self.sequencer
@@ -159,16 +170,22 @@ class uvm_reg_map(uvm_object):
     def add_submap(self, submap):
         # we cannot add a submap to a MAP that belongs to another BLK
         # maps or submaps should belong to the same BLK parent
-        if (self.get_parent() != submap.get_parent()):
-            uvm_error(self.header, f"add_submap -- cannot add submap \
+        if self.get_parent() != submap.get_parent():
+            uvm_error(
+                self.header,
+                f"add_submap -- cannot add submap \
                       {submap.get_parent()} to map {self.get_parent()} \
-                      if the parent BLK is different")
+                      if the parent BLK is different",
+            )
         # cannot add a submap that has been already added as SUBMAP
         # of another map
         if submap._is_a_submap is True:
-            uvm_error(self.header, f"add_submap -- cannot add submap \
+            uvm_error(
+                self.header,
+                f"add_submap -- cannot add submap \
                       {submap.get_name()} to map {self.get_name()} \
-                      because the submap is already a submap of another map")
+                      because the submap is already a submap of another map",
+            )
         else:
             submap._is_a_submap = True
             self._submaps[submap.get_name()] = submap
@@ -184,9 +201,12 @@ class uvm_reg_map(uvm_object):
             for rg in self.get_registers():
                 rg.reset()
         else:
-            uvm_not_implemeneted(self.header, f"reset -- {reset_type} is not \
+            uvm_not_implemeneted(
+                self.header,
+                f"reset -- {reset_type} is not \
                                  mapped as type of reset \
-                                 available values are {self._reset_kind}")
+                                 available values are {self._reset_kind}",
+            )
 
     # verify_map_config
     def verify_map_config(self):
@@ -195,12 +215,18 @@ class uvm_reg_map(uvm_object):
         rmap = self.get_root_map()
 
         if rmap.get_adapter() is None:
-            uvm_fatal(self.header, f"Map {rmap.get_name()} doesn't have \
-                      adapter set")
+            uvm_fatal(
+                self.header,
+                f"Map {rmap.get_name()} doesn't have \
+                      adapter set",
+            )
 
         if rmap.get_sequencer() is None:
-            uvm_fatal(self.header, f"Map {rmap.get_name()} doesn't have \
-                      sequencer set")
+            uvm_fatal(
+                self.header,
+                f"Map {rmap.get_name()} doesn't have \
+                      sequencer set",
+            )
 
     # ------------
     # get methods
@@ -235,7 +261,7 @@ class uvm_reg_map(uvm_object):
     # check integrity of process
     def check_process_integrity(self, adapter=None, reg_item=None):
         # check if the input adapter is none
-        if (adapter is None):
+        if adapter is None:
             # TODO: here basically we should be creating a local base sequence
             #       we should be getting the sequencers from the adapter
             #       error pout if NONE and call the start ITEM using the
@@ -246,7 +272,7 @@ class uvm_reg_map(uvm_object):
             uvm_fatal(self.gen_message("adapter is not correct type"))
 
         # check if the reg item is set
-        if (reg_item is None):
+        if reg_item is None:
             uvm_fatal(self.gen_message("reg_item is not assigned to MAP"))
         elif isinstance(reg_item, uvm_reg_item) is False:
             uvm_fatal(self.gen_message("reg_item is not correct type"))
@@ -269,8 +295,9 @@ class uvm_reg_map(uvm_object):
     #
 
     # process_write_operation
-    async def process_write_operation(self, reg_address, data_to_be_written,
-                                      path: path_t, check: check_t):
+    async def process_write_operation(
+        self, reg_address, data_to_be_written, path: path_t, check: check_t
+    ):
         # Get the sequencer and the adapter
         local_adapter = self.get_adapter()
         # Build a local reg_item
@@ -285,11 +312,11 @@ class uvm_reg_map(uvm_object):
         self.check_process_integrity(local_adapter, item)
         local_sequencer = self.get_sequencer()
         # check if the Path is set to BACKDOOR, FRONTDOOR or USER_FRONTDOOR
-        if (path is path_t.BACKDOOR):
+        if path is path_t.BACKDOOR:
             uvm_not_implemeneted(self.header, "BACKDOOR not implemented")
-        elif (path is path_t.USER_FRONTDOOR):
+        elif path is path_t.USER_FRONTDOOR:
             uvm_not_implemeneted(self.header, "USER_FRONTDOOR not implemented")
-        elif (path is path_t.FRONTDOOR):
+        elif path is path_t.FRONTDOOR:
             # Populate internal Item
             local_bus_op = uvm_reg_bus_op()
             local_bus_op.kind = access_e.UVM_WRITE
@@ -314,7 +341,7 @@ class uvm_reg_map(uvm_object):
             # Assign the response and read data back
             local_adapter.bus2reg(bus_req, local_bus_op)
             # Invoke the prediction
-            if (enable_auto_predict is True):
+            if enable_auto_predict is True:
                 local_predictor = self.get_predictor()
                 local_predictor.predict(local_bus_op, check)
             else:
@@ -325,8 +352,7 @@ class uvm_reg_map(uvm_object):
             return local_bus_op.status
 
     # process_read_operation
-    async def process_read_operation(self, reg_address, path: path_t,
-                                     check: check_t):
+    async def process_read_operation(self, reg_address, path: path_t, check: check_t):
         # Get the sequencer and the adapter
         local_adapter = self.get_adapter()
         # Build a local reg_item
@@ -340,11 +366,11 @@ class uvm_reg_map(uvm_object):
         self.check_process_integrity(local_adapter, item)
         local_sequencer = self.get_sequencer()
         # check if the Path is set to BACKDOOR, FRONTDOOR or USER_FRONTDOOR
-        if (path is path_t.BACKDOOR):
+        if path is path_t.BACKDOOR:
             uvm_not_implemeneted(self.header, "BACKDOOR not implemented")
-        elif (path is path_t.USER_FRONTDOOR):
+        elif path is path_t.USER_FRONTDOOR:
             uvm_not_implemeneted(self.header, "USER_FRONTDOOR not implemented")
-        elif (path is path_t.FRONTDOOR):
+        elif path is path_t.FRONTDOOR:
             # Populate internal Item
             local_bus_op = uvm_reg_bus_op()
             local_bus_op.kind = access_e.UVM_READ
@@ -368,7 +394,7 @@ class uvm_reg_map(uvm_object):
             # Assign the response and read data back
             local_adapter.bus2reg(bus_req, local_bus_op)
             # Invoke the prediction
-            if (enable_auto_predict is True):
+            if enable_auto_predict is True:
                 local_predictor = self.get_predictor()
                 local_predictor.predict(local_bus_op, check)
             else:

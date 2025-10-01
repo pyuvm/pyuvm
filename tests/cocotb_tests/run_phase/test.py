@@ -1,6 +1,7 @@
 import cocotb
 from cocotb.triggers import Timer
 from cocotb.utils import get_sim_time
+
 from pyuvm import *
 
 
@@ -42,7 +43,7 @@ class nested_objections(nested_parent):
 class TopTest(uvm_test):
     def build_phase(self):
         # super().build_phase()
-        self.sub_component = SubComponent('sub_component', self)
+        self.sub_component = SubComponent("sub_component", self)
 
     async def run_phase(self):
         self.raise_objection()

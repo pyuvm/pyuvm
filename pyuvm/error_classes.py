@@ -1,4 +1,3 @@
-
 class UVMError(Exception):
     """
     All UVM Errors
@@ -17,7 +16,7 @@ class UsePythonMethod(UVMError):
 
 
 class UVMFactoryError(UVMError):
-    """ For cases where a type is not registered with the factory"""
+    """For cases where a type is not registered with the factory"""
 
 
 class UVMTLMConnectionError(UVMError):
@@ -41,4 +40,4 @@ class UVMConfigItemNotFound(UVMError):
 
 
 class UVMFatalError(UVMError):
-    """ Used to dump out of the testbench"""
+    """Used to dump out of the testbench"""

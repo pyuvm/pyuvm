@@ -16,7 +16,6 @@ from pyuvm import (
     UVMConfigItemNotFound,
     UVMError,
     UVMNotImplemented,
-    predict_t,
     uvm_analysis_port,
     uvm_component,
     uvm_driver,
@@ -63,11 +62,11 @@ REG_WIDTH = 16
 ALU_REG_SRC_ADDR = "0x0"
 ALU_REG_SRC_ADDR_DATA0_S = 0
 ALU_REG_SRC_ADDR_DATA1_S = 8
-ALU_REG_SRC_ADDR_DATA0_M = 2 ** 8 - 1
-ALU_REG_SRC_ADDR_DATA1_M = 2 ** 8 - 1
+ALU_REG_SRC_ADDR_DATA0_M = 2**8 - 1
+ALU_REG_SRC_ADDR_DATA1_M = 2**8 - 1
 ALU_REG_RESULT_ADDR = "0x2"
 ALU_REG_RESULT_DATA_S = 0
-ALU_REG_RESULT_DATA_M = 2 ** 16 - 1
+ALU_REG_RESULT_DATA_M = 2**16 - 1
 ALU_REG_CMD_ADDR = "0x4"
 ALU_REG_CMD_OP_S = 0
 ALU_REG_CMD_START_S = 5
@@ -87,60 +86,64 @@ ALU_REG_CMD_RESERVED_M = 2 * 9 - 1
 class ALU_REG_SRC(uvm_reg):
     def __init__(self, name="ALU_REG_SRC", reg_width=REG_WIDTH):
         super().__init__(name, reg_width)
-        self.DATA0 = uvm_reg_field('DATA0')
-        self.DATA1 = uvm_reg_field('DATA1')
+        self.DATA0 = uvm_reg_field("DATA0")
+        self.DATA1 = uvm_reg_field("DATA1")
 
     def build(self):
-        self.DATA0.configure(self, 8, 0, 'RW', 0, 0)
-        self.DATA1.configure(self, 8, 8, 'RW', 0, 0)
+        self.DATA0.configure(self, 8, 0, "RW", 0, 0)
+        self.DATA1.configure(self, 8, 8, "RW", 0, 0)
         self._set_lock()
+
 
 class ALU_REG_RESULT(uvm_reg):
     def __init__(self, name="ALU_REG_RESULT", reg_width=REG_WIDTH):
         super().__init__(name, reg_width)
-        self.DATA = uvm_reg_field('DATA')
+        self.DATA = uvm_reg_field("DATA")
 
     def build(self):
-        self.DATA.configure(self, 16, 0, 'RW', 0, 0)
+        self.DATA.configure(self, 16, 0, "RW", 0, 0)
         self._set_lock()
+
 
 class ALU_REG_CMD(uvm_reg):
     def __init__(self, name="ALU_REG_CMD", reg_width=REG_WIDTH):
         super().__init__(name, reg_width)
-        self.OP = uvm_reg_field('OP')
-        self.START = uvm_reg_field('START')
-        self.DONE = uvm_reg_field('DONE')
-        self.RESERVED = uvm_reg_field('RESERVED')
+        self.OP = uvm_reg_field("OP")
+        self.START = uvm_reg_field("START")
+        self.DONE = uvm_reg_field("DONE")
+        self.RESERVED = uvm_reg_field("RESERVED")
 
     def build(self):
-        self.OP.configure(self, 5, 0, 'RW', 0, 1)
-        self.START.configure(self, 1, 5, 'RW', 0, 1)
-        self.DONE.configure(self, 1, 6, 'RO', 0, 1)
-        self.RESERVED.configure(self, 8, 7, 'RW', 0, 1)
+        self.OP.configure(self, 5, 0, "RW", 0, 1)
+        self.START.configure(self, 1, 5, "RW", 0, 1)
+        self.DONE.configure(self, 1, 6, "RO", 0, 1)
+        self.RESERVED.configure(self, 8, 7, "RW", 0, 1)
         self._set_lock()
+
 
 class ALU_REG_REG_BLOCK(uvm_reg_block):
     def __init__(self, name="ALU_REG_REG_BLOCK"):
         super().__init__(name)
         # do not use create map if only the default one
         # is intended to be used
-        self.def_map = uvm_reg_map('map')
+        self.def_map = uvm_reg_map("map")
         self.def_map.configure(self, 0)
 
         #
-        self.SRC = ALU_REG_SRC('SRC')
+        self.SRC = ALU_REG_SRC("SRC")
         self.SRC.configure(self, "0x0", "", False, False)
         self.def_map.add_reg(self.SRC, "0x0", "RW")
 
         #
-        self.RESULT = ALU_REG_RESULT('RESULT')
+        self.RESULT = ALU_REG_RESULT("RESULT")
         self.RESULT.configure(self, "0x2", "", False, False)
         self.def_map.add_reg(self.RESULT, "0x0", "RW")
 
         #
-        self.CMD = ALU_REG_CMD('CMD')
+        self.CMD = ALU_REG_CMD("CMD")
         self.CMD.configure(self, "0x4", "", False, False)
         self.def_map.add_reg(self.CMD, "0x0", "RW")
+
 
 ##############################################################################
 # ADAPATER
@@ -155,7 +158,7 @@ class simple_bus_adapter(uvm_reg_adapter):
     def reg2bus(self, rw: uvm_reg_bus_op) -> uvm_sequence_item:
         item = simple_bus_item("item")
         # Set read bit
-        if (rw.kind == access_e.UVM_READ):
+        if rw.kind == access_e.UVM_READ:
             item.read = 1
             item.rdata = rw.data
         else:
@@ -180,8 +183,9 @@ class simple_bus_adapter(uvm_reg_adapter):
         rw.byte_en = bus_item.wmask
         # Set status
         rw.status = status_t.IS_OK
-        if (bus_item.status is False):
+        if bus_item.status is False:
             rw.status = status_t.IS_NOT_OK
+
 
 ##############################################################################
 # Sequence Items
@@ -202,13 +206,15 @@ class simple_bus_item(uvm_sequence_item):
         return int(self.addr, 16)
 
     def print_item(self):
-        cocotb.log.info(f"  simple_bus_item: \
+        cocotb.log.info(
+            f"  simple_bus_item: \
                             rdata   {self.rdata} \
-                            read    {self.read  } \
-                            addr    {self.addr  } \
-                            wmask   {self.wmask } \
-                            wdata   {self.wdata } \
-                            status  {self.status}")
+                            read    {self.read} \
+                            addr    {self.addr} \
+                            wmask   {self.wmask} \
+                            wdata   {self.wdata} \
+                            status  {self.status}"
+        )
 
 
 class AluSeqItem(uvm_sequence_item):
@@ -249,7 +255,7 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
         raise UVMNotImplemented
 
     def compute_done(self, data: int):
-        if ((data >> ALU_REG_CMD_DONE_S) & (ALU_REG_CMD_DONE_M) == 1):
+        if (data >> ALU_REG_CMD_DONE_S) & (ALU_REG_CMD_DONE_M) == 1:
             return True
         else:
             return False
@@ -260,32 +266,35 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
 
     def print_w_access(self, reg_addr: int, wdata: int):
         reg = self.map.get_reg_by_offset(reg_addr)
-        self.seq_print(f"Write access to register {reg.get_name()}"
-                       f" at address {reg.get_address()} with data {wdata}")
+        self.seq_print(
+            f"Write access to register {reg.get_name()}"
+            f" at address {reg.get_address()} with data {wdata}"
+        )
 
     def print_r_access(self, reg_addr: int, read_data: int):
         reg = self.map.get_reg_by_offset(reg_addr)
-        self.seq_print(f"Read access to register {reg.get_name()}"
-                       f"address: {reg.get_address()} data: {read_data}")
+        self.seq_print(
+            f"Read access to register {reg.get_name()}"
+            f"address: {reg.get_address()} data: {read_data}"
+        )
 
     async def reg_write(self, reg_addr: int, write_data: int):
         target_reg = self.map.get_reg_by_offset(reg_addr)
-        status = await target_reg.write(write_data,
-                                        self.map,
-                                        path_t.FRONTDOOR,
-                                        check_t.NO_CHECK)
+        status = await target_reg.write(
+            write_data, self.map, path_t.FRONTDOOR, check_t.NO_CHECK
+        )
         return status
 
     async def reg_read(self, reg_addr: int):
         target_reg = self.map.get_reg_by_offset(reg_addr)
-        (status, rdata) = await target_reg.read(self.ral.def_map,
-                                                path_t.FRONTDOOR,
-                                                check_t.NO_CHECK)
+        (status, rdata) = await target_reg.read(
+            self.ral.def_map, path_t.FRONTDOOR, check_t.NO_CHECK
+        )
         self.seq_print(f"Finish Read with data: {rdata}")
         return status, rdata
 
     async def program_alu_reg(self, item: AluSeqItem):
-        if (self.ral is None):
+        if self.ral is None:
             raise UVMError("program_alu_reg -- RAL cannot be None")
         self.seq_print("#####################################################")
         self.seq_print("START -- program_alu_reg")
@@ -293,28 +302,28 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
         # Clear
         wdata = 0
         status = await self.reg_write(ALU_REG_CMD_ADDR, wdata)
-        if (status == status_t.IS_OK):
+        if status == status_t.IS_OK:
             self.seq_print("Clearing CMD")
             self.print_w_access(ALU_REG_CMD_ADDR, wdata)
 
         # Write the 2 Operands A and B
-        wdata = ((item.B << ALU_REG_SRC_ADDR_DATA1_S) | item.A)
+        wdata = (item.B << ALU_REG_SRC_ADDR_DATA1_S) | item.A
         status = await self.reg_write(ALU_REG_SRC_ADDR, wdata)
-        if (status == status_t.IS_OK):
+        if status == status_t.IS_OK:
             self.seq_print(f"Operand A: {item.A}")
             self.seq_print(f"Operand B: {item.B}")
             self.print_w_access(ALU_REG_SRC_ADDR, wdata)
 
         # Write OP and START
-        wdata = (1 << ALU_REG_CMD_START_S | item.op)
+        wdata = 1 << ALU_REG_CMD_START_S | item.op
         status = await self.reg_write(ALU_REG_CMD_ADDR, wdata)
-        if (status == status_t.IS_OK):
+        if status == status_t.IS_OK:
             self.seq_print(f"Operation is: {item.op.name}")
             self.print_w_access(ALU_REG_CMD_ADDR, wdata)
 
         # Read Till done is asserted
         (status, rdata) = await self.reg_read(ALU_REG_CMD_ADDR)
-        while (self.compute_done(rdata) is False):
+        while self.compute_done(rdata) is False:
             (status, rdata) = await self.reg_read(ALU_REG_CMD_ADDR)
         self.print_r_access(ALU_REG_CMD_ADDR, rdata)
 
@@ -337,7 +346,7 @@ class RandomSeq(AluReg_base_sequence):
 class MaxSeq(AluReg_base_sequence):
     async def body(self):
         for op in list(Ops):
-            cmd_tr = AluSeqItem("cmd_tr", 0xff, 0xff, op)
+            cmd_tr = AluSeqItem("cmd_tr", 0xFF, 0xFF, op)
             await self.program_alu_reg(cmd_tr)
 
 
@@ -430,12 +439,13 @@ class Driver(uvm_driver):
         await self.launch_tb()
         while True:
             cmd = await self.seq_item_port.get_next_item()
-            if (cmd.read == 0):
+            if cmd.read == 0:
                 await self.bfm.SW_WRITE(cmd.get_addr(), cmd.wdata)
             else:
                 read_data = await self.bfm.SW_READ(cmd.get_addr())
                 cmd.rdata = read_data
             self.seq_item_port.item_done()
+
 
 ##############################################################################
 # COVERAGE
@@ -453,18 +463,19 @@ class Coverage(uvm_subscriber):
 
     def report_phase(self):
         try:
-            disable_errors = ConfigDB().get(
-                self, "", "DISABLE_COVERAGE_ERRORS")
+            disable_errors = ConfigDB().get(self, "", "DISABLE_COVERAGE_ERRORS")
         except UVMConfigItemNotFound:
             disable_errors = False
         if not disable_errors:
             if len(set(Ops) - self.cvg) > 0:
-                self.logger.critical(f"Functional coverage error."
-                                     f" Missed: {set(Ops)-self.cvg}")
+                self.logger.critical(
+                    f"Functional coverage error. Missed: {set(Ops) - self.cvg}"
+                )
                 assert False
             else:
                 self.logger.info("Covered all operations")
                 assert True
+
 
 ##############################################################################
 # Monitor
@@ -472,7 +483,11 @@ class Coverage(uvm_subscriber):
 
 
 class Monitor(uvm_component):
-    def __init__(self, name, parent,):
+    def __init__(
+        self,
+        name,
+        parent,
+    ):
         super().__init__(name, parent)
 
     def build_phase(self):
@@ -489,20 +504,21 @@ class Monitor(uvm_component):
                 self.done = False
                 await self.bfm.capture_valid()
                 self.logger.info("Monitor Got a Valid")
-                if (self.bfm.get_addr() == ALU_REG_SRC_ADDR):
+                if self.bfm.get_addr() == ALU_REG_SRC_ADDR:
                     self.logger.info("Monitored ALU SRC ADDR")
                     self.item.A = self.bfm.get_src0()
                     self.item.B = self.bfm.get_src1()
-                if (self.bfm.get_addr() == ALU_REG_CMD_ADDR):
+                if self.bfm.get_addr() == ALU_REG_CMD_ADDR:
                     self.logger.info("Monitored ALU CMD")
                     self.item.op = self.bfm.get_op()
-                if (self.bfm.get_addr() == ALU_REG_RESULT_ADDR):
+                if self.bfm.get_addr() == ALU_REG_RESULT_ADDR:
                     self.logger.info("Monitored ALU RESULT")
                     self.item.result = self.bfm.get_result()
                     self.done = True
-                if (self.done is True):
+                if self.done is True:
                     self.logger.info("Monitor Finished Operation")
                     self.ap.write(self.item)
+
 
 ##############################################################################
 # SCOREBOARD
@@ -519,43 +535,54 @@ class Scoreboard(uvm_component):
         except UVMConfigItemNotFound:
             self.errors = False
 
-        if (self.errors is True):
+        if self.errors is True:
             self.logger.info("Alu Error negative scenario")
 
         while True:
             cmd = await self.result_fifo.get()
             (A, B, op_numb, actual_result) = (cmd.A, cmd.B, cmd.op, cmd.result)
             predicted_result = alu_prediction(A, B, op_numb, self.errors)
-            if (self.errors is True):
+            if self.errors is True:
                 if predicted_result != actual_result:
-                    self.logger.info(f"Error scenario PASSED: 0x{A:02x} "
-                                     f"{op_numb.name} "
-                                     f"0x{B:02x} = "
-                                     f"0x{actual_result:04x}")
+                    self.logger.info(
+                        f"Error scenario PASSED: 0x{A:02x} "
+                        f"{op_numb.name} "
+                        f"0x{B:02x} = "
+                        f"0x{actual_result:04x}"
+                    )
                 else:
-                    self.logger.error(f"Error scenario FAILED: 0x{A:02x} "
-                                      f"{op_numb.name} "
-                                      f"0x{B:02x} "
-                                      f"= 0x{actual_result:04x} "
-                                      f"expected 0x{predicted_result:04x}")
+                    self.logger.error(
+                        f"Error scenario FAILED: 0x{A:02x} "
+                        f"{op_numb.name} "
+                        f"0x{B:02x} "
+                        f"= 0x{actual_result:04x} "
+                        f"expected 0x{predicted_result:04x}"
+                    )
             else:
                 if predicted_result == actual_result:
-                    self.logger.info(f"PASSED: 0x{A:02x} "
-                                     f"{op_numb.name} "
-                                     f"0x{B:02x} = "
-                                     f"0x{actual_result:04x}")
+                    self.logger.info(
+                        f"PASSED: 0x{A:02x} "
+                        f"{op_numb.name} "
+                        f"0x{B:02x} = "
+                        f"0x{actual_result:04x}"
+                    )
                 else:
-                    self.logger.error(f"FAILED: 0x{A:02x} "
-                                      f"{op_numb.name} "
-                                      f"0x{B:02x} "
-                                      f"= 0x{actual_result:04x} "
-                                      f"expected 0x{predicted_result:04x}")
+                    self.logger.error(
+                        f"FAILED: 0x{A:02x} "
+                        f"{op_numb.name} "
+                        f"0x{B:02x} "
+                        f"= 0x{actual_result:04x} "
+                        f"expected 0x{predicted_result:04x}"
+                    )
 
     def check_phase(self):
-        if (self.result_fifo.size() != 0):
-            self.logger.critical(f"TEST FAILED main result fifo is not"
-                                 f" Empty, there are {self.result_fifo.size()}"
-                                 f" left to be compared")
+        if self.result_fifo.size() != 0:
+            self.logger.critical(
+                f"TEST FAILED main result fifo is not"
+                f" Empty, there are {self.result_fifo.size()}"
+                f" left to be compared"
+            )
+
 
 ##############################################################################
 # ENVIRONMENT
@@ -582,9 +609,11 @@ class AluEnv(uvm_env):
         ConfigDB().set(None, "*", "SEQR", self.seqr)
         ConfigDB().set(None, "*", "regsiter_model", self.reg_block)
 
+
 ##############################################################################
 # TESTS
 ##############################################################################
+
 
 class AluTestBase(uvm_test):
     """Base class for ALU tests with random and max values"""
@@ -605,6 +634,7 @@ class AluTestBase(uvm_test):
 
         await self.test_all.start()
         self.drop_objection()
+
 
 @pyuvm.test()
 class AluTest(AluTestBase):

@@ -1,6 +1,7 @@
 import sys
-from systemrdl import RDLCompiler, RDLCompileError
+
 from peakrdl.verilog import VerilogExporter
+from systemrdl import RDLCompileError, RDLCompiler
 
 rdlc = RDLCompiler()
 

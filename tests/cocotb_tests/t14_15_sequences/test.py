@@ -1,7 +1,8 @@
-from cocotb.clock import Clock
-import cocotb
 import inspect
+
+import cocotb
 import test_14_15_python_sequences as test_mod
+from cocotb.clock import Clock
 
 
 async def run_tests(dut):

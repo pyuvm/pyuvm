@@ -32,7 +32,7 @@ class uvm_component(uvm_report_object):
         """
 
         self._children = {}
-        if parent is None and name != 'uvm_root':
+        if parent is None and name != "uvm_root":
             parent = uvm_root()
         self.parent = parent
         if parent is not None:
@@ -41,7 +41,7 @@ class uvm_component(uvm_report_object):
         super().__init__(name)
 
         # Cache the hierarchy for easy access
-        if name != 'uvm_root':
+        if name != "uvm_root":
             uvm_component.component_dict[self.get_full_name()] = self
 
     def clear_children(self):
@@ -68,8 +68,8 @@ class uvm_component(uvm_report_object):
             parent_inst_path = parent.get_full_name()
 
         new_comp = uvm_factory().create_component_by_type(
-            cls, parent_inst_path=parent_inst_path,
-            name=name, parent=parent)
+            cls, parent_inst_path=parent_inst_path, name=name, parent=parent
+        )
         return new_comp
 
     def get_parent(self):
@@ -138,10 +138,12 @@ class uvm_component(uvm_report_object):
     @parent.setter
     def parent(self, parent):
         if parent is not None:
-            assert (isinstance(parent, uvm_component)), \
+            assert isinstance(parent, uvm_component), (
                 f" {parent} is of type {type(parent)}"
-        assert (parent != self), \
-            f'Cannot make a {self.get_name()} its own parent.  That is incest.'
+            )
+        assert parent != self, (
+            f"Cannot make a {self.get_name()} its own parent.  That is incest."
+        )
         self._parent = parent
 
     def get_full_name(self):
@@ -150,8 +152,8 @@ class uvm_component(uvm_report_object):
 
         13.1.3.2
         """
-        if self.get_name() is None or self.get_name() == 'uvm_root':
-            return ''
+        if self.get_name() is None or self.get_name() == "uvm_root":
+            return ""
         if self._parent is None:
             fullname = ""
         else:
@@ -191,8 +193,9 @@ class uvm_component(uvm_report_object):
         return list(self.children)
 
     def add_child(self, name, child):
-        assert (name not in self._children), \
+        assert name not in self._children, (
             f"{self.get_full_name()} already has a child named {name}"
+        )
         self._children[name] = child
         pass
 
@@ -209,7 +212,10 @@ class uvm_component(uvm_report_object):
             assert isinstance(child, uvm_component)
             yield child
             for grandchild in child.children:
-                assert isinstance(grandchild, uvm_component, )
+                assert isinstance(
+                    grandchild,
+                    uvm_component,
+                )
                 yield grandchild
 
         # The UVM relies upon a hokey iteration system to get the children
@@ -243,7 +249,7 @@ class uvm_component(uvm_report_object):
         :param name: child's name
         :return: child ``uvm_component`` of that name
         """
-        assert (isinstance(name, str))
+        assert isinstance(name, str)
         try:
             return self._children[name]
         except KeyError:
@@ -265,7 +271,7 @@ class uvm_component(uvm_report_object):
         :return: True if exists, False otherwise
 
         """
-        assert (isinstance(name, str))
+        assert isinstance(name, str)
         return name in self._children
 
     def lookup(self, name):
@@ -278,11 +284,11 @@ class uvm_component(uvm_report_object):
         :return: either the component or None
 
         """
-        assert (isinstance(name, str))
-        if name[0] == '.':
+        assert isinstance(name, str)
+        if name[0] == ".":
             lookup_name = name[1:]
         else:
-            lookup_name = f'{self.get_full_name()}.{name}'
+            lookup_name = f"{self.get_full_name()}.{name}"
         try:
             return uvm_component.component_dict[lookup_name]
         except KeyError:
@@ -324,8 +330,9 @@ class uvm_component(uvm_report_object):
         :param handler: A logging.Handler object
         :return: None
         """
-        assert isinstance(handler, logging.Handler), \
+        assert isinstance(handler, logging.Handler), (
             f"You can only add logging.Handler objects not {type(handler)}"
+        )
         self.add_logging_handler(handler)
         for child in self.children:
             child.add_logging_handler_hier(handler)
@@ -337,8 +344,9 @@ class uvm_component(uvm_report_object):
         :param handler: logging handler
         :return: None
         """
-        assert isinstance(handler, logging.Handler), \
+        assert isinstance(handler, logging.Handler), (
             f"You must pass a logging.Handler not {type(handler)}"
+        )
         self.logger.removeHandler(handler)
         for child in self.children:
             child.remove_logging_handler_hier(handler)
@@ -360,32 +368,23 @@ class uvm_component(uvm_report_object):
         for child in self.children:
             child.disable_logging_hier()
 
-    def build_phase(self):
-        ...
+    def build_phase(self): ...
 
-    def connect_phase(self):
-        ...
+    def connect_phase(self): ...
 
-    def end_of_elaboration_phase(self):
-        ...
+    def end_of_elaboration_phase(self): ...
 
-    def start_of_simulation_phase(self):
-        ...
+    def start_of_simulation_phase(self): ...
 
-    async def run_phase(self):
-        ...
+    async def run_phase(self): ...
 
-    def extract_phase(self):
-        ...
+    def extract_phase(self): ...
 
-    def check_phase(self):
-        ...
+    def check_phase(self): ...
 
-    def report_phase(self):
-        ...
+    def report_phase(self): ...
 
-    def final_phase(self):
-        ...
+    def final_phase(self): ...
 
     """
     The following sections have been skipped and could
@@ -441,17 +440,16 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """Used in testing"""
         return self.get_child("uvm_test_top")
 
-# This implementation skips much of the state-setting and
-# what not in the LRM and focuses on building the
-# hierarchy and running the test.
+    # This implementation skips much of the state-setting and
+    # what not in the LRM and focuses on building the
+    # hierarchy and running the test.
 
-# At this time pyuvm has not implemented the phasing
-# system described in the LRM.  It's not clear that anyone
-# is using it, and in fact it is recommended that people
-# stick to the basic phases.  So this implementation loops
-# through the hierarchy and runs the phases.
-    async def run_test(self, test_name,
-                       keep_singletons=False, keep_set=set()):
+    # At this time pyuvm has not implemented the phasing
+    # system described in the LRM.  It's not clear that anyone
+    # is using it, and in fact it is recommended that people
+    # stick to the basic phases.  So this implementation loops
+    # through the hierarchy and runs the phases.
+    async def run_test(self, test_name, keep_singletons=False, keep_set=set()):
         """
         :param test_name: The uvm test name or test class
         :param keep_singletons: If True do not clear singletons (default False)
@@ -467,10 +465,10 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         self.clear_children()
         utility_classes.ObjectionHandler().clear()
         self.uvm_test_top = factory.create_component_by_name(
-            test_name, "", "uvm_test_top", self)
+            test_name, "", "uvm_test_top", self
+        )
         for self.running_phase in uvm_common_phases:
-            self.logger.log(utility_classes.PYUVM_DEBUG,
-                            str(self.running_phase))
+            self.logger.log(utility_classes.PYUVM_DEBUG, str(self.running_phase))
             self.running_phase.traverse(self.uvm_test_top)
             if self.running_phase == uvm_run_phase:
                 await utility_classes.ObjectionHandler().run_phase_complete()  # noqa: E501
@@ -544,8 +542,9 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         :return: string that is the key
 
         """
-        assert context is None or isinstance(context, uvm_component), \
+        assert context is None or isinstance(context, uvm_component), (
             "config_db context must be None or a uvm_component. "
+        )
         f"Not {type(context)}"
         if context is None:
             context = uvm_root()
@@ -562,7 +561,9 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         """
         if self.is_tracing:
             # noinspection SpellCheckingInspection
-            self.logger_holder.logger.info(f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}")  # noqa: E501
+            self.logger_holder.logger.info(
+                f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}"
+            )  # noqa: E501
 
     def set(self, context, inst_name, field_name, value):
         """
@@ -619,7 +620,8 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         if not set(inst_name).issubset(self.legal_chars):
             raise error_classes.UVMError(
                 f'"{inst_name}" is illegal: '
-                f'inst_name wildcards only allowed when storing.')
+                f"inst_name wildcards only allowed when storing."
+            )
 
         context, inst_name = self._get_context_inst_name(context, inst_name)
 
@@ -634,11 +636,13 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
             except TypeError:
                 raise error_classes.UVMConfigItemNotFound(
-                    f'"{inst_name}" is not in ConfigDB().')
+                    f'"{inst_name}" is not in ConfigDB().'
+                )
             finally:
                 if len(key_matches) == 0:
                     raise error_classes.UVMConfigItemNotFound(
-                        f'"{inst_name}" is not in ConfigDB().')
+                        f'"{inst_name}" is not in ConfigDB().'
+                    )
             # Here we sort the list of paths by which paths are "in" other
             # paths. That is A comes before '*'  A.B comes before A.*, etc.
             # We use an insertion sort. A path is inserted in front of the
@@ -648,7 +652,8 @@ class ConfigDB(metaclass=utility_classes.Singleton):
                 sorted_paths.append(key_matches.pop())
             except IndexError:
                 raise error_classes.UVMConfigItemNotFound(
-                    f"{inst_name} not in ConfigDB()")
+                    f"{inst_name} not in ConfigDB()"
+                )
 
             # Sort the matching keys from most specific to
             # most greedy. A.B.C before A.B.* before A.* before *
@@ -676,7 +681,8 @@ class ConfigDB(metaclass=utility_classes.Singleton):
                 return value
             else:
                 raise error_classes.UVMConfigItemNotFound(
-                    f'"Component {inst_name} has no key: {field_name}')
+                    f'"Component {inst_name} has no key: {field_name}'
+                )
         except error_classes.UVMConfigItemNotFound as e:
             if default is self.default_get:
                 raise e
@@ -703,11 +709,14 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         :raises UVMNotImplemented: This is not implemented in pyuvm
         """
         raise error_classes.UVMNotImplemented(
-            "wait_modified not implemented pending requests for it.")
+            "wait_modified not implemented pending requests for it."
+        )
 
     def __str__(self):
         str_list = [f"\n{'PATH':20}: {'KEY':10}: {'DATA':30}"]
         for inst_path in self._path_dict:
             for key in self._path_dict[inst_path]:
-                str_list.append(f"{inst_path:20}: {key:10}: {self._path_dict[inst_path][key]}")  # noqa: E501
+                str_list.append(
+                    f"{inst_path:20}: {key:10}: {self._path_dict[inst_path][key]}"
+                )  # noqa: E501
         return "\n".join(str_list)

@@ -7,10 +7,11 @@
 # SystemVerilog features.
 
 
+from cocotb.triggers import Event as CocotbEvent
+
+from pyuvm.error_classes import *
 from pyuvm.s05_base_classes import *
 from pyuvm.s12_uvm_tlm_interfaces import *
-from pyuvm.error_classes import *
-from cocotb.triggers import Event as CocotbEvent
 
 # The sequence system allows users to create and populate sequence
 # items and then send them to a driver. The driver
@@ -93,6 +94,7 @@ from cocotb.triggers import Event as CocotbEvent
 # uvm_seq_item_port
 # The uvm_seq_item_port is a uvm_put_port with two extra methods.
 
+
 class ResponseQueue(UVMQueue):
     """
     The ``ResponseQueue`` is a queue that can cherry-pick an item
@@ -131,14 +133,13 @@ class ResponseQueue(UVMQueue):
         else:
             while True:
                 item_list = list(self._queue)
-                txn_list = [xx
-                            for xx in item_list
-                            if xx.transaction_id == txn_id]
+                txn_list = [xx for xx in item_list if xx.transaction_id == txn_id]
                 if len(txn_list) == 0:
                     await self.put_event.wait()
                 else:
-                    assert len(txn_list) == 1, \
+                    assert len(txn_list) == 1, (
                         f"Multiple transactionsn have the same ID: {txn_id}"
+                    )
                     _ = self._queue.index(txn_list[0])
                     self._queue.remove(txn_list[0])
                     return txn_list[0]
@@ -213,7 +214,8 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         """
         if self.current_item is not None:
             raise error_classes.UVMSequenceError(
-                "You must call item_done() before calling get_next_item again")
+                "You must call item_done() before calling get_next_item again"
+            )
         self.current_item = await self.req_q.get()
         self.current_item.start_condition.set()
         self.current_item.start_condition.clear()
@@ -229,7 +231,8 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         """
         if self.current_item is None:
             raise error_classes.UVMSequenceError(
-                "You must call get_next_item before calling item_done")
+                "You must call get_next_item before calling item_done"
+            )
         self.current_item.finish_condition.set()
         self.current_item.finish_condition.clear()
         self.current_item = None
@@ -278,7 +281,8 @@ class uvm_seq_item_port(uvm_port_base):
             assert issubclass(type(item), uvm_sequence_item)
         except AssertionError:
             raise UVMFatalError(
-                "put_response only takes uvm_sequence_items as arguments")
+                "put_response only takes uvm_sequence_items as arguments"
+            )
         self.export.put_response(item)
 
     async def get_next_item(self):
@@ -309,7 +313,8 @@ class uvm_seq_item_port(uvm_port_base):
                 assert issubclass(type(rsp), uvm_sequence_item)
             except AssertionError:
                 raise UVMFatalError(
-                    "item_done only takes uvm_sequence_items as arguments")
+                    "item_done only takes uvm_sequence_items as arguments"
+                )
         self.export.item_done(rsp)
 
     async def get_response(self, transaction_id=None):
@@ -419,8 +424,9 @@ class uvm_sequence(uvm_object):
 
         """
         if seqr is not None:
-            assert (isinstance(seqr, uvm_sequencer)), \
+            assert isinstance(seqr, uvm_sequencer), (
                 "Tried to start a sequence with a non-sequencer"
+            )
         self.sequencer = seqr
         if call_pre_post:
             await self.pre_body()
@@ -437,8 +443,8 @@ class uvm_sequence(uvm_object):
         """
         if self.sequencer is None:
             raise error_classes.UVMSequenceError(
-                "Tried start_item in a virtual "
-                f"sequence {self.get_full_name()}")
+                f"Tried start_item in a virtual sequence {self.get_full_name()}"
+            )
         item.parent_sequence_id = self.sequence_id
         self.running_item = item
         await self.sequencer.start_item(item)
@@ -446,16 +452,20 @@ class uvm_sequence(uvm_object):
     async def finish_item(self, item):
         if self.sequencer is None:
             raise error_classes.UVMSequenceError(
-                "Tried finish_item in virtual"
-                f" sequence: {self.get_full_name()}")
+                f"Tried finish_item in virtual sequence: {self.get_full_name()}"
+            )
         await self.sequencer.finish_item(item)
 
     async def get_response(self, transaction_id=None):
         if self.sequencer is None:
             raise error_classes.UVMSequenceError(
                 "Tried to do get_response in a virtual "
-                f"sequence: {self.get_full_name()}")
-        tran_id = transaction_id if transaction_id is not None \
+                f"sequence: {self.get_full_name()}"
+            )
+        tran_id = (
+            transaction_id
+            if transaction_id is not None
             else self.running_item.transaction_id
+        )
         datum = await self.sequencer.get_response(tran_id)
         return datum

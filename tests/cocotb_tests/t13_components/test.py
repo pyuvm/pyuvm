@@ -1,15 +1,18 @@
-from cocotb.clock import Clock
-import cocotb
 import inspect
+
+import cocotb
 import test_13_predefined_component_classes as test_mod
+from cocotb.clock import Clock
 
 
 async def run_tests(dut):
     tests_pass = {}
     t12 = test_mod.s13_predefined_component_TestCase()
-    methods = inspect.getmembers(test_mod.s13_predefined_component_TestCase)#, predicate=inspect.ismethod)
+    methods = inspect.getmembers(
+        test_mod.s13_predefined_component_TestCase
+    )  # , predicate=inspect.ismethod)
     for mm in methods:
-        (name,_) = mm
+        (name, _) = mm
         if name.startswith("test_"):
             test = getattr(t12, name)
             t12.setUp()
@@ -29,16 +32,13 @@ async def run_tests(dut):
         else:
             pf = "FAILED "
             any_failed = True
-        print (f"{pf}{test:<20}")
+        print(f"{pf}{test:<20}")
     assert not any_failed
 
-@cocotb.test() # pylint: disable=no-value-for-parameter
+
+@cocotb.test()  # pylint: disable=no-value-for-parameter
 async def test_12_tlm(dut):
     """Tests the TLM FIFOS"""
     clock = Clock(dut.clk, 2, "us")
     cocotb.start_soon(clock.start())
     await run_tests(dut)
-
-
-
-

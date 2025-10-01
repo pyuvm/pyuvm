@@ -1,10 +1,7 @@
 # Import Main Package
-from pyuvm import uvm_object
-from pyuvm import uvm_sequence_item
-from pyuvm import uvm_sequence
-from pyuvm.s24_uvm_reg_includes import uvm_reg_bus_op
-from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted
+from pyuvm import uvm_object, uvm_sequence, uvm_sequence_item
 from pyuvm.s23_uvm_reg_item import uvm_reg_item
+from pyuvm.s24_uvm_reg_includes import uvm_not_implemeneted, uvm_reg_bus_op
 
 
 # Main Class
@@ -69,6 +66,7 @@ class uvm_reg_adapter(uvm_object):
     # get_byte_en
     def get_byte_en(self):
         return self.byte_enable
+
 
 # ------------------------------------------------------------------------------
 #  Example:

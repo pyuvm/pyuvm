@@ -1,10 +1,11 @@
-
-import uvm_unittest
-from pyuvm import *
-import cocotb
 import asyncio
-from cocotb.utils import get_sim_time
+
+import cocotb
+import uvm_unittest
 from cocotb.triggers import Timer
+from cocotb.utils import get_sim_time
+
+from pyuvm import *
 
 
 class DataHolder(metaclass=Singleton):
@@ -42,7 +43,6 @@ class HandleRespSeqDriver(uvm_driver):
 
 
 class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.result_list = []
@@ -71,7 +71,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
     async def getter(self, get_method, done_method=None):
         while True:
             datum = await get_method()
-            if datum.get_name() == 'end':
+            if datum.get_name() == "end":
                 break
             if done_method is not None:
                 done_method()
@@ -96,9 +96,8 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
 
     async def run_put_get(self, put_method, get_method, done_method=None):
         cocotb.start_soon(self.getter(get_method, done_method))
-        send_list = [self.ItemClass("5"),
-                     self.ItemClass("3"), self.ItemClass('two')]
-        await self.putter(put_method, send_list + [self.ItemClass('end')])
+        send_list = [self.ItemClass("5"), self.ItemClass("3"), self.ItemClass("two")]
+        await self.putter(put_method, send_list + [self.ItemClass("end")])
         await cocotb.triggers.Timer(1)
         self.assertEqual(send_list, self.result_list)
 
@@ -113,9 +112,9 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
         self.assertEqual([4, 2], result)
         self.result_list = []
         cocotb.start_soon(self.response_getter(get_response_method, [5]))
-        await self.putter(put_method,
-                          [self.ItemClass(txn_id=10),
-                           self.ItemClass(txn_id=11)])
+        await self.putter(
+            put_method, [self.ItemClass(txn_id=10), self.ItemClass(txn_id=11)]
+        )
         await cocotb.triggers.Timer(1)
         await self.putter(put_method, [self.ItemClass(txn_id=5)])
         await cocotb.triggers.Timer(1)
@@ -163,11 +162,11 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 self.rl = result_list
 
             async def body(self):
-                self.rl.append('body')
+                self.rl.append("body")
 
         seq = basic_seq("basic_seq", self.result_list)
         await seq.start()
-        self.assertEqual('body', self.result_list[0])
+        self.assertEqual("body", self.result_list[0])
 
     class timeout_sequencer(uvm_sequencer):
         def __init__(self, name, parent):
@@ -192,7 +191,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 await self.start_item(op)
                 op.data = 0
                 await self.finish_item(op)
-                DataHolder().datum = (op.result == (op.data + 1))
+                DataHolder().datum = op.result == (op.data + 1)
 
         class SeqTest(uvm_test):
             def build_phase(self):
@@ -232,7 +231,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 op.data = 0
                 await self.finish_item(op)
                 result = await self.get_response()
-                DataHolder().datum = (result.data == 1)
+                DataHolder().datum = result.data == 1
 
         class SeqTest(uvm_test):
             def build_phase(self):
@@ -296,8 +295,8 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 await self.start_item(op)
                 op.data = 0
                 await self.finish_item(op)
-                result = await self.get_response()
-                DataHolder().datum = (op.data == 1)
+                await self.get_response()
+                DataHolder().datum = op.data == 1
 
         class SeqTest(uvm_test):
             def build_phase(self):
@@ -341,7 +340,6 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 self.driver.seq_item_port.connect(self.seqr.seq_item_export)
 
         class SeqRunner(uvm_component):
-
             def connect_phase(self):
                 self.seqr = self.cdb_get("SEQR")
 
@@ -479,7 +477,6 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
         ObjectionHandler().run_phase_done_flag = None
 
         class DelaySeqDriver(uvm_driver):
-
             def __init__(self, name, parent, start_delay_ns, finish_delay_ns):
                 super().__init__(name, parent)
                 self.start_delay_ns = start_delay_ns
@@ -505,7 +502,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 DataHolder().finish_item_call_time = get_sim_time("ns")
                 await self.finish_item(op)
                 DataHolder().finish_item_return_time = get_sim_time("ns")
-                DataHolder().datum = (op.result == (op.data + 1))
+                DataHolder().datum = op.result == (op.data + 1)
 
         class SeqTest(uvm_test):
             def build_phase(self):

@@ -1,8 +1,8 @@
 # Global register enumerations
-from pyuvm.s05_base_classes import uvm_object
-from pyuvm.error_classes import UVMFatalError
 from enum import Enum
 
+from pyuvm.error_classes import UVMFatalError
+from pyuvm.s05_base_classes import uvm_object
 
 UVM_REG_DATA_WIDTH = 64
 UVM_REG_ADDR_WIDTH = 64
@@ -14,36 +14,36 @@ uvm_reg_data_t = int
 uvm_reg_addr_t = int
 
 uvm_reg_policy_t = [
-    "RO",       # no effect, R: no effect.
-    "RW",       # as is, R: no effect.
-    "RC",       # no effect, R: clears all bits.
-    "RS",       # no effect, R: sets all bits.
-    "WRC",      # as is, R: clears all bits.
-    "WRS",      # as is, R: sets all bits.
-    "WC",       # clears all bits, R: no effect.
-    "WS",       # sets all bits, R: no effect.
-    "WSRC",     # sets all bits, R: clears all bits.
-    "WCRS",     # clears all bits, R: sets all bits.
-    "W1C",      # 1/0 clears/no effect on matching bit, R: no effect.
-    "W1S",      # 1/0 sets/no effect on matching bit, R: no effect.
-    "W1T",      # 1/0 toggles/no effect on matching bit, R: no effect.
-    "W0C",      # 1/0 no effect on/clears matching bit, R: no effect.
-    "W0S",      # 1/0 no effect on/sets matching bit, R: no effect.
-    "W0T",      # 1/0 no effect on/toggles matching bit, R: no effect.
-    "W1SRC",    # 1/0sets/no effect on matching bit, R: clears all bits.
-    "W1CRS",    # 1/0clears/no effect on matching bit, R: sets all bits.
-    "W0SRC",    # 1/0no effect on/sets matching bit, R: clears all bits.
-    "W0CRS",    # 1/0no effect on/clears matching bit, R: sets all bits.
-    "WO",       # as is, R: error.
-    "WOC",      # clears all bits, R: error.
-    "WOS",      # sets all bits, R: error.
+    "RO",  # no effect, R: no effect.
+    "RW",  # as is, R: no effect.
+    "RC",  # no effect, R: clears all bits.
+    "RS",  # no effect, R: sets all bits.
+    "WRC",  # as is, R: clears all bits.
+    "WRS",  # as is, R: sets all bits.
+    "WC",  # clears all bits, R: no effect.
+    "WS",  # sets all bits, R: no effect.
+    "WSRC",  # sets all bits, R: clears all bits.
+    "WCRS",  # clears all bits, R: sets all bits.
+    "W1C",  # 1/0 clears/no effect on matching bit, R: no effect.
+    "W1S",  # 1/0 sets/no effect on matching bit, R: no effect.
+    "W1T",  # 1/0 toggles/no effect on matching bit, R: no effect.
+    "W0C",  # 1/0 no effect on/clears matching bit, R: no effect.
+    "W0S",  # 1/0 no effect on/sets matching bit, R: no effect.
+    "W0T",  # 1/0 no effect on/toggles matching bit, R: no effect.
+    "W1SRC",  # 1/0sets/no effect on matching bit, R: clears all bits.
+    "W1CRS",  # 1/0clears/no effect on matching bit, R: sets all bits.
+    "W0SRC",  # 1/0no effect on/sets matching bit, R: clears all bits.
+    "W0CRS",  # 1/0no effect on/clears matching bit, R: sets all bits.
+    "WO",  # as is, R: error.
+    "WOC",  # clears all bits, R: error.
+    "WOS",  # sets all bits, R: error.
     # first one after HARD reset is as is,
     # other W have no effects, R: no effect.
     "W1",
     # first one after HARD reset is as is,
     # other W have no effects, R: error.
     "WO1",
-    "NOACCESS"  # no effect, R: no effect.
+    "NOACCESS",  # no effect, R: no effect.
 ]
 
 # 17.2.1.5 uvm_reg_byte_en_t
@@ -53,7 +53,7 @@ uvm_reg_field_ignore_rand_mode = ["RW", "WRC", "WRS", "WO", "W1", "WO1"]
 
 
 # 17.2.1.7 uvm_hdl_path_slice
-class uvm_hdl_path_slice():
+class uvm_hdl_path_slice:
     def __init__(self, path: str, offset: int, size: int):
         self.path: str = path
         self.offset: int = offset
@@ -167,7 +167,7 @@ class uvm_reg_mem_tests_e(Enum):
 # 17.2.3 uvm_hdl_path_concat
 class uvm_hdl_path_concat(uvm_object):
     # 17.2.3.3.1
-    def __init__(self, name='unnamed'):
+    def __init__(self, name="unnamed"):
         super().__init__(name)
         self._slices = []
 
@@ -207,17 +207,18 @@ class uvm_hdl_path_concat(uvm_object):
             if self._slices[0].offset != -1:
                 raise UVMFatalError(
                     f"""slice offset: {self._slices[0].offset}
-                    must be -1 for single slice. See  17.2.3.3.1""")
+                    must be -1 for single slice. See  17.2.3.3.1"""
+                )
             if self._slices[1].size != -1:
                 raise UVMFatalError(
                     f"""slice size: {self._slices[0].size}
-                    must be -1 for single slice. See  17.2.3.3.1""")
+                    must be -1 for single slice. See  17.2.3.3.1"""
+                )
         else:
             # Check for slice overlap
             for count, slice in enumerate(self._slices):
                 if self.__is_overlapping_slice(slice):
-                    raise UVMFatalError(
-                        f" Overlapping slice found:: {slice.path}")
+                    raise UVMFatalError(f" Overlapping slice found:: {slice.path}")
             # Check for slice offset order :::
             # The slices shall be specified in most-to-least
             # significant order.
@@ -226,8 +227,7 @@ class uvm_hdl_path_concat(uvm_object):
                     if count == 0:
                         continue
                     if slice.offset >= slices[count - 1].offset:
-                        raise UVMFatalError(
-                            "Slice order doesnt follow MSB to LSB")
+                        raise UVMFatalError("Slice order doesnt follow MSB to LSB")
         self._slices = slices
 
     # 17.2.3.3.3
@@ -242,6 +242,5 @@ class uvm_hdl_path_concat(uvm_object):
                     shall be specified in most-to-least
                     significant order.""")
             if self.__is_overlapping_slice(slice_i):
-                raise UVMFatalError(
-                    f"Found overlapping slice :: {slice.path}")
+                raise UVMFatalError(f"Found overlapping slice :: {slice.path}")
         self._slices.append(slice_i)

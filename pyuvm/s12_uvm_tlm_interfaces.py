@@ -23,11 +23,11 @@
 # their various flavors through multiple inheritance.
 
 
-from pyuvm.s13_uvm_component import uvm_component
-from pyuvm.error_classes import UVMTLMConnectionError
-from pyuvm.utility_classes import UVMQueue, FIFO_DEBUG
 from cocotb.queue import QueueEmpty, QueueFull
 
+from pyuvm.error_classes import UVMTLMConnectionError
+from pyuvm.s13_uvm_component import uvm_component
+from pyuvm.utility_classes import FIFO_DEBUG, UVMQueue
 
 # 12.2.2
 # This section describes a variety of classes without
@@ -56,6 +56,7 @@ from cocotb.queue import QueueEmpty, QueueFull
 # uvm_export_base provides the provided_to
 # associative array.
 
+
 class uvm_export_base(uvm_component):
     def __init__(self, name, parent):
         super().__init__(name, parent)
@@ -79,16 +80,29 @@ class uvm_port_base(uvm_export_base):
     Unlike the SV implementation of UVM we return results from get and peek
     as function call returns. This is more pythonic.
     """
+
     # This is the list of all TLM functions. Each port class
     # uses this to create a list of methods that an export
     # must support.
-    __tlm_method_list = ["put", "get", "peek",
-                         "try_put", "try_get", "try_peek",
-                         "can_put", "can_get", "can_peek",
-                         "transport", "nb_transport",
-                         "write",
-                         "put_req", "put_response", "get_next_item",
-                         "item_done", "get_response"]
+    __tlm_method_list = [
+        "put",
+        "get",
+        "peek",
+        "try_put",
+        "try_get",
+        "try_peek",
+        "can_put",
+        "can_get",
+        "can_peek",
+        "transport",
+        "nb_transport",
+        "write",
+        "put_req",
+        "put_response",
+        "get_next_item",
+        "item_done",
+        "get_response",
+    ]
 
     def __init__(self, name, parent):
         super().__init__(name, parent)
@@ -106,20 +120,22 @@ class uvm_port_base(uvm_export_base):
         """Check that the export implements needed methods"""
         if not isinstance(export, uvm_export_base):
             raise UVMTLMConnectionError(
-                f"{export} must be a subclass of uvm_export_base")
+                f"{export} must be a subclass of uvm_export_base"
+            )
         for needed in self.needed_methods:
             if not hasattr(export, needed):
                 raise UVMTLMConnectionError(
                     f"{export} must implement '{needed}()'"
-                    f" to connect to a {self.__class__}")
+                    f" to connect to a {self.__class__}"
+                )
 
     def connect(self, export):
         """
-            :param export: The export that has the functions
-            :raises: UVMTLMConnectionError if there is a connect error
-            :return: None
+        :param export: The export that has the functions
+        :raises: UVMTLMConnectionError if there is a connect error
+        :return: None
 
-            Attach this port to the associated export.
+        Attach this port to the associated export.
 
         """
 
@@ -130,7 +146,9 @@ class uvm_port_base(uvm_export_base):
             export.provided_to[self.get_full_name()] = self
         except KeyError:
             raise UVMTLMConnectionError(
-                f"Error connecting {self.get_name()} using {export}")
+                f"Error connecting {self.get_name()} using {export}"
+            )
+
 
 # put
 
@@ -156,7 +174,8 @@ class uvm_blocking_put_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
-                f" {self.get_full_name()}. Did you connect it?")
+                f" {self.get_full_name()}. Did you connect it?"
+            )
 
 
 # 12.2.5.1
@@ -181,7 +200,8 @@ class uvm_nonblocking_put_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export "
-                f"in {self.get_full_name()}. Did you connect it?")
+                f"in {self.get_full_name()}. Did you connect it?"
+            )
 
     # 12.2.4.2.5
     def can_put(self):
@@ -197,20 +217,20 @@ class uvm_nonblocking_put_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
-                f" {self.get_full_name()}. Did you connect it?")
+                f" {self.get_full_name()}. Did you connect it?"
+            )
 
 
 # 12.2.5.1
 # The put port delivers blocking puts and gets.
 # Here is the multiple inheritance that SV lacked
-class uvm_put_port(uvm_blocking_put_port, uvm_nonblocking_put_port):
-    ...
+class uvm_put_port(uvm_blocking_put_port, uvm_nonblocking_put_port): ...
 
 
 # 12.2.5.1
 class uvm_blocking_get_port(uvm_port_base):
     """
-        Access the blocking get export methods
+    Access the blocking get export methods
     """
 
     # 12.2.4.2.2
@@ -227,7 +247,8 @@ class uvm_blocking_get_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in "
-                f"{self.get_full_name()}. Did you connect it?")
+                f"{self.get_full_name()}. Did you connect it?"
+            )
 
 
 # 12.2.5.1
@@ -253,7 +274,8 @@ class uvm_nonblocking_get_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
-                f" {self.get_full_name()}. Did you connect it?")
+                f" {self.get_full_name()}. Did you connect it?"
+            )
 
         return success, data
 
@@ -269,13 +291,13 @@ class uvm_nonblocking_get_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
-                f" {self.get_full_name()}. Did you connect it?")
+                f" {self.get_full_name()}. Did you connect it?"
+            )
 
         return can
 
 
-class uvm_get_port(uvm_blocking_get_port, uvm_nonblocking_get_port):
-    ...
+class uvm_get_port(uvm_blocking_get_port, uvm_nonblocking_get_port): ...
 
 
 #
@@ -299,7 +321,8 @@ class uvm_blocking_peek_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
-                f" {self.get_full_name()}. Did you connect it?")
+                f" {self.get_full_name()}. Did you connect it?"
+            )
 
 
 # 12.2.5.1
@@ -322,7 +345,8 @@ class uvm_nonblocking_peek_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
-                f" {self.get_full_name()}. Did you connect it?")
+                f" {self.get_full_name()}. Did you connect it?"
+            )
         return success, data
 
     # 12.2.4.2.9
@@ -337,25 +361,21 @@ class uvm_nonblocking_peek_port(uvm_port_base):
         return can
 
 
-class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port):
-    ...
+class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port): ...
 
 
 # get_peek
 
-class uvm_blocking_get_peek_port(uvm_blocking_get_port,
-                                 uvm_blocking_peek_port):
-    ...
+
+class uvm_blocking_get_peek_port(uvm_blocking_get_port, uvm_blocking_peek_port): ...
 
 
-class uvm_nonblocking_get_peek_port(uvm_nonblocking_get_port,
-                                    uvm_nonblocking_peek_port):
-    ...
+class uvm_nonblocking_get_peek_port(
+    uvm_nonblocking_get_port, uvm_nonblocking_peek_port
+): ...
 
 
-class uvm_get_peek_port(uvm_blocking_get_peek_port,
-                        uvm_nonblocking_get_peek_port):
-    ...
+class uvm_get_peek_port(uvm_blocking_get_peek_port, uvm_nonblocking_get_peek_port): ...
 
 
 class uvm_blocking_transport_port(uvm_port_base):
@@ -376,12 +396,12 @@ class uvm_blocking_transport_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
-                f" {self.get_full_name()}. Did you connect it?")
+                f" {self.get_full_name()}. Did you connect it?"
+            )
         return get_data
 
 
 class uvm_nonblocking_transport_port(uvm_port_base):
-
     def __init__(self, name, parent):
         super().__init__(name, parent)
 
@@ -399,43 +419,37 @@ class uvm_nonblocking_transport_port(uvm_port_base):
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
-                f" {self.get_full_name()}. Did you connect it?")
+                f" {self.get_full_name()}. Did you connect it?"
+            )
         return success, get_data
 
 
-class uvm_transport_port(uvm_blocking_transport_port,
-                         uvm_nonblocking_transport_port):
-    ...
+class uvm_transport_port(
+    uvm_blocking_transport_port, uvm_nonblocking_transport_port
+): ...
 
 
 # master
-class uvm_blocking_master_port(uvm_blocking_put_port,
-                               uvm_blocking_get_peek_port):
-    ...
+class uvm_blocking_master_port(uvm_blocking_put_port, uvm_blocking_get_peek_port): ...
 
 
-class uvm_nonblocking_master_port(uvm_nonblocking_put_port,
-                                  uvm_nonblocking_get_peek_port):
-    ...
+class uvm_nonblocking_master_port(
+    uvm_nonblocking_put_port, uvm_nonblocking_get_peek_port
+): ...
 
 
-class uvm_master_port(uvm_blocking_master_port, uvm_nonblocking_master_port):
-    ...
+class uvm_master_port(uvm_blocking_master_port, uvm_nonblocking_master_port): ...
 
 
-class uvm_blocking_slave_port(uvm_blocking_put_port,
-                              uvm_blocking_get_peek_port):
-    ...
+class uvm_blocking_slave_port(uvm_blocking_put_port, uvm_blocking_get_peek_port): ...
 
 
-class uvm_nonblocking_slave_port(uvm_nonblocking_get_peek_port,
-                                 uvm_nonblocking_put_port):
-    ...
+class uvm_nonblocking_slave_port(
+    uvm_nonblocking_get_peek_port, uvm_nonblocking_put_port
+): ...
 
 
-class uvm_slave_port(uvm_nonblocking_slave_port,
-                     uvm_blocking_slave_port):
-    ...
+class uvm_slave_port(uvm_nonblocking_slave_port, uvm_blocking_slave_port): ...
 
 
 class uvm_analysis_port(uvm_port_base):
@@ -458,7 +472,8 @@ class uvm_analysis_port(uvm_port_base):
         for export in self.subscribers:
             if not hasattr(export, "write"):
                 raise UVMTLMConnectionError(
-                    f"No write() method in {export}. Did you connect it?")
+                    f"No write() method in {export}. Did you connect it?"
+                )
             export.write(datum)
 
     def connect(self, export):
@@ -466,106 +481,88 @@ class uvm_analysis_port(uvm_port_base):
         self.subscribers.append(export)
 
 
-class uvm_nonblocking_put_export(uvm_export_base):
-    ...
+class uvm_nonblocking_put_export(uvm_export_base): ...
 
 
-class uvm_blocking_put_export(uvm_export_base):
-    ...
+class uvm_blocking_put_export(uvm_export_base): ...
 
 
-class uvm_put_export(uvm_nonblocking_put_export, uvm_blocking_put_export):
-    ...
+class uvm_put_export(uvm_nonblocking_put_export, uvm_blocking_put_export): ...
 
 
 # get
-class uvm_nonblocking_get_export(uvm_export_base):
-    ...
+class uvm_nonblocking_get_export(uvm_export_base): ...
 
 
-class uvm_blocking_get_export(uvm_export_base):
-    ...
+class uvm_blocking_get_export(uvm_export_base): ...
 
 
-class uvm_get_export(uvm_blocking_get_export, uvm_nonblocking_get_export):
-    ...
+class uvm_get_export(uvm_blocking_get_export, uvm_nonblocking_get_export): ...
 
 
 # peek
-class uvm_nonblocking_peek_export(uvm_export_base):
-    ...
+class uvm_nonblocking_peek_export(uvm_export_base): ...
 
 
-class uvm_blocking_peek_export(uvm_export_base):
-    ...
+class uvm_blocking_peek_export(uvm_export_base): ...
 
 
-class uvm_peek_export(uvm_nonblocking_peek_export, uvm_blocking_peek_export):
-    ...
+class uvm_peek_export(uvm_nonblocking_peek_export, uvm_blocking_peek_export): ...
 
 
 # get_peek
-class uvm_blocking_get_peek_export(uvm_export_base):
-    ...
+class uvm_blocking_get_peek_export(uvm_export_base): ...
 
 
-class uvm_nonblocking_get_peek_export(uvm_export_base):
-    ...
+class uvm_nonblocking_get_peek_export(uvm_export_base): ...
 
 
-class uvm_get_peek_export(uvm_nonblocking_get_peek_export,
-                          uvm_blocking_get_peek_export):
-    ...
+class uvm_get_peek_export(
+    uvm_nonblocking_get_peek_export, uvm_blocking_get_peek_export
+): ...
 
 
 # transport
-class uvm_blocking_transport_export(uvm_export_base):
-    ...
+class uvm_blocking_transport_export(uvm_export_base): ...
 
 
-class uvm_nonblocking_transport_export(uvm_export_base):
-    ...
+class uvm_nonblocking_transport_export(uvm_export_base): ...
 
 
-class uvm_transport_export(uvm_nonblocking_transport_export,
-                           uvm_blocking_transport_export):
-    ...
+class uvm_transport_export(
+    uvm_nonblocking_transport_export, uvm_blocking_transport_export
+): ...
 
 
 # master
-class uvm_blocking_master_export(uvm_blocking_put_export,
-                                 uvm_blocking_get_peek_export):
-    ...
+class uvm_blocking_master_export(
+    uvm_blocking_put_export, uvm_blocking_get_peek_export
+): ...
 
 
-class uvm_nonblocking_master_export(uvm_blocking_peek_export,
-                                    uvm_nonblocking_get_peek_export):
-    ...
+class uvm_nonblocking_master_export(
+    uvm_blocking_peek_export, uvm_nonblocking_get_peek_export
+): ...
 
 
-class uvm_master_export(uvm_blocking_master_export,
-                        uvm_nonblocking_master_export):
-    ...
+class uvm_master_export(uvm_blocking_master_export, uvm_nonblocking_master_export): ...
 
 
 # slave
-class uvm_blocking_slave_export(uvm_blocking_put_export,
-                                uvm_blocking_get_peek_export):
-    ...
+class uvm_blocking_slave_export(
+    uvm_blocking_put_export, uvm_blocking_get_peek_export
+): ...
 
 
-class uvm_nonblocking_slave_export(uvm_nonblocking_put_export,
-                                   uvm_nonblocking_get_peek_export):
-    ...
+class uvm_nonblocking_slave_export(
+    uvm_nonblocking_put_export, uvm_nonblocking_get_peek_export
+): ...
 
 
-class uvm_slave_export(uvm_blocking_slave_export,
-                       uvm_nonblocking_slave_export):
-    ...
+class uvm_slave_export(uvm_blocking_slave_export, uvm_nonblocking_slave_export): ...
 
 
-class uvm_analysis_export(uvm_export_base):
-    ...
+class uvm_analysis_export(uvm_export_base): ...
 
 
 # 12.2.8 FIFO Classes
@@ -587,9 +584,10 @@ class uvm_analysis_export(uvm_export_base):
 
 class uvm_QueueAccessor:
     def __init__(self, name, parent, uvm_queue, ap):
-        super(uvm_QueueAccessor, self).__init__(name, parent)
-        assert (isinstance(uvm_queue, UVMQueue)), \
+        super().__init__(name, parent)
+        assert isinstance(uvm_queue, UVMQueue), (
             "Tried to pass a non-UVMQueue to QueueAccessor constructor"
+        )
         self.queue = uvm_queue
         self.ap = ap
 
@@ -615,9 +613,7 @@ class uvm_tlm_fifo_base(uvm_component):
             self.ap.write(item)
 
     #  12.2.8.1.3
-    class uvm_NonBlockingPutExport(uvm_QueueAccessor,
-                                   uvm_nonblocking_put_export):
-
+    class uvm_NonBlockingPutExport(uvm_QueueAccessor, uvm_nonblocking_put_export):
         def can_put(self):
             """
             :return: True if can put
@@ -640,8 +636,7 @@ class uvm_tlm_fifo_base(uvm_component):
             except QueueFull:
                 return False
 
-    class uvm_PutExport(uvm_BlockingPutExport, uvm_NonBlockingPutExport):
-        ...
+    class uvm_PutExport(uvm_BlockingPutExport, uvm_NonBlockingPutExport): ...
 
     class uvm_BlockingGetExport(uvm_QueueAccessor, uvm_blocking_get_export):
         async def get(self):
@@ -656,8 +651,7 @@ class uvm_tlm_fifo_base(uvm_component):
             self.ap.write(item)
             return item
 
-    class uvm_NonBlockingGetExport(uvm_QueueAccessor,
-                                   uvm_nonblocking_get_export):
+    class uvm_NonBlockingGetExport(uvm_QueueAccessor, uvm_nonblocking_get_export):
         def can_get(self):
             """
             :return: True if can get
@@ -676,8 +670,7 @@ class uvm_tlm_fifo_base(uvm_component):
             except QueueEmpty:
                 return False, None
 
-    class uvm_GetExport(uvm_BlockingGetExport, uvm_NonBlockingGetExport):
-        ...
+    class uvm_GetExport(uvm_BlockingGetExport, uvm_NonBlockingGetExport): ...
 
     class uvm_BlockingPeekExport(uvm_QueueAccessor, uvm_blocking_peek_export):
         async def peek(self):
@@ -691,8 +684,7 @@ class uvm_tlm_fifo_base(uvm_component):
             self.logger.log(FIFO_DEBUG, f"peeked at {peek_data}")
             return peek_data
 
-    class uvm_NonBlockingPeekExport(uvm_QueueAccessor,
-                                    uvm_nonblocking_peek_export):
+    class uvm_NonBlockingPeekExport(uvm_QueueAccessor, uvm_nonblocking_peek_export):
         def can_peek(self):
             """
             :return: True if can peek
@@ -709,20 +701,16 @@ class uvm_tlm_fifo_base(uvm_component):
             except QueueEmpty:
                 return False, None
 
-    class uvm_PeekExport(uvm_BlockingPeekExport, uvm_NonBlockingPeekExport):
-        ...
+    class uvm_PeekExport(uvm_BlockingPeekExport, uvm_NonBlockingPeekExport): ...
 
-    class uvm_BlockingGetPeekExport(uvm_BlockingGetExport,
-                                    uvm_BlockingPeekExport):
-        ...
+    class uvm_BlockingGetPeekExport(uvm_BlockingGetExport, uvm_BlockingPeekExport): ...
 
-    class uvm_NonBlockingGetPeekExport(uvm_NonBlockingGetExport,
-                                       uvm_NonBlockingPeekExport):
-        ...
+    class uvm_NonBlockingGetPeekExport(
+        uvm_NonBlockingGetExport, uvm_NonBlockingPeekExport
+    ): ...
 
     #  12.2.8.1.4
-    class uvm_GetPeekExport(uvm_GetExport, uvm_PeekExport):
-        ...
+    class uvm_GetPeekExport(uvm_GetExport, uvm_PeekExport): ...
 
     def __init__(self, name, parent, maxsize=1):
         super().__init__(name, parent)
@@ -730,33 +718,70 @@ class uvm_tlm_fifo_base(uvm_component):
         self.get_ap = uvm_analysis_port("get_ap", self)
         self.put_ap = uvm_analysis_port("put_ap", self)
 
-        self.blocking_put_export = self.uvm_BlockingPutExport("blocking_put_export",  # noqa: E501
-                                                              self, self.queue,
-                                                              self.put_ap)
-        self.nonblocking_put_export = self.uvm_NonBlockingPutExport("nonblocking_put_export",  # noqa: E501
-                                                                    self, self.queue, self.put_ap)  # noqa: E501
-        self.put_export = self.uvm_PutExport("put_export", self, self.queue, self.put_ap)  # noqa: E501
+        self.blocking_put_export = self.uvm_BlockingPutExport(
+            "blocking_put_export",  # noqa: E501
+            self,
+            self.queue,
+            self.put_ap,
+        )
+        self.nonblocking_put_export = self.uvm_NonBlockingPutExport(
+            "nonblocking_put_export",  # noqa: E501
+            self,
+            self.queue,
+            self.put_ap,
+        )  # noqa: E501
+        self.put_export = self.uvm_PutExport(
+            "put_export", self, self.queue, self.put_ap
+        )  # noqa: E501
 
-        self.blocking_get_export = self.uvm_BlockingGetExport("blocking_get_export", self,  # noqa: E501
-                                                              self.queue, self.get_ap)  # noqa: E501
-        self.nonblocking_get_export = self.uvm_NonBlockingGetExport("nonblocking_get_export", self,  # noqa: E501
-                                                                    self.queue, self.put_ap)  # noqa: E501
+        self.blocking_get_export = self.uvm_BlockingGetExport(
+            "blocking_get_export",
+            self,  # noqa: E501
+            self.queue,
+            self.get_ap,
+        )  # noqa: E501
+        self.nonblocking_get_export = self.uvm_NonBlockingGetExport(
+            "nonblocking_get_export",
+            self,  # noqa: E501
+            self.queue,
+            self.put_ap,
+        )  # noqa: E501
 
-        self.get_export = self.uvm_GetExport("get_export", self, self.queue,
-                                             self.get_ap)
+        self.get_export = self.uvm_GetExport(
+            "get_export", self, self.queue, self.get_ap
+        )
 
-        self.blocking_peek_export = self.uvm_BlockingPeekExport("blocking_peek_export", self,  # noqa: E501
-                                                                self.queue, self.get_ap)  # noqa: E501
-        self.nonblocking_peek_export = self.uvm_NonBlockingPeekExport("nonblocking_peek_export", self,  # noqa: E501
-                                                                      self.queue, self.get_ap)  # noqa: E501
-        self.peek_export = self.uvm_PeekExport("peek_export", self,
-                                               self.queue, self.get_ap)
+        self.blocking_peek_export = self.uvm_BlockingPeekExport(
+            "blocking_peek_export",
+            self,  # noqa: E501
+            self.queue,
+            self.get_ap,
+        )  # noqa: E501
+        self.nonblocking_peek_export = self.uvm_NonBlockingPeekExport(
+            "nonblocking_peek_export",
+            self,  # noqa: E501
+            self.queue,
+            self.get_ap,
+        )  # noqa: E501
+        self.peek_export = self.uvm_PeekExport(
+            "peek_export", self, self.queue, self.get_ap
+        )
 
-        self.blocking_get_peek_export = self.uvm_BlockingGetPeekExport("blocking_get_peek_export", self,  # noqa: E501
-                                                                       self.queue, self.get_ap)  # noqa: E501
-        self.nonblocking_get_peek_export = self.uvm_NonBlockingGetPeekExport("nonblocking_get_peek_export", self,  # noqa: E501
-                                                                             self.queue, self.get_ap)  # noqa: E501
-        self.get_peek_export = self.uvm_GetPeekExport("get_peek_export", self, self.queue, self.get_ap)  # noqa: E501
+        self.blocking_get_peek_export = self.uvm_BlockingGetPeekExport(
+            "blocking_get_peek_export",
+            self,  # noqa: E501
+            self.queue,
+            self.get_ap,
+        )  # noqa: E501
+        self.nonblocking_get_peek_export = self.uvm_NonBlockingGetPeekExport(
+            "nonblocking_get_peek_export",
+            self,  # noqa: E501
+            self.queue,
+            self.get_ap,
+        )  # noqa: E501
+        self.get_peek_export = self.uvm_GetPeekExport(
+            "get_peek_export", self, self.queue, self.get_ap
+        )  # noqa: E501
 
     async def put(self, item):
         """
@@ -821,10 +846,9 @@ class uvm_tlm_fifo_base(uvm_component):
 
 
 class uvm_tlm_fifo(uvm_tlm_fifo_base):
-
     #  12.2.8.2.1
     def __init__(self, name=None, parent=None, size=1):
-        """ uvm_tlm_fifo is a uvm_component"""
+        """uvm_tlm_fifo is a uvm_component"""
         super().__init__(name, parent, size)
 
     # 12.2.8.2.2
@@ -894,14 +918,14 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
                 self.queue.put_nowait(item)
             except QueueFull:
                 raise QueueFull(
-                    f"Full analysis fifo: {self.__name__}. This should never happen")  # noqa: E501
+                    f"Full analysis fifo: {self.__name__}. This should never happen"
+                )  # noqa: E501
 
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 0)
-        self.analysis_export = self.uvm_AnalysisExport(name="analysis_export",
-                                                       parent=self,
-                                                       uvm_queue=self.queue,
-                                                       ap=None)
+        self.analysis_export = self.uvm_AnalysisExport(
+            name="analysis_export", parent=self, uvm_queue=self.queue, ap=None
+        )
 
 
 #    12.2.9.1
@@ -953,13 +977,10 @@ class uvm_tlm_req_rsp_channel(uvm_component):
             """
             return self.get_peek_export.try_get
 
-    def __init__(self, name, parent=None, request_fifo_size=1,
-                 response_fifo_size=1):
+    def __init__(self, name, parent=None, request_fifo_size=1, response_fifo_size=1):
         super().__init__(name, parent)
-        self.req_tlm_fifo = uvm_tlm_fifo("request_fifo", self,
-                                         request_fifo_size)
-        self.rsp_tlm_fifo = uvm_tlm_fifo("response_fifo", self,
-                                         response_fifo_size)
+        self.req_tlm_fifo = uvm_tlm_fifo("request_fifo", self, request_fifo_size)
+        self.rsp_tlm_fifo = uvm_tlm_fifo("response_fifo", self, response_fifo_size)
 
         self.put_request_export = self.req_tlm_fifo.put_export
         self.get_peek_response_export = self.rsp_tlm_fifo.get_peek_export
@@ -972,12 +993,14 @@ class uvm_tlm_req_rsp_channel(uvm_component):
             name="master_export",
             parent=self,
             put_export=self.put_request_export,
-            get_peek_export=self.get_peek_response_export)
+            get_peek_export=self.get_peek_response_export,
+        )
         self.slave_export = self.uvm_MasterSlaveExport(
             name="slave_export",
             parent=self,
             get_peek_export=self.get_peek_request_export,
-            put_export=self.put_response_export)
+            put_export=self.put_response_export,
+        )
 
     def connect_phase(self):
         self.request_ap.connect(self.req_tlm_fifo.put_ap)
@@ -1003,9 +1026,12 @@ class uvm_tlm_transport_channel(uvm_tlm_req_rsp_channel):
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 1, 1)
         self.transport_export = self.uvm_TransportExport(
-            "transport_export", self,
+            "transport_export",
+            self,
             req_fifo=self.req_tlm_fifo,
-            rsp_fifo=self.rsp_tlm_fifo)
+            rsp_fifo=self.rsp_tlm_fifo,
+        )
+
 
 # UVM TLM 2
 # 12.3

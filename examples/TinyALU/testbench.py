@@ -1,20 +1,23 @@
-from cocotb.triggers import Combine
-from pyuvm import *
 import random
-import cocotb
-import pyuvm
+
 # All testbenches use tinyalu_utils, so store it in a central
 # place and add its path to the sys path so we can import it
 import sys
 from pathlib import Path
+
+import cocotb
+from cocotb.triggers import Combine
+
+import pyuvm
+from pyuvm import *
+
 sys.path.append(str(Path("..").resolve()))
-from tinyalu_utils import TinyAluBfm, Ops, alu_prediction  # noqa: E402
+from tinyalu_utils import Ops, TinyAluBfm, alu_prediction  # noqa: E402
 
 # Sequence classes
 
 
 class AluSeqItem(uvm_sequence_item):
-
     def __init__(self, name, aa, bb, op):
         super().__init__(name)
         self.A = aa
@@ -50,13 +53,12 @@ class RandomSeq(uvm_sequence):
 class MaxSeq(uvm_sequence):
     async def body(self):
         for op in list(Ops):
-            cmd_tr = AluSeqItem("cmd_tr", 0xff, 0xff, op)
+            cmd_tr = AluSeqItem("cmd_tr", 0xFF, 0xFF, op)
             await self.start_item(cmd_tr)
             await self.finish_item(cmd_tr)
 
 
 class TestAllSeq(uvm_sequence):
-
     async def body(self):
         seqr = ConfigDB().get(None, "", "SEQR")
         random = RandomSeq("random")
@@ -66,7 +68,6 @@ class TestAllSeq(uvm_sequence):
 
 
 class TestAllForkSeq(uvm_sequence):
-
     async def body(self):
         seqr = ConfigDB().get(None, "", "SEQR")
         random = RandomSeq("random")
@@ -74,6 +75,7 @@ class TestAllForkSeq(uvm_sequence):
         random_task = cocotb.start_soon(random.start(seqr))
         max_task = cocotb.start_soon(max.start(seqr))
         await Combine(random_task, max_task)
+
 
 # Sequence library example
 
@@ -86,8 +88,7 @@ class OpSeq(uvm_sequence):
         self.op = Ops(op)
 
     async def body(self):
-        seq_item = AluSeqItem("seq_item", self.aa, self.bb,
-                              self.op)
+        seq_item = AluSeqItem("seq_item", self.aa, self.bb, self.op)
         await self.start_item(seq_item)
         await self.finish_item(seq_item)
         self.result = seq_item.result
@@ -158,7 +159,6 @@ class Driver(uvm_driver):
 
 
 class Coverage(uvm_subscriber):
-
     def end_of_elaboration_phase(self):
         self.cvg = set()
 
@@ -168,14 +168,14 @@ class Coverage(uvm_subscriber):
 
     def report_phase(self):
         try:
-            disable_errors = ConfigDB().get(
-                self, "", "DISABLE_COVERAGE_ERRORS")
+            disable_errors = ConfigDB().get(self, "", "DISABLE_COVERAGE_ERRORS")
         except UVMConfigItemNotFound:
             disable_errors = False
         if not disable_errors:
             if len(set(Ops) - self.cvg) > 0:
                 self.logger.error(
-                    f"Functional coverage error. Missed: {set(Ops)-self.cvg}")
+                    f"Functional coverage error. Missed: {set(Ops) - self.cvg}"
+                )
                 assert False
             else:
                 self.logger.info("Covered all operations")
@@ -183,7 +183,6 @@ class Coverage(uvm_subscriber):
 
 
 class Scoreboard(uvm_component):
-
     def build_phase(self):
         self.cmd_fifo = uvm_tlm_analysis_fifo("cmd_fifo", self)
         self.result_fifo = uvm_tlm_analysis_fifo("result_fifo", self)
@@ -212,12 +211,15 @@ class Scoreboard(uvm_component):
                 op = Ops(op_numb)
                 predicted_result = alu_prediction(A, B, op, self.errors)
                 if predicted_result == actual_result:
-                    self.logger.info(f"PASSED: 0x{A:02x} {op.name} 0x{B:02x} ="
-                                     f" 0x{actual_result:04x}")
+                    self.logger.info(
+                        f"PASSED: 0x{A:02x} {op.name} 0x{B:02x} = 0x{actual_result:04x}"
+                    )
                 else:
-                    self.logger.error(f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
-                                      f"= 0x{actual_result:04x} "
-                                      f"expected 0x{predicted_result:04x}")
+                    self.logger.error(
+                        f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
+                        f"= 0x{actual_result:04x} "
+                        f"expected 0x{predicted_result:04x}"
+                    )
                     passed = False
         assert passed
 
@@ -240,7 +242,6 @@ class Monitor(uvm_component):
 
 
 class AluEnv(uvm_env):
-
     def build_phase(self):
         self.seqr = uvm_sequencer("seqr", self)
         ConfigDB().set(None, "*", "SEQR", self.seqr)
@@ -269,6 +270,7 @@ class AluTestBase(uvm_test):
         self.raise_objection()
         await self.test_all.start()
         self.drop_objection()
+
 
 @pyuvm.test()
 class AluTest(AluTestBase):

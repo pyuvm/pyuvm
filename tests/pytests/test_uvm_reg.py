@@ -1,11 +1,13 @@
-'''
+"""
 Main Packages for the entire RAL model
-'''
-import pytest
-from pyuvm.s17_uvm_reg_enumerations import uvm_predict_e
-from pyuvm.s27_uvm_reg_pkg import uvm_reg_field, uvm_reg, uvm_reg_block
-from pyuvm.s24_uvm_reg_includes import access_e, predict_t
+"""
+
 from typing import List
+
+import pytest
+
+from pyuvm.s17_uvm_reg_enumerations import uvm_predict_e
+from pyuvm.s27_uvm_reg_pkg import uvm_reg, uvm_reg_block, uvm_reg_field
 
 ##############################################################################
 # TIPS
@@ -37,10 +39,16 @@ running tests (expecially if in Parallel)
 
 @pytest.mark.test_reg_get_name
 def test_reg_get_name():
-    for elem in range(1,32):
-        reg = uvm_reg(('some_reg_'+str(elem)), elem)
-        assert reg.get_name() == ('some_reg_'+str(elem)), "Name mismatch: expected {} got: {}".format(('some_reg_'+str(elem)), reg.get_name())
-        assert reg.get_reg_size() == elem, "Register size mismatch: expected {} got: {}".format(elem, reg.get_reg_size())
+    for elem in range(1, 32):
+        reg = uvm_reg(("some_reg_" + str(elem)), elem)
+        assert reg.get_name() == ("some_reg_" + str(elem)), (
+            "Name mismatch: expected {} got: {}".format(
+                ("some_reg_" + str(elem)), reg.get_name()
+            )
+        )
+        assert reg.get_reg_size() == elem, (
+            f"Register size mismatch: expected {elem} got: {reg.get_reg_size()}"
+        )
         reg.check_err_list()
 
 
@@ -52,6 +60,7 @@ def test_reg_configure():
 
         def build(self):
             self._set_lock()
+
     # START
     reg = temp_reg()
     parent = uvm_reg_block()
@@ -59,8 +68,12 @@ def test_reg_configure():
     reg.configure(parent, "0x4", "", False, False)
     print(f"reg: {reg}")
     print(f"parent: {parent}")
-    assert reg.get_parent() == parent, f"Mismatch on get parent: expected {type(parent)} got: {type(reg.get_parent)}"
-    assert reg.get_address() == "0x4", f"Mismacth on get address: expected 0x4 got {reg.get_address()}"
+    assert reg.get_parent() == parent, (
+        f"Mismatch on get parent: expected {type(parent)} got: {type(reg.get_parent)}"
+    )
+    assert reg.get_address() == "0x4", (
+        f"Mismacth on get address: expected 0x4 got {reg.get_address()}"
+    )
 
 
 @pytest.mark.test_reg_with_single_field
@@ -110,17 +123,17 @@ def test_reg_with_multiple_felds_reset():
 
         def build(self):
             # int('0x0f',16)
-            self.myfield_1.configure(self, 16, 0, "RW", False, int('0x0f', 16))
-            self.myfield_2.configure(self, 16, 16, "RW", False, int('0x0f', 16))
+            self.myfield_1.configure(self, 16, 0, "RW", False, int("0x0f", 16))
+            self.myfield_2.configure(self, 16, 16, "RW", False, int("0x0f", 16))
             self._set_lock()
             print("calling build")
 
-    myreg = my_reg("myreg",32)
+    myreg = my_reg("myreg", 32)
     myreg.build()
     for f in myreg.get_fields():
         print(f"{f}")
     myreg.reset()
-    assert myreg.get_mirrored_value() == int('0xf000f', 16)
+    assert myreg.get_mirrored_value() == int("0xf000f", 16)
     myreg.check_err_list()
 
 
@@ -133,17 +146,17 @@ def test_reg_with_multiple_fields_get_mirrored_value():
             self.myfield_2 = uvm_reg_field("myfield_2")
 
         def build(self):
-            self.myfield_1.configure(self, 16, 0, "RW", False, int('0xf', 16))
-            self.myfield_2.configure(self, 16, 16, "RW", False, int('0xf', 16))
+            self.myfield_1.configure(self, 16, 0, "RW", False, int("0xf", 16))
+            self.myfield_2.configure(self, 16, 16, "RW", False, int("0xf", 16))
             self._set_lock()
 
     myreg = my_reg("myreg", 32)
     myreg.build()
     myreg.reset()
-    myreg.predict(value=int('0x0f00f0', 16), kind=uvm_predict_e.UVM_PREDICT_WRITE)
-    assert myreg.get_mirrored_value() == int('0x0f00f0', 16)
+    myreg.predict(value=int("0x0f00f0", 16), kind=uvm_predict_e.UVM_PREDICT_WRITE)
+    assert myreg.get_mirrored_value() == int("0x0f00f0", 16)
     myreg.reset()
-    assert myreg.get_mirrored_value() == int('0xf000f', 16)
+    assert myreg.get_mirrored_value() == int("0xf000f", 16)
     myreg.check_err_list()
 
 
@@ -156,42 +169,42 @@ def test_reg_with_multiple_fields_get_desired_value():
             self.myfield_2 = uvm_reg_field("myfield_2")
 
         def build(self):
-            self.myfield_1.configure(self, 16, 0, "RW", False, int('0xf', 16))
-            self.myfield_2.configure(self, 16, 16, "RW", False, int('0xf', 16))
+            self.myfield_1.configure(self, 16, 0, "RW", False, int("0xf", 16))
+            self.myfield_2.configure(self, 16, 16, "RW", False, int("0xf", 16))
             self._set_lock()
 
     myreg = my_reg("myreg", 32)
     myreg.build()
     myreg.reset()
-    myreg.set_desired(int('0xf0f0f0f0', 16))
-    assert myreg.get_desired() == int('0xf0f0f0f0', 16)
+    myreg.set_desired(int("0xf0f0f0f0", 16))
+    assert myreg.get_desired() == int("0xf0f0f0f0", 16)
 
 
 def make_expected_value(reg: uvm_reg, policy_list: List[str]) -> int:
-        field_list: List[uvm_reg_field] = reg.get_fields()
-        pos = 0
-        exp_val = 0
-        for field in field_list:
-            field_lsb_pos = field.get_lsb_pos()
-            while pos != field_lsb_pos:
-                pos += 1
-            field_policy = field.get_access()
-            field_size   = field.get_n_bits()
-            if field_policy in policy_list:
-                exp_val |= ((1 << field_size) - 1) << pos
-                pos += field_size
-        return exp_val
+    field_list: List[uvm_reg_field] = reg.get_fields()
+    pos = 0
+    exp_val = 0
+    for field in field_list:
+        field_lsb_pos = field.get_lsb_pos()
+        while pos != field_lsb_pos:
+            pos += 1
+        field_policy = field.get_access()
+        field_size = field.get_n_bits()
+        if field_policy in policy_list:
+            exp_val |= ((1 << field_size) - 1) << pos
+            pos += field_size
+    return exp_val
 
 
 def predict_reg(reg: uvm_reg, predict_val: int = 0xFFFF_FFFF):
-        reg.reset()
-        assert reg.get_mirrored_value() == 0
-        reg.predict(predict_val, kind=uvm_predict_e.UVM_PREDICT_WRITE)
-        assert reg.get_mirrored_value() == make_expected_value(reg, ["RW", "WO"])
-        reg.predict(predict_val, kind=uvm_predict_e.UVM_PREDICT_READ)
-        assert reg.get_mirrored_value() == make_expected_value(reg, ["RW", "RO"])
-        reg.predict(predict_val, kind=uvm_predict_e.UVM_PREDICT_DIRECT)
-        assert reg.get_mirrored_value() == make_expected_value(reg, ["RW", "WO", "RO"])
+    reg.reset()
+    assert reg.get_mirrored_value() == 0
+    reg.predict(predict_val, kind=uvm_predict_e.UVM_PREDICT_WRITE)
+    assert reg.get_mirrored_value() == make_expected_value(reg, ["RW", "WO"])
+    reg.predict(predict_val, kind=uvm_predict_e.UVM_PREDICT_READ)
+    assert reg.get_mirrored_value() == make_expected_value(reg, ["RW", "RO"])
+    reg.predict(predict_val, kind=uvm_predict_e.UVM_PREDICT_DIRECT)
+    assert reg.get_mirrored_value() == make_expected_value(reg, ["RW", "WO", "RO"])
 
 
 @pytest.mark.test_reg_simple_predict
@@ -199,46 +212,47 @@ def test_reg_simple_predict():
     """
     Test registers with different simple access types like a RW/RO/WO
     """
+
     class reg0(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
-            self.field1 = uvm_reg_field('field1')
-            self.field2 = uvm_reg_field('field2')
-            self.field3 = uvm_reg_field('field3')
-            self.field4 = uvm_reg_field('field4')
+            self.field1 = uvm_reg_field("field1")
+            self.field2 = uvm_reg_field("field2")
+            self.field3 = uvm_reg_field("field3")
+            self.field4 = uvm_reg_field("field4")
 
         def build(self):
-            self.field1.configure(self, 8, 0,  'RW', 0, 0)
-            self.field2.configure(self, 8, 8,  'RO', 0, 0)
-            self.field3.configure(self, 8, 16, 'WO', 0, 0)
-            self.field4.configure(self, 8, 24, 'RW', 0, 0)
+            self.field1.configure(self, 8, 0, "RW", 0, 0)
+            self.field2.configure(self, 8, 8, "RO", 0, 0)
+            self.field3.configure(self, 8, 16, "WO", 0, 0)
+            self.field4.configure(self, 8, 24, "RW", 0, 0)
             self._set_lock()
 
     class reg1(uvm_reg):
         def __init__(self, name="reg1", reg_width=32):
             super().__init__(name, reg_width)
-            self.field1 = uvm_reg_field('field1')
-            self.field2 = uvm_reg_field('field2')
-            self.field3 = uvm_reg_field('field3')
-            self.field4 = uvm_reg_field('field4')
-            self.field5 = uvm_reg_field('field5')
-            self.field6 = uvm_reg_field('field6')
-            self.field7 = uvm_reg_field('field7')
-            self.field8 = uvm_reg_field('field8')
+            self.field1 = uvm_reg_field("field1")
+            self.field2 = uvm_reg_field("field2")
+            self.field3 = uvm_reg_field("field3")
+            self.field4 = uvm_reg_field("field4")
+            self.field5 = uvm_reg_field("field5")
+            self.field6 = uvm_reg_field("field6")
+            self.field7 = uvm_reg_field("field7")
+            self.field8 = uvm_reg_field("field8")
 
         def build(self):
-            self.field1.configure(self, 4, 0,  'RW', 0, 0)
-            self.field2.configure(self, 4, 4,  'RW', 0, 0)
-            self.field3.configure(self, 4, 8,  'RO', 0, 0)
-            self.field4.configure(self, 4, 12, 'WO', 0, 0)
-            self.field5.configure(self, 4, 16, 'RW', 0, 0)
-            self.field6.configure(self, 4, 20, 'WO', 0, 0)
-            self.field7.configure(self, 4, 24, 'RO', 0, 0)
-            self.field8.configure(self, 4, 28, 'RW', 0, 0)
+            self.field1.configure(self, 4, 0, "RW", 0, 0)
+            self.field2.configure(self, 4, 4, "RW", 0, 0)
+            self.field3.configure(self, 4, 8, "RO", 0, 0)
+            self.field4.configure(self, 4, 12, "WO", 0, 0)
+            self.field5.configure(self, 4, 16, "RW", 0, 0)
+            self.field6.configure(self, 4, 20, "WO", 0, 0)
+            self.field7.configure(self, 4, 24, "RO", 0, 0)
+            self.field8.configure(self, 4, 28, "RW", 0, 0)
             self._set_lock()
 
-    register_0 = reg0('reg0')
-    register_1 = reg1('reg1')
+    register_0 = reg0("reg0")
+    register_1 = reg1("reg1")
 
     predict_reg(register_0)
     predict_reg(register_1)
@@ -249,31 +263,32 @@ def test_reg_predict_edge_cases():
     """
     Test register predict with edge cases
     """
+
     class reg0(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
-            self.field = uvm_reg_field('field')
+            self.field = uvm_reg_field("field")
 
         def build(self):
-            self.field.configure(self, 32, 0, 'RW', 0, 0)
+            self.field.configure(self, 32, 0, "RW", 0, 0)
             self._set_lock()
 
     class reg1(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
-            self.field = uvm_reg_field('field')
+            self.field = uvm_reg_field("field")
 
         def build(self):
-            self.field.configure(self, 32, 0, 'RO', 0, 0)
+            self.field.configure(self, 32, 0, "RO", 0, 0)
             self._set_lock()
 
     class reg2(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
-            self.field = uvm_reg_field('field')
+            self.field = uvm_reg_field("field")
 
         def build(self):
-            self.field.configure(self, 32, 0, 'WO', 0, 0)
+            self.field.configure(self, 32, 0, "WO", 0, 0)
             self._set_lock()
 
     class reg3(uvm_reg):
@@ -283,10 +298,10 @@ def test_reg_predict_edge_cases():
         def build(self):
             self._set_lock()
 
-    register_0 = reg0('reg0')
-    register_1 = reg1('reg1')
-    register_2 = reg2('reg2')
-    register_3 = reg3('reg3')
+    register_0 = reg0("reg0")
+    register_1 = reg1("reg1")
+    register_2 = reg2("reg2")
+    register_3 = reg3("reg3")
 
     predict_reg(register_0)
     predict_reg(register_1)
@@ -299,20 +314,21 @@ def test_reg_predict_with_reserved_spaces():
     """
     Test register predict with spaces
     """
+
     class reg0(uvm_reg):
         def __init__(self, name="reg0", reg_width=32):
             super().__init__(name, reg_width)
-            self.field1 = uvm_reg_field('field1')
-            self.field2 = uvm_reg_field('field2')
-            self.field3 = uvm_reg_field('field3')
-            self.field4 = uvm_reg_field('field4')
+            self.field1 = uvm_reg_field("field1")
+            self.field2 = uvm_reg_field("field2")
+            self.field3 = uvm_reg_field("field3")
+            self.field4 = uvm_reg_field("field4")
 
         def build(self):
-            self.field1.configure(self, 7, 1,   'RW', 0, 0)
-            self.field2.configure(self, 8, 11,  'RW', 0, 0)
-            self.field3.configure(self, 3, 19,  'RW', 0, 0)
-            self.field4.configure(self, 7, 24,  'RW', 0, 0)
+            self.field1.configure(self, 7, 1, "RW", 0, 0)
+            self.field2.configure(self, 8, 11, "RW", 0, 0)
+            self.field3.configure(self, 3, 19, "RW", 0, 0)
+            self.field4.configure(self, 7, 24, "RW", 0, 0)
             self._set_lock()
 
-    reg0 = reg0('reg0')
+    reg0 = reg0("reg0")
     predict_reg(reg0)

@@ -1,7 +1,8 @@
-import cocotb
-from cocotb.triggers import FallingEdge, RisingEdge
 import enum
 import logging
+
+import cocotb
+from cocotb.triggers import FallingEdge, RisingEdge
 
 from pyuvm import utility_classes
 
@@ -13,6 +14,7 @@ logger.setLevel(logging.DEBUG)
 @enum.unique
 class Ops(enum.IntEnum):
     """Legal ops for the TinyALU"""
+
     ADD = 1
     AND = 2
     XOR = 3
@@ -81,7 +83,7 @@ class TinyAluBfm(metaclass=utility_classes.Singleton):
     async def capture_valid(self):
         await RisingEdge(self.dut.valid)
         await FallingEdge(self.dut.clk)
-        
+
     async def operation_finished(self):
         await RisingEdge(self.dut.regblock.CMD_done_q)
         await self.wait_clock(1)
@@ -96,7 +98,7 @@ class TinyAluBfm(metaclass=utility_classes.Singleton):
         return int(self.dut.regblock.SRC_data1_q.value)
 
     def get_op(self):
-        if (self.dut.regblock.CMD_op_q.value != 0):
+        if self.dut.regblock.CMD_op_q.value != 0:
             return Ops(int(self.dut.regblock.CMD_op_q.value))
         else:
             return 0
