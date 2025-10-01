@@ -50,7 +50,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set up Python ${{matrix.python-version}} (setup-python)
       if: matrix.python-version != 3.6 && matrix.python-version != 3.7
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v6
       with:
         python-version: ${{matrix.python-version}}
     - name: Set up Python ${{matrix.python-version}} (pyenv pt.1)
