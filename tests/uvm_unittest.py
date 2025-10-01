@@ -1,5 +1,6 @@
-import unittest
 import logging
+import unittest
+
 import pytest
 
 
@@ -7,4 +8,4 @@ import pytest
 class uvm_TestCase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('uvm_TestCase')
+        self.logger = logging.getLogger("uvm_TestCase")

@@ -70,6 +70,7 @@ class PyuvmFormatter(SimColourLogFormatter):
 class uvm_report_object(uvm_object):
     __default_logging_level = logging.INFO
     """ The basis of all classes that can report """
+
     def __init__(self, name):
         """
         :param name: The name of the object
@@ -77,12 +78,11 @@ class uvm_report_object(uvm_object):
 
         """
         super().__init__(name)
-        uvm_root_logger = logging.getLogger('uvm')
+        uvm_root_logger = logging.getLogger("uvm")
         # Every object gets its own logger
         logger_name = self.get_initial_logger_name()
         self.logger = uvm_root_logger.getChild(logger_name)
-        self.logger.setLevel(
-            level=uvm_report_object.get_default_logging_level())
+        self.logger.setLevel(level=uvm_report_object.get_default_logging_level())
         # We are not sending log messages up the hierarchy
         self.logger.propagate = False
         self._streaming_handler = logging.StreamHandler(sys.stdout)
@@ -139,8 +139,9 @@ class uvm_report_object(uvm_object):
         :returns: None
 
         """
-        assert isinstance(handler, logging.Handler), \
+        assert isinstance(handler, logging.Handler), (
             f"You must pass a logging.Handler not {type(handler)}"
+        )
         if handler.formatter is None:
             handler.addFilter(SimTimeContextFilter())
             handler.setFormatter(self._uvm_formatter)
@@ -152,8 +153,9 @@ class uvm_report_object(uvm_object):
         :returns: None
 
         """
-        assert isinstance(handler, logging.Handler), \
+        assert isinstance(handler, logging.Handler), (
             f"You must pass a logging.Handler not {type(handler)}"
+        )
         self.logger.removeHandler(handler)
 
     def remove_streaming_handler(self):

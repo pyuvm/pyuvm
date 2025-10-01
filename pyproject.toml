@@ -8,6 +8,10 @@ target-version = "py37"
 
 [tool.ruff.lint]
 extend-select = [
+    "I",        # isort
+    "UP",       # pyupgrade
+    "E",        # pycodestyle errors
+    "W",        # pycodestyle warnings
     "F",        # pyflakes
 ]
 ignore = [
@@ -24,4 +28,9 @@ known-first-party = [
 known-third-party = [
     "pytest",
     "cocotb",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"pyuvm/__init__.py" = [
+    "F401",
 ]

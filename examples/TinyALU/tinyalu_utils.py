@@ -1,8 +1,9 @@
-import cocotb
-from cocotb.triggers import FallingEdge
-from cocotb.queue import QueueEmpty, Queue
 import enum
 import logging
+
+import cocotb
+from cocotb.queue import Queue, QueueEmpty
+from cocotb.triggers import FallingEdge
 
 from pyuvm import utility_classes
 
@@ -14,6 +15,7 @@ logger.setLevel(logging.DEBUG)
 @enum.unique
 class Ops(enum.IntEnum):
     """Legal ops for the TinyALU"""
+
     ADD = 1
     AND = 2
     XOR = 3
@@ -101,9 +103,11 @@ class TinyAluBfm(metaclass=utility_classes.Singleton):
             await FallingEdge(self.dut.clk)
             start = get_int(self.dut.start)
             if start == 1 and prev_start == 0:
-                cmd_tuple = (get_int(self.dut.A),
-                             get_int(self.dut.B),
-                             get_int(self.dut.op))
+                cmd_tuple = (
+                    get_int(self.dut.A),
+                    get_int(self.dut.B),
+                    get_int(self.dut.op),
+                )
                 self.cmd_mon_queue.put_nowait(cmd_tuple)
             prev_start = start
 

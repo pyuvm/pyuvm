@@ -1,11 +1,11 @@
 from pyuvm import uvm_object
-from pyuvm.s20_uvm_reg import uvm_reg
+from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
 from pyuvm.s19_uvm_reg_field import uvm_reg_field
+from pyuvm.s20_uvm_reg import uvm_reg
 from pyuvm.s21_uvm_reg_map import uvm_reg_map
 from pyuvm.s24_uvm_reg_includes import uvm_fatal, uvm_not_implemeneted
-from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
 
-'''
+"""
     TODO: the following must be completed
     1.  implement add_vreg
     2.  implement remove_reg
@@ -35,7 +35,7 @@ from pyuvm.s17_uvm_reg_enumerations import uvm_hier_e
 
     NOTE:   write/read_reg_by_name will not be implemented there is no need
             to run this command from the BLK
-'''
+"""
 
 
 class uvm_reg_block(uvm_object):
@@ -103,9 +103,13 @@ class uvm_reg_block(uvm_object):
 
     # blk_is_child_mapped
     def blk_is_child_mapped(self, in_blk) -> bool:
-        if (isinstance(in_blk, uvm_reg_block) is False):
-            uvm_fatal(self.gen_message("blk_is_child_mapped -- input block \
-                                       should be uvm_reg_block"))
+        if isinstance(in_blk, uvm_reg_block) is False:
+            uvm_fatal(
+                self.gen_message(
+                    "blk_is_child_mapped -- input block \
+                                       should be uvm_reg_block"
+                )
+            )
         else:
             return self.blk_maping[in_blk.get_name()]
 
@@ -119,7 +123,7 @@ class uvm_reg_block(uvm_object):
 
     # configure
     def configure_blk(self, parent, hdl_path):
-        if (self.parent_blk is None):
+        if self.parent_blk is None:
             self.parent_blk = parent
             self.parent_blk.configure_blk(self)
         else:
@@ -129,11 +133,15 @@ class uvm_reg_block(uvm_object):
 
     # add_block
     def add_block(self, in_blk):
-        if (isinstance(in_blk, uvm_reg_block) is False):
-            uvm_fatal(self.gen_message("add_block -- input block must be \
-                                       uvm_reg_block type"))
+        if isinstance(in_blk, uvm_reg_block) is False:
+            uvm_fatal(
+                self.gen_message(
+                    "add_block -- input block must be \
+                                       uvm_reg_block type"
+                )
+            )
         # add to the BLK main mapping
-        if (in_blk not in self.child_blk):
+        if in_blk not in self.child_blk:
             self.blk_maping[in_blk.get_name()] = 1
             self.child_blk.append(in_blk)
 
@@ -148,7 +156,7 @@ class uvm_reg_block(uvm_object):
 
     # get_blk_full_name
     def get_blk_full_name(self) -> str:
-        if (self.parent_blk is None):
+        if self.parent_blk is None:
             self.blk_name
         else:
             self.parent_blk + "." + self.blk_name
@@ -166,8 +174,12 @@ class uvm_reg_block(uvm_object):
                     for r in b.get_registers(hier):
                         local_reg_collector.append(r)
         else:
-            uvm_fatal(self.gen_message("get_registers -- register block must \
-                                       be locked"))
+            uvm_fatal(
+                self.gen_message(
+                    "get_registers -- register block must \
+                                       be locked"
+                )
+            )
         return local_reg_collector
 
     # get_fields
@@ -194,17 +206,20 @@ class uvm_reg_block(uvm_object):
 
     # blk_add_map
     def blk_add_map(self, map_i: uvm_reg_map):
-        if (self.is_locked() is True):
-            uvm_fatal(self.gen_message("blk_add_map -- register block should \
-                                       be locked"))
+        if self.is_locked() is True:
+            uvm_fatal(
+                self.gen_message(
+                    "blk_add_map -- register block should \
+                                       be locked"
+                )
+            )
 
-        if map_i in self.map_mapping.keys() and \
-           self.map_mapping[map_i] is True:
+        if map_i in self.map_mapping.keys() and self.map_mapping[map_i] is True:
             uvm_fatal(self.header)
         else:
             self.maps.append(map_i)
 
-        if (self.def_map is None):
+        if self.def_map is None:
             self.def_map = map_i
 
     # blk_create_map byte_addressing and byte_en
@@ -223,8 +238,12 @@ class uvm_reg_block(uvm_object):
         if self.blk_is_map_mapped(mapi) is True:
             self.def_map = mapi
         else:
-            uvm_fatal(self.gen_message("set_default_map required only \
-                                       internal Mapped maps as degfault map"))
+            uvm_fatal(
+                self.gen_message(
+                    "set_default_map required only \
+                                       internal Mapped maps as degfault map"
+                )
+            )
 
     # get_map_by_name
     def get_map_by_name(self, namei: str):
@@ -237,15 +256,17 @@ class uvm_reg_block(uvm_object):
     # get_reg_by_name
     # 18.1.3.14
     def get_reg_by_name(self, namei: str) -> uvm_reg:
-        reg_list = list(filter(lambda reg: reg.get_name() == namei,
-                               self.get_registers()))
+        reg_list = list(
+            filter(lambda reg: reg.get_name() == namei, self.get_registers())
+        )
         return reg_list[0] if reg_list else None
 
     # get_field_by_name
     # 18.1.3.15
     def get_field_by_name(self, namei: str) -> uvm_reg_field:
-        field_list = list(filter(lambda field: field.get_name() == namei,
-                                 self.get_fields()))
+        field_list = list(
+            filter(lambda field: field.get_name() == namei, self.get_fields())
+        )
         return field_list[0] if field_list else None
 
     # set_coverage

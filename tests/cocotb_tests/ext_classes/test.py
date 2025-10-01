@@ -1,14 +1,17 @@
 import inspect
+
 import test_ext_classes as test_mod
-from pyuvm import *
+
 import pyuvm
-import cocotb
+from pyuvm import *
 
 
 async def run_tests(dut):
     tests_pass = {}
     t12 = test_mod.s12_uvm_tlm_interfaces_TestCase()
-    methods = inspect.getmembers(test_mod.s12_uvm_tlm_interfaces_TestCase)  # predicate=inspect.ismethod)
+    methods = inspect.getmembers(
+        test_mod.s12_uvm_tlm_interfaces_TestCase
+    )  # predicate=inspect.ismethod)
     for mm in methods:
         (name, _) = mm
         if name.startswith("test_"):
@@ -85,7 +88,7 @@ class AnalysisTest(uvm_test):
 
     async def run_phase(self):
         self.raise_objection()
-        self.data_list = [1, '1', 2, 'two']
+        self.data_list = [1, "1", 2, "two"]
         for datum in self.data_list:
             self.ap1.write(datum)
         self.drop_objection()

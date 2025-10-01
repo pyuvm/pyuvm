@@ -1,4 +1,5 @@
 import logging
+
 from cocotb.log import default_config
 
 try:

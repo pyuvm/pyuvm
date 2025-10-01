@@ -1,11 +1,12 @@
-from pyuvm.utility_classes import Singleton
-import uvm_unittest
 import unittest
+
+import uvm_unittest
+
 from pyuvm.s13_predefined_component_classes import *
+from pyuvm.utility_classes import Singleton
 
 
-class my_test(uvm_test):
-    ...
+class my_test(uvm_test): ...
 
 
 class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
@@ -22,8 +23,8 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         13.1.2.1 Constructor
         13.1 class defined
         """
-        comp = uvm_component('test', None)
-        self.assertTrue('test' in uvm_component.component_dict)
+        comp = uvm_component("test", None)
+        self.assertTrue("test" in uvm_component.component_dict)
         self.assertTrue(comp.parent == uvm_root())
         self.assertTrue(comp.print_enabled)  # 13.1.2.2
 
@@ -32,24 +33,24 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         13.1.2.3
         We have not implemented policies.
         """
-        comp = uvm_component('test', None)
+        comp = uvm_component("test", None)
         with self.assertRaises(error_classes.UVMNotImplemented):
             comp.do_execute_op("op")
 
     def test_component_with_parent(self):
-        parent = uvm_component('parent', None)
-        child = uvm_component('child', parent)
-        self.assertTrue('parent' in uvm_component.component_dict)
-        self.assertTrue('parent.child' in uvm_component.component_dict)
+        parent = uvm_component("parent", None)
+        child = uvm_component("child", parent)
+        self.assertTrue("parent" in uvm_component.component_dict)
+        self.assertTrue("parent.child" in uvm_component.component_dict)
         self.assertTrue(parent.parent == uvm_root())
         self.assertTrue(child.parent == parent)
         self.assertEqual(list(parent.hierarchy), [parent, child])
 
     def test_hierarchy(self):
-        parent = uvm_component('parent', None)
-        child1 = uvm_component('child1', parent)
-        child2 = uvm_component('child2', parent)
-        child3 = uvm_component('child3', child1)
+        parent = uvm_component("parent", None)
+        child1 = uvm_component("child1", parent)
+        child2 = uvm_component("child2", parent)
+        child3 = uvm_component("child3", child1)
         golden_list = [parent, child1, child3, child2]
         self.assertEqual(list(parent.hierarchy), golden_list)
         hier = list(parent.hierarchy)
@@ -62,9 +63,9 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         13.1.3.1 get_parent test
         :return:
         """
-        parent = uvm_component('parent', None)
-        child = uvm_component('child', parent)
-        grandchild = uvm_component('grandchild', child)
+        parent = uvm_component("parent", None)
+        child = uvm_component("child", parent)
+        grandchild = uvm_component("grandchild", child)
         par = grandchild.get_parent()
         self.assertEqual(child, par)
         par = child.get_parent()
@@ -77,10 +78,10 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         13.1.3.1 get_parent test
         :return:
         """
-        parent = uvm_component('parent', None)
-        child1 = uvm_component('child1', parent)
-        child2 = uvm_component('child2', parent)
-        child21 = uvm_component('child21', child2)
+        parent = uvm_component("parent", None)
+        child1 = uvm_component("child1", parent)
+        child2 = uvm_component("child2", parent)
+        child21 = uvm_component("child21", child2)
         parent_name = parent.get_full_name()
         self.assertEqual("parent", parent_name)
         self.assertEqual("parent.child1", child1.get_full_name())
@@ -92,12 +93,12 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         13.1.3.3
 
         """
-        parent = uvm_component('parent', None)
-        child1 = uvm_component('child1', parent)
-        child2 = uvm_component('child2', parent)
-        _ = uvm_component('child3', parent)
-        child11 = uvm_component('child11', child1)
-        _ = uvm_component('child111', child11)
+        parent = uvm_component("parent", None)
+        child1 = uvm_component("child1", parent)
+        child2 = uvm_component("child2", parent)
+        _ = uvm_component("child3", parent)
+        child11 = uvm_component("child11", child1)
+        _ = uvm_component("child111", child11)
         children = parent.get_children()
         self.assertTrue(len(children) == 3)
         children = child1.get_children()
@@ -115,10 +116,10 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         copy of the children list.
         """
 
-        parent = uvm_component('parent', None)
-        _ = uvm_component('child1', parent)
-        _ = uvm_component('child2', parent)
-        _ = uvm_component('child3', parent)
+        parent = uvm_component("parent", None)
+        _ = uvm_component("child1", parent)
+        _ = uvm_component("child2", parent)
+        _ = uvm_component("child3", parent)
         cl = parent.get_children()
         for cc in parent.children:
             _ = cc
@@ -134,10 +135,10 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         than throwing a Lookup exception.
         :return:
         """
-        parent = uvm_component('parent', None)
-        child1 = uvm_component('child1', parent)
-        _ = uvm_component('child2', parent)
-        _ = uvm_component('child3', parent)
+        parent = uvm_component("parent", None)
+        child1 = uvm_component("child1", parent)
+        _ = uvm_component("child2", parent)
+        _ = uvm_component("child3", parent)
         self.assertEqual(parent.get_child("child1"), child1)
         self.assertIsNone(parent.get_child("orphan"))
 
@@ -146,10 +147,10 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         13.1.3.5
         get_num_children() returns the number of children.
         """
-        parent = uvm_component('parent', None)
-        child1 = uvm_component('child1', parent)
-        _ = uvm_component('child2', parent)
-        _ = uvm_component('child3', parent)
+        parent = uvm_component("parent", None)
+        child1 = uvm_component("child1", parent)
+        _ = uvm_component("child2", parent)
+        _ = uvm_component("child3", parent)
         cl = parent.get_children()
         self.assertEqual(parent.get_num_children(), len(cl))
         self.assertEqual(child1.get_num_children(), len(child1.get_children()))
@@ -160,13 +161,13 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         Returns the child of the name
         :return:
         """
-        parent = uvm_component('parent', None)
-        child1 = uvm_component('child1', parent)
-        _ = uvm_component('child2', parent)
-        _ = uvm_component('child3', child1)
-        self.assertTrue(child1.has_child('child3'))
+        parent = uvm_component("parent", None)
+        child1 = uvm_component("child1", parent)
+        _ = uvm_component("child2", parent)
+        _ = uvm_component("child3", child1)
+        self.assertTrue(child1.has_child("child3"))
         self.assertEqual(len(parent.get_children()), 2)
-        self.assertEqual(parent.get_child('child1').get_name(), 'child1')
+        self.assertEqual(parent.get_child("child1").get_name(), "child1")
         self.assertEqual(2, parent.get_num_children())
         self.assertFalse(parent.has_child("orphan"))
 
@@ -178,17 +179,17 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         .a.b.c means a is the top level and we find our way down.
         :return:
         """
-        parent = uvm_component('parent', None)
-        child1 = uvm_component('child1', parent)
-        _ = uvm_component('child2', parent)
-        child3 = uvm_component('child3', child1)
-        child4 = uvm_component('child4', child3)
-        self.assertEqual(child1, parent.lookup('child1'))
-        self.assertEqual(child3, parent.lookup('child1.child3'))
-        self.assertNotEqual(child1, parent.lookup('child2'))
-        self.assertEqual(child3, parent.lookup('.parent.child1.child3'))
-        self.assertEqual(child3, child1.lookup('child3'))
-        self.assertEqual(child4, child1.lookup('child3.child4'))
+        parent = uvm_component("parent", None)
+        child1 = uvm_component("child1", parent)
+        _ = uvm_component("child2", parent)
+        child3 = uvm_component("child3", child1)
+        child4 = uvm_component("child4", child3)
+        self.assertEqual(child1, parent.lookup("child1"))
+        self.assertEqual(child3, parent.lookup("child1.child3"))
+        self.assertNotEqual(child1, parent.lookup("child2"))
+        self.assertEqual(child3, parent.lookup(".parent.child1.child3"))
+        self.assertEqual(child3, child1.lookup("child3"))
+        self.assertEqual(child4, child1.lookup("child3.child4"))
 
     def test_get_depth_13_1_3_8(self):
         """
@@ -196,31 +197,30 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         get_depth measures dept from uvm_root where uvm_root is 0
         :return:
         """
-        parent = uvm_component('parent', None)
-        child1 = uvm_component('child1', parent)
-        _ = uvm_component('child2', parent)
-        child3 = uvm_component('child3', child1)
-        _ = uvm_component('child4', child3)
+        parent = uvm_component("parent", None)
+        child1 = uvm_component("child1", parent)
+        _ = uvm_component("child2", parent)
+        child3 = uvm_component("child3", child1)
+        _ = uvm_component("child4", child3)
         self.assertEqual(0, uvm_root().get_depth())
         self.assertEqual(1, parent.get_depth())
         self.assertEqual(2, child1.get_depth())
         self.assertEqual(3, child3.get_depth())
 
     class my_component(uvm_component):
-        async def run_phase(self):
-            ...
+        async def run_phase(self): ...
 
     def test_component_factory(self):
-        mc = self.my_component('mc', None)
-        mc2 = self.my_component.create('my_component', None)
+        mc = self.my_component("mc", None)
+        mc2 = self.my_component.create("my_component", None)
         self.assertEqual(type(mc), type(mc2))
 
     def test_config_db(self):
-        aa = uvm_component('aa', None)
-        bb = uvm_component('bb', aa)
-        cc = uvm_component('cc', aa)
-        _ = uvm_component('D', cc)
-        ee = uvm_component('ee', bb)
+        aa = uvm_component("aa", None)
+        bb = uvm_component("bb", aa)
+        cc = uvm_component("cc", aa)
+        _ = uvm_component("D", cc)
+        ee = uvm_component("ee", bb)
 
         aa.cdb_set("FIVE", 5, "")
         datum = aa.cdb_get("FIVE", "")
@@ -242,9 +242,9 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         self.assertEqual(44, datum)
 
     def test_wildcard_precedence(self):
-        aa = uvm_component('aa', None)
-        bb = uvm_component('bb', aa)
-        cc = uvm_component('cc', aa)
+        aa = uvm_component("aa", None)
+        bb = uvm_component("bb", aa)
+        cc = uvm_component("cc", aa)
         aa.cdb_set("TEST", 11, "*")
         aa.cdb_set("TEST", 22, "bb")
         ConfigDB().set(aa, "aa", "OTHER", 55)
@@ -257,9 +257,9 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         self.assertEqual(55, aao)
 
     def test_contextless_behavior_in_hierarchy(self):
-        aa = uvm_component('aa', None)
-        _ = uvm_component('B', aa)
-        _ = uvm_component('C', aa)
+        aa = uvm_component("aa", None)
+        _ = uvm_component("B", aa)
+        _ = uvm_component("C", aa)
         ConfigDB().set(aa, "*", "OTHER", 55)
         aa = ConfigDB().get(aa, "B", "OTHER")
         self.assertEqual(55, aa)
@@ -286,10 +286,10 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
 
         await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
-        self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE,
-                         utt.agent.get_is_active())
-        self.assertEqual(uvm_active_passive_enum.UVM_PASSIVE,
-                         utt.agent.bot.get_is_active())
+        self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE, utt.agent.get_is_active())
+        self.assertEqual(
+            uvm_active_passive_enum.UVM_PASSIVE, utt.agent.bot.get_is_active()
+        )
         self.assertTrue(utt.agent.active())
         self.assertFalse(utt.agent.bot.active())
 
@@ -331,13 +331,13 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
 
         await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
-        self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE,
-                         utt.agent.get_is_active())
-        self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE,
-                         utt.agent.bot.get_is_active())
+        self.assertEqual(uvm_active_passive_enum.UVM_ACTIVE, utt.agent.get_is_active())
+        self.assertEqual(
+            uvm_active_passive_enum.UVM_ACTIVE, utt.agent.bot.get_is_active()
+        )
         self.assertTrue(utt.agent.active())
         self.assertTrue(utt.agent.bot.active())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

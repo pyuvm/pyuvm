@@ -1,11 +1,14 @@
-import uvm_unittest
-from pyuvm import * # pylint: disable=unused-wildcard-import
 import cocotb
+import uvm_unittest
 from cocotb.triggers import Timer
+
+from pyuvm import *  # pylint: disable=unused-wildcard-import
 
 
 async def waitabit(abit=5):
     await Timer(1, "us")
+
+
 class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -14,16 +17,14 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         else:
             self.my_root = uvm_component("my_root", None)
 
-
     def setUp(self):
         ObjectionHandler().run_phase_done_flag = False
         self.my_root.clear_children()
 
-
     def tearDown(self):
         ObjectionHandler().run_phase_done_flag = True
-    class my_comp(uvm_component):
-        ...
+
+    class my_comp(uvm_component): ...
 
     # Put
     class TestPutExportBase(uvm_port_base):
@@ -48,8 +49,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         def can_put(self):
             return not self.blocked
 
-    class TestPutExport(TestBlockingPutExport, TestNonBlockingPutExport):
-        ...
+    class TestPutExport(TestBlockingPutExport, TestNonBlockingPutExport): ...
 
     # Get
     class TestGetExportBase:
@@ -63,7 +63,6 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
             return self.data
 
     class TestNonBlockingGetExport(TestGetExportBase, uvm_nonblocking_get_export):
-
         def try_get(self):
             if not self.empty:
                 return True, self.data
@@ -72,8 +71,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         def can_get(self):
             return not self.empty
 
-    class TestGetExport(TestBlockingGetExport, TestNonBlockingGetExport):
-        ...
+    class TestGetExport(TestBlockingGetExport, TestNonBlockingGetExport): ...
 
     # Peek
     class TestBlockingPeekExport(TestGetExportBase, uvm_blocking_peek_export):
@@ -81,7 +79,6 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
             return self.data
 
     class TestNonBlockingPeekExport(TestGetExportBase, uvm_nonblocking_peek_export):
-
         def try_peek(self):
             if not self.empty:
                 return True, self.data
@@ -91,18 +88,18 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         def can_peek(self):
             return self.can_peek()
 
-    class TestPeekExport(TestBlockingPeekExport, TestNonBlockingPeekExport):
-        ...
+    class TestPeekExport(TestBlockingPeekExport, TestNonBlockingPeekExport): ...
 
     # GetPeek
-    class TestBlockingGetPeekExport(TestBlockingGetExport, TestBlockingPeekExport):
-        ...
+    class TestBlockingGetPeekExport(TestBlockingGetExport, TestBlockingPeekExport): ...
 
-    class TestNonBlockingGetPeekExport(TestNonBlockingGetExport, TestNonBlockingPeekExport):
-        ...
+    class TestNonBlockingGetPeekExport(
+        TestNonBlockingGetExport, TestNonBlockingPeekExport
+    ): ...
 
-    class TestGetPeekExport(TestBlockingGetPeekExport, TestNonBlockingGetPeekExport):
-        ...
+    class TestGetPeekExport(
+        TestBlockingGetPeekExport, TestNonBlockingGetPeekExport
+    ): ...
 
     # Transport
     class TestTransportExportBase(uvm_port_base):
@@ -112,12 +109,16 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
             self.get_data = None
             self.blocked = True
 
-    class TestBlockingTransportExport(TestTransportExportBase, uvm_blocking_transport_export):
+    class TestBlockingTransportExport(
+        TestTransportExportBase, uvm_blocking_transport_export
+    ):
         async def transport(self, put_data):
             self.put_data = put_data
             return self.get_data
 
-    class TestNonBlockingTransportExport(TestTransportExportBase, uvm_nonblocking_transport_export):
+    class TestNonBlockingTransportExport(
+        TestTransportExportBase, uvm_nonblocking_transport_export
+    ):
         def nb_transport(self, put_data):
             if self.blocked:
                 return False, None
@@ -125,33 +126,35 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
                 self.put_data = put_data
                 return True, self.get_data
 
-    class TestTransportExport(TestBlockingTransportExport, TestNonBlockingTransportExport):
-        ...
+    class TestTransportExport(
+        TestBlockingTransportExport, TestNonBlockingTransportExport
+    ): ...
 
     # Master
-    class TestBlockingMasterExport(TestBlockingPutExport, TestBlockingGetPeekExport):
-        ...
+    class TestBlockingMasterExport(
+        TestBlockingPutExport, TestBlockingGetPeekExport
+    ): ...
 
-    class TestNonBlockingMasterExport(TestNonBlockingPutExport, TestNonBlockingGetPeekExport):
-        ...
+    class TestNonBlockingMasterExport(
+        TestNonBlockingPutExport, TestNonBlockingGetPeekExport
+    ): ...
 
-    class TestMasterExport(TestBlockingMasterExport, TestNonBlockingMasterExport):
-        ...
+    class TestMasterExport(TestBlockingMasterExport, TestNonBlockingMasterExport): ...
 
     # Slave
-    class TestBlockingSlaveExport(TestBlockingPutExport, TestBlockingGetPeekExport):
-        ...
+    class TestBlockingSlaveExport(TestBlockingPutExport, TestBlockingGetPeekExport): ...
 
-    class TestNonBlockingSlaveExport(TestNonBlockingPutExport, TestNonBlockingGetPeekExport):
-        ...
+    class TestNonBlockingSlaveExport(
+        TestNonBlockingPutExport, TestNonBlockingGetPeekExport
+    ): ...
 
-    class TestSlaveExport(TestBlockingSlaveExport, TestNonBlockingSlaveExport):
-        ...
+    class TestSlaveExport(TestBlockingSlaveExport, TestNonBlockingSlaveExport): ...
 
     class TestInvalidExport(uvm_port_base):
         """
         Used to guarantee a port type error
         """
+
         ...
 
     # Put
@@ -220,13 +223,13 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         port.connect(export)
         port2.connect(port)
         # test port
-        export.data = 0xdeadbeef
+        export.data = 0xDEADBEEF
         get_data = await port.get()
-        self.assertEqual(0xdeadbeef, get_data)
+        self.assertEqual(0xDEADBEEF, get_data)
         # test port connected to port
-        export.data = 0xdeadbee2
+        export.data = 0xDEADBEE2
         get_data = await port2.get()
-        self.assertEqual(0xdeadbee2, get_data)
+        self.assertEqual(0xDEADBEE2, get_data)
 
     def exercise_nonblocking_get(self, port_cls, export_cls):
         (port, port2, export, invalid) = self.make_components(port_cls, export_cls)
@@ -266,13 +269,13 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         port.connect(export)
         port2.connect(port)
         # test port
-        export.data = 0xdeadbeef
+        export.data = 0xDEADBEEF
         peek_data = await port.peek()
-        self.assertEqual(0xdeadbeef, peek_data)
+        self.assertEqual(0xDEADBEEF, peek_data)
         # test port connected to port
-        export.data = 0xdeadbe2f
+        export.data = 0xDEADBE2F
         peek_data = await port.peek()
-        self.assertEqual(0xdeadbe2f, peek_data)
+        self.assertEqual(0xDEADBE2F, peek_data)
 
     def exercise_nonblocking_peek(self, port_cls, export_cls):
         (port, port2, export, invalid) = self.make_components(port_cls, export_cls)
@@ -365,61 +368,93 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         pass
 
     async def test_uvm_blocking_put_port(self):
-        await self.exercise_blocking_put(uvm_blocking_put_port, self.TestBlockingPutExport)
+        await self.exercise_blocking_put(
+            uvm_blocking_put_port, self.TestBlockingPutExport
+        )
 
     def test_uvm_non_blocking_put_port(self):
-        self.exercise_nonblocking_put(uvm_nonblocking_put_port, self.TestNonBlockingPutExport)
+        self.exercise_nonblocking_put(
+            uvm_nonblocking_put_port, self.TestNonBlockingPutExport
+        )
 
     async def test_uvm_put_port(self):
         await self.exercise_blocking_put(uvm_put_port, self.TestPutExport)
         self.exercise_nonblocking_put(uvm_put_port, self.TestPutExport)
 
     async def test_uvm_blocking_get_port(self):
-        await self.exercise_blocking_get(uvm_blocking_get_port, self.TestBlockingGetExport)
+        await self.exercise_blocking_get(
+            uvm_blocking_get_port, self.TestBlockingGetExport
+        )
 
     def test_uvm_non_blocking_get_port(self):
-        self.exercise_nonblocking_get(uvm_nonblocking_get_port, self.TestNonBlockingGetExport)
+        self.exercise_nonblocking_get(
+            uvm_nonblocking_get_port, self.TestNonBlockingGetExport
+        )
 
     async def test_uvm_get_port(self):
         await self.exercise_blocking_get(uvm_get_port, self.TestGetExport)
         self.exercise_nonblocking_get(uvm_get_port, self.TestGetExport)
 
     async def test_uvm_blocking_peek_port(self):
-        await self.exercise_blocking_peek(uvm_blocking_peek_port, self.TestBlockingPeekExport)
+        await self.exercise_blocking_peek(
+            uvm_blocking_peek_port, self.TestBlockingPeekExport
+        )
 
     def test_uvm_non_blocking_peek_port(self):
-        self.exercise_nonblocking_peek(uvm_nonblocking_peek_port, self.TestNonBlockingPeekExport)
+        self.exercise_nonblocking_peek(
+            uvm_nonblocking_peek_port, self.TestNonBlockingPeekExport
+        )
 
     async def test_uvm_peek_port(self):
         await self.exercise_blocking_peek(uvm_peek_port, self.TestPeekExport)
         self.exercise_nonblocking_peek(uvm_peek_port, self.TestPeekExport)
 
     async def test_uvm_blocking_get_peek_port(self):
-        await self.exercise_blocking_get_peek(uvm_blocking_get_peek_port, self.TestBlockingGetPeekExport)
+        await self.exercise_blocking_get_peek(
+            uvm_blocking_get_peek_port, self.TestBlockingGetPeekExport
+        )
 
     def test_uvm_non_blocking_get_peek_port(self):
-        self.exercise_nonblocking_get_peek(uvm_nonblocking_get_peek_port, self.TestNonBlockingGetPeekExport)
+        self.exercise_nonblocking_get_peek(
+            uvm_nonblocking_get_peek_port, self.TestNonBlockingGetPeekExport
+        )
 
     async def test_uvm_get_peek_port(self):
         await self.exercise_get_peek(uvm_get_peek_port, self.TestGetPeekExport)
 
     async def test_uvm_blocking_transport_port(self):
-        await self.exercise_blocking_transport(uvm_blocking_transport_port, self.TestBlockingTransportExport)
+        await self.exercise_blocking_transport(
+            uvm_blocking_transport_port, self.TestBlockingTransportExport
+        )
 
     def test_uvm_non_blocking_transport_port(self):
-        self.exercise_nonblocking_transport(uvm_nonblocking_transport_port, self.TestNonBlockingTransportExport)
+        self.exercise_nonblocking_transport(
+            uvm_nonblocking_transport_port, self.TestNonBlockingTransportExport
+        )
 
     async def test_uvm_transport_port(self):
-        await self.exercise_blocking_transport(uvm_transport_port, self.TestTransportExport)
-        self.exercise_nonblocking_transport(uvm_transport_port, self.TestTransportExport)
+        await self.exercise_blocking_transport(
+            uvm_transport_port, self.TestTransportExport
+        )
+        self.exercise_nonblocking_transport(
+            uvm_transport_port, self.TestTransportExport
+        )
 
     async def test_uvm_blocking_master_port(self):
-        await self.exercise_blocking_put(uvm_blocking_master_port, self.TestBlockingMasterExport)
-        await self.exercise_blocking_get_peek(uvm_blocking_master_port, self.TestBlockingMasterExport)
+        await self.exercise_blocking_put(
+            uvm_blocking_master_port, self.TestBlockingMasterExport
+        )
+        await self.exercise_blocking_get_peek(
+            uvm_blocking_master_port, self.TestBlockingMasterExport
+        )
 
     def test_uvm_nonblocking_master_port(self):
-        self.exercise_nonblocking_put(uvm_nonblocking_master_port, self.TestNonBlockingMasterExport)
-        self.exercise_nonblocking_get_peek(uvm_nonblocking_master_port, self.TestNonBlockingMasterExport)
+        self.exercise_nonblocking_put(
+            uvm_nonblocking_master_port, self.TestNonBlockingMasterExport
+        )
+        self.exercise_nonblocking_get_peek(
+            uvm_nonblocking_master_port, self.TestNonBlockingMasterExport
+        )
 
     async def test_uvm_master_port(self):
         self.exercise_nonblocking_put(uvm_master_port, self.TestMasterExport)
@@ -428,12 +463,20 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         await self.exercise_blocking_get_peek(uvm_master_port, self.TestMasterExport)
 
     async def test_uvm_blocking_slave_port(self):
-        await self.exercise_blocking_put(uvm_blocking_slave_port, self.TestBlockingSlaveExport)
-        await self.exercise_blocking_get_peek(uvm_blocking_slave_port, self.TestBlockingSlaveExport)
+        await self.exercise_blocking_put(
+            uvm_blocking_slave_port, self.TestBlockingSlaveExport
+        )
+        await self.exercise_blocking_get_peek(
+            uvm_blocking_slave_port, self.TestBlockingSlaveExport
+        )
 
     def test_uvm_nonblocking_slave_port(self):
-        self.exercise_nonblocking_put(uvm_nonblocking_slave_port, self.TestNonBlockingSlaveExport)
-        self.exercise_nonblocking_get_peek(uvm_nonblocking_slave_port, self.TestNonBlockingSlaveExport)
+        self.exercise_nonblocking_put(
+            uvm_nonblocking_slave_port, self.TestNonBlockingSlaveExport
+        )
+        self.exercise_nonblocking_get_peek(
+            uvm_nonblocking_slave_port, self.TestNonBlockingSlaveExport
+        )
 
     async def test_uvm_slave_port(self):
         self.exercise_nonblocking_put(uvm_slave_port, self.TestSlaveExport)
@@ -510,18 +553,17 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         datum = await peek_port.peek()
         data_list.append(datum)
 
-
     async def test_fifo_blocking(self):
         fifo = self.make_fifo(uvm_tlm_fifo)
         pp = uvm_blocking_put_port("pp", self.my_root)
         gp = uvm_blocking_get_port("gp", self.my_root)
         pk = uvm_blocking_peek_port("pk", self.my_root)
         gpp = uvm_blocking_get_peek_port("gpp", self.my_root)
-        pp.connect(fifo.blocking_put_export)    
+        pp.connect(fifo.blocking_put_export)
         gp.connect(fifo.blocking_get_export)
         pk.connect(fifo.blocking_peek_export)
         gpp.connect(fifo.blocking_get_peek_export)
-        put_data = [1, 'f', 3, 'c', None]
+        put_data = [1, "f", 3, "c", None]
         peek_data = []
         get_data = []
         cocotb.start_soon(self.do_blocking_put(pp, put_data))
@@ -532,7 +574,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         peek_data = []
         get_data = []
         fifo.flush()
-        cocotb.start_soon(self.do_blocking_put(pp,put_data))
+        cocotb.start_soon(self.do_blocking_put(pp, put_data))
         await self.do_blocking_peek(gpp, peek_data)
         await self.do_blocking_get(gpp, get_data)
         self.assertTrue(put_data[0], peek_data[0])
@@ -544,7 +586,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         for data in data_list:
             while not put_port.try_put(data):
                 await waitabit()
-                
+
     @staticmethod
     async def do_nonblocking_get(get_port, data_list):
         while True:
@@ -569,7 +611,7 @@ class s12_uvm_tlm_interfaces_TestCase(uvm_unittest.uvm_TestCase):
         pp.connect(fifo.nonblocking_put_export)
         gp.connect(fifo.nonblocking_get_export)
         pk.connect(fifo.nonblocking_peek_export)
-        put_data = [10, 20, 30, 'c0', None]
+        put_data = [10, 20, 30, "c0", None]
         get_data = []
         peek_data = []
         self.assertFalse(pk.can_peek())

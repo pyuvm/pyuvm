@@ -1,9 +1,10 @@
-from collections import OrderedDict
-import logging
 import fnmatch
+import logging
+from collections import OrderedDict
+
 import cocotb.queue
-from cocotb.triggers import Event, NullTrigger
 from cocotb.queue import QueueEmpty
+from cocotb.triggers import Event, NullTrigger
 
 FIFO_DEBUG = 5
 PYUVM_DEBUG = 4
@@ -11,9 +12,10 @@ logging.addLevelName(FIFO_DEBUG, "FIFO_DEBUG")
 logging.addLevelName(PYUVM_DEBUG, "PYUVM_DEBUG")
 
 
-if int(cocotb.__version__.split('.')[0]) >= 2:
+if int(cocotb.__version__.split(".")[0]) >= 2:
     from cocotb.task import current_task
 else:
+
     def current_task():
         return cocotb.scheduler._current_task
 
@@ -26,7 +28,7 @@ def count_bits(nn):
     :return: The number of bits
     """
     # Convert the absolute value of n to binary and count the '1's
-    return bin(abs(nn)).count('1')
+    return bin(abs(nn)).count("1")
 
 
 class Singleton(type):
@@ -34,7 +36,7 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)  # noqa: E501
+            cls._instances[cls] = super().__call__(*args, **kwargs)  # noqa: E501
         return cls._instances[cls]
 
     @classmethod
@@ -42,7 +44,7 @@ class Singleton(type):
         classes = list(cls._instances.keys())
         for del_cls in classes:
             if del_cls not in keep:
-                del (cls._instances[del_cls])
+                del cls._instances[del_cls]
 
 
 class Override:
@@ -53,7 +55,6 @@ class Override:
     """
 
     def __init__(self):
-
         self.type_override = None
         self.inst_overrides = OrderedDict()
 
@@ -79,18 +80,21 @@ class Override:
         else:
             to = "Type Override: None"
         ss = f"{to:25}" + " || "
-        io = " | ".join([
-            (f"{inst_path[:29] if len(inst_path) > 29 else inst_path}"
-             f" => {inst_override.__name__}")
-            for inst_path, inst_override in self.inst_overrides.items()
-        ])
+        io = " | ".join(
+            [
+                (
+                    f"{inst_path[:29] if len(inst_path) > 29 else inst_path}"
+                    f" => {inst_override.__name__}"
+                )
+                for inst_path, inst_override in self.inst_overrides.items()
+            ]
+        )
         ss += f"Instance Overrides: {io}" if io else ""
 
         return ss
 
 
 class FactoryData(metaclass=Singleton):
-
     def __init__(self):
         self.classes = {}
         self.clear_overrides()
@@ -103,8 +107,7 @@ class FactoryData(metaclass=Singleton):
         self.classes = {}
 
     # From 8.3.1.5
-    def find_override(self, requested_type,
-                      inst_path=None, overridden_list=None):
+    def find_override(self, requested_type, inst_path=None, overridden_list=None):
         """
         :param requested_type: The type we're overriding
         :param inst_path: The inst_path we're using to override if any
@@ -146,13 +149,12 @@ class FactoryData(metaclass=Singleton):
                 overridden_list = []
             if override in overridden_list:
                 self.logger.error(
-                    f"{requested_type} already overridden: {overridden_list}")
+                    f"{requested_type} already overridden: {overridden_list}"
+                )
                 return requested_type
             else:
                 overridden_list.append(requested_type)
-                rec_override = self.find_override(override,
-                                                  inst_path,
-                                                  overridden_list)
+                rec_override = self.find_override(override, inst_path, overridden_list)
                 return rec_override
 
         # Save the type for a later check
@@ -195,7 +197,7 @@ class uvm_void(metaclass=FactoryMeta):
 
     In pyuvm, we're using uvm_void() as a metaclass so
     that all UVM classes can be stored in a factory.
-"""
+    """
 
 
 class UVM_ROOT_Singleton(FactoryMeta):
@@ -203,7 +205,7 @@ class UVM_ROOT_Singleton(FactoryMeta):
 
     def __call__(cls, *args, **kwargs):
         if cls.singleton is None:
-            cls.singleton = super(UVM_ROOT_Singleton, cls).__call__(*args, **kwargs)  # noqa : E501
+            cls.singleton = super().__call__(*args, **kwargs)  # noqa : E501
         return cls.singleton
 
     @classmethod
@@ -235,8 +237,10 @@ class ObjectionHandler(metaclass=Singleton):
 
     def clear(self):
         if len(self.__objections) != 0:
-            logging.warning("Clearing objections raised by %s",
-                            ', '.join(self.__objections.values()))
+            logging.warning(
+                "Clearing objections raised by %s",
+                ", ".join(self.__objections.values()),
+            )
             self.__objections = {}
         self.objection_raised = False
 
@@ -266,8 +270,7 @@ class ObjectionHandler(metaclass=Singleton):
         if self.objection_raised:
             await self._objection_event.wait()
         else:
-            logging.warning(
-                "You did not call self.raise_objection() in any run_phase")
+            logging.warning("You did not call self.raise_objection() in any run_phase")
 
 
 class UVMQueue(cocotb.queue.Queue):
@@ -278,6 +281,7 @@ class UVMQueue(cocotb.queue.Queue):
     to die is set to the dropping of all run_phase objections
     by default.
     """
+
     def __str__(self):
         return str(self._queue)
 

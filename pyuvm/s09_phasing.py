@@ -1,6 +1,7 @@
-from pyuvm.s05_base_classes import uvm_object
-import pyuvm.error_classes as error_classes
 import cocotb
+
+import pyuvm.error_classes as error_classes
+from pyuvm.s05_base_classes import uvm_object
 
 # 9.1
 #
@@ -25,7 +26,6 @@ import cocotb
 
 # 9.3.1.2 Class declaration
 class uvm_phase(uvm_object):
-
     # Strips the "uvm_" from this class's name and uses the remainder
     # to get a function call out of the component and execute it.
     # 'uvm_run_phase' becomes 'run_phase' and is called as 'run_phase()'
@@ -39,7 +39,8 @@ class uvm_phase(uvm_object):
             method = getattr(comp, method_name)
         except AttributeError:
             raise error_classes.UVMBadPhase(
-                f"{comp.get_name()} is missing {method_name} function")
+                f"{comp.get_name()} is missing {method_name} function"
+            )
         method()
 
     def __str__(self):
@@ -50,6 +51,7 @@ class uvm_topdown_phase(uvm_phase):
     """
     Runs phases from the top down.
     """
+
     @classmethod
     def traverse(cls, comp):
         """
@@ -67,6 +69,7 @@ class uvm_bottomup_phase(uvm_phase):
     """
     Runs the phases from bottom up.
     """
+
     @classmethod
     def traverse(cls, comp):
         """
@@ -90,14 +93,16 @@ class uvm_threaded_execute_phase(uvm_phase):
     @classmethod
     def execute(cls, comp):
         phase_name = cls.__name__
-        assert phase_name.startswith("uvm_"), \
+        assert phase_name.startswith("uvm_"), (
             "We only support phases whose names start with uvm_"
+        )
         method_name = cls.__name__[4:]
         try:
             method = getattr(comp, method_name)
         except AttributeError:
             raise error_classes.UVMBadPhase(
-                f"{comp.get_name()} is missing {method_name} function")
+                f"{comp.get_name()} is missing {method_name} function"
+            )
         cocotb.start_soon(method())
 
 
@@ -105,48 +110,39 @@ class uvm_threaded_execute_phase(uvm_phase):
 # 9.8.1 Common Phases
 # The common phases are described in the order of their execution.
 # 9.8.1.1
-class uvm_build_phase(uvm_topdown_phase):
-    ...
+class uvm_build_phase(uvm_topdown_phase): ...
 
 
 # 9.8.1.2
-class uvm_connect_phase(uvm_bottomup_phase):
-    ...
+class uvm_connect_phase(uvm_bottomup_phase): ...
 
 
 # 9.8.1.3
-class uvm_end_of_elaboration_phase(uvm_topdown_phase):
-    ...
+class uvm_end_of_elaboration_phase(uvm_topdown_phase): ...
 
 
 # 9.8.1.4
-class uvm_start_of_simulation_phase(uvm_topdown_phase):
-    ...
+class uvm_start_of_simulation_phase(uvm_topdown_phase): ...
 
 
 # 9.8.1.5
-class uvm_run_phase(uvm_threaded_execute_phase, uvm_bottomup_phase):
-    ...
+class uvm_run_phase(uvm_threaded_execute_phase, uvm_bottomup_phase): ...
 
 
 # 9.8.1.6
-class uvm_extract_phase(uvm_topdown_phase):
-    ...
+class uvm_extract_phase(uvm_topdown_phase): ...
 
 
 # 9.8.1.7
-class uvm_check_phase(uvm_topdown_phase):
-    ...
+class uvm_check_phase(uvm_topdown_phase): ...
 
 
 # 9.8.1.8
-class uvm_report_phase(uvm_topdown_phase):
-    ...
+class uvm_report_phase(uvm_topdown_phase): ...
 
 
 # 9.8.1.9
-class uvm_final_phase(uvm_topdown_phase):
-    ...
+class uvm_final_phase(uvm_topdown_phase): ...
 
 
 # 9.8.2
@@ -157,12 +153,14 @@ class uvm_final_phase(uvm_topdown_phase):
 # the my_phase() method to a uvm component with setattr.  Then insert the new
 # phase into the list of phases to be executed below:
 
-uvm_common_phases = [uvm_build_phase,
-                     uvm_connect_phase,
-                     uvm_end_of_elaboration_phase,
-                     uvm_start_of_simulation_phase,
-                     uvm_run_phase,
-                     uvm_extract_phase,
-                     uvm_check_phase,
-                     uvm_report_phase,
-                     uvm_final_phase]
+uvm_common_phases = [
+    uvm_build_phase,
+    uvm_connect_phase,
+    uvm_end_of_elaboration_phase,
+    uvm_start_of_simulation_phase,
+    uvm_run_phase,
+    uvm_extract_phase,
+    uvm_check_phase,
+    uvm_report_phase,
+    uvm_final_phase,
+]

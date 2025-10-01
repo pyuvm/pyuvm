@@ -1,17 +1,15 @@
 # Import Main Package
-from pyuvm import uvm_sequence_item
 from copy import deepcopy
-from pyuvm import uvm_object
+
+from pyuvm import uvm_object, uvm_sequence_item
 from pyuvm.s17_uvm_reg_enumerations import uvm_status_e
-from pyuvm.s24_uvm_reg_includes import elem_kind_e, access_e
-from pyuvm.s24_uvm_reg_includes import path_t
-from pyuvm.s24_uvm_reg_includes import error_out
+from pyuvm.s24_uvm_reg_includes import access_e, elem_kind_e, error_out, path_t
 
 
 # Main Class
 class uvm_reg_item(uvm_sequence_item):
     # constructor
-    def __init__(self, name='item'):
+    def __init__(self, name="item"):
         # Kind of element being accessed: REG, MEM, or FIELD.
         self.element_kind: elem_kind_e
         # A handle to the RegModel model element
@@ -72,8 +70,11 @@ class uvm_reg_item(uvm_sequence_item):
     def do_copy(self, rhs):
         # Check
         if not isinstance(rhs, uvm_reg_item):
-            error_out(self.header, "WRONG_TYPE Provided rhs \
-                      is not of type uvm_reg_item")
+            error_out(
+                self.header,
+                "WRONG_TYPE Provided rhs \
+                      is not of type uvm_reg_item",
+            )
         else:
             # Deep Copy
             copied = deepcopy(rhs)
@@ -171,8 +172,11 @@ class uvm_reg_item(uvm_sequence_item):
     # set_extension
     def set_extension(self, ext):
         if not isinstance(ext, uvm_object):
-            error_out(self.header, "bd kind is not string possible values \
-                      RTL or GATE")
+            error_out(
+                self.header,
+                "bd kind is not string possible values \
+                      RTL or GATE",
+            )
         else:
             self.extension = ext
 
@@ -183,8 +187,11 @@ class uvm_reg_item(uvm_sequence_item):
     # set_bd_kind
     def set_bd_kind(self, val):
         if not isinstance(val, str):
-            error_out(self.header, "bd kind is not string possible values \
-                      RTL or GATE")
+            error_out(
+                self.header,
+                "bd kind is not string possible values \
+                      RTL or GATE",
+            )
         else:
             self.bd_kind = val
 

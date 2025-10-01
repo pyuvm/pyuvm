@@ -1,6 +1,6 @@
+import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
-import cocotb
 
 import pyuvm.utility_classes as utility_classes
 from pyuvm import *
@@ -61,7 +61,9 @@ class CocotbProxy:
             except ValueError:
                 start = 0
             if start == 1 and prev_start == 0:
-                self.cmd_mon_queue.put_nowait((int(self.dut.A), int(self.dut.B), int(self.dut.op)))
+                self.cmd_mon_queue.put_nowait(
+                    (int(self.dut.A), int(self.dut.B), int(self.dut.op))
+                )
             prev_start = start
 
     async def result_mon_bfm(self):
@@ -83,7 +85,6 @@ def run_uvm_test(test_name):
     root.run_test(test_name)
 
 
-
 # noinspection PyArgumentList,PyAsyncCall
 # @cocotb.test()
 async def test_alu(dut):
@@ -95,10 +96,13 @@ async def test_alu(dut):
     cocotb.start_soon(proxy.cmd_mon_bfm())
     cocotb.start_soon(proxy.result_mon_bfm())
     await FallingEdge(dut.clk)
-    test_thread = threading.Thread(target=run_uvm_test, args=("CocotbAluTest",), name="run_test")
+    test_thread = threading.Thread(
+        target=run_uvm_test, args=("CocotbAluTest",), name="run_test"
+    )
     test_thread.start()
     await proxy.done.wait()
     await FallingEdge(dut.clk)
+
 
 # noinspection PyArgumentList,PyAsyncCall
 @cocotb.test()
@@ -147,12 +151,12 @@ async def wait_on_queue(dut):
     clock = Clock(dut.clk, 2, "us")  # make the simulator wait
     cocotb.start_soon(clock.start())
     qq = utility_classes.UVMQueue(maxsize=1)
-    send_data = [
-        .01, "two", 3, None]
-    cocotb.start_soon(delay_put(qq, .01, send_data))
-    got_data = await delay_peek(qq, .01)
-    assert got_data == .01
-    got_data = await delay_get(qq, .01)
+    send_data = [0.01, "two", 3, None]
+    cocotb.start_soon(delay_put(qq, 0.01, send_data))
+    got_data = await delay_peek(qq, 0.01)
+    assert got_data == 0.01
+    got_data = await delay_get(qq, 0.01)
+
 
 @cocotb.test()
 async def nowait_tests(dut):
@@ -184,10 +188,3 @@ async def nowait_tests(dut):
         assert False
     except cocotb.queue.QueueEmpty:
         pass
-
-
-
-
-
-
-

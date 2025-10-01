@@ -1,7 +1,9 @@
+import inspect
+
 import cocotb
+
 import pyuvm.utility_classes as utility_classes
 from pyuvm import *
-import inspect
 
 phase_list = {}
 
@@ -93,8 +95,8 @@ async def test_stub(dut):
 
 async def test_traverse():
     top = setUp()
-    top_down = ['top', 'aa', 'cc', 'dd', 'bb', 'ee', 'ff']
-    bottom_up = ['cc', 'dd', 'aa', 'ee', 'ff', 'bb', 'top']
+    top_down = ["top", "aa", "cc", "dd", "bb", "ee", "ff"]
+    bottom_up = ["cc", "dd", "aa", "ee", "ff", "bb", "top"]
     sorted_list = sorted(top_down)
     for phase_class in uvm_common_phases:
         phase = phase_class()

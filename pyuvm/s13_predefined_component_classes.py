@@ -1,10 +1,10 @@
 # from base_classes import *
-from pyuvm.s14_15_python_sequences import uvm_seq_item_port
-from pyuvm.s12_uvm_tlm_interfaces import uvm_analysis_export
-from pyuvm.s13_uvm_component import *
-from pyuvm import error_classes
 from enum import IntEnum
 
+from pyuvm import error_classes
+from pyuvm.s12_uvm_tlm_interfaces import uvm_analysis_export
+from pyuvm.s13_uvm_component import *
+from pyuvm.s14_15_python_sequences import uvm_seq_item_port
 
 # This section and sequences are the crux of pyuvm.
 # The classes here allow us to build classic UVM
@@ -85,10 +85,12 @@ class uvm_agent(uvm_component):
             self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 
         if self.is_active not in list(uvm_active_passive_enum):
-            self.logger.warning(f"{self.get_full_name()}"
-                                "has illegal is_active"
-                                f" value: {self.is_active}."
-                                "Setting to UVM_ACTIVE")
+            self.logger.warning(
+                f"{self.get_full_name()}"
+                "has illegal is_active"
+                f" value: {self.is_active}."
+                "Setting to UVM_ACTIVE"
+            )
             self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 
     def get_is_active(self):
@@ -117,6 +119,7 @@ class uvm_monitor(uvm_component):
     monitors will automatically inherit features that may be added to
     :class:`!uvm_monitor` in the future.
     """
+
     ...
 
 
@@ -131,6 +134,7 @@ class uvm_scoreboard(uvm_component):
     benefit from features that may be added to :class:`!uvm_scoreboard` in the
     future.
     """
+
     ...
 
 
@@ -198,9 +202,7 @@ class uvm_subscriber(uvm_component):
 
     def __init__(self, name, parent):
         super().__init__(name, parent)
-        self.analysis_export = self.uvm_AnalysisImp("analysis_export",
-                                                    self,
-                                                    self.write)
+        self.analysis_export = self.uvm_AnalysisImp("analysis_export", self, self.write)
 
     def write(self, tt):
         """
@@ -209,4 +211,5 @@ class uvm_subscriber(uvm_component):
         """
         raise error_classes.UVMFatalError(
             "You must override the write() method in"
-            f"uvm_subscriber {self.get_full_name()}")
+            f"uvm_subscriber {self.get_full_name()}"
+        )

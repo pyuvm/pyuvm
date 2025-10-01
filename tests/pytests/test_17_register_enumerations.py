@@ -1,4 +1,5 @@
 import pytest
+
 from pyuvm import *
 
 pytestmark = pytest.mark.usefixtures("initialize_pyuvm")
@@ -24,9 +25,9 @@ def test_basic_uvm_hdl_path_concat():
     reg_slice_concat_0.add_slice(reg_slice)
     test_slice_obj = reg_slice_concat_0.get_slices()
     assert len(test_slice_obj) == 1
-    assert (test_slice_obj[0].path == "reg_slice")
-    assert (test_slice_obj[0].offset == -1)
-    assert (test_slice_obj[0].size == -1)
+    assert test_slice_obj[0].path == "reg_slice"
+    assert test_slice_obj[0].offset == -1
+    assert test_slice_obj[0].size == -1
 
 
 def test_overlap_uvm_hdl_path_concat_0():

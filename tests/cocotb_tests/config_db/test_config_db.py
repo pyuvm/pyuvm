@@ -1,8 +1,9 @@
 import uvm_unittest
+
 from pyuvm import *
 
-class config_db_TestCase(uvm_unittest.uvm_TestCase):
 
+class config_db_TestCase(uvm_unittest.uvm_TestCase):
     def tearDown(self) -> None:
         super().tearDown()
         ConfigDB().clear()
@@ -51,10 +52,12 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
         class comp(uvm_component):
             def build_phase(self):
                 self.cdb_set("XXC", 93, "")
+
         class test(uvm_test):
             def build_phase(self):
                 self.xx = comp("xx", self)
                 self.cdb_set("XXC", 855, "")
+
             async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
@@ -62,7 +65,7 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
         cdb = ConfigDB()
         cdb.is_tracing = True
         await uvm_root().run_test("test", keep_singletons=True)
-        cdb.set(uvm_root(), '*', "LABEL", 55)
+        cdb.set(uvm_root(), "*", "LABEL", 55)
         datum = cdb.get(uvm_root(), "tt", "LABEL")
         self.assertEqual(55, datum)
         utt = uvm_root().get_child("uvm_test_top")
@@ -76,14 +79,17 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
         class comp(uvm_component):
             def build_phase(self):
                 self.numb = ConfigDB().get(self, "", "CONFIG")
+
         class test(uvm_test):
             def build_phase(self):
                 ConfigDB().set(self, "*", "CONFIG", 88)
                 self.cc1 = comp("cc1", self)
                 self.cc2 = comp("cc", self)
+
             async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
+
         await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.numb)
@@ -93,6 +99,7 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
         class comp(uvm_component):
             def build_phase(self):
                 self.numb = ConfigDB().get(self, "", "CONFIG")
+
         class test(uvm_test):
             def build_phase(self):
                 ConfigDB().set(self, "*", "CONFIG", 88)
@@ -104,6 +111,7 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
             async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
+
         await uvm_root().run_test("test", keep_singletons=True)
         utt = uvm_root().get_child("uvm_test_top")
         self.assertEqual(88, utt.cc1.numb)
@@ -143,13 +151,14 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
                 self.pmsg = f"Hooray for {self.get_name()}!"
                 self.mmsg = "Settle down, you too."
                 self.rmsg = "What's going on?"
-                ConfigDB().set(self, 'p?', "MSG", self.pmsg)
-                ConfigDB().set(self, 'm*', "MSG", self.mmsg)
-                ConfigDB().set(self, '*', "MSG",  self.rmsg)
+                ConfigDB().set(self, "p?", "MSG", self.pmsg)
+                ConfigDB().set(self, "m*", "MSG", self.mmsg)
+                ConfigDB().set(self, "*", "MSG", self.rmsg)
                 self.p1 = Printer("p1", self)
                 self.p2 = Printer("p2", self)
                 self.mediator = Printer("mediator", self)
                 self.reporters = Printer("reporters", self)
+
             async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
@@ -160,7 +169,6 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
         self.assertEqual(utt.pmsg, utt.p2.msg)
         self.assertEqual(utt.mmsg, utt.mediator.msg)
         self.assertEqual(utt.rmsg, utt.reporters.msg)
-
 
     async def test_wildcard_hierarchy_at_root(self):
         class Printer(uvm_component):
@@ -172,13 +180,14 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
                 self.pmsg = f"Hooray for {self.get_name()}!"
                 self.mmsg = "Settle down, you too."
                 self.rmsg = "What's going on?"
-                ConfigDB().set(None, '*p?', "MSG", self.pmsg)
-                ConfigDB().set(None, '*me*', "MSG", self.mmsg)
-                ConfigDB().set(None, '*', "MSG",  self.rmsg)
+                ConfigDB().set(None, "*p?", "MSG", self.pmsg)
+                ConfigDB().set(None, "*me*", "MSG", self.mmsg)
+                ConfigDB().set(None, "*", "MSG", self.rmsg)
                 self.p1 = Printer("p1", self)
                 self.p2 = Printer("p2", self)
                 self.mediator = Printer("mediator", self)
                 self.reporters = Printer("reporters", self)
+
             async def run_phase(self):
                 self.raise_objection()
                 self.drop_objection()
@@ -189,4 +198,3 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
         self.assertEqual(utt.pmsg, utt.p2.msg)
         self.assertEqual(utt.mmsg, utt.mediator.msg)
         self.assertEqual(utt.rmsg, utt.reporters.msg)
-

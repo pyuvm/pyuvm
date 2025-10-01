@@ -1,7 +1,9 @@
-from cocotb.clock import Clock
-import cocotb
 import inspect
+
+import cocotb
 import test_config_db as test_mod
+from cocotb.clock import Clock
+
 from pyuvm import *
 
 
