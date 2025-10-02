@@ -341,10 +341,10 @@ class uvm_reg_field(uvm_object):
             self._desired = value
 
     # Check the Direction and the access type along with the enable error
-    # flags (if error is supposed to be thown then send it out)
+    # flags (if error is supposed to be thrown then send it out)
     def predict_response(self, path: path_t, direction: access_e):
         # Check the Direction and the access type along with the enable error
-        # flags (if error is supposed to be thown then send it out)
+        # flags (if error is supposed to be thrown then send it out)
         # if we try to write a 1 when the access on write will require the 0
         # to generate some effect
         if (

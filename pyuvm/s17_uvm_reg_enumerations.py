@@ -227,7 +227,7 @@ class uvm_hdl_path_concat(uvm_object):
                     if count == 0:
                         continue
                     if slice.offset >= slices[count - 1].offset:
-                        raise UVMFatalError("Slice order doesnt follow MSB to LSB")
+                        raise UVMFatalError("Slice order doesn't follow MSB to LSB")
         self._slices = slices
 
     # 17.2.3.3.3

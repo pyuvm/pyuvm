@@ -60,7 +60,7 @@ class elem_kind_e(Enum):
 #
 class access_e(Enum):
     """
-    access_e typoe of access allowed
+    access_e type of access allowed
     PYUVM_READ  = 0
     PYUVM_WRITE = 1
     """
@@ -94,7 +94,7 @@ def rand_enable(use_pyvsc: bool):
         def __init__(self, cls) -> None:
             self.cls = cls
 
-        # operate on CLS init inupt argument
+        # operate on CLS init input argument
         def __call__(self):
             if use_pyvsc is True:
                 raise UVMNotImplemented()
