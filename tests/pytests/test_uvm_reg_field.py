@@ -1,4 +1,6 @@
 # Main Packages for the entire RAL model
+from random import randint
+
 import pytest
 
 from pyuvm.s17_uvm_reg_enumerations import uvm_door_e, uvm_predict_e
@@ -146,8 +148,6 @@ def test_reg_field_get_value():
 
 @pytest.mark.test_reg_field_field_predict_read_set
 def test_reg_field_field_predict_read_set():
-    from random import randint
-
     field = uvm_reg_field()
     ## With the set register once we perfom the operation R the register will be set entirely according to the fields
     ## getting a prendicted value of 1 regardless of the predicted value we set through the function
@@ -170,8 +170,6 @@ def test_reg_field_field_predict_read_set():
 
 @pytest.mark.test_reg_field_field_predict_read_clear
 def test_reg_field_field_predict_read_clear():
-    from random import randint
-
     field = uvm_reg_field()
     ## With the clear register once we perfom the operation R the register will be cleared entirely according to the fields
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
@@ -192,8 +190,6 @@ def test_reg_field_field_predict_read_clear():
 
 @pytest.mark.test_reg_field_field_predict_write_set
 def test_reg_field_field_predict_write_set():
-    from random import randint
-
     field = uvm_reg_field()
     ## With the set register once we perfom the operation W the register will be set entirely according to the fields
     ## getting a prendicted value of 1 regardless of the predicted value we set through the function
@@ -230,8 +226,6 @@ def test_reg_field_field_predict_write_set():
 
 @pytest.mark.test_reg_field_field_predict_write_clear
 def test_reg_field_field_predict_write_clear():
-    from random import randint
-
     field = uvm_reg_field()
     ## With the clear register once we perfom the operation W the register will be cleared entirely according to the fields
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
@@ -268,8 +262,6 @@ def test_reg_field_field_predict_write_clear():
 
 @pytest.mark.test_reg_field_field_predict_TOGGLE
 def test_reg_field_field_predict_TOGGLE():
-    from random import randint
-
     field = uvm_reg_field()
     ## With the clear register once we perfom the operation W the register will be cleared entirely according to the fields
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
@@ -301,8 +293,6 @@ def test_reg_field_field_predict_TOGGLE():
 
 @pytest.mark.test_reg_field_field_predict_NO_ACCESS
 def test_reg_field_field_predict_NO_ACCESS():
-    from random import randint
-
     field = uvm_reg_field()
     ## With the NO_ACCESS the reset value is always returned
     field.configure(uvm_reg(), 8, 16, "NO_ACCESS", True, randint(1, 2**8 - 1))
@@ -327,8 +317,6 @@ def test_reg_field_field_predict_NO_ACCESS():
 
 @pytest.mark.test_reg_field_field_predict_status_error_on_write
 def test_reg_field_field_predict_status_error_on_write():
-    from random import randint
-
     field = uvm_reg_field()
     ## With the NO_ACCESS the reset value is always returned
     for acs in ["RO", "RW", "RC", "RS"]:
@@ -349,8 +337,6 @@ def test_reg_field_field_predict_status_error_on_write():
 
 @pytest.mark.test_reg_field_field_predict_status_error_on_read
 def test_reg_field_field_predict_status_error_on_read():
-    from random import randint
-
     field = uvm_reg_field()
     # With the NO_ACCESS the reset value is always returned
     for acs in [

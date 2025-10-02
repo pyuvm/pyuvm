@@ -37,6 +37,8 @@ class AluSeqItem(uvm_sequence_item):
         same = self.A == other.A and self.B == other.B and self.op == other.op
         return same
 
+    __hash__: None  # type: ignore
+
     def __str__(self):
         return f"{self.get_name()} : A: 0x{self.A:02x} \
         OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"

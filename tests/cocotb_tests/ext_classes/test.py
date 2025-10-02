@@ -27,8 +27,8 @@ async def run_tests(dut):
                 tests_pass[name] = False
             t12.tearDown()
     any_failed = False
-    for test in tests_pass:
-        if tests_pass[test]:
+    for test, passed in tests_pass.items():
+        if passed:
             pf = "Pass   "
         else:
             pf = "FAILED "
