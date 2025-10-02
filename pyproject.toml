@@ -13,12 +13,20 @@ extend-select = [
     "E",        # pycodestyle errors
     "W",        # pycodestyle warnings
     "F",        # pyflakes
+    "PL",       # pylint
 ]
 ignore = [
     "E741",    # ambiguous variable name (preference)
     "E501",    # line too long (preference)
     "F405",    # Undefined local with import star usage (preference)
     "F403",    # Undefined local with import star (preference)
+    "PLR0912", # Too many branches (>12) (preference)
+    "PLR0913", # Too many arguments to function call (>5) (preference)
+    "PLR0915", # Too many statements (>50) (preference)
+    "PLR2004", # Magic value used in comparison (preference)
+    "PLR0911", # Too many return statements (preference)
+    "PLW0603", # Using the global statement (pedantic)
+    "PLW1641", # object does not implement `__hash__` method (pedantic)
 ]
 
 [tool.ruff.lint.isort]

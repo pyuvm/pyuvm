@@ -19,10 +19,6 @@ init:
 	pip install -r requirements.txt
 	pip install -e .
 
-.PHONY: lint
-lint:
-	@pylint pyuvm
-
 .PHONY: test
 pytests:
 	pytest tests/pytests
