@@ -1,8 +1,7 @@
 import fnmatch
 import logging
 
-import pyuvm.error_classes as error_classes
-import pyuvm.utility_classes as utility_classes
+from pyuvm import error_classes, utility_classes
 
 # pyuvm refactors the factory, taking advantage Python's
 # superiority in terms of OOP features and lack of types.

@@ -2,8 +2,8 @@ import inspect
 
 import cocotb
 
-import pyuvm.utility_classes as utility_classes
 from pyuvm import *
+from pyuvm import utility_classes
 
 phase_list = {}
 

@@ -129,17 +129,14 @@ class ALU_REG_REG_BLOCK(uvm_reg_block):
         self.def_map = uvm_reg_map("map")
         self.def_map.configure(self, 0)
 
-        #
         self.SRC = ALU_REG_SRC("SRC")
         self.SRC.configure(self, "0x0", "", False, False)
         self.def_map.add_reg(self.SRC, "0x0", "RW")
 
-        #
         self.RESULT = ALU_REG_RESULT("RESULT")
         self.RESULT.configure(self, "0x2", "", False, False)
         self.def_map.add_reg(self.RESULT, "0x0", "RW")
 
-        #
         self.CMD = ALU_REG_CMD("CMD")
         self.CMD.configure(self, "0x4", "", False, False)
         self.def_map.add_reg(self.CMD, "0x0", "RW")
@@ -558,22 +555,21 @@ class Scoreboard(uvm_component):
                         f"= 0x{actual_result:04x} "
                         f"expected 0x{predicted_result:04x}"
                     )
+            elif predicted_result == actual_result:
+                self.logger.info(
+                    f"PASSED: 0x{A:02x} "
+                    f"{op_numb.name} "
+                    f"0x{B:02x} = "
+                    f"0x{actual_result:04x}"
+                )
             else:
-                if predicted_result == actual_result:
-                    self.logger.info(
-                        f"PASSED: 0x{A:02x} "
-                        f"{op_numb.name} "
-                        f"0x{B:02x} = "
-                        f"0x{actual_result:04x}"
-                    )
-                else:
-                    self.logger.error(
-                        f"FAILED: 0x{A:02x} "
-                        f"{op_numb.name} "
-                        f"0x{B:02x} "
-                        f"= 0x{actual_result:04x} "
-                        f"expected 0x{predicted_result:04x}"
-                    )
+                self.logger.error(
+                    f"FAILED: 0x{A:02x} "
+                    f"{op_numb.name} "
+                    f"0x{B:02x} "
+                    f"= 0x{actual_result:04x} "
+                    f"expected 0x{predicted_result:04x}"
+                )
 
     def check_phase(self):
         if self.result_fifo.size() != 0:

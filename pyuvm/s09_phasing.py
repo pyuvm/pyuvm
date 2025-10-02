@@ -1,6 +1,6 @@
 import cocotb
 
-import pyuvm.error_classes as error_classes
+from pyuvm import error_classes
 from pyuvm.s05_base_classes import uvm_object
 
 # 9.1
