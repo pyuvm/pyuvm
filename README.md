@@ -34,7 +34,7 @@ You can read the API documentation for **pyuvm** on [GitHub Pages](https://pyuvm
 |18|UVM Register Block|**pyuvm** implements the RAL register block classes|
 |19|UVM Register Field|**pyuvm** implements register fields as defined in IEEE 18002.  There are still few functionalities missing like atomic Backdoor access, Field byte access, and single Field access during read or write operation|
 |20|UVM Register|Main register class is implemented but is still missing Backdoor and used Backdoor to be leveraged from cocotb force. Byte access and single field access yet to be implemented|
-|21|UVM Register Map|Main register map class, should be refatored to guarantee simplicity and backdoor access, extension class in Read and Write to be implemented|
+|21|UVM Register Map|Main register map class, should be refactored to guarantee simplicity and backdoor access, extension class in Read and Write to be implemented|
 |22|UVM Memory|Not Implemented|
 |23|Register Item|Register Item used across multiple classes|
 |24|Register include file|Includes other Enum and types to be merged with s17|
@@ -128,7 +128,7 @@ The `TinyAluBfm` is defined in `tinyalu_utils.py` and imported into our testbenc
 
 # The **pyuvm** testbench
 
-The `testbench.py` contains the entire UVM testbench and connects to the TinyALU through a `TinyAluBfm` object defined in `tinyalu_utils.py`.  We'll examine the `testbench.py` file and enough of the **cocotb** test too run the simulation
+The `testbench.py` contains the entire UVM testbench and connects to the TinyALU through a `TinyAluBfm` object defined in `tinyalu_utils.py`.  We'll examine the `testbench.py` file and enough of the **cocotb** test to run the simulation.
 
 ## Importing **pyuvm**
 

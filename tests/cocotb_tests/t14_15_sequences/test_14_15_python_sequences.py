@@ -144,14 +144,14 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
 
     async def test_uvm_item_port_put_get(self):
         sip = uvm_seq_item_port("sip", self.my_root)
-        sie = uvm_seq_item_export("sie", self.my_root)
-        sip.connect(sie)
+        sie_ = uvm_seq_item_export("sie", self.my_root)  # codespell:ignore sie
+        sip.connect(sie_)
         await self.run_get_response(sip.put_response, sip.get_response)
 
     async def test_premature_item_done(self):
         sip = uvm_seq_item_port("sip", self.my_root)
-        sie = uvm_seq_item_export("sie", self.my_root)
-        sip.connect(sie)
+        sie_ = uvm_seq_item_export("sie", self.my_root)  # codespell:ignore sie
+        sip.connect(sie_)
         with self.assertRaises(error_classes.UVMSequenceError):
             sip.item_done()
 

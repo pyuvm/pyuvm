@@ -122,13 +122,13 @@ class FactoryData(metaclass=Singleton):
 
         # xyz -> foo -> bar
         #
-        # So if find_override is fo:
-        #     fo(xyz) -> fo(foo) -> fo(bar) <-- no override returns bar.
+        # So if find_override is f:
+        #     f(xyz) -> f(foo) -> f(bar) <-- no override returns bar.
         # Recursive loops result ina n error in which case the
         # type returned is the one that formed the loop:
         # xyz -> foo -> bar -> xyz
         #
-        # fo(xyz) -> fo(foo) -> fo(bar) -> fo(xyz) -- xyz is in
+        # f(xyz) -> f(foo) -> f(bar) -> f(xyz) -- xyz is in
         # list of overrides so return bar
         # bar is returned with a printed error.
         #
