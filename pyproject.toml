@@ -34,3 +34,8 @@ known-third-party = [
 "pyuvm/__init__.py" = [
     "F401",
 ]
+
+[tool.codespell]
+ignore-words-list = [
+    "synopsys",
+]
