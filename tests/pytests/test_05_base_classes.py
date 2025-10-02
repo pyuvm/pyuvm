@@ -16,6 +16,8 @@ class my_object(uvm_object):
         if type(other) is type(self):
             return self.val == other.val
 
+    __hash__: None  # type: ignore[assignment]
+
     def __str__(self):
         return "Hello"
 
@@ -112,7 +114,7 @@ def test_printing():
     # 5.3.6.2
     with pytest.raises(error_classes.UsePythonMethod):
         mo.sprint()
-    assert "Hello", mo.convert2string()
+    assert "Hello" == mo.convert2string()
 
 
 def test_recording():
