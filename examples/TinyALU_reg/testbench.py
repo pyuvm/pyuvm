@@ -51,7 +51,7 @@ LANGUAGE = os.getenv("TOPLEVEL_LANG", "verilog")
 # both fields are part of the SRC register (16bits) called DATA0 -DATA1
 # the result of the operation is instead sent back into a 16bits register
 # called RESULT
-# the Operation is instead written into a regsiter called CMD:
+# the Operation is instead written into a register called CMD:
 # 1.    the first 5 (4:0) bits is the OP target
 # 2.    the bit number 5 is the start if
 #       not set the OPERATION is not kicked off
@@ -143,7 +143,7 @@ class ALU_REG_REG_BLOCK(uvm_reg_block):
 
 
 ##############################################################################
-# ADAPATER
+# ADAPTER
 ##############################################################################
 
 

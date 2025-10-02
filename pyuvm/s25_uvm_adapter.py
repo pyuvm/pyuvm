@@ -51,12 +51,12 @@ class uvm_reg_adapter(uvm_object):
         self.reg_item = item
 
     # Use this method to set the parent sequence into the adapter class
-    # Generaly is a simple Write Sequence
+    # Generally is a simple Write Sequence
     def set_parent_sequence(self, sequence: uvm_sequence):
         self.parent_sequence = sequence
 
     # Use this method to set the parent sequence into the adapter class
-    # Generaly is a simple Write Sequence
+    # Generally is a simple Write Sequence
     def get_parent_sequence(self):
         return self.parent_sequence
 

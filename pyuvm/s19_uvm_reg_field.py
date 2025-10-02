@@ -25,7 +25,7 @@ from pyuvm.s24_uvm_reg_includes import (
 )
 
 ############################################
-# Yet to be implemeneted TODO:
+# Yet to be implemented TODO:
 ############################################
 """
     1.  Checking the set during a write happening on the Parent register
@@ -94,7 +94,7 @@ class uvm_reg_field(uvm_object):
             uvm_fatal(
                 self._header,
                 "Size of a filed \
-                      cannot be 0 MINIMUN allowed is 1",
+                      cannot be 0 MINIMUM allowed is 1",
             )
         # Check if policy is a valid policy
         if self._access not in self.access_list:
@@ -110,14 +110,14 @@ class uvm_reg_field(uvm_object):
             uvm_error(
                 self._header,
                 f"Reset value for REG \
-                      feild : {self.get_name()} is [{self._reset}] \
+                      field : {self.get_name()} is [{self._reset}] \
                       is beyond the MAX valoue given \
                       by the size [{((2**self._size) - 1)}]",
             )
         # Add field
         parent._add_field(self)
 
-    # lock method meaning the configursation is
+    # lock method meaning the configuration is
     # done and we can unlock all the internal methods
     def field_lock(self):
         self._config_done = True
@@ -130,7 +130,7 @@ class uvm_reg_field(uvm_object):
     def _add_error(self, value):
         self._err_list.append(value)
 
-    # checking mechanims for error list
+    # checking mechanisms for error list
     def _check_(self):
         if len(self._err_list) > 0:
             (print(self._err_list[el] for el in range(len(self._err_list))))
@@ -162,7 +162,7 @@ class uvm_reg_field(uvm_object):
                 self._header,
                 "Configure for a \
                       field must be called called \
-                      before any other memeber method",
+                      before any other member method",
             )
             self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
             return None
@@ -176,7 +176,7 @@ class uvm_reg_field(uvm_object):
                 self._header,
                 "Configure for a \
                       field must be called called \
-                      before any other memeber method",
+                      before any other member method",
             )
             self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
             return 0
@@ -190,7 +190,7 @@ class uvm_reg_field(uvm_object):
                 self._header,
                 "Configure for a \
                       field must be called called before\
-                       any other memeber method",
+                       any other member method",
             )
             self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
             return 0
@@ -203,7 +203,7 @@ class uvm_reg_field(uvm_object):
             error_out(
                 self._header,
                 "Configure for a field must \
-                      be called called before any other memeber method",
+                      be called called before any other member method",
             )
             self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
             return 0
@@ -216,7 +216,7 @@ class uvm_reg_field(uvm_object):
             error_out(
                 self._header,
                 "Configure for a field \
-                      must be called called before any other memeber method",
+                      must be called called before any other member method",
             )
             self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
             return ""
@@ -234,7 +234,7 @@ class uvm_reg_field(uvm_object):
                 self._header,
                 "Configure for\
                        a field must be called called \
-                      before any other memeber method",
+                      before any other member method",
             )
             return False
         else:
@@ -247,7 +247,7 @@ class uvm_reg_field(uvm_object):
                 self._header,
                 "Configure for a \
                       field must be called called before \
-                      any other memeber method",
+                      any other member method",
             )
             self._add_error(uvm_reg_field_error_decoder.CONFIGURE_MUST_BE_CALLED_BEFORE)
             return 0
@@ -389,7 +389,7 @@ class uvm_reg_field(uvm_object):
 
     # Since there is no Switch case in python we use a simple switch case
     # Where error is mentioned it depends on _error_on_write flag, no effect
-    # will be translated in Error reponse if flag is enable
+    # will be translated in Error response if flag is enable
     # "RO"       - W: no effect, R: no effect
     # "RW"       - W: as-is, R: no effect
     # "RC"       - W: no effect, R: clears all bits
@@ -453,7 +453,7 @@ class uvm_reg_field(uvm_object):
 
     # atomic predict value based on the operation (READ)
     # Where error is mentioned it depends on _error_on_read flag, no effect
-    # will be translated in Error reponse if flag is enable
+    # will be translated in Error response if flag is enable
     # Since there is no Switch case in python we use a simple switch case
     # "RO"       - W: no effect, R: return the mirrored value (reset one)
     # "RW"       - W: as-is, R: as-is
@@ -511,7 +511,7 @@ class uvm_reg_field(uvm_object):
             return True, self._reset
         return False, 0
 
-    # Proccess of predictiong
+    # Process of predictiong
     def do_predict(
         self,
         rw: uvm_reg_item,

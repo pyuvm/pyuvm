@@ -619,4 +619,4 @@ class s08_factory_classes_TestCase:
 
         await uvm_root().run_test("Test", keep_singletons=True)
         utt = uvm_root()._utt()
-        assert isinstance(utt.cc1, Obj)  # Cant inst override object
+        assert isinstance(utt.cc1, Obj)  # Can't inst override object
