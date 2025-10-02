@@ -171,7 +171,7 @@ def error_out(header, message):
 class uvm_reg_bus_op:
     """
     Standard class for register bus operation
-    to be used into the Prediction or Adpater
+    to be used into the Prediction or Adapter
     """
 
     def __init__(self) -> None:

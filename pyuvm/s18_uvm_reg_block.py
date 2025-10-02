@@ -223,7 +223,7 @@ class uvm_reg_block(uvm_object):
             self.def_map = map_i
 
     # blk_create_map byte_addressing and byte_en
-    # along with endianess not yet supported
+    # along with endianness not yet supported
     def blk_create_map(self, name: str, base_addr: int):
         lmap = uvm_reg_map.create(name)
         lmap.configure(self, base_addr)

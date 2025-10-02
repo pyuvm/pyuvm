@@ -17,15 +17,15 @@ Use this to just skip the execution of a specific test
 @pytest.mark.skip
 
 Use this to give a specific test method a
-name ID the exeucte it by using py.test -m ID_NAME
+name ID the execute it by using py.test -m ID_NAME
 @pytest.mark.ID_NAME
 
 Use this to give a specific test parameters to be used
 @pytest.mark.parametrize("name1, name2",value_type_1, value_type_2)
 
 If pip install pytest-sugar is ran then pytest is gonna
-likly execute a bar progression while
-running tests (expecially if in Parallel)
+likely execute a bar progression while
+running tests (especially if in Parallel)
 """
 
 ##############################################################################
@@ -149,7 +149,7 @@ def test_reg_field_field_predict_read_set():
     from random import randint
 
     field = uvm_reg_field()
-    ## With the set register once we perfom the operation R the register will be set entirely according to the fields
+    ## With the set register once we perform the operation R the register will be set entirely according to the fields
     ## getting a prendicted value of 1 regardless of the predicted value we set through the function
     for acs in ["RS", "WRS", "WCRS", "W1CRS", "W0CRS"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 15)
@@ -173,7 +173,7 @@ def test_reg_field_field_predict_read_clear():
     from random import randint
 
     field = uvm_reg_field()
-    ## With the clear register once we perfom the operation R the register will be cleared entirely according to the fields
+    ## With the clear register once we perform the operation R the register will be cleared entirely according to the fields
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
     for acs in ["RC", "WRC", "WSRC", "W1SRC", "W0SRC"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 15)
@@ -195,7 +195,7 @@ def test_reg_field_field_predict_write_set():
     from random import randint
 
     field = uvm_reg_field()
-    ## With the set register once we perfom the operation W the register will be set entirely according to the fields
+    ## With the set register once we perform the operation W the register will be set entirely according to the fields
     ## getting a prendicted value of 1 regardless of the predicted value we set through the function
     for acs in ["WSRC", "WOS", "WS", "W0S", "W1SRC", "W0SRC", "W1S"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 0)
@@ -233,7 +233,7 @@ def test_reg_field_field_predict_write_clear():
     from random import randint
 
     field = uvm_reg_field()
-    ## With the clear register once we perfom the operation W the register will be cleared entirely according to the fields
+    ## With the clear register once we perform the operation W the register will be cleared entirely according to the fields
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
     for acs in ["WOC", "WC", "W1C", "W1CRS", "W0C", "W0CRS", "WCRS"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 0)
@@ -271,7 +271,7 @@ def test_reg_field_field_predict_TOGGLE():
     from random import randint
 
     field = uvm_reg_field()
-    ## With the clear register once we perfom the operation W the register will be cleared entirely according to the fields
+    ## With the clear register once we perform the operation W the register will be cleared entirely according to the fields
     ## getting a prendicted value of 0 regardless of the predicted value we set through the function
     for acs in ["W1T", "W0T"]:
         field.configure(uvm_reg(), 8, 16, acs, True, 0)

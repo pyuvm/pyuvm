@@ -38,11 +38,11 @@ class uvm_reg(uvm_object):
         self._path: str = ""
         self._width = reg_width
         # If set those 2 flags will override fields values, and if set to True
-        # the fields will report error reponse
+        # the fields will report error response
         # in case of (Operation,Access) expect an error
         self.throw_error_on_read: bool = False
         self.throw_error_on_write: bool = False
-        # Internal varibales used to detect if an operation is in progress
+        # Internal variables used to detect if an operation is in progress
         # there were will be no difference between read and write
         # we cannot read and write from to the same register at tsame time
         self._op_in_progress: bool = False
@@ -67,7 +67,7 @@ class uvm_reg(uvm_object):
         self._path = hdl_path
         self._sum = 0
         # If set those 2 flags will override fields values,
-        # and if set to True the fields will report error reponse
+        # and if set to True the fields will report error response
         # in case of (Operation,Access) expect an error
         self.throw_error_on_read = throw_error_on_read
         self.throw_error_on_write = throw_error_on_write
@@ -93,7 +93,7 @@ class uvm_reg(uvm_object):
     def gen_message(self, mss: str) -> str:
         return self._header + mss
 
-    # checking mechanims for error list
+    # checking mechanisms for error list
     def check_err_list(self):
         if len(self._err_list) > 0:
             for el in range(len(self._err_list)):

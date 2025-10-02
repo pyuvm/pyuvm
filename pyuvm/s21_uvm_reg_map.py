@@ -37,7 +37,7 @@ class uvm_reg_map(uvm_object):
         super().__init__(name)
         # this must be uvm_reg_block
         self._parent = None
-        # this is equivalent to offset in uvm map refernce
+        # this is equivalent to offset in uvm map reference
         self._offset = 0
         self._regs = {}
         self.header = name + " -- "
@@ -97,10 +97,10 @@ class uvm_reg_map(uvm_object):
             return self._offset
 
     # add_reg
-    def add_reg(self, reg, offset: str = "0x0", rigths: str = "RW"):
+    def add_reg(self, reg, offset: str = "0x0", rights: str = "RW"):
         reg.add_map(self)
         sum_offset = self._str2int(offset) + self._str2int(reg.get_address())
-        reg.set_access_policy(rigths)
+        reg.set_access_policy(rights)
         self._regs[self._int2hex(sum_offset)] = reg
 
     # get_registers
@@ -193,7 +193,7 @@ class uvm_reg_map(uvm_object):
             self._submaps[submap.get_name() + "_mapping_flag"] = True
             submap.add_parent_map(self)
         # TODO: add a check for n_bytes
-        # submaps should never differ in the n-bytes transfered (bus interface
+        # submaps should never differ in the n-bytes transferred (bus interface
         # is shared per submaps) hence there should be only 1 n-bytes supported
 
     # reset
@@ -283,10 +283,10 @@ class uvm_reg_map(uvm_object):
         if adapter.get_parent_sequence() is not None:
             reg_item.set_parent_sequence(adapter.get_parent_sequence())
         else:
-            # if the parent sequence is not set in teh adapter we need to
+            # if the parent sequence is not set in the adapter we need to
             # create a base sequence and assign it internally
             # to the reg_item there is no need to use the factory
-            # we aare not gonna use the factory constructor
+            # we are not gonna use the factory constructor
             base_seq = uvm_sequence("base_seq")
             reg_item.set_parent_sequence(base_seq)
             adapter.set_parent_sequence(base_seq)
@@ -326,7 +326,7 @@ class uvm_reg_map(uvm_object):
             local_bus_op.byte_en = local_adapter.get_byte_en()
             local_bus_op.data = data_to_be_written
             # Parse the local bus operation with the adapter
-            # give the ITEM once to the adpater so it can
+            # give the ITEM once to the adapter so it can
             # eventually fecth the extension element
             local_adapter.set_item(item)
             bus_req = local_adapter.reg2bus(local_bus_op)
@@ -379,7 +379,7 @@ class uvm_reg_map(uvm_object):
             local_bus_op.n_bits = self._regs[reg_address].get_reg_size()
             local_bus_op.byte_en = local_adapter.get_byte_en()
             # Parse the local bus operation with the adapter
-            # give the ITEM once to the adpater so it can
+            # give the ITEM once to the adapter so it can
             # eventually fecth the extension element
             local_adapter.set_item(item)
             bus_req = local_adapter.reg2bus(local_bus_op)

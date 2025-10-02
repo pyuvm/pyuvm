@@ -9,7 +9,7 @@ input bit reset_n, input int unsigned data_in, output int unsigned data_out);
     always @(posedge clk)
         if (reset_n == 0)
             begin
-                $display("reseting");
+                $display("resetting");
                 data_out <= 0;
             end
         else
