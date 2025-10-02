@@ -279,17 +279,16 @@ class uvm_reg_field(uvm_object):
             self._add_error(
                 uvm_reg_field_error_decoder.ACCESS_TYPE_NEEDS_TO_BE_A_STRING
             )
+        elif access_value is self.access_list:
+            self._access = access_value
         else:
-            if access_value is self.access_list:
-                self._access = access_value
-            else:
-                error_out(
-                    self._header,
-                    "Access value \
-                          provided is not part of possible access values",
-                )
-                self._add_error(uvm_reg_field_error_decoder.ACCESS_VALUE_OUT_OF_LIST)
-                self._access = "NOACCESS"
+            error_out(
+                self._header,
+                "Access value \
+                      provided is not part of possible access values",
+            )
+            self._add_error(uvm_reg_field_error_decoder.ACCESS_VALUE_OUT_OF_LIST)
+            self._access = "NOACCESS"
 
     # Atomic set response status for fields
     def set_response(self, f_response: uvm_resp_t):

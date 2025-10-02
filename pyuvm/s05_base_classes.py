@@ -4,8 +4,7 @@ This file defines the UVM base classes
 
 from cocotb.utils import get_sim_time
 
-import pyuvm.error_classes as error_classes
-import pyuvm.utility_classes as utility_classes
+from pyuvm import error_classes, utility_classes
 from pyuvm.s08_factory_classes import uvm_factory
 
 

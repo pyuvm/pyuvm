@@ -52,12 +52,10 @@ class predict_t(Enum):
     PREDICT_DIRECT = 3
 
 
-#
 class elem_kind_e(Enum):
     pass
 
 
-#
 class access_e(Enum):
     """
     access_e typoe of access allowed
@@ -69,7 +67,6 @@ class access_e(Enum):
     UVM_WRITE = 1
 
 
-#
 class uvm_resp_t(Enum):
     """
     uvm_resp_t is the main response based on the access issued
@@ -81,7 +78,6 @@ class uvm_resp_t(Enum):
     ERROR_RESP = 1
 
 
-#
 def rand_enable(use_pyvsc: bool):
     """
     New Decorator class with randomization option
@@ -133,7 +129,6 @@ disable_code_interruption_assert = False
 disable_code_interruption_fatal = False
 
 
-#
 def uvm_error(header="", message=""):
     """
     Used to error out based on header and message
@@ -141,7 +136,6 @@ def uvm_error(header="", message=""):
     raise UVMError(f"{header + message}")
 
 
-#
 def uvm_fatal(header="", message=""):
     """
     Used to fatal out based on header and message
@@ -150,7 +144,6 @@ def uvm_fatal(header="", message=""):
         raise UVMFatalError(f"{header + message}")
 
 
-#
 def uvm_not_implemeneted(header="", message=""):
     """
     Used to fatal out based on header and message
@@ -159,7 +152,6 @@ def uvm_not_implemeneted(header="", message=""):
         raise UVMNotImplemented(f"{header + message}")
 
 
-#
 def error_out(header, message):
     """
     Used to error out based on header and message
@@ -167,7 +159,6 @@ def error_out(header, message):
     assert disable_code_interruption_assert, header + message
 
 
-#
 class uvm_reg_bus_op:
     """
     Standard class for register bus operation
@@ -183,7 +174,6 @@ class uvm_reg_bus_op:
         self.status: uvm_resp_t = uvm_resp_t.PASS_RESP
 
 
-#
 class uvm_reg_error_decoder(Enum):
     """
     List of uvm_reg errors to be collected
@@ -201,7 +191,6 @@ class uvm_reg_error_decoder(Enum):
     REG_SIZE_CANNOT_BE_ZERO = 5
 
 
-#
 class uvm_reg_field_error_decoder(Enum):
     """
     List of uvm_reg errors to be collected

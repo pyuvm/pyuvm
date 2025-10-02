@@ -2,8 +2,8 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 
-import pyuvm.utility_classes as utility_classes
 from pyuvm import *
+from pyuvm import utility_classes
 
 
 class CocotbProxy:
