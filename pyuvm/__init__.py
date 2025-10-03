@@ -1,3 +1,5 @@
+from pyuvm._version import __version__
+
 # Support Modules
 from pyuvm.error_classes import *
 
