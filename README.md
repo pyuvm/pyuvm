@@ -40,7 +40,7 @@ You can read the API documentation for **pyuvm** on [GitHub Pages](https://pyuvm
 |24|Register include file|Includes other Enum and types to be merged with s17|
 |25|UVM register adapter|Main register adapter|
 |26|UVM register predictor|Main register predictor, should be disabled if auto_prediction is not set|
-|27|Register Package|Main PKG if included and flake8 is not active should behave similarly to uvm_reg_pkg|
+|27|Register Package|Main PKG if included should behave similarly to uvm_reg_pkg|
 
 # Installation
 
@@ -459,16 +459,73 @@ class AluSeqItem(uvm_sequence_item):
 
 You can contribute to **pyuvm** by forking this repository and submitting pull requests.
 
-The repository runs all needed tests using `tox`.  The test runs
-`flake8` and fails if that linter finds any issues.  Visual Studio Code
-can be set up to automatically check `flake8` issues.  The repository
-ignores F403 and F405 issues from `flake8`.
+### Development Environment Setup
 
-There are three sets of `pytest` tests that test features that
-don't use coroutines.  The rest of the tests are in `tests/cocotb_tests`
-and need a simulator to run.
+The pyuvm project uses forked Github rebase flow.
+The first step is to [fork the project](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
 
-Credits:
+
+It is recommended to make a virtual environment and work with that environment activated.
+This can be done with the built-in [`venv`](https://docs.python.org/3/library/venv.html) module in Python,
+or with an alternative like [uv](https://docs.astral.sh/uv/).
+
+```sh
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Next install the main development tools using `pip`.
+
+```sh
+pip install nox ruff tox pre-commit pytest
+```
+
+### Linting
+
+Linting is done with various tools: ruff, pre-commit, codespell, and others.
+These tools are all run using [pre-commit](https://pre-commit.com/).
+To run pre-commit lints on all sources run the following in the repo root.
+
+```sh
+pre-commit run -a
+```
+
+You can also set pre-commit to run as a git commit hook, so lints are done before every `git commit`, by running the following in the repo root.
+
+```sh
+pre-commit install
+```
+
+
+### Testing
+
+The repository runs all needed tests using [tox](https://tox.wiki/en/stable/).
+This will run the full set of tests for all supported operating systems, Python versions, and cocotb versions.
+But it will automatically skip any tests that don't apply to your system (OS and Python version).
+
+```sh
+tox
+```
+
+You can also run tests manually without the use of tox.
+
+There are [pytest](https://docs.pytest.org/en/stable/) tests that test features that don't use coroutines.
+You can run these by using calling `pytest` directly at the repo root.
+
+```sh
+pytest
+```
+
+The rest of the tests are in `tests/cocotb_tests` and use cocotb, thus requiring a simulator.
+You can run these by calling `make` in the repo root.
+You can change which simulator to use by setting `VERILOG_SIM` and `VHDL_SIM` to set the Verilog and VHDL simulator of choice, respectively.
+These `*_SIM` variables take the values the cocotb `SIM` make variable would take.
+
+```sh
+make VERILOG_SIM=icarus VHDL_SIM=nvc
+```
+
+# Credits
 
 * Ray Salemi—Original author, created as an employee of Siemens.
 * IEEE 1800.2 Specification
