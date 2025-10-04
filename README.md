@@ -150,7 +150,7 @@ from pyuvm import *
 
 We're going to examine the UVM classes from the top, the test, to the bottom, the sequences.
 
-**pyuvm** names the UVM classes as they are named in the specification. Therefore **pyvu use underscore naming as is done in SystemVerilog and not camel-casing.
+**pyuvm** names the UVM classes as they are named in the specification. Therefore **pyuvm** uses underscore naming as is done in SystemVerilog and not camel-casing.
 
 We extend `uvm_test` to create the `AluTest`, using camel-casing in our code even if **pyuvm** does not use it:
 
