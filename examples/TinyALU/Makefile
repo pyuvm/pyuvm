@@ -15,7 +15,7 @@ ifeq ($(SIM), verilator)
     # Enable processing of #delay statements
     COMPILE_ARGS += --timing
 endif
-MODULE := testbench
+COCOTB_TEST_MODULES := testbench
 TOPLEVEL = tinyalu
 GHDL_ARGS := --ieee=synopsys
 COCOTB_HDL_TIMEUNIT = 1us

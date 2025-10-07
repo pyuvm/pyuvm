@@ -16,7 +16,7 @@ ifeq ($(SIM), verilator)
     COMPILE_ARGS += --timing
 	EXTRA_ARGS += --trace --trace-structs
 endif
-MODULE := testbench
+COCOTB_TEST_MODULES := testbench
 TOPLEVEL = tinyalu
 GHDL_ARGS := --ieee=synopsys
 COCOTB_HDL_TIMEUNIT = 1ns
