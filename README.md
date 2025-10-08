@@ -463,7 +463,12 @@ You can contribute to **pyuvm** by forking this repository and submitting pull r
 
 The pyuvm project uses forked Github rebase flow.
 The first step is to [fork the project](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
+Then clone the repo to your machine.
 
+```sh
+git clone git@github.com/{your_username}/pyuvm.git
+cd pyuvm/
+```
 
 It is recommended to make a virtual environment and work with that environment activated.
 This can be done with the built-in [`venv`](https://docs.python.org/3/library/venv.html) module in Python,
@@ -477,7 +482,7 @@ source .venv/bin/activate
 Next install the main development tools using `pip`.
 
 ```sh
-pip install nox ruff tox pre-commit pytest
+pip install .[dev]
 ```
 
 ### Linting
