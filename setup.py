@@ -19,10 +19,18 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-        "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",  # noqa: E501
+        "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
         "Framework :: cocotb",
     ],
     packages=setuptools.find_packages(),
     python_requires=">=3.6",
     install_requires="cocotb>=1.6.0,<3.0",
+    extras_require={
+        "dev": [
+            "tox",  # run regression tests
+            "pre-commit",  # perform lints
+            "pytest",  # manually run pytest-based tests
+            "ruff",  # linter for IDE integration
+        ],
+    },
 )
