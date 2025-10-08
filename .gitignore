@@ -26,3 +26,4 @@ examples/TinyALU/e~tinyalu.o
 examples/TinyALU/tinyalu
 .env
 .editorconfig
+scratch/
