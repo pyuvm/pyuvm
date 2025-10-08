@@ -1,5 +1,7 @@
+CURRDIR := $(dir $(lastword $(MAKEFILE_LIST)))
+
 check:
-	../combine_results.py
+	$(CURRDIR)/combine_results.py
 
 testclean: clean
 	@rm -rf __pycache__
