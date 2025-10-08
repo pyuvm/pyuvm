@@ -5,9 +5,7 @@ TOPLEVEL_LANG ?= verilog
 ifeq ($(TOPLEVEL_LANG),verilog)
 	VERILOG_SOURCES =$(CWD)/hdl/verilog/tinyalu.sv $(CWD)/hdl/verilog/TinyALUreg.sv
 else ifeq ($(TOPLEVEL_LANG),vhdl)
-	VHDL_SOURCES=$(CWD)/hdl/vhdl/single_cycle_add_and_xor.vhd \
-				$(CWD)/hdl/vhdl/three_cycle_mult.vhd \
-				$(CWD)/hdl/vhdl/tinyalu.vhd
+	$(error VHDL is not supported for this design)
 else
     $(error "A valid value (verilog or vhdl) was not provided for TOPLEVEL_LANG=$(TOPLEVEL_LANG)")
 endif
