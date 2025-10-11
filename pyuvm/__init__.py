@@ -18,6 +18,9 @@ from pyuvm.s08_factory_classes import *
 # Section 9
 from pyuvm.s09_phasing import *
 
+# Section 10
+from pyuvm.s10_synchronization_classes import *
+
 # Section 12
 from pyuvm.s12_uvm_tlm_interfaces import *
 
