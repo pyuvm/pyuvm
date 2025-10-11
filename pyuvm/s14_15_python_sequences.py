@@ -376,6 +376,14 @@ class uvm_sequencer(uvm_component):
         return next_item
 
 
+class uvm_sequencer_base(uvm_object):
+    pass
+
+
+class uvm_sequence_base(uvm_sequence_item):
+    pass
+
+
 class uvm_sequence(uvm_object):
     """
     The uvm_sequence creates a series of sequence
