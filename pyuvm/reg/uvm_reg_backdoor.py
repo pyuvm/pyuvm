@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pyuvm import uvm_object
+from pyuvm.s05_base_classes import uvm_object
 
 if TYPE_CHECKING:
     from pyuvm.reg.uvm_reg_field import uvm_reg_field
@@ -13,8 +13,7 @@ __all__ = ["uvm_reg_backdoor"]
 
 class uvm_reg_backdoor(uvm_object):
     def __init__(self, name: str = ""):
-        super().__init__()
-        raise NotImplementedError
+        super().__init__(name)
 
     async def do_pre_read(self, rw: uvm_reg_item) -> None:
         raise NotImplementedError
