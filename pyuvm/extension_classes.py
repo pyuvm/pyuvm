@@ -1,4 +1,5 @@
 import functools
+import inspect
 
 import cocotb
 
@@ -20,21 +21,29 @@ def test(
         stage = 0
 
     def decorator(cls):
+        test_dec_args = {
+            "timeout_time": timeout_time,
+            "timeout_unit": timeout_unit,
+            "expect_fail": expect_fail,
+            "expect_error": expect_error,
+            "skip": skip,
+            "stage": stage,
+        }
+        if cocotb_version_info >= (2, 0):
+            test_dec_args["name"] = cls.__name__
+
         # create cocotb.test object to be picked up RegressionManager
-        @cocotb.test(
-            timeout_time=timeout_time,
-            timeout_unit=timeout_unit,
-            expect_fail=expect_fail,
-            expect_error=expect_error,
-            skip=skip,
-            stage=stage,
-        )
+        @cocotb.test(**test_dec_args)
         @functools.wraps(cls)
         async def test_obj(_):
             await uvm_root().run_test(
                 cls, keep_singletons=keep_singletons, keep_set=keep_set
             )
 
-        return test_obj
+        # Add the test object to the module of the caller and return the decorated
+        # object unmodified.
+        glbs = inspect.stack()[1][0].f_globals
+        glbs[f"{cls.__name__}_gen"] = test_obj
+        return cls
 
     return decorator
