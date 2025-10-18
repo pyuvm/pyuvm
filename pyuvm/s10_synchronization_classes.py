@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from pyuvm import uvm_object
+from pyuvm.s05_base_classes import uvm_object
 
 __all__ = ["uvm_callback", "uvm_callbacks", "uvm_callback_iter"]
-
 
 
 class uvm_callback(uvm_object):
