@@ -452,6 +452,10 @@ class uvm_nonblocking_slave_port(
 class uvm_slave_port(uvm_nonblocking_slave_port, uvm_blocking_slave_port): ...
 
 
+# 12.2.10.2
+class uvm_analysis_imp(uvm_port_base): ...
+
+
 class uvm_analysis_port(uvm_port_base):
     def __init__(self, name, parent):
         super().__init__(name, parent)
