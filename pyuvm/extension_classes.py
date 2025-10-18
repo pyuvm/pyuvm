@@ -29,7 +29,10 @@ def test(
             "skip": skip,
             "stage": stage,
         }
+
         if cocotb_version_info >= (2, 0):
+            # This sets the test name so that it can be selected appropriately using
+            # COCOTB_TEST_FILTER in 2.0+. <2.0 won't have this luxury.
             test_dec_args["name"] = cls.__name__
 
         # create cocotb.test object to be picked up RegressionManager
@@ -40,10 +43,18 @@ def test(
                 cls, keep_singletons=keep_singletons, keep_set=keep_set
             )
 
-        # Add the test object to the module of the caller and return the decorated
-        # object unmodified.
-        glbs = inspect.stack()[1][0].f_globals
-        glbs[f"{cls.__name__}_gen"] = test_obj
+        # adds cocotb.test object to caller's module
+        caller_frame = inspect.stack()[1]
+        caller_module = inspect.getmodule(caller_frame[0])
+        if cocotb_version_info < (2, 0):
+            setattr(caller_module, f"test_{test_obj._id}", test_obj)
+        else:
+            # In 2.0+ cocotb tests don't have a numbered ID.
+            # This is fine since because we set "name" above, we can use the actual
+            # test name when selecting individual tests rather than "test_{n}".
+            setattr(caller_module, f"__{cls.__name__}", test_obj)
+
+        # returns decorator class unmodified
         return cls
 
     return decorator
