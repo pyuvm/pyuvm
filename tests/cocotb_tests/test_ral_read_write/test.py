@@ -1,8 +1,8 @@
 # Main Packages for the entire RAL model
+import textwrap
 from random import choice, randint
 
 import cocotb
-from cocotb.types import LogicArray
 
 from pyuvm import (
     logging,
@@ -71,27 +71,30 @@ class cmd_ral(uvm_reg_block):
         self.ST = status_reg("ST")
         self.CMD.configure(self)
         self.ST.configure(self)
-        self.def_map = self.create_map("map", 0x0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True)
-        self.def_map.add_reg(self.CMD, 0x100c, "RW")
+        self.def_map = self.create_map(
+            "map", 0x0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True
+        )
+        self.def_map.add_reg(self.CMD, 0x100C, "RW")
         self.def_map.add_reg(self.ST, 0x1014, "RO")
         self.lock_model()
+
 
 # UVM Sequence item class
 class cmd_item(uvm_sequence_item):
     def __init__(self, name):
         super().__init__(name)
         self.Endian = False
-        self.CMD_data = LogicArray(0, 32)
-        self.WR_RD = LogicArray(0, 1)
+        self.CMD_data: int = 0
+        self.WR_RD: int = 0
         self.write_data: int = 0
         self.read_data: int = 0
-        self.addr: int = None
+        self.addr: int = 0
         self.status: bool = True
 
     def randomize(self):
-        self.CMD_data[:] = randint(0, (2**self.CMD_data.n_bits) - 1)
-        self.WR_RD[:] = randint(0, (2**self.WR_RD.n_bits) - 1)
-        self.addr = choice([0x1014, 0x100c])
+        self.CMD_data = randint(0, (2**self.CMD_data.n_bits) - 1)
+        self.WR_RD = randint(0, (2**self.WR_RD.n_bits) - 1)
+        self.addr = choice([0x1014, 0x100C])
 
     def __str__(self):
         return textwrap.dedent(
@@ -149,7 +152,7 @@ class cmd_driver(uvm_driver):
             addr = self.reg_target.get_address()
             logger.debug(f"cmd_driver -- addr: {addr}")
             logger.debug(f"cmd_driver -- rights: {self.reg_target.get_rights()}")
-            if cmd.WR_RD.to_unsigned() == 0:
+            if cmd.WR_RD == 0:
                 logger.debug("cmd_driver -- READ_CMD")
                 cmd.set_read_data(5)
                 self.RW = False
@@ -171,10 +174,10 @@ class cmd_adapter(uvm_reg_adapter):
     def reg2bus(self, rw: uvm_reg_bus_op) -> uvm_sequence_item:
         cmdItem = cmd_item("cmdItem")
         if rw.kind == uvm_access_e.UVM_READ:
-            cmdItem.WR_RD[:] = 0
+            cmdItem.WR_RD = 0
             cmdItem.set_read_data(rw.data)
         else:
-            cmdItem.WR_RD[:] = 1
+            cmdItem.WR_RD = 1
             cmdItem.set_write_data(rw.data)
         cmdItem.addr = rw.addr
         return cmdItem
@@ -220,24 +223,23 @@ class ral_test_rd(uvm_test):
         self.ral_map.reset("HARD")
         registers = self.environment.ral.def_map.get_registers()
         for rg in registers:
-            logger.debug(f"{rg.get_address()=}: {rg.get()=}")
-            (status, data) = await rg.read(
-                uvm_door_e.UVM_FRONTDOOR, self.ral_map
-            )
+            (status, data) = await rg.read(uvm_door_e.UVM_FRONTDOOR, self.ral_map)
             name = rg.get_name()
             addr = rg.get_address()
-            logger.info(f"READ: name: {name}, addr: 0x{addr:X}, data: {data}, status: {status.name}")
+            logger.info(
+                f"READ: name: {name}, addr: 0x{addr:X}, data: {data}, status: {status.name}"
+            )
             assert data == 5
             assert status == uvm_status_e.UVM_IS_OK
         for rg in registers:
             data = randint(0, 200)
-            status = await rg.write(
-                data, uvm_door_e.UVM_FRONTDOOR, self.ral_map
-            )
+            status = await rg.write(data, uvm_door_e.UVM_FRONTDOOR, self.ral_map)
             name = rg.get_name()
             addr = rg.get_address()
             rights = rg.get_rights()
-            logger.info(f"WRITE: name: {name}, addr: 0x{addr:X}, data: {data}, status: {status.name}")
+            logger.info(
+                f"WRITE: name: {name}, addr: 0x{addr:X}, data: {data}, status: {status.name}"
+            )
             if rights == "RO":
                 assert status == uvm_status_e.UVM_NOT_OK
             else:
