@@ -89,7 +89,7 @@ class TinyAluBfm(metaclass=utility_classes.Singleton):
         await self.wait_clock(1)
 
     def get_addr(self):
-        return hex(self.dut.addr.value)
+        return self.dut.addr.value
 
     def get_src0(self):
         return int(self.dut.regblock.SRC_data0_q.value)
