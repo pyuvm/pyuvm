@@ -16,9 +16,12 @@ from pyuvm import (
     UVMConfigItemNotFound,
     UVMError,
     UVMNotImplemented,
+    uvm_access_e,
     uvm_analysis_port,
     uvm_component,
+    uvm_door_e,
     uvm_driver,
+    uvm_endianness_e,
     uvm_env,
     uvm_factory,
     uvm_reg,
@@ -32,11 +35,11 @@ from pyuvm import (
     uvm_sequence,
     uvm_sequence_item,
     uvm_sequencer,
+    uvm_status_e,
     uvm_subscriber,
     uvm_test,
     uvm_tlm_analysis_fifo,
 )
-from pyuvm.s24_uvm_reg_includes import access_e, check_t, path_t, status_t
 
 sys.path.append(str(Path("..").resolve()))
 import os
@@ -59,15 +62,15 @@ LANGUAGE = os.getenv("TOPLEVEL_LANG", "verilog")
 # 4.    the remaining bits are reserved and not used
 ##############################################################################
 REG_WIDTH = 16
-ALU_REG_SRC_ADDR = "0x0"
+ALU_REG_SRC_ADDR = 0x0
 ALU_REG_SRC_ADDR_DATA0_S = 0
 ALU_REG_SRC_ADDR_DATA1_S = 8
 ALU_REG_SRC_ADDR_DATA0_M = 2**8 - 1
 ALU_REG_SRC_ADDR_DATA1_M = 2**8 - 1
-ALU_REG_RESULT_ADDR = "0x2"
+ALU_REG_RESULT_ADDR = 0x2
 ALU_REG_RESULT_DATA_S = 0
 ALU_REG_RESULT_DATA_M = 2**16 - 1
-ALU_REG_CMD_ADDR = "0x4"
+ALU_REG_CMD_ADDR = 0x4
 ALU_REG_CMD_OP_S = 0
 ALU_REG_CMD_START_S = 5
 ALU_REG_CMD_DONE_S = 6
@@ -88,21 +91,15 @@ class ALU_REG_SRC(uvm_reg):
         super().__init__(name, reg_width)
         self.DATA0 = uvm_reg_field("DATA0")
         self.DATA1 = uvm_reg_field("DATA1")
-
-    def build(self):
-        self.DATA0.configure(self, 8, 0, "RW", 0, 0)
-        self.DATA1.configure(self, 8, 8, "RW", 0, 0)
-        self._set_lock()
+        self.DATA0.configure(self, 8, 0, "RW", False, 0, False, False, False)
+        self.DATA1.configure(self, 8, 8, "RW", False, 0, False, False, False)
 
 
 class ALU_REG_RESULT(uvm_reg):
     def __init__(self, name="ALU_REG_RESULT", reg_width=REG_WIDTH):
         super().__init__(name, reg_width)
         self.DATA = uvm_reg_field("DATA")
-
-    def build(self):
-        self.DATA.configure(self, 16, 0, "RW", 0, 0)
-        self._set_lock()
+        self.DATA.configure(self, 16, 0, "RW", False, 0, False, False, False)
 
 
 class ALU_REG_CMD(uvm_reg):
@@ -112,13 +109,10 @@ class ALU_REG_CMD(uvm_reg):
         self.START = uvm_reg_field("START")
         self.DONE = uvm_reg_field("DONE")
         self.RESERVED = uvm_reg_field("RESERVED")
-
-    def build(self):
-        self.OP.configure(self, 5, 0, "RW", 0, 1)
-        self.START.configure(self, 1, 5, "RW", 0, 1)
-        self.DONE.configure(self, 1, 6, "RO", 0, 1)
-        self.RESERVED.configure(self, 8, 7, "RW", 0, 1)
-        self._set_lock()
+        self.OP.configure(self, 5, 0, "RW", False, 1, False, False, False)
+        self.START.configure(self, 1, 5, "RW", False, 1, False, False, False)
+        self.DONE.configure(self, 1, 6, "RO", False, 1, False, False, False)
+        self.RESERVED.configure(self, 8, 7, "RW", False, 1, False, False, False)
 
 
 class ALU_REG_REG_BLOCK(uvm_reg_block):
@@ -127,19 +121,20 @@ class ALU_REG_REG_BLOCK(uvm_reg_block):
         # do not use create map if only the default one
         # is intended to be used
         self.def_map = uvm_reg_map("map")
-        self.def_map.configure(self, 0)
+        self.def_map.configure(self, 0, 2, uvm_endianness_e.UVM_LITTLE_ENDIAN, False)
 
         self.SRC = ALU_REG_SRC("SRC")
-        self.SRC.configure(self, "0x0", "", False, False)
-        self.def_map.add_reg(self.SRC, "0x0", "RW")
+        self.SRC.configure(self)
+        self.def_map.add_reg(self.SRC, 0x0, "RW")
 
         self.RESULT = ALU_REG_RESULT("RESULT")
-        self.RESULT.configure(self, "0x2", "", False, False)
-        self.def_map.add_reg(self.RESULT, "0x0", "RW")
+        self.RESULT.configure(self)
+        self.def_map.add_reg(self.RESULT, 0x2, "RW")
 
         self.CMD = ALU_REG_CMD("CMD")
-        self.CMD.configure(self, "0x4", "", False, False)
-        self.def_map.add_reg(self.CMD, "0x0", "RW")
+        self.CMD.configure(self)
+        self.def_map.add_reg(self.CMD, 0x4, "RW")
+        self.lock_model()
 
 
 ##############################################################################
@@ -155,7 +150,7 @@ class simple_bus_adapter(uvm_reg_adapter):
     def reg2bus(self, rw: uvm_reg_bus_op) -> uvm_sequence_item:
         item = simple_bus_item("item")
         # Set read bit
-        if rw.kind == access_e.UVM_READ:
+        if rw.kind == uvm_access_e.UVM_READ:
             item.read = 1
             item.rdata = rw.data
         else:
@@ -167,11 +162,11 @@ class simple_bus_adapter(uvm_reg_adapter):
     # uvm_reg_bus_op is not created but updated and returned
     def bus2reg(self, bus_item: uvm_sequence_item, rw: uvm_reg_bus_op):
         if bus_item.read == 1:
-            rw.kind = access_e.UVM_READ
+            rw.kind = uvm_access_e.UVM_READ
             rw.data = bus_item.rdata
         else:
             rw.data = bus_item.wdata
-            rw.kind = access_e.UVM_WRITE
+            rw.kind = uvm_access_e.UVM_WRITE
         # Set addr
         rw.addr = bus_item.addr
         # Set nbits
@@ -179,9 +174,9 @@ class simple_bus_adapter(uvm_reg_adapter):
         # Set byte_en
         rw.byte_en = bus_item.wmask
         # Set status
-        rw.status = status_t.IS_OK
+        rw.status = uvm_status_e.UVM_IS_OK
         if bus_item.status is False:
-            rw.status = status_t.IS_NOT_OK
+            rw.status = uvm_status_e.UVM_NOT_OK
 
 
 ##############################################################################
@@ -194,13 +189,13 @@ class simple_bus_item(uvm_sequence_item):
         super().__init__(name)
         self.rdata: int = 0
         self.read: int = 0
-        self.addr: str = ""
+        self.addr: int = 0
         self.wmask: int = 0
         self.wdata: int = 0
         self.status = None
 
     def get_addr(self):
-        return int(self.addr, 16)
+        return self.addr
 
     def print_item(self):
         cocotb.log.info(
@@ -276,16 +271,14 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
         )
 
     async def reg_write(self, reg_addr: int, write_data: int):
-        target_reg = self.map.get_reg_by_offset(reg_addr)
-        status = await target_reg.write(
-            write_data, self.map, path_t.FRONTDOOR, check_t.NO_CHECK
-        )
+        target_reg: uvm_reg = self.map.get_reg_by_offset(reg_addr)
+        status = await target_reg.write(write_data, uvm_door_e.UVM_FRONTDOOR, self.map)
         return status
 
     async def reg_read(self, reg_addr: int):
         target_reg = self.map.get_reg_by_offset(reg_addr)
         (status, rdata) = await target_reg.read(
-            self.ral.def_map, path_t.FRONTDOOR, check_t.NO_CHECK
+            uvm_door_e.UVM_FRONTDOOR, self.ral.def_map
         )
         self.seq_print(f"Finish Read with data: {rdata}")
         return status, rdata
@@ -299,14 +292,14 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
         # Clear
         wdata = 0
         status = await self.reg_write(ALU_REG_CMD_ADDR, wdata)
-        if status == status_t.IS_OK:
+        if status == uvm_status_e.UVM_IS_OK:
             self.seq_print("Clearing CMD")
             self.print_w_access(ALU_REG_CMD_ADDR, wdata)
 
         # Write the 2 Operands A and B
         wdata = (item.B << ALU_REG_SRC_ADDR_DATA1_S) | item.A
         status = await self.reg_write(ALU_REG_SRC_ADDR, wdata)
-        if status == status_t.IS_OK:
+        if status == uvm_status_e.UVM_IS_OK:
             self.seq_print(f"Operand A: {item.A}")
             self.seq_print(f"Operand B: {item.B}")
             self.print_w_access(ALU_REG_SRC_ADDR, wdata)
@@ -314,7 +307,7 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
         # Write OP and START
         wdata = 1 << ALU_REG_CMD_START_S | item.op
         status = await self.reg_write(ALU_REG_CMD_ADDR, wdata)
-        if status == status_t.IS_OK:
+        if status == uvm_status_e.UVM_IS_OK:
             self.seq_print(f"Operation is: {item.op.name}")
             self.print_w_access(ALU_REG_CMD_ADDR, wdata)
 
@@ -599,8 +592,7 @@ class AluEnv(uvm_env):
         self.driver.seq_item_port.connect(self.seqr.seq_item_export)
         self.monitor.ap.connect(self.coverage.analysis_export)
         self.monitor.ap.connect(self.scoreboard.result_fifo.analysis_export)
-        self.reg_block.def_map.set_sequencer(self.seqr)
-        self.reg_block.def_map.set_adapter(self.reg_adapter)
+        self.reg_block.def_map.set_sequencer(self.seqr, self.reg_adapter)
         # share SEQR and RAL across the TB if needed
         ConfigDB().set(None, "*", "SEQR", self.seqr)
         ConfigDB().set(None, "*", "regsiter_model", self.reg_block)
