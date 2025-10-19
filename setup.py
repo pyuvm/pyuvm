@@ -23,7 +23,7 @@ setuptools.setup(
         "Framework :: cocotb",
     ],
     packages=setuptools.find_packages(),
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires="cocotb>=1.6.0,<3.0",
     extras_require={
         "dev": [
