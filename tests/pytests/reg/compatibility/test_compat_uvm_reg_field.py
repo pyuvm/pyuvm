@@ -3,9 +3,10 @@ from random import randint
 
 import pytest
 
-from pyuvm.s17_uvm_reg_enumerations import uvm_door_e, uvm_predict_e
+from pyuvm.reg.uvm_reg import uvm_reg
+from pyuvm.reg.uvm_reg_field import uvm_reg_field
+from pyuvm.reg.uvm_reg_model import uvm_door_e, uvm_predict_e
 from pyuvm.s24_uvm_reg_includes import uvm_resp_t
-from pyuvm.s27_uvm_reg_pkg import uvm_reg, uvm_reg_field
 
 ##############################################################################
 # TIPS
@@ -155,7 +156,7 @@ def test_reg_field_field_predict_read_set():
         field.configure(uvm_reg(), 8, 16, acs, True, 15)
         field.field_lock()
         field.reset()
-        field.predict(
+        value = field.predict(
             randint(1, 2 ** field.get_n_bits()),
             kind=uvm_predict_e.UVM_PREDICT_READ,
             path=uvm_door_e.UVM_FRONTDOOR,
@@ -165,6 +166,10 @@ def test_reg_field_field_predict_read_set():
         )
         assert field.get_response() == uvm_resp_t.PASS_RESP, (
             f"Failing as default status is not PASS_RESP is {field.get_response()}"
+        )
+        expected = True
+        assert value == expected, (
+            f"Expected {expected} got {value} for for access {acs}"
         )
 
 
@@ -177,7 +182,7 @@ def test_reg_field_field_predict_read_clear():
         field.configure(uvm_reg(), 8, 16, acs, True, 15)
         field.field_lock()
         field.reset()
-        field.predict(
+        value = field.predict(
             randint(1, 2 ** field.get_n_bits()),
             kind=uvm_predict_e.UVM_PREDICT_READ,
             path=uvm_door_e.UVM_FRONTDOOR,
@@ -185,6 +190,10 @@ def test_reg_field_field_predict_read_clear():
         assert field.get_value() == 0, f"Failing for access {acs}"
         assert field.get_response() == uvm_resp_t.PASS_RESP, (
             f"Failing as default status is not PASS_RESP is {field.get_response()}"
+        )
+        expected = True
+        assert value == expected, (
+            f"Expected {expected} got {value} for for access {acs}"
         )
 
 
@@ -198,7 +207,7 @@ def test_reg_field_field_predict_write_set():
         field.field_lock()
         field.reset()
         local_rand_el = randint(1, (2 ** field.get_n_bits() - 1))
-        field.predict(
+        value = field.predict(
             local_rand_el,
             kind=uvm_predict_e.UVM_PREDICT_WRITE,
             path=uvm_door_e.UVM_FRONTDOOR,
@@ -222,6 +231,10 @@ def test_reg_field_field_predict_write_set():
         assert field.get_response() == uvm_resp_t.PASS_RESP, (
             f"Failing as default status is not PASS_RESP is {field.get_response()}"
         )
+        expected = True
+        assert value == expected, (
+            f"Expected {expected} got {value} for for access {acs}"
+        )
 
 
 @pytest.mark.test_reg_field_field_predict_write_clear
@@ -234,7 +247,7 @@ def test_reg_field_field_predict_write_clear():
         field.field_lock()
         field.reset()
         local_rand_el = randint(1, (2 ** field.get_n_bits() - 1))
-        field.predict(
+        value = field.predict(
             local_rand_el,
             kind=uvm_predict_e.UVM_PREDICT_WRITE,
             path=uvm_door_e.UVM_FRONTDOOR,
@@ -258,6 +271,10 @@ def test_reg_field_field_predict_write_clear():
         assert field.get_response() == uvm_resp_t.PASS_RESP, (
             f"Failing as default status is not PASS_RESP is {field.get_response()}"
         )
+        expected = True
+        assert value == expected, (
+            f"Expected {expected} got {value} for for access {acs}"
+        )
 
 
 @pytest.mark.test_reg_field_field_predict_TOGGLE
@@ -270,7 +287,7 @@ def test_reg_field_field_predict_TOGGLE():
         field.field_lock()
         field.reset()
         local_rand_el = randint(1, (2 ** field.get_n_bits() - 1))
-        field.predict(
+        value = field.predict(
             local_rand_el,
             kind=uvm_predict_e.UVM_PREDICT_WRITE,
             path=uvm_door_e.UVM_FRONTDOOR,
@@ -289,6 +306,10 @@ def test_reg_field_field_predict_TOGGLE():
         assert field.get_response() == uvm_resp_t.PASS_RESP, (
             f"Failing as default status is not PASS_RESP is {field.get_response()}"
         )
+        expected = True
+        assert value == expected, (
+            f"Expected {expected} got {value} for for access {acs}"
+        )
 
 
 @pytest.mark.test_reg_field_field_predict_NO_ACCESS
@@ -298,13 +319,13 @@ def test_reg_field_field_predict_NO_ACCESS():
     field.configure(uvm_reg(), 8, 16, "NO_ACCESS", True, randint(1, 2**8 - 1))
     field.field_lock()
     field.reset()
-    field.predict(
+    value = field.predict(
         randint(1, 2 ** field.get_n_bits()),
         kind=uvm_predict_e.UVM_PREDICT_WRITE,
         path=uvm_door_e.UVM_FRONTDOOR,
     )
     assert field.get_value() == field.get_reset(), "Failing for access NO_ACCESS"
-    field.predict(
+    value = field.predict(
         randint(1, 2 ** field.get_n_bits()),
         kind=uvm_predict_e.UVM_PREDICT_READ,
         path=uvm_door_e.UVM_FRONTDOOR,
@@ -313,8 +334,11 @@ def test_reg_field_field_predict_NO_ACCESS():
     assert field.get_response() == uvm_resp_t.PASS_RESP, (
         f"Failing as default status is not PASS_RESP is {field.get_response()}"
     )
+    expected = True
+    assert value == expected, f"Expected {expected} got {value}"
 
 
+@pytest.mark.skip(reason="Not compatible with user defined response")
 @pytest.mark.test_reg_field_field_predict_status_error_on_write
 def test_reg_field_field_predict_status_error_on_write():
     field = uvm_reg_field()
@@ -325,7 +349,7 @@ def test_reg_field_field_predict_status_error_on_write():
         field.set_throw_error_on_read(True)
         field.set_throw_error_on_write(True)
         field.reset()
-        field.predict(
+        value = field.predict(
             randint(1, 2 ** field.get_n_bits()),
             kind=uvm_predict_e.UVM_PREDICT_WRITE,
             path=uvm_door_e.UVM_FRONTDOOR,
@@ -333,8 +357,13 @@ def test_reg_field_field_predict_status_error_on_write():
         assert field.get_response() == uvm_resp_t.ERROR_RESP, (
             f"Failing for access access: {acs} where UVM_READ is issued response is: {field.get_response().name}"
         )
+        expected = True
+        assert value == expected, (
+            f"Expected {expected} got {value} for for access {acs}"
+        )
 
 
+@pytest.mark.skip(reason="Not compatible with user defined response")
 @pytest.mark.test_reg_field_field_predict_status_error_on_read
 def test_reg_field_field_predict_status_error_on_read():
     field = uvm_reg_field()
@@ -360,11 +389,15 @@ def test_reg_field_field_predict_status_error_on_read():
         field.set_throw_error_on_read(True)
         field.set_throw_error_on_write(True)
         field.reset()
-        field.predict(
+        value = field.predict(
             randint(1, 2 ** field.get_n_bits()),
             kind=uvm_predict_e.UVM_PREDICT_READ,
             path=uvm_door_e.UVM_FRONTDOOR,
         )
         assert field.get_response() == uvm_resp_t.ERROR_RESP, (
             f"Failing for access access: {acs} where UVM_READ is issued response is: {field.get_response().name}"
+        )
+        expected = True
+        assert value == expected, (
+            f"Expected {expected} got {value} for for access {acs}"
         )

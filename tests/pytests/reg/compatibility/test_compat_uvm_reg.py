@@ -6,8 +6,10 @@ from typing import List
 
 import pytest
 
-from pyuvm.s17_uvm_reg_enumerations import uvm_predict_e
-from pyuvm.s27_uvm_reg_pkg import uvm_reg, uvm_reg_block, uvm_reg_field
+from pyuvm.reg.uvm_reg import uvm_reg
+from pyuvm.reg.uvm_reg_block import uvm_reg_block
+from pyuvm.reg.uvm_reg_field import uvm_reg_field
+from pyuvm.reg.uvm_reg_model import uvm_predict_e
 
 ##############################################################################
 # TIPS
@@ -40,16 +42,17 @@ running tests (especially if in Parallel)
 @pytest.mark.test_reg_get_name
 def test_reg_get_name():
     for elem in range(1, 32):
-        reg = uvm_reg(("some_reg_" + str(elem)), elem)
-        assert reg.get_name() == ("some_reg_" + str(elem)), (
-            "Name mismatch: expected {} got: {}".format(
-                ("some_reg_" + str(elem)), reg.get_name()
-            )
-        )
-        assert reg.get_reg_size() == elem, (
-            f"Register size mismatch: expected {elem} got: {reg.get_reg_size()}"
-        )
-        reg.check_err_list()
+        reg = uvm_reg(f"some_reg_{elem}", elem)
+        assert reg.get_name() == f"some_reg_{elem}"
+        with pytest.warns(
+            DeprecationWarning,
+            match="The 'get_reg_size' method is deprecated, use 'get_n_bits' instead",
+        ):
+            assert reg.get_reg_size() == elem
+        with pytest.warns(
+            DeprecationWarning, match="The 'check_err_list' method is deprecated"
+        ):
+            reg.check_err_list()
 
 
 @pytest.mark.test_reg_configure
