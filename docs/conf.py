@@ -26,13 +26,14 @@ sys.path.insert(0, src_path)
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    "sphinx.ext.duration",
-    "sphinx.ext.doctest",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
+    "autodoc2",
     "myst_parser",
-    "sphinx.ext.autosectionlabel",
 ]
+
+autodoc2_packages = [
+    "../pyuvm",
+]
+autodoc2_render_plugin = "myst"
 
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
