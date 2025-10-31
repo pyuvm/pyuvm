@@ -1,8 +1,12 @@
 # Main Packages for the entire RAL model
 import itertools
 
-from pyuvm.s17_uvm_reg_enumerations import uvm_predict_e
-from pyuvm.s27_uvm_reg_pkg import uvm_reg, uvm_reg_block, uvm_reg_field, uvm_reg_map
+import pytest
+
+from pyuvm.reg.uvm_reg import uvm_reg
+from pyuvm.reg.uvm_reg_block import uvm_reg_block
+from pyuvm.reg.uvm_reg_field import uvm_reg_field
+from pyuvm.reg.uvm_reg_model import uvm_endianness_e, uvm_predict_e
 
 ##############################################################################
 # TIPS
@@ -32,7 +36,8 @@ running tests (especially if in Parallel)
 ##############################################################################
 
 
-def test_simple_reg_model():
+@pytest.fixture
+def model():
     """
     A more realistic register model based on the venerable UART 16550 design
     """
@@ -44,13 +49,10 @@ def test_simple_reg_model():
             self.STB = uvm_reg_field("STB")
             self.PEN = uvm_reg_field("PEN")
             self.EPS = uvm_reg_field("EPS")
-
-        def build(self):
-            self.WLS.configure(self, 2, 0, "RW", 0, 0)
-            self.STB.configure(self, 1, 2, "RW", 0, 0)
-            self.PEN.configure(self, 1, 3, "RW", 0, 0)
-            self.EPS.configure(self, 1, 4, "RW", 0, 0)
-            self._set_lock()
+            self.WLS.configure(self, 2, 0, "RW", False, 0, True, False, False)
+            self.STB.configure(self, 1, 2, "RW", False, 0, True, False, False)
+            self.PEN.configure(self, 1, 3, "RW", False, 0, True, False, False)
+            self.EPS.configure(self, 1, 4, "RW", False, 0, True, False, False)
 
     class LineStatusRegister(uvm_reg):
         def __init__(self, name="LineStatusRegister", reg_width=32):
@@ -59,30 +61,34 @@ def test_simple_reg_model():
             self.OE = uvm_reg_field("OE")
             self.PE = uvm_reg_field("PE")
             self.FE = uvm_reg_field("FE")
-
-        def build(self):
-            self.DR.configure(self, 1, 0, "RW", 1, 0)
-            self.OE.configure(self, 1, 1, "RW", 1, 0)
-            self.PE.configure(self, 1, 2, "RW", 1, 0)
-            self.FE.configure(self, 1, 3, "RW", 1, 0)
-            self._set_lock()
+            self.DR.configure(self, 1, 0, "RW", True, 0, False, True, False)
+            self.OE.configure(self, 1, 1, "RW", True, 0, False, True, False)
+            self.PE.configure(self, 1, 2, "RW", True, 0, False, True, False)
+            self.FE.configure(self, 1, 3, "RW", True, 0, False, True, False)
 
     class Regs(uvm_reg_block):
         def __init__(self, name):
             super().__init__(name)
-            self.map = uvm_reg_map("map")
-            self.map.configure(self, 0)
             self.LCR = LineControlRegister("LCR")
-            self.LCR.configure(self, "0x100c", "")
-            self.map.add_reg(self.LCR, "0x0")
             self.LSR = LineStatusRegister("LSR")
-            self.LSR.configure(self, "0x1014", "")
-            self.map.add_reg(self.LSR, "0x0")
+            self.LCR.configure(self, None, "")
+            self.LSR.configure(self, None, "")
+            self.map = self.create_map(
+                "map", 0x0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, False
+            )
+            self.map.add_reg(self.LCR, 0x100C, "RW", False, None)
+            self.map.add_reg(self.LSR, 0x1014, "RW", False, None)
 
-    regs = Regs("regs")
+    return Regs
+
+
+def test_simple_reg_model(model):
+    regs = model("regs")
+    regs.lock_model()
+
     assert regs.get_name() == "regs"
-    assert regs.map.get_reg_by_offset("0x100c") == regs.LCR
-    assert regs.map.get_reg_by_offset("0x1014") == regs.LSR
+    assert regs.map.get_reg_by_offset(0x100C) == regs.LCR
+    assert regs.map.get_reg_by_offset(0x1014) == regs.LSR
 
     LCR = regs.LCR
     assert LCR.get_name() == "LCR"
@@ -137,4 +143,4 @@ def test_simple_reg_model():
     LSR.predict(12, kind=uvm_predict_e.UVM_PREDICT_WRITE)
     assert LSR.get_mirrored_value() == 12
     for field in LSR.get_fields():
-        print(field.get_value())
+        print(field.get_mirrored_value())

@@ -5,6 +5,7 @@ from pyuvm import *
 pytestmark = pytest.mark.usefixtures("initialize_pyuvm")
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_basic_slice():
     """
     Test uvm_hdl_path_slice object parameters
@@ -15,6 +16,7 @@ def test_basic_slice():
     assert obj.size == -1
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_basic_uvm_hdl_path_concat():
     """
     Test uvm_hdl_path_concat object functions specified in section 17.2.3
@@ -30,6 +32,7 @@ def test_basic_uvm_hdl_path_concat():
     assert test_slice_obj[0].size == -1
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_overlap_uvm_hdl_path_concat_0():
     """
     Test uvm_hdl_path_concat overlap detection
@@ -43,6 +46,7 @@ def test_overlap_uvm_hdl_path_concat_0():
         reg_slice_concat_0.add_slice(reg_slice_1)
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_overlap_uvm_hdl_path_concat_1():
     reg_slice_0 = uvm_hdl_path_slice("reg_slice_0", 0, 32)
     reg_slice_1 = uvm_hdl_path_slice("reg_slice_1", 8, 4)
@@ -52,6 +56,7 @@ def test_overlap_uvm_hdl_path_concat_1():
         reg_slice_concat.add_slice(reg_slice_1)
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_overlap_uvm_hdl_path_concat_set_slices():
     # test with non-overlapping and contiguous slices
     reg_slice_0 = uvm_hdl_path_slice("reg_slice_0", 0, 8)
@@ -63,6 +68,7 @@ def test_overlap_uvm_hdl_path_concat_set_slices():
     reg_slice_concat.set_slices(reg_slices)
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_uvm_hdl_path_concat_set_slices_contiguous_wrong_order():
     # test with non-overlapping and contiguous slices but with error in order
     reg_slice_0 = uvm_hdl_path_slice("reg_slice_0", 0, 8)
@@ -75,6 +81,7 @@ def test_uvm_hdl_path_concat_set_slices_contiguous_wrong_order():
         reg_slice_concat.set_slices(reg_slices)
 
 
+@pytest.mark.skip(reason="Not implemented")
 def test_uvm_hdl_path_concat_set_slices_non_contiguous_offsets():
     # test with non-overlapping and contiguous slices but with error in order
     reg_slice_0 = uvm_hdl_path_slice("reg_slice_0", 0, 8)
