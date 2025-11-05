@@ -2,7 +2,13 @@ import copy
 
 import pytest
 
-from pyuvm import *
+from pyuvm import (
+    error_classes,
+    uvm_component,
+    uvm_factory,
+    uvm_object,
+    uvm_transaction,
+)
 
 pytestmark = pytest.mark.usefixtures("initialize_pyuvm")
 
