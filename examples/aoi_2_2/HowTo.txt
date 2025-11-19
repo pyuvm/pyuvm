@@ -1,0 +1,23 @@
+# Verilog Testing (Verilator + Coverage)
+
+## Clean prior test runs
+make clean
+
+## Simulate Verilog
+make coverage SIM=verilator
+
+## Generate Report for Verilog
+python3 generate_universal_coverage.py --sim verilator
+
+
+
+# VHDL Testing (GHDL)
+
+## Clean prior test runs
+make clean
+
+## Simulate VHDL
+make sim TOPLEVEL_LANG=vhdl SIM=ghdl
+
+## Generate Report for VHDL
+python3 generate_universal_coverage.py --sim ghdl
