@@ -31,15 +31,6 @@ def aoi_prediction(a, b, c, d, error=False):
     return result
 
 
-def get_int(signal):
-    """Safely convert a signal value to an integer"""
-    try:
-        sig = int(signal.value)
-    except ValueError:
-        sig = 0
-    return sig
-
-
 class AoiBfm(metaclass=utility_classes.Singleton):
     """
     Bus Functional Model for AOI_2_2 module
@@ -101,7 +92,7 @@ class AoiBfm(metaclass=utility_classes.Singleton):
 
         while True:
             await Timer(1, units="ns")
-            current_swt = get_int(self.dut.SWT)
+            current_swt = int(self.dut.SWT.value)
 
             if current_swt != prev_swt:
                 # Extract individual bits
@@ -123,14 +114,14 @@ class AoiBfm(metaclass=utility_classes.Singleton):
 
         while True:
             await Timer(1, units="ns")
-            current_swt = get_int(self.dut.SWT)
+            current_swt = int(self.dut.SWT.value)
 
             if current_swt != prev_swt:
                 # Wait for output to settle
                 await Timer(1, units="ns")
 
                 # Decode 7-segment display to get Y value
-                seg_value = get_int(self.dut.SEG)
+                seg_value = int(self.dut.SEG.value)
 
                 # SEG = 0b1000000 (0x40) means Y=0 (displaying '0')
                 # SEG = 0b1111001 (0x79) means Y=1 (displaying '1')

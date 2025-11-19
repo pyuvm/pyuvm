@@ -1,15 +1,11 @@
 import random
-import sys
-from pathlib import Path
 
 import cocotb
+from aoi_2_2_utils import aoi_prediction  # noqa: E402
 from cocotb.triggers import Timer
 
 import pyuvm
 from pyuvm import *
-
-sys.path.append(str(Path("..").resolve()))
-from aoi_2_2_utils import aoi_prediction  # noqa: E402
 
 
 # Sequence Item
