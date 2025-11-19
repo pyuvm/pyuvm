@@ -12,15 +12,6 @@ sys.path.append(str(Path("..").resolve()))
 from aoi_2_2_utils import aoi_prediction  # noqa: E402
 
 
-def get_int(signal):
-    """Safely convert a signal value to an integer"""
-    try:
-        sig = int(signal.value)
-    except ValueError:
-        sig = 0
-    return sig
-
-
 # Sequence Item
 class AoiSeqItem(uvm_sequence_item):
     def __init__(self, name, a=0, b=0, c=0, d=0):
@@ -132,7 +123,7 @@ class Driver(uvm_driver):
             await Timer(2, unit="ns")
 
             # Read result from 7-segment display
-            seg_value = get_int(self.dut.SEG)
+            seg_value = int(self.dut.SEG.value)
 
             # Decode 7-segment to get Y value
             if seg_value in {64, 64}:
