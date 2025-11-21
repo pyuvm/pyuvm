@@ -12,6 +12,9 @@ make coverage-report
 ## Generate report for Verilog
 python3 generate_universal_coverage.py --sim verilator
 
+## Simulate and profile Verilog
+./profile_simulation.sh
+
 
 # VHDL Testing (GHDL)
 
