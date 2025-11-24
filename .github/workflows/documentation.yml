@@ -16,7 +16,7 @@ jobs:
     - name: Install dependencies
       run: |
           pip install sphinx sphinx_rtd_theme myst_parser cocotb sphinx-rtd-theme sphinx-autodoc2
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Build HTML
       run: |
         cd docs
