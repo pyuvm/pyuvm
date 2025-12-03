@@ -1,6 +1,8 @@
 import fnmatch
+import inspect
 import logging
 from collections import OrderedDict
+from dataclasses import dataclass
 
 import cocotb.queue
 from cocotb.queue import QueueEmpty
@@ -214,6 +216,18 @@ class UVM_ROOT_Singleton(FactoryMeta):
         pass
 
 
+@dataclass
+class Objection:
+    """Details about a raised objection, to assist in diagnosing hangs/timeouts"""
+
+    raiser_name: str
+    description: str
+    sourceline: str
+
+    def __str__(self):
+        return f'raised by {self.raiser_name}, description="{self.description}", raised at {self.sourceline}'
+
+
 class ObjectionHandler(metaclass=Singleton):
     """
     This singleton accepts objections and then allows
@@ -222,44 +236,53 @@ class ObjectionHandler(metaclass=Singleton):
     """
 
     def __init__(self):
-        self.__objections = {}
+        self.__objections = {}  # Dict of List of Objections
         self._objection_event = Event()
         self.objection_raised = False
         self.run_phase_done_flag = None  # used in test suites
         self.printed_warning = False
 
     def __str__(self):
-        ss = f"run_phase complete: {self.run_phase_complete()}\n"
-        ss += "Current Objections:\n"
-        for cc in self.__objections:
-            ss += f"{self.__objections[cc]}\n"
+        """
+        :return: String representation of all active objections
+        Example::
+            from pyuvm.utility_classes import ObjectionHandler
+            print(str(ObjectionHandler()))
+        """
+        ss = "Active objections:"
+        if not self.__objections:
+            ss += " None\n"
+            return ss
+        ss += "\n"
+        for objection_list in self.__objections.values():
+            for objection in objection_list:
+                ss += f" {objection}\n"
         return ss
 
     def clear(self):
-        if len(self.__objections) != 0:
-            logging.warning(
-                "Clearing objections raised by %s",
-                ", ".join(self.__objections.values()),
-            )
+        if self.__objections:
+            logging.warning("Clearing all objections\n%s", str(self))
             self.__objections = {}
         self.objection_raised = False
 
-    def raise_objection(self, raiser):
+    def raise_objection(self, raiser, description):
         name = raiser.get_full_name()
-        self.__objections[name] = self.__objections.setdefault(name, 0) + 1
+        frame = inspect.currentframe().f_back.f_back  # Capture caller information
+        sourceline = f"{frame.f_code.co_filename}:{frame.f_lineno}"
+        objection = Objection(name, description, sourceline)
+        self.__objections.setdefault(name, []).append(objection)
         self.objection_raised = True
         self._objection_event.clear()
 
-    def drop_objection(self, dropper):
+    def drop_objection(self, dropper, description):
         name = dropper.get_full_name()
         try:
-            self.__objections[name] -= 1
+            self.__objections[name].pop()
         except KeyError:
             self.objection_raised = True
             pass
-        if self.__objections[name] == 0:
+        if not self.__objections[name]:
             del self.__objections[name]
-
             # only signal all objections done if none exist anywhere
             if len(self.__objections) == 0:
                 self._objection_event.set()

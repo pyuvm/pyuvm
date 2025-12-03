@@ -48,6 +48,7 @@ class TopTest(uvm_test):
     async def run_phase(self):
         self.raise_objection()
         await Timer(10, "ms")
+        print(str(ObjectionHandler()))
         self.drop_objection()
 
 

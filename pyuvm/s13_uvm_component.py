@@ -88,17 +88,21 @@ class uvm_component(uvm_report_object):
         """
         return self._parent
 
-    def raise_objection(self):
+    def raise_objection(self, description=""):
         """
         Raise an objection, usually at the start of the ``run_phase()``
-        """
-        utility_classes.ObjectionHandler().raise_objection(self)
 
-    def drop_objection(self):
+        :param str description: A meaningful description speeds up timeout debug
+        """
+        utility_classes.ObjectionHandler().raise_objection(self, description)
+
+    def drop_objection(self, description=""):
         """
         Drop an objection, usually at the end of the ``run_phase()``
+
+        :param str description: Not used, but kept for symmetry with raise_objection
         """
-        utility_classes.ObjectionHandler().drop_objection(self)
+        utility_classes.ObjectionHandler().drop_objection(self, description)
 
     def objection(self):
         class Objection:
