@@ -273,9 +273,9 @@ class AluTest(uvm_test):
         self.test_all = TestAllSeq.create("test_all")
 
     async def run_phase(self):
-        self.raise_objection()
+        self.raise_objection("Keep simulation alive")
         await self.test_all.start()
-        self.drop_objection()
+        self.drop_objection("Simulation may end now")
 
 
 @pyuvm.test()

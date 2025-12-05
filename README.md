@@ -184,9 +184,9 @@ class AluTest(uvm_test):
         self.test_all = TestAllSeq.create("test_all")
 
     async def run_phase(self):
-        self.raise_objection()
+        self.raise_objection("Description")
         await self.test_all.start()
-        self.drop_objection()
+        self.drop_objection("Another description")
 ```
 
 We extend the `AluTest` class to create a parallel version of the test and a Fibonacci program. You can find these sequences in `testbench.py`
