@@ -88,13 +88,18 @@ class uvm_component(uvm_report_object):
         """
         return self._parent
 
-    def raise_objection(self, description=""):
+    def raise_objection(self, description="", stacklevel=1):
         """
         Raise an objection, usually at the start of the ``run_phase()``
 
         :param str description: A meaningful description speeds up timeout debug
+        :param int stacklevel:  For debug, increase to associate with higher level caller
         """
-        utility_classes.ObjectionHandler().raise_objection(self, description)
+        utility_classes.ObjectionHandler().raise_objection(
+            self,
+            description,
+            stacklevel + 1,  # associate the objection with the caller of this function
+        )
 
     def drop_objection(self, description=""):
         """

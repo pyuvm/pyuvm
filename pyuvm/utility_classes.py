@@ -236,7 +236,7 @@ class ObjectionHandler(metaclass=Singleton):
     """
 
     def __init__(self):
-        self.__objections = {}  # Dict of List of Objections
+        self.__objections = {}  # Dict holds a list for each objecting UVM component
         self._objection_event = Event()
         self.objection_raised = False
         self.run_phase_done_flag = None  # used in test suites
@@ -254,9 +254,9 @@ class ObjectionHandler(metaclass=Singleton):
             ss += " None\n"
             return ss
         ss += "\n"
-        for objection_list in self.__objections.values():
-            for objection in objection_list:
-                ss += f" {objection}\n"
+        objlists = self.__objections.values()
+        lines = [f" {objection}" for component in objlists for objection in component]
+        ss += "\n".join(lines)
         return ss
 
     def clear(self):
@@ -265,9 +265,9 @@ class ObjectionHandler(metaclass=Singleton):
             self.__objections = {}
         self.objection_raised = False
 
-    def raise_objection(self, raiser, description):
+    def raise_objection(self, raiser, description, stacklevel=1):
         name = raiser.get_full_name()
-        frame = inspect.currentframe().f_back.f_back  # Capture caller information
+        frame = inspect.stack()[stacklevel].frame
         sourceline = f"{frame.f_code.co_filename}:{frame.f_lineno}"
         objection = Objection(name, description, sourceline)
         self.__objections.setdefault(name, []).append(objection)
