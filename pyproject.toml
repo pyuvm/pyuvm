@@ -1,7 +1,55 @@
 [build-system]
-requires = ["setuptools>=42","wheel"]
+requires = ["setuptools>=61","wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "pyuvm"
+version = "4.0.1"
+description = "A Python implementation of the UVM using cocotb"
+readme = "README.md"
+requires-python = ">=3.7"
+authors = [
+    {name = "Ray Salemi", email = "ray@raysalemi.com"}
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+    "Framework :: cocotb",
+]
+dependencies = [
+    "cocotb>=1.6.0,<3.0",
+]
+dynamic = [
+    "license"
+]
+
+[project.urls]
+Homepage = "https://github.com/pyuvm/pyuvm"
+"Bug Tracker" = "https://github.com/pyuvm/pyuvm/issues"
+
+[tool.setuptools]
+packages = [
+    "pyuvm",
+]
+
+[dependency-groups]
+dev = [
+    "tox",
+    "pre-commit",
+    "pytest",
+    "ruff",
+]
+docs = [
+    "cocotb>=2.0.1",
+    "myst-parser>=4.0.1",
+    "sphinx>=8.2.3",
+    "sphinx-autodoc2>=0.5.0",
+    "sphinx-rtd-theme>=3.0.2",
+]
+
+[tool.uv.dependency-groups]
+docs = {requires-python = ">=3.11"}
 
 [tool.ruff]
 target-version = "py37"
