@@ -89,14 +89,14 @@ jobs:
       if: matrix.vhdl-sim == 'ghdl'
       uses: ghdl/setup-ghdl@v1
       with:
-        version: latest
+        version: v5.1.1
         backend: mcode
 
     - name: Install NVC
       if: matrix.vhdl-sim == 'nvc'
       uses: nickg/setup-nvc@v1
       with:
-        version: latest
+        version: r1.18.2
 
     - name: Test
       run: |
