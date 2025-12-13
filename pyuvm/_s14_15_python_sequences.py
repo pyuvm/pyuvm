@@ -9,9 +9,14 @@
 
 from cocotb.triggers import Event as CocotbEvent
 
-from pyuvm._error_classes import *
-from pyuvm._s05_base_classes import *
-from pyuvm._s12_uvm_tlm_interfaces import *
+from pyuvm._error_classes import UVMFatalError, UVMSequenceError
+from pyuvm._s05_base_classes import uvm_object, uvm_transaction
+from pyuvm._s12_uvm_tlm_interfaces import (
+    UVMQueue,
+    uvm_blocking_put_export,
+    uvm_port_base,
+)
+from pyuvm._s13_uvm_component import uvm_component
 
 # The sequence system allows users to create and populate sequence
 # items and then send them to a driver. The driver

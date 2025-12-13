@@ -25,16 +25,6 @@ else:
 
     FormatterBase = SimLogFormatter
 
-from logging import (  # noqa: F401, E501
-    CRITICAL,
-    DEBUG,
-    ERROR,
-    INFO,
-    NOTSET,
-    WARNING,
-    NullHandler,
-)
-
 
 class PyuvmFormatter(FormatterBase):
     def __init__(self, full_name):
@@ -168,4 +158,4 @@ class uvm_report_object(uvm_object):
         Disables logging
         """
         self.remove_streaming_handler()
-        self.add_logging_handler(NullHandler())
+        self.add_logging_handler(logging.NullHandler())
