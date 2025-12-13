@@ -4,11 +4,11 @@ Main Packages for the entire RAL model
 
 import pytest
 
-from pyuvm.reg.uvm_reg import uvm_reg
-from pyuvm.reg.uvm_reg_block import uvm_reg_block
-from pyuvm.reg.uvm_reg_file import uvm_reg_file
-from pyuvm.reg.uvm_reg_map import uvm_reg_map
-from pyuvm.reg.uvm_reg_model import uvm_endianness_e
+from pyuvm._reg.uvm_reg import uvm_reg
+from pyuvm._reg.uvm_reg_block import uvm_reg_block
+from pyuvm._reg.uvm_reg_file import uvm_reg_file
+from pyuvm._reg.uvm_reg_map import uvm_reg_map
+from pyuvm._reg.uvm_reg_model import uvm_endianness_e
 
 ##############################################################################
 # TIPS

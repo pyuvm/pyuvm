@@ -1,116 +1,48 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from pyuvm.reg.uvm_reg_model import (
-    uvm_door_e,
-)
-from pyuvm.s05_base_classes import uvm_object
-from pyuvm.s10_synchronization_classes import (
+from pyuvm._reg.uvm_reg_map import uvm_reg_map
+from pyuvm._reg.uvm_reg_model import uvm_door_e, uvm_reg_data_t, uvm_status_e
+from pyuvm._reg.uvm_vreg import uvm_vreg
+from pyuvm._s05_base_classes import uvm_object
+from pyuvm._s10_synchronization_classes import (
     uvm_callback,
     uvm_callback_iter,
     uvm_callbacks,
 )
+from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
-if TYPE_CHECKING:
-    from pyuvm.reg.uvm_mem import uvm_mem
-    from pyuvm.reg.uvm_mem_mam import (
-        uvm_mem_mam,
-        uvm_mem_mam_policy,
-        uvm_mem_region,
-    )
-    from pyuvm.reg.uvm_reg_block import uvm_reg_block
-    from pyuvm.reg.uvm_reg_map import uvm_reg_map
-    from pyuvm.reg.uvm_reg_model import (
-        uvm_reg_addr_t,
-        uvm_reg_data_t,
-        uvm_status_e,
-    )
-    from pyuvm.reg.uvm_vreg_field import uvm_vreg_field
-    from pyuvm.s14_15_python_sequences import uvm_sequence_base
-
-__all__ = ["uvm_vreg", "uvm_vreg_cbs", "uvm_vreg_cb", "uvm_vreg_cb_iter"]
+__all__ = [
+    "uvm_vreg_field",
+    "uvm_vreg_field_cbs",
+    "uvm_vreg_field_cb",
+    "uvm_vreg_field_cb_iter",
+]
 
 
-class uvm_vreg(uvm_object):
-    def __init__(self, name: str, n_bits: int):
+class uvm_vreg_field(uvm_object):
+    def __init__(self, name: str = "uvm_vreg_field"):
+        super().__init__(name)
         raise NotImplementedError
 
-    def configure(
-        self,
-        parent: uvm_reg_block,
-        mem: uvm_mem = None,
-        size: int = 0,
-        offset: uvm_reg_addr_t = 0,
-        incr: int = 0,
-    ) -> None:
-        raise NotImplementedError
-
-    def implement(
-        self, mem: uvm_mem = None, offset: uvm_reg_addr_t = 0, incr: int = 0
-    ) -> None:
-        raise NotImplementedError
-
-    def allocate(
-        self, n: int, mam: uvm_mem_mam, alloc: uvm_mem_mam_policy = None
-    ) -> None:
-        raise NotImplementedError
-
-    def get_region(self) -> uvm_mem_region:
-        raise NotImplementedError
-
-    def release_region(self) -> None:
+    def configure(self, parent: uvm_vreg, size: int, lsb_pos: int) -> None:
         raise NotImplementedError
 
     def get_full_name(self) -> str:
         raise NotImplementedError
 
-    def get_parent(self) -> uvm_reg_block:
+    def get_parent(self) -> uvm_vreg:
         raise NotImplementedError
 
-    def get_block(self) -> uvm_reg_block:
+    def get_register(self) -> uvm_vreg:
         raise NotImplementedError
 
-    def get_memory(self) -> uvm_mem:
+    def get_lsb_pos_in_register(self) -> int:
         raise NotImplementedError
 
-    def get_n_maps(self) -> int:
-        raise NotImplementedError
-
-    def is_in_map(self, map: uvm_reg_map) -> bool:
-        raise NotImplementedError
-
-    def get_maps(self, maps: list[uvm_reg_map]) -> None:
-        raise NotImplementedError
-
-    def get_rights(self, map: uvm_reg_map = None) -> str:
+    def get_n_bits(self) -> int:
         raise NotImplementedError
 
     def get_access(self, map: uvm_reg_map = None) -> str:
-        raise NotImplementedError
-
-    def get_size(self) -> int:
-        raise NotImplementedError
-
-    def get_n_bytes(self) -> int:
-        raise NotImplementedError
-
-    def get_incr(self) -> int:
-        raise NotImplementedError
-
-    def get_n_memlocs(self) -> int:
-        raise NotImplementedError
-
-    def get_fields(self, fields: list[uvm_vreg_field]) -> None:
-        raise NotImplementedError
-
-    def get_field_by_name(self, name: str) -> uvm_vreg_field:
-        raise NotImplementedError
-
-    def get_offset_in_memory(self, idx: int) -> uvm_reg_addr_t:
-        raise NotImplementedError
-
-    def get_address(self, idx: int, map: uvm_reg_map = None) -> uvm_reg_addr_t:
         raise NotImplementedError
 
     async def write(
@@ -160,7 +92,7 @@ class uvm_vreg(uvm_object):
         raise NotImplementedError
 
     async def pre_write(
-        self, idx: int, wdata: uvm_reg_data_t, path: uvm_door_e, map: uvm_reg_map
+        self, idx: int, wdat: uvm_reg_data_t, path: uvm_door_e, map: uvm_reg_map
     ) -> None:
         raise NotImplementedError
 
@@ -187,15 +119,25 @@ class uvm_vreg(uvm_object):
     ) -> None:
         raise NotImplementedError
 
+    # TODO: Should this be dunder methods?
+    # extern virtual function void do_print (uvm_printer printer);
+    # extern virtual function string convert2string;
+    # extern virtual function uvm_object clone();
+    # extern virtual function void do_copy   (uvm_object rhs);
+    # extern virtual function bit do_compare (uvm_object  rhs,
+    #                                        uvm_comparer comparer);
+    # extern virtual function void do_pack (uvm_packer packer);
+    # extern virtual function void do_unpack (uvm_packer packer);
 
-class uvm_vreg_cbs(uvm_callback):
-    def __init__(self, name: str = "uvm_vreg_cbs"):
+
+class uvm_vreg_field_cbs(uvm_callback):
+    def __init__(self, name: str = "uvm_vreg_field_cbs"):
         super().__init__(name)
         raise NotImplementedError
 
     async def pre_write(
         self,
-        rg: uvm_vreg,
+        field: uvm_vreg_field,
         idx: int,
         wdat: uvm_reg_data_t,
         path: uvm_door_e,
@@ -205,7 +147,7 @@ class uvm_vreg_cbs(uvm_callback):
 
     async def post_write(
         self,
-        rg: uvm_vreg,
+        field: uvm_vreg_field,
         idx: int,
         wdat: uvm_reg_data_t,
         path: uvm_door_e,
@@ -215,13 +157,13 @@ class uvm_vreg_cbs(uvm_callback):
         raise NotImplementedError
 
     async def pre_read(
-        self, rg: uvm_vreg, idx: int, path: uvm_door_e, map: uvm_reg_map
+        self, field: uvm_vreg_field, idx: int, path: uvm_door_e, map: uvm_reg_map
     ) -> None:
         raise NotImplementedError
 
     async def post_read(
         self,
-        rg: uvm_vreg,
+        field: uvm_vreg_field,
         idx: int,
         rdat: uvm_reg_data_t,
         path: uvm_door_e,
@@ -231,9 +173,9 @@ class uvm_vreg_cbs(uvm_callback):
         raise NotImplementedError
 
 
-class uvm_vreg_cb(uvm_callbacks):
+class uvm_vreg_field_cb(uvm_callbacks):
     pass
 
 
-class uvm_vreg_cb_iter(uvm_callback_iter):
+class uvm_vreg_field_cb_iter(uvm_callback_iter):
     pass

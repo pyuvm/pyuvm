@@ -25,9 +25,9 @@
 
 from cocotb.queue import QueueEmpty, QueueFull
 
-from pyuvm.error_classes import UVMTLMConnectionError
-from pyuvm.s13_uvm_component import uvm_component
-from pyuvm.utility_classes import FIFO_DEBUG, UVMQueue
+from pyuvm._error_classes import UVMTLMConnectionError
+from pyuvm._s13_uvm_component import uvm_component
+from pyuvm._utility_classes import FIFO_DEBUG, UVMQueue
 
 # 12.2.2
 # This section describes a variety of classes without

@@ -9,8 +9,8 @@
 import logging
 import sys
 
+from pyuvm._s05_base_classes import uvm_object
 from pyuvm._utils import cocotb_version_info
-from pyuvm.s05_base_classes import uvm_object
 
 if cocotb_version_info < (2, 0):
     from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
@@ -24,16 +24,6 @@ else:
     from cocotb.logging import SimLogFormatter, SimTimeContextFilter
 
     FormatterBase = SimLogFormatter
-
-from logging import (  # noqa: F401, E501
-    CRITICAL,
-    DEBUG,
-    ERROR,
-    INFO,
-    NOTSET,
-    WARNING,
-    NullHandler,
-)
 
 
 class PyuvmFormatter(FormatterBase):
@@ -168,4 +158,4 @@ class uvm_report_object(uvm_object):
         Disables logging
         """
         self.remove_streaming_handler()
-        self.add_logging_handler(NullHandler())
+        self.add_logging_handler(logging.NullHandler())

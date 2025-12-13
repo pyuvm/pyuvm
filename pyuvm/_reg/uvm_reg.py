@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING, ClassVar
 
 from cocotb.triggers import Lock
 
-from pyuvm.error_classes import UVMFatalError
-from pyuvm.reg.uvm_reg_field import uvm_reg_field
-from pyuvm.reg.uvm_reg_file import uvm_reg_file
-from pyuvm.reg.uvm_reg_item import uvm_reg_item
-from pyuvm.reg.uvm_reg_model import (
+from pyuvm._error_classes import UVMFatalError
+from pyuvm._reg.uvm_reg_field import uvm_reg_field
+from pyuvm._reg.uvm_reg_file import uvm_reg_file
+from pyuvm._reg.uvm_reg_item import uvm_reg_item
+from pyuvm._reg.uvm_reg_model import (
     uvm_access_e,
     uvm_check_e,
     uvm_door_e,
@@ -18,14 +18,14 @@ from pyuvm.reg.uvm_reg_model import (
     uvm_predict_e,
     uvm_status_e,
 )
-from pyuvm.s05_base_classes import uvm_object
+from pyuvm._s05_base_classes import uvm_object
 
 if TYPE_CHECKING:
-    from pyuvm.reg.uvm_reg_backdoor import uvm_reg_backdoor
-    from pyuvm.reg.uvm_reg_block import uvm_reg_block
-    from pyuvm.reg.uvm_reg_item import uvm_reg_item
-    from pyuvm.reg.uvm_reg_map import uvm_reg_map, uvm_reg_map_info
-    from pyuvm.reg.uvm_reg_model import (
+    from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
+    from pyuvm._reg.uvm_reg_block import uvm_reg_block
+    from pyuvm._reg.uvm_reg_item import uvm_reg_item
+    from pyuvm._reg.uvm_reg_map import uvm_reg_map, uvm_reg_map_info
+    from pyuvm._reg.uvm_reg_model import (
         uvm_hdl_path_concat,
         uvm_hdl_path_slice,
         uvm_reg_addr_t,
@@ -33,8 +33,8 @@ if TYPE_CHECKING:
         uvm_reg_cvr_t,
         uvm_reg_data_t,
     )
-    from pyuvm.reg.uvm_reg_sequence import uvm_reg_frontdoor
-    from pyuvm.s14_15_python_sequences import uvm_sequence_base
+    from pyuvm._reg.uvm_reg_sequence import uvm_reg_frontdoor
+    from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
 __all__ = ["uvm_reg"]
 logger = logging.getLogger("RegModel")

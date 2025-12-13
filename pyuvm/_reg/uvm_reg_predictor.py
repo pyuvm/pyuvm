@@ -3,14 +3,14 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from pyuvm.s12_uvm_tlm_interfaces import uvm_analysis_imp
-from pyuvm.s13_uvm_component import uvm_component
+from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_imp
+from pyuvm._s13_uvm_component import uvm_component
 
 if TYPE_CHECKING:
     from pyuvm import uvm_analysis_port, uvm_phase
-    from pyuvm.reg.uvm_reg_adapter import uvm_reg_adapter
-    from pyuvm.reg.uvm_reg_item import uvm_reg_item
-    from pyuvm.reg.uvm_reg_map import uvm_reg_map
+    from pyuvm._reg.uvm_reg_adapter import uvm_reg_adapter
+    from pyuvm._reg.uvm_reg_item import uvm_reg_item
+    from pyuvm._reg.uvm_reg_map import uvm_reg_map
 
 __all__ = ["uvm_reg_predictor"]
 logger = logging.getLogger("RegModel")

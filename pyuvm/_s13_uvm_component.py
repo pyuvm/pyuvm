@@ -2,11 +2,18 @@ import fnmatch
 import logging
 import string
 
-from pyuvm import error_classes, utility_classes
+from pyuvm._error_classes import UVMConfigItemNotFound, UVMError, UVMNotImplemented
+from pyuvm._s06_reporting_classes import uvm_report_object
+from pyuvm._s08_factory_classes import uvm_factory
+from pyuvm._s09_phasing import uvm_build_phase, uvm_common_phases, uvm_run_phase
+from pyuvm._utility_classes import (
+    PYUVM_DEBUG,
+    FactoryData,
+    ObjectionHandler,
+    Singleton,
+    UVM_ROOT_Singleton,
+)
 from pyuvm._utils import cocotb_version_info
-from pyuvm.s06_reporting_classes import uvm_report_object
-from pyuvm.s08_factory_classes import uvm_factory
-from pyuvm.s09_phasing import uvm_build_phase, uvm_common_phases, uvm_run_phase
 
 if cocotb_version_info < (2, 0):
     from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
@@ -66,7 +73,7 @@ class uvm_component(uvm_report_object):
         self.clear_children()
 
     def do_execute_op(self, op):
-        raise error_classes.UVMNotImplemented("Policies not implemented")
+        raise UVMNotImplemented("Policies not implemented")
 
     @classmethod
     def create(cls, name="", parent=None):
@@ -95,7 +102,7 @@ class uvm_component(uvm_report_object):
         :param str description: A meaningful description speeds up timeout debug
         :param int stacklevel:  For debug, increase to associate with higher level caller
         """
-        utility_classes.ObjectionHandler().raise_objection(
+        ObjectionHandler().raise_objection(
             self,
             description,
             stacklevel + 1,  # associate the objection with the caller of this function
@@ -107,7 +114,7 @@ class uvm_component(uvm_report_object):
 
         :param str description: Not used, but kept for symmetry with raise_objection
         """
-        utility_classes.ObjectionHandler().drop_objection(self, description)
+        ObjectionHandler().drop_objection(self, description)
 
     def objection(self):
         class Objection:
@@ -424,7 +431,7 @@ class uvm_test(uvm_component):
     """
 
 
-class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
+class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
     """
     F.7.  We do not use ``uvm_pkg`` to hold ``uvm_root``.  Instead it
     is a class variable of uvm_component.  This avoids
@@ -445,8 +452,8 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
         """
         Clear the singletons in the system.  This is used for testing
         """
-        keepers = {uvm_factory, utility_classes.FactoryData}.union(keep_set)
-        utility_classes.Singleton.clear_singletons(keep=keepers)
+        keepers = {uvm_factory, FactoryData}.union(keep_set)
+        Singleton.clear_singletons(keep=keepers)
 
     def __init__(self):
         super().__init__("uvm_root", None)
@@ -480,15 +487,15 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
             self.clear_singletons(keep_set)
             factory.clear_overrides()
         self.clear_children()
-        utility_classes.ObjectionHandler().clear()
+        ObjectionHandler().clear()
         self.uvm_test_top = factory.create_component_by_name(
             test_name, "", "uvm_test_top", self
         )
         for self.running_phase in uvm_common_phases:
-            self.logger.log(utility_classes.PYUVM_DEBUG, str(self.running_phase))
+            self.logger.log(PYUVM_DEBUG, str(self.running_phase))
             self.running_phase.traverse(self.uvm_test_top)
             if self.running_phase == uvm_run_phase:
-                await utility_classes.ObjectionHandler().run_phase_complete()  # noqa: E501
+                await ObjectionHandler().run_phase_complete()  # noqa: E501
 
 
 # In the SystemVerilog UVM the uvm_config_db is a
@@ -507,7 +514,7 @@ class uvm_root(uvm_component, metaclass=utility_classes.UVM_ROOT_Singleton):
 # our class is named ConfigDB.
 
 
-class ConfigDB(metaclass=utility_classes.Singleton):
+class ConfigDB(metaclass=Singleton):
     default_get = object()
     default_precedence = 1000
     legal_chars = set(string.ascii_letters) | set(string.digits) | set("_.")
@@ -597,7 +604,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         """
 
         if not set(field_name).issubset(self.legal_chars):
-            raise error_classes.UVMNotImplemented(
+            raise UVMNotImplemented(
                 f"pyuvm does not allow wildcards in key names ({field_name})"
             )
 
@@ -635,7 +642,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
 
         """
         if not set(inst_name).issubset(self.legal_chars):
-            raise error_classes.UVMError(
+            raise UVMError(
                 f'"{inst_name}" is illegal: '
                 f"inst_name wildcards only allowed when storing."
             )
@@ -652,14 +659,10 @@ class ConfigDB(metaclass=utility_classes.Singleton):
                         key_matches.append(dk)
 
             except TypeError:
-                raise error_classes.UVMConfigItemNotFound(
-                    f'"{inst_name}" is not in ConfigDB().'
-                )
+                raise UVMConfigItemNotFound(f'"{inst_name}" is not in ConfigDB().')
             finally:
                 if len(key_matches) == 0:
-                    raise error_classes.UVMConfigItemNotFound(
-                        f'"{inst_name}" is not in ConfigDB().'
-                    )
+                    raise UVMConfigItemNotFound(f'"{inst_name}" is not in ConfigDB().')
             # Here we sort the list of paths by which paths are "in" other
             # paths. That is A comes before '*'  A.B comes before A.*, etc.
             # We use an insertion sort. A path is inserted in front of the
@@ -668,9 +671,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
             try:
                 sorted_paths.append(key_matches.pop())
             except IndexError:
-                raise error_classes.UVMConfigItemNotFound(
-                    f"{inst_name} not in ConfigDB()"
-                )
+                raise UVMConfigItemNotFound(f"{inst_name} not in ConfigDB()")
 
             # Sort the matching keys from most specific to
             # most greedy. A.B.C before A.B.* before A.* before *
@@ -697,10 +698,10 @@ class ConfigDB(metaclass=utility_classes.Singleton):
                 self.trace("GET", context, inst_name, field_name, value)
                 return value
             else:
-                raise error_classes.UVMConfigItemNotFound(
+                raise UVMConfigItemNotFound(
                     f'"Component {inst_name} has no key: {field_name}'
                 )
-        except error_classes.UVMConfigItemNotFound as e:
+        except UVMConfigItemNotFound as e:
             if default is self.default_get:
                 raise e
             return default
@@ -717,7 +718,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         """
         try:
             _ = self.get(context, inst_name, field_name)
-        except error_classes.UVMConfigItemNotFound:
+        except UVMConfigItemNotFound:
             return False
         return True
 
@@ -725,7 +726,7 @@ class ConfigDB(metaclass=utility_classes.Singleton):
         """
         :raises UVMNotImplemented: This is not implemented in pyuvm
         """
-        raise error_classes.UVMNotImplemented(
+        raise UVMNotImplemented(
             "wait_modified not implemented pending requests for it."
         )
 

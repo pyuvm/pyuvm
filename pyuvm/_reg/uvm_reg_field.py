@@ -4,26 +4,26 @@ import logging
 import warnings
 from typing import TYPE_CHECKING, ClassVar
 
-from pyuvm.reg.uvm_reg_item import uvm_reg_item
-from pyuvm.reg.uvm_reg_map import uvm_reg_map
-from pyuvm.reg.uvm_reg_model import (
+from pyuvm._reg.uvm_reg_item import uvm_reg_item
+from pyuvm._reg.uvm_reg_map import uvm_reg_map
+from pyuvm._reg.uvm_reg_model import (
     uvm_check_e,
     uvm_coverage_model_e,
     uvm_door_e,
     uvm_predict_e,
     uvm_status_e,
 )
-from pyuvm.s05_base_classes import uvm_object
-from pyuvm.s24_uvm_reg_includes import uvm_resp_t
+from pyuvm._s05_base_classes import uvm_object
+from pyuvm._s24_uvm_reg_includes import uvm_resp_t
 
 if TYPE_CHECKING:
-    from pyuvm.reg.uvm_reg import uvm_reg
-    from pyuvm.reg.uvm_reg_map import uvm_reg_map_info
-    from pyuvm.reg.uvm_reg_model import (
+    from pyuvm._reg.uvm_reg import uvm_reg
+    from pyuvm._reg.uvm_reg_map import uvm_reg_map_info
+    from pyuvm._reg.uvm_reg_model import (
         uvm_reg_byte_en_t,
         uvm_reg_data_t,
     )
-    from pyuvm.s14_15_python_sequences import uvm_reg_item, uvm_sequence_base
+    from pyuvm._s14_15_python_sequences import uvm_reg_item, uvm_sequence_base
 
 __all__ = ["uvm_reg_field"]
 logger = logging.getLogger("RegModel")

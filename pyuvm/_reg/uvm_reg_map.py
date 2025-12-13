@@ -4,36 +4,36 @@ import logging
 import warnings
 from typing import TYPE_CHECKING, ClassVar
 
-from pyuvm.error_classes import UVMFatalError
-from pyuvm.reg.uvm_reg_backdoor import uvm_reg_backdoor
-from pyuvm.reg.uvm_reg_item import uvm_reg_bus_op
-from pyuvm.reg.uvm_reg_model import (
+from pyuvm._error_classes import UVMFatalError
+from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
+from pyuvm._reg.uvm_reg_item import uvm_reg_bus_op
+from pyuvm._reg.uvm_reg_model import (
     uvm_access_e,
     uvm_elem_kind_e,
     uvm_endianness_e,
     uvm_hier_e,
 )
-from pyuvm.s05_base_classes import uvm_object
-from pyuvm.s14_15_python_sequences import uvm_sequence, uvm_sequence_base
+from pyuvm._s05_base_classes import uvm_object
+from pyuvm._s14_15_python_sequences import uvm_sequence, uvm_sequence_base
 
 if TYPE_CHECKING:
     from pyuvm import (
         uvm_sequencer,
         uvm_sequencer_base,
     )
-    from pyuvm.reg.uvm_mem import uvm_mem
-    from pyuvm.reg.uvm_reg import uvm_reg
-    from pyuvm.reg.uvm_reg_adapter import uvm_reg_adapter
-    from pyuvm.reg.uvm_reg_block import uvm_reg_block
-    from pyuvm.reg.uvm_reg_field import uvm_reg_field
-    from pyuvm.reg.uvm_reg_item import uvm_reg_item
-    from pyuvm.reg.uvm_reg_model import (
+    from pyuvm._reg.uvm_mem import uvm_mem
+    from pyuvm._reg.uvm_reg import uvm_reg
+    from pyuvm._reg.uvm_reg_adapter import uvm_reg_adapter
+    from pyuvm._reg.uvm_reg_block import uvm_reg_block
+    from pyuvm._reg.uvm_reg_field import uvm_reg_field
+    from pyuvm._reg.uvm_reg_item import uvm_reg_item
+    from pyuvm._reg.uvm_reg_model import (
         uvm_reg_addr_t,
         uvm_reg_map_addr_range,
     )
-    from pyuvm.reg.uvm_reg_sequence import uvm_reg_frontdoor
-    from pyuvm.reg.uvm_vreg import uvm_vreg
-    from pyuvm.reg.uvm_vreg_field import uvm_vreg_field
+    from pyuvm._reg.uvm_reg_sequence import uvm_reg_frontdoor
+    from pyuvm._reg.uvm_vreg import uvm_vreg
+    from pyuvm._reg.uvm_vreg_field import uvm_vreg_field
 
 __all__ = [
     "uvm_reg_map_info",
