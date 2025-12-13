@@ -3,7 +3,6 @@ from cocotb.clock import Clock
 from cocotb.triggers import FallingEdge
 
 from pyuvm import *
-from pyuvm import utility_classes
 
 
 class CocotbProxy:
@@ -108,7 +107,7 @@ async def test_alu(dut):
 @cocotb.test()
 async def test_queue(dut):
     "Test basic QUEUE functions"
-    qq = utility_classes.UVMQueue(maxsize=1)
+    qq = UVMQueue(maxsize=1)
     await qq.put(5)
     got = await qq.get()
     assert got == 5
@@ -150,7 +149,7 @@ async def wait_on_queue(dut):
     """Test put and get with waits"""
     clock = Clock(dut.clk, 2, "us")  # make the simulator wait
     cocotb.start_soon(clock.start())
-    qq = utility_classes.UVMQueue(maxsize=1)
+    qq = UVMQueue(maxsize=1)
     send_data = [0.01, "two", 3, None]
     cocotb.start_soon(delay_put(qq, 0.01, send_data))
     got_data = await delay_peek(qq, 0.01)
@@ -161,7 +160,7 @@ async def wait_on_queue(dut):
 @cocotb.test()
 async def nowait_tests(dut):
     """Test the various nowait flavors"""
-    qq = utility_classes.UVMQueue(maxsize=1)
+    qq = UVMQueue(maxsize=1)
     await qq.put(5)
     try:
         qq.put_nowait(6)

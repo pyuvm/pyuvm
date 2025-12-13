@@ -1,4 +1,5 @@
 import cocotb
+import cocotb.triggers
 import pytest
 
 from pyuvm import *
@@ -30,7 +31,7 @@ async def test_01_uvm_transaction_begin_time(dut):
     await cocotb.triggers.Timer(100, "ns")
     tr1.accept_tr(2)
     assert tr1.get_accept_time() == 2
-    with pytest.raises(error_classes.UVMFatalError):
+    with pytest.raises(UVMFatalError):
         tr1.begin_tr(1)
     tr1.begin_tr(None, None)
     await cocotb.triggers.Timer(100, "ns")

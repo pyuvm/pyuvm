@@ -1,7 +1,7 @@
-from pyuvm.reg.uvm_reg import uvm_reg
-from pyuvm.reg.uvm_reg_item import uvm_reg_item
-from pyuvm.reg.uvm_reg_map import uvm_reg_map
-from pyuvm.reg.uvm_reg_model import (
+from pyuvm._reg.uvm_reg import uvm_reg
+from pyuvm._reg.uvm_reg_item import uvm_reg_item
+from pyuvm._reg.uvm_reg_map import uvm_reg_map
+from pyuvm._reg.uvm_reg_model import (
     uvm_check_e,
     uvm_door_e,
     uvm_predict_e,
@@ -9,8 +9,8 @@ from pyuvm.reg.uvm_reg_model import (
     uvm_reg_data_t,
     uvm_status_e,
 )
-from pyuvm.s05_base_classes import uvm_object
-from pyuvm.s14_15_python_sequences import uvm_sequence_base
+from pyuvm._s05_base_classes import uvm_object
+from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
 __all__ = ["uvm_reg_fifo"]
 

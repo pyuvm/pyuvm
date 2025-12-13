@@ -27,7 +27,7 @@ class s08_factory_classes_TestCase:
     class object_3(uvm_object): ...
 
     def setUp(self):
-        self.fd = utility_classes.FactoryData()
+        self.fd = FactoryData()
         uvm_root().clear_children()
         self.top = uvm_component("top", None)
         self.mid = uvm_component("mid", self.top)
@@ -351,7 +351,7 @@ class s08_factory_classes_TestCase:
 
         try:
             self.factory.set_type_alias("any_str", self.original_comp)
-        except error_classes.UVMNotImplemented:
+        except UVMNotImplemented:
             assert True
             return
         assert False

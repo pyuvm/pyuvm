@@ -1,7 +1,8 @@
 import fnmatch
 import logging
 
-from pyuvm import error_classes, utility_classes
+from pyuvm._error_classes import UVMFactoryError, UVMNotImplemented
+from pyuvm._utility_classes import FactoryData, Override, Singleton, uvm_void
 
 # pyuvm refactors the factory, taking advantage Python's
 # superiority in terms of OOP features and lack of types.
@@ -25,7 +26,7 @@ from pyuvm import error_classes, utility_classes
 
 
 # 8.3.1.1
-class uvm_factory(metaclass=utility_classes.Singleton):
+class uvm_factory(metaclass=Singleton):
     """
     The uvm_factory is a singleton that delivers all UVM factory functions.
     """
@@ -40,7 +41,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
     # database through introspection.
 
     def __init__(self):
-        self.fd = utility_classes.FactoryData()
+        self.fd = FactoryData()
         self.logger = logging.getLogger("Factory")
         self.debug_level = 1
 
@@ -59,7 +60,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
     def __set_override(self, original, override, path=None):
         if original not in self.fd.overrides:
-            self.fd.overrides[original] = utility_classes.Override()
+            self.fd.overrides[original] = Override()
         self.fd.overrides[original].add(override, path)
 
     # 8.3.1.3
@@ -85,10 +86,10 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         # instance_overrides is an OrderedDict, so we will check
         # the paths in the order they are registered later.
 
-        assert issubclass(original_type, utility_classes.uvm_void), (
+        assert issubclass(original_type, uvm_void), (
             "You tried to override a non-uvm_void class"
         )
-        assert issubclass(override_type, utility_classes.uvm_void), (
+        assert issubclass(override_type, uvm_void), (
             "You tried to use a non-uvm_void class as an override"
         )
         self.__set_override(original_type, override_type, full_inst_path)
@@ -122,9 +123,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         try:
             override_type = self.fd.classes[override_type_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(
-                f"{override_type_name}" + " has not been defined."
-            )
+            raise UVMFactoryError(f"{override_type_name}" + " has not been defined.")
 
         # Set type override by name can use an arbitrary string as a key
         # instead of a type. Fortunately Python dicts don't care about
@@ -146,10 +145,10 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
         Override one type with another type globally
         """
-        assert issubclass(original_type, utility_classes.uvm_void), (
+        assert issubclass(original_type, uvm_void), (
             "You tried to override a non-uvm_void class"
         )
-        assert issubclass(override_type, utility_classes.uvm_void), (
+        assert issubclass(override_type, uvm_void), (
             "You tried to use a non-uvm_void class as an override"
         )
         if (original_type not in self.fd.overrides) or replace:
@@ -175,9 +174,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         try:
             override_type = self.fd.classes[override_type_name]
         except KeyError:
-            raise error_classes.UVMFactoryError(
-                f"{override_type_name}" + " has not been defined."
-            )
+            raise UVMFactoryError(f"{override_type_name}" + " has not been defined.")
 
         # Set type override by name can use an arbitrary string as a key
         # instead of a type
@@ -193,7 +190,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
     def __find_override(self, requested_type, parent_inst_path="", name=""):
         if not isinstance(requested_type, str):
-            assert issubclass(requested_type, utility_classes.uvm_void), (
+            assert issubclass(requested_type, uvm_void), (
                 f"You must create uvm_void descendants not {requested_type}"
             )
 
@@ -227,9 +224,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         new_type = self.__find_override(requested_type, parent_inst_path, name)
         if new_type is None:
-            raise error_classes.UVMFactoryError(
-                f"{requested_type} not in uvm_factory()"
-            )
+            raise UVMFactoryError(f"{requested_type} not in uvm_factory()")
         return new_type(name)
 
     # 8.3.1.5
@@ -244,7 +239,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         Create an object using a string to define its uvm_object type.
         """
         try:
-            requested_type = utility_classes.FactoryData().classes[requested_type_name]  # noqa
+            requested_type = FactoryData().classes[requested_type_name]  # noqa
         except KeyError:
             requested_type = requested_type_name
 
@@ -270,16 +265,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
 
         if name is None:
-            raise error_classes.UVMFactoryError(
-                "Parameter name must be specified in function call."
-            )
+            raise UVMFactoryError("Parameter name must be specified in function call.")
 
         new_type = self.__find_override(requested_type, parent_inst_path, name)
 
         if new_type is None:
-            raise error_classes.UVMFactoryError(
-                f"{requested_type} not in uvm_factory()"
-            )
+            raise UVMFactoryError(f"{requested_type} not in uvm_factory()")
 
         new_comp = new_type(name, parent)
         return new_comp
@@ -299,12 +290,12 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         :return: A uvm_object with the name given
         """
         if name is None:
-            raise error_classes.UVMFactoryError(
+            raise UVMFactoryError(
                 "Parameter name must be specified in create_component_by_name"
             )
 
         try:
-            requested_type = utility_classes.FactoryData().classes[requested_type_name]  # noqa
+            requested_type = FactoryData().classes[requested_type_name]  # noqa
         except KeyError:
             requested_type = requested_type_name
 
@@ -325,9 +316,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         """
         # This method does not seem to be implemented in SystemVerilog
         # so I'm skipping it now.
-        raise error_classes.UVMNotImplemented(
-            "set_type_alias is not implemented in SystemVerilog"
-        )
+        raise UVMNotImplemented("set_type_alias is not implemented in SystemVerilog")
 
     # 8.3.1.6.2
     def set_inst_alias(self, alias_type_name, original_type, full_inst_path):
@@ -343,9 +332,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
         # This method does not seem to be implemented in SystemVerilog
         # so I'm skipping it now.
-        raise error_classes.UVMNotImplemented(
-            "set_type_inst is not implemented in SystemVerilog"
-        )
+        raise UVMNotImplemented("set_type_inst is not implemented in SystemVerilog")
 
     # 8.3.1.7 Introspection
 
@@ -379,9 +366,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
         try:
             requested_type = self.fd.classes[requested_type_name]
         except KeyError:
-            error_classes.UVMFactoryError(
-                f"{requested_type_name} is not a defined class name"
-            )
+            UVMFactoryError(f"{requested_type_name} is not a defined class name")
         return self.find_override_by_type(requested_type, full_inst_path)
 
     # 8.3.1.7.2
@@ -391,7 +376,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
             **pyuvm** so this is not implemented.
 
         """
-        raise error_classes.UVMNotImplemented(
+        raise UVMNotImplemented(
             "There are no wrappers in pyuvm. So find_wrapper_by_name is not implemented"
         )
 
@@ -420,7 +405,7 @@ class uvm_factory(metaclass=utility_classes.Singleton):
 
 
         """
-        assert issubclass(uvm_type, utility_classes.uvm_void), (
+        assert issubclass(uvm_type, uvm_void), (
             "is_type_registered() takes a subclass of uvm_void "
             "as its argument not {type(uvm_type)}"
         )

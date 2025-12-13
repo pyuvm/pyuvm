@@ -4,7 +4,7 @@ import logging
 import cocotb
 from cocotb.triggers import FallingEdge, RisingEdge
 
-from pyuvm import utility_classes
+from pyuvm import Singleton
 
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger()
@@ -45,7 +45,7 @@ def get_int(signal):
     return sig
 
 
-class TinyAluBfm(metaclass=utility_classes.Singleton):
+class TinyAluBfm(metaclass=Singleton):
     def __init__(self):
         self.dut = cocotb.top
 

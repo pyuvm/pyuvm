@@ -3,8 +3,8 @@ import inspect
 
 import cocotb
 
+from pyuvm._s13_uvm_component import uvm_root
 from pyuvm._utils import cocotb_version_info
-from pyuvm.s13_uvm_component import uvm_root
 
 
 def test(
@@ -58,3 +58,7 @@ def test(
         return cls
 
     return decorator
+
+
+# Ensure pytest doesn't collect this as a test.
+test.__test__ = False
