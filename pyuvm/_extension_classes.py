@@ -58,3 +58,7 @@ def test(
         return cls
 
     return decorator
+
+
+# Ensure pytest doesn't collect this as a test.
+test.__test__ = False
