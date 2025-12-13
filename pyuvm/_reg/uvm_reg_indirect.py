@@ -1,5 +1,5 @@
-from pyuvm.reg.uvm_reg import uvm_reg
-from pyuvm.reg.uvm_reg_sequence import uvm_reg_frontdoor
+from pyuvm._reg.uvm_reg import uvm_reg
+from pyuvm._reg.uvm_reg_sequence import uvm_reg_frontdoor
 
 __all__ = ["uvm_reg_indirect_data", "uvm_reg_indirect_ftdr_seq"]
 

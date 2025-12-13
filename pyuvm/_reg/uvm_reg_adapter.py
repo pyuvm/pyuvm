@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING
 
-from pyuvm.reg.uvm_reg_item import uvm_reg_bus_op, uvm_reg_item
-from pyuvm.s05_base_classes import uvm_object
-from pyuvm.s14_15_python_sequences import uvm_sequence_item
+from pyuvm._reg.uvm_reg_item import uvm_reg_bus_op, uvm_reg_item
+from pyuvm._s05_base_classes import uvm_object
+from pyuvm._s14_15_python_sequences import uvm_sequence_item
 
 if TYPE_CHECKING:
-    from pyuvm.s14_15_python_sequences import uvm_sequence_base
+    from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
 __all__ = ["uvm_reg_adapter", "uvm_reg_tlm_adapter"]
 

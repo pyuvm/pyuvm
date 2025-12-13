@@ -9,9 +9,9 @@
 
 from cocotb.triggers import Event as CocotbEvent
 
-from pyuvm.error_classes import *
-from pyuvm.s05_base_classes import *
-from pyuvm.s12_uvm_tlm_interfaces import *
+from pyuvm._error_classes import *
+from pyuvm._s05_base_classes import *
+from pyuvm._s12_uvm_tlm_interfaces import *
 
 # The sequence system allows users to create and populate sequence
 # items and then send them to a driver. The driver
@@ -213,7 +213,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
 
         """
         if self.current_item is not None:
-            raise error_classes.UVMSequenceError(
+            raise UVMSequenceError(
                 "You must call item_done() before calling get_next_item again"
             )
         self.current_item = await self.req_q.get()
@@ -230,7 +230,7 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         :param rsp: (optional) item to put in response queue if not None
         """
         if self.current_item is None:
-            raise error_classes.UVMSequenceError(
+            raise UVMSequenceError(
                 "You must call get_next_item before calling item_done"
             )
         self.current_item.finish_condition.set()
@@ -450,7 +450,7 @@ class uvm_sequence(uvm_object):
         :param item: The sequence item to send to the driver.
         """
         if self.sequencer is None:
-            raise error_classes.UVMSequenceError(
+            raise UVMSequenceError(
                 f"Tried start_item in a virtual sequence {self.get_full_name()}"
             )
         item.parent_sequence_id = self.sequence_id
@@ -459,14 +459,14 @@ class uvm_sequence(uvm_object):
 
     async def finish_item(self, item):
         if self.sequencer is None:
-            raise error_classes.UVMSequenceError(
+            raise UVMSequenceError(
                 f"Tried finish_item in virtual sequence: {self.get_full_name()}"
             )
         await self.sequencer.finish_item(item)
 
     async def get_response(self, transaction_id=None):
         if self.sequencer is None:
-            raise error_classes.UVMSequenceError(
+            raise UVMSequenceError(
                 "Tried to do get_response in a virtual "
                 f"sequence: {self.get_full_name()}"
             )

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pyuvm.s05_base_classes import uvm_object
+from pyuvm._s05_base_classes import uvm_object
 
 if TYPE_CHECKING:
-    from pyuvm.reg.uvm_reg_block import uvm_reg_block
+    from pyuvm._reg.uvm_reg_block import uvm_reg_block
 
 __all__ = ["uvm_reg_file"]
 

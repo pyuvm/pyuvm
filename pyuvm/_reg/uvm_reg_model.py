@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, IntEnum
 
-from pyuvm.s05_base_classes import uvm_object
+from pyuvm._s05_base_classes import uvm_object
 
 __all__ = [
     "UVM_DEFAULT_PATH",

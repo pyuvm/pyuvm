@@ -5,24 +5,24 @@ import warnings
 from asyncio import Event
 from typing import TYPE_CHECKING, ClassVar
 
-from pyuvm.error_classes import UVMFatalError
-from pyuvm.reg.uvm_mem import uvm_mem
-from pyuvm.reg.uvm_reg import uvm_reg
-from pyuvm.reg.uvm_reg_field import uvm_reg_field
-from pyuvm.reg.uvm_reg_map import uvm_reg_map
-from pyuvm.reg.uvm_reg_model import (
+from pyuvm._error_classes import UVMFatalError
+from pyuvm._reg.uvm_mem import uvm_mem
+from pyuvm._reg.uvm_reg import uvm_reg
+from pyuvm._reg.uvm_reg_field import uvm_reg_field
+from pyuvm._reg.uvm_reg_map import uvm_reg_map
+from pyuvm._reg.uvm_reg_model import (
     UVM_REG_DATA_WIDTH,
     uvm_check_e,
     uvm_coverage_model_e,
     uvm_door_e,
     uvm_hier_e,
 )
-from pyuvm.s05_base_classes import uvm_object
+from pyuvm._s05_base_classes import uvm_object
 
 if TYPE_CHECKING:
-    from pyuvm.reg.uvm_mem import uvm_mem
-    from pyuvm.reg.uvm_reg_backdoor import uvm_reg_backdoor
-    from pyuvm.reg.uvm_reg_model import (
+    from pyuvm._reg.uvm_mem import uvm_mem
+    from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
+    from pyuvm._reg.uvm_reg_model import (
         uvm_endianness_e,
         uvm_path_e,
         uvm_reg_addr_t,
@@ -30,9 +30,9 @@ if TYPE_CHECKING:
         uvm_reg_data_t,
         uvm_status_e,
     )
-    from pyuvm.reg.uvm_vreg import uvm_vreg
-    from pyuvm.reg.uvm_vreg_field import uvm_vreg_field
-    from pyuvm.s14_15_python_sequences import uvm_sequence_base
+    from pyuvm._reg.uvm_vreg import uvm_vreg
+    from pyuvm._reg.uvm_vreg_field import uvm_vreg_field
+    from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
 __all__ = ["uvm_reg_block"]
 logger = logging.getLogger("RegModel")

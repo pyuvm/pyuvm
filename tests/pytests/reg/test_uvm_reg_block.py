@@ -3,11 +3,11 @@ import itertools
 
 import pytest
 
-from pyuvm.reg.uvm_reg import uvm_reg
-from pyuvm.reg.uvm_reg_block import uvm_reg_block
-from pyuvm.reg.uvm_reg_field import uvm_reg_field
-from pyuvm.reg.uvm_reg_map import uvm_reg_map
-from pyuvm.reg.uvm_reg_model import uvm_endianness_e, uvm_hier_e, uvm_predict_e
+from pyuvm._reg.uvm_reg import uvm_reg
+from pyuvm._reg.uvm_reg_block import uvm_reg_block
+from pyuvm._reg.uvm_reg_field import uvm_reg_field
+from pyuvm._reg.uvm_reg_map import uvm_reg_map
+from pyuvm._reg.uvm_reg_model import uvm_endianness_e, uvm_hier_e, uvm_predict_e
 
 ##############################################################################
 # TIPS

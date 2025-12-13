@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from enum import Enum
 
-from pyuvm.reg.uvm_mem import uvm_mem
-from pyuvm.reg.uvm_reg_map import uvm_reg_map
-from pyuvm.reg.uvm_reg_model import (
+from pyuvm._reg.uvm_mem import uvm_mem
+from pyuvm._reg.uvm_reg_map import uvm_reg_map
+from pyuvm._reg.uvm_reg_model import (
     uvm_door_e,
     uvm_reg_addr_t,
     uvm_reg_data_t,
     uvm_status_e,
 )
-from pyuvm.reg.uvm_vreg import uvm_vreg
-from pyuvm.s05_base_classes import uvm_object
-from pyuvm.s14_15_python_sequences import uvm_sequence_base
-from pyuvm.utility_classes import uvm_void
+from pyuvm._reg.uvm_vreg import uvm_vreg
+from pyuvm._s05_base_classes import uvm_object
+from pyuvm._s14_15_python_sequences import uvm_sequence_base
+from pyuvm._utility_classes import uvm_void
 
 __all__ = ["uvm_mem_mam_cfg", "uvm_mem_mam", "uvm_mem_region", "uvm_mem_mam_policy"]
 

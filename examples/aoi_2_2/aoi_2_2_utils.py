@@ -4,7 +4,7 @@ import cocotb
 from cocotb.queue import Queue, QueueEmpty
 from cocotb.triggers import Timer
 
-from pyuvm import utility_classes
+from pyuvm import Singleton
 
 logging.basicConfig(level=logging.NOTSET)
 logger = logging.getLogger()
@@ -31,7 +31,7 @@ def aoi_prediction(a, b, c, d, error=False):
     return result
 
 
-class AoiBfm(metaclass=utility_classes.Singleton):
+class AoiBfm(metaclass=Singleton):
     """
     Bus Functional Model for AOI_2_2 module
     Handles communication with the DUT (Device Under Test)
