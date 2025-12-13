@@ -1,3 +1,4 @@
+import logging
 import random
 
 # All testbenches use tinyalu_utils, so store it in a central
@@ -136,7 +137,7 @@ class FibonacciSeq(uvm_sequence):
             prev_num = cur_num
             cur_num = sum
         uvm_root().logger.info("Fibonacci Sequence: " + str(fib_list))
-        uvm_root().set_logging_level_hier(CRITICAL)
+        uvm_root().set_logging_level_hier(logging.CRITICAL)
 
 
 class Driver(uvm_driver):

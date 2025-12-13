@@ -1,3 +1,4 @@
+import logging
 import random
 
 # All testbenches use tinyalu_utils, so store it in a central
@@ -11,7 +12,6 @@ from cocotb.triggers import Combine
 
 import pyuvm
 from pyuvm import (
-    CRITICAL,
     ConfigDB,
     UVMConfigItemNotFound,
     UVMError,
@@ -407,7 +407,7 @@ class FibonacciSeq(uvm_sequence, uvm_report_object):
             prev_num = cur_num
             cur_num = sum
         self.logger.info("Fibonacci Sequence: " + str(fib_list))
-        uvm_root().set_logging_level_hier(CRITICAL)
+        uvm_root().set_logging_level_hier(logging.CRITICAL)
 
 
 ##############################################################################

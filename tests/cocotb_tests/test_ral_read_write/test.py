@@ -1,11 +1,11 @@
 # Main Packages for the entire RAL model
+import logging
 import textwrap
 from random import choice, randint
 
 import cocotb
 
 from pyuvm import (
-    logging,
     uvm_analysis_port,
     uvm_driver,
     uvm_env,
