@@ -10,10 +10,10 @@ build:
   tools:
     python: "3.13"
   jobs:
-  install:
-    # Since the install step is overridden, pip is no longer updated automatically.
-    - pip install --upgrade pip
-    - pip install --group 'docs'
+    install:
+      # Since the install step is overridden, pip is no longer updated automatically.
+      - pip install --upgrade pip
+      - pip install --group 'docs'
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
