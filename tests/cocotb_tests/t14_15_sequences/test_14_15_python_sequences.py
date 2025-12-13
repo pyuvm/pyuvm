@@ -139,7 +139,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
     async def test_uvm_item_export_check(self):
         sip = uvm_seq_item_port("sip", self.my_root)
         bpe = uvm_blocking_put_export("bpe", self.my_root)
-        with self.assertRaises(error_classes.UVMTLMConnectionError):
+        with self.assertRaises(UVMTLMConnectionError):
             sip.connect(bpe)
 
     async def test_uvm_item_port_put_get(self):
@@ -152,7 +152,7 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
         sip = uvm_seq_item_port("sip", self.my_root)
         sie_ = uvm_seq_item_export("sie", self.my_root)  # codespell:ignore sie
         sip.connect(sie_)
-        with self.assertRaises(error_classes.UVMSequenceError):
+        with self.assertRaises(UVMSequenceError):
             sip.item_done()
 
     async def test_base_virtual_sequence(self):

@@ -1,7 +1,7 @@
 import cocotb
 
-from pyuvm import error_classes
-from pyuvm.s05_base_classes import uvm_object
+from pyuvm._error_classes import UVMBadPhase
+from pyuvm._s05_base_classes import uvm_object
 
 # 9.1
 #
@@ -38,9 +38,7 @@ class uvm_phase(uvm_object):
         try:
             method = getattr(comp, method_name)
         except AttributeError:
-            raise error_classes.UVMBadPhase(
-                f"{comp.get_name()} is missing {method_name} function"
-            )
+            raise UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
         method()
 
     def __str__(self):
@@ -100,9 +98,7 @@ class uvm_threaded_execute_phase(uvm_phase):
         try:
             method = getattr(comp, method_name)
         except AttributeError:
-            raise error_classes.UVMBadPhase(
-                f"{comp.get_name()} is missing {method_name} function"
-            )
+            raise UVMBadPhase(f"{comp.get_name()} is missing {method_name} function")
         cocotb.start_soon(method())
 
 

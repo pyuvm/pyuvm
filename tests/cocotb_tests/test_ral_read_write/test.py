@@ -15,11 +15,11 @@ from pyuvm import (
     uvm_sequencer,
     uvm_test,
 )
-from pyuvm.reg.uvm_reg import uvm_reg
-from pyuvm.reg.uvm_reg_adapter import uvm_reg_adapter, uvm_reg_bus_op
-from pyuvm.reg.uvm_reg_block import uvm_reg_block
-from pyuvm.reg.uvm_reg_field import uvm_reg_field
-from pyuvm.reg.uvm_reg_model import (
+from pyuvm._reg.uvm_reg import uvm_reg
+from pyuvm._reg.uvm_reg_adapter import uvm_reg_adapter, uvm_reg_bus_op
+from pyuvm._reg.uvm_reg_block import uvm_reg_block
+from pyuvm._reg.uvm_reg_field import uvm_reg_field
+from pyuvm._reg.uvm_reg_model import (
     uvm_access_e,
     uvm_door_e,
     uvm_endianness_e,

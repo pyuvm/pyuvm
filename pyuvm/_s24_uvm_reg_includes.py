@@ -4,7 +4,7 @@ Collection of defines to be sued
 
 from enum import Enum
 
-from pyuvm.error_classes import UVMError, UVMFatalError, UVMNotImplemented
+from pyuvm._error_classes import UVMError, UVMFatalError, UVMNotImplemented
 
 
 # path_t

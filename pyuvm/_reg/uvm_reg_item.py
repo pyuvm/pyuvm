@@ -3,13 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from pyuvm.reg.uvm_reg_model import uvm_access_e, uvm_status_e
-from pyuvm.s05_base_classes import uvm_object
-from pyuvm.s14_15_python_sequences import uvm_sequence_base, uvm_sequence_item
+from pyuvm._reg.uvm_reg_model import uvm_access_e, uvm_status_e
+from pyuvm._s05_base_classes import uvm_object
+from pyuvm._s14_15_python_sequences import uvm_sequence_base, uvm_sequence_item
 
 if TYPE_CHECKING:
-    from pyuvm.reg.uvm_reg_map import uvm_reg_map
-    from pyuvm.reg.uvm_reg_model import (
+    from pyuvm._reg.uvm_reg_map import uvm_reg_map
+    from pyuvm._reg.uvm_reg_model import (
         uvm_door_e,
         uvm_elem_kind_e,
         uvm_reg_addr_t,

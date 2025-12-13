@@ -1,10 +1,10 @@
 # from base_classes import *
 from enum import IntEnum
 
-from pyuvm import error_classes
-from pyuvm.s12_uvm_tlm_interfaces import uvm_analysis_export
-from pyuvm.s13_uvm_component import *
-from pyuvm.s14_15_python_sequences import uvm_seq_item_port
+from pyuvm._error_classes import UVMConfigItemNotFound, UVMFatalError
+from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_export
+from pyuvm._s13_uvm_component import *
+from pyuvm._s14_15_python_sequences import uvm_seq_item_port
 
 # This section and sequences are the crux of pyuvm.
 # The classes here allow us to build classic UVM
@@ -81,7 +81,7 @@ class uvm_agent(uvm_component):
         self.is_active = uvm_active_passive_enum.UVM_ACTIVE
         try:
             self.is_active = self.cdb_get("is_active")
-        except error_classes.UVMConfigItemNotFound:
+        except UVMConfigItemNotFound:
             self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 
         if self.is_active not in list(uvm_active_passive_enum):
@@ -209,7 +209,7 @@ class uvm_subscriber(uvm_component):
         Method that must be defined in each subclass. Access to this method by
         outside components should be done via the :any:`analysis_export`.
         """
-        raise error_classes.UVMFatalError(
+        raise UVMFatalError(
             "You must override the write() method in"
             f"uvm_subscriber {self.get_full_name()}"
         )

@@ -9,8 +9,8 @@
 import logging
 import sys
 
+from pyuvm._s05_base_classes import uvm_object
 from pyuvm._utils import cocotb_version_info
-from pyuvm.s05_base_classes import uvm_object
 
 if cocotb_version_info < (2, 0):
     from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
