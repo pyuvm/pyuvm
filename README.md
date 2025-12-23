@@ -9,7 +9,7 @@ While the industry defined the 1800.2 standard in terms of SystemVerilog, there 
 
 ## API Documentation
 
-You can read the API documentation for **pyuvm** on [GitHub Pages](https://pyuvm.github.io/pyuvm/).
+You can read the API documentation for **pyuvm** on [ReadTheDocs](https://pyuvm.readthedocs.io/en/latest/).
 
 ## Python and IEEE 1800.2
 
