@@ -15,7 +15,7 @@ from pyuvm._error_classes import (
 # Extension Modules
 from pyuvm._extension_classes import test
 
-# Secttion 18 Register Layer
+# Section 18 Register Layer
 from pyuvm._reg.uvm_mem import uvm_mem
 from pyuvm._reg.uvm_mem_mam import (
     uvm_mem_mam,
