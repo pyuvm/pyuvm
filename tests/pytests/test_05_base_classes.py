@@ -46,11 +46,11 @@ def test_seeding():
     5.3.3.3 reseed
     """
     mo = my_object("mo")
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         mo.get_uvm_seeding()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         _ = mo.set_uvm_seeding(1)
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         mo.reseed()
 
 
@@ -77,10 +77,10 @@ def test_identification():
     moe_id = moe.get_inst_id()
     assert id(moe) == moe_id
     # 5.3.4.5 not implemented
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         moe.get_type()
     # 5.3.4.6 not implemented
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         moe.get_object_type()
     # 5.3.4.7
     assert "my_object" == moe.get_type_name()
@@ -109,10 +109,10 @@ def test_printing():
     """
     mo = my_object("mo")
     # 5.3.6.1
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.print()
     # 5.3.6.2
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.sprint()
     assert "Hello" == mo.convert2string()
 
@@ -124,10 +124,10 @@ def test_recording():
     """
     mo = my_object("mo")
     # 5.3.7.1
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         mo.record()
     # 5.3.7.2
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         mo.do_record()
 
 
@@ -164,16 +164,16 @@ def test_packing():
     """
     mo = my_object("mo")
     # 5.3.10.1
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.pack()
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.pack_bytes()
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.pack_ints()
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.pack_longints()
     # 5.3.10.2
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.do_pack()
 
 
@@ -184,17 +184,17 @@ def test_unpacking():
     """
     mo = my_object("mo")
     # 5.3.10.1
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.unpack()
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.unpack_bytes()
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.unpack_ints()
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.unpack_longints()
     # 5.3.11.2
 
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.do_unpack()
 
 
@@ -205,7 +205,7 @@ def test_configuration():
     """
     mo = my_object("mo")
     # 5.3.12.1
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.set_local()
 
 
@@ -215,7 +215,7 @@ def test_field_operations():
     :return:
     """
     mo = my_object("mo")
-    with pytest.raises(error_classes.UsePythonMethod):
+    with pytest.raises(UsePythonMethod):
         mo.do_execute_op(None)
 
 
@@ -225,11 +225,11 @@ def test_active_policy():
     :return:
     """
     mo = my_object("mo")
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         mo.push_active_policy()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         mo.pop_active_policy()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         mo.get_active_policy()
 
 
@@ -263,17 +263,17 @@ def test_transaction_recording():
     :return:
     """
     tr = uvm_transaction()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         tr.get_tr_handle()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         tr.enable_recording()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         tr.disable_recording()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         tr.is_recording_enabled()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         tr.is_active()
-    with pytest.raises(error_classes.UVMNotImplemented):
+    with pytest.raises(UVMNotImplemented):
         tr.get_event_pool()
     tr.get_accept_time()
     tr.get_begin_time()

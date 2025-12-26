@@ -20,10 +20,11 @@ examples/*/transcript
 .vscode
 results.xml
 sim_build
+docs/apidocs
 docs/_build/*
 docs/generated/*
 examples/TinyALU/e~tinyalu.o
 examples/TinyALU/tinyalu
 .env
 .editorconfig
-.actrc
+scratch/

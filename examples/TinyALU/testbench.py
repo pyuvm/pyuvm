@@ -1,3 +1,4 @@
+import logging
 import random
 
 # All testbenches use tinyalu_utils, so store it in a central
@@ -136,7 +137,7 @@ class FibonacciSeq(uvm_sequence):
             prev_num = cur_num
             cur_num = sum
         uvm_root().logger.info("Fibonacci Sequence: " + str(fib_list))
-        uvm_root().set_logging_level_hier(CRITICAL)
+        uvm_root().set_logging_level_hier(logging.CRITICAL)
 
 
 class Driver(uvm_driver):
@@ -262,8 +263,9 @@ class AluEnv(uvm_env):
         self.driver.ap.connect(self.scoreboard.result_export)
 
 
-class AluTestBase(uvm_test):
-    """Base class for ALU tests with random and max values"""
+@pyuvm.test()
+class AluTest(uvm_test):
+    """Test ALU with random and max values"""
 
     def build_phase(self):
         self.env = AluEnv("env", self)
@@ -272,18 +274,13 @@ class AluTestBase(uvm_test):
         self.test_all = TestAllSeq.create("test_all")
 
     async def run_phase(self):
-        self.raise_objection()
+        self.raise_objection("Keep simulation alive")
         await self.test_all.start()
-        self.drop_objection()
+        self.drop_objection("Simulation may end now")
 
 
 @pyuvm.test()
-class AluTest(AluTestBase):
-    """Test ALU with random and max values"""
-
-
-@pyuvm.test()
-class ParallelTest(AluTestBase):
+class ParallelTest(AluTest):
     """Test ALU random and max forked"""
 
     def build_phase(self):
@@ -292,7 +289,7 @@ class ParallelTest(AluTestBase):
 
 
 @pyuvm.test()
-class FibonacciTest(AluTestBase):
+class FibonacciTest(AluTest):
     """Run Fibonacci program"""
 
     def build_phase(self):
@@ -302,7 +299,7 @@ class FibonacciTest(AluTestBase):
 
 
 @pyuvm.test(expect_fail=True)
-class AluTestErrors(AluTestBase):
+class AluTestErrors(AluTest):
     """Test ALU with errors on all operations"""
 
     def start_of_simulation_phase(self):

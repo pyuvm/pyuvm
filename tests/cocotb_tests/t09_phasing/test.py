@@ -3,7 +3,6 @@ import inspect
 import cocotb
 
 from pyuvm import *
-from pyuvm import utility_classes
 
 phase_list = {}
 
@@ -102,7 +101,7 @@ async def test_traverse():
         phase = phase_class()
         phase.traverse(top)
         if phase_class == uvm_run_phase:
-            await utility_classes.ObjectionHandler().run_phase_complete()
+            await ObjectionHandler().run_phase_complete()
         function_name = phase_class.__name__[4:]
         returned_comps = phase_list[function_name]
         try:

@@ -46,9 +46,27 @@ class TopTest(uvm_test):
         self.sub_component = SubComponent("sub_component", self)
 
     async def run_phase(self):
-        self.raise_objection()
+        self.raise_objection("TopTest objection says good morning")
         await Timer(10, "ms")
+        active_objections_printable = str(ObjectionHandler())
+        print(active_objections_printable)
+        assert (
+            'uvm_test_top, description="TopTest objection says good morning"'
+            in active_objections_printable
+        )
+        assert (
+            'uvm_test_top.sub_component, description="SubComponent\'s objection says goedemorgen"'
+            in active_objections_printable
+        )
+        assert (
+            "pyuvm/tests/cocotb_tests/run_phase/test.py" in active_objections_printable
+        )
         self.drop_objection()
+
+    def check_phase(self):
+        active_objections_printable = str(ObjectionHandler())
+        print(active_objections_printable)
+        assert active_objections_printable == "Active objections: None\n"
 
 
 class SubComponent(uvm_component):
@@ -56,7 +74,7 @@ class SubComponent(uvm_component):
         super().__init__(name, parent)
 
     async def run_phase(self):
-        self.raise_objection()
+        self.raise_objection("SubComponent's objection says goedemorgen")
 
         # sub component takes longer than TopTest
         await Timer(50, "ms")

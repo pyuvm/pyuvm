@@ -2,8 +2,7 @@ import unittest
 
 import uvm_unittest
 
-from pyuvm.s13_predefined_component_classes import *
-from pyuvm.utility_classes import Singleton
+from pyuvm import *
 
 
 class my_test(uvm_test): ...
@@ -34,7 +33,7 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         We have not implemented policies.
         """
         comp = uvm_component("test", None)
-        with self.assertRaises(error_classes.UVMNotImplemented):
+        with self.assertRaises(UVMNotImplemented):
             comp.do_execute_op("op")
 
     def test_component_with_parent(self):
@@ -226,11 +225,11 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         datum = aa.cdb_get("FIVE", "")
         self.assertEqual(5, datum)
 
-        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+        with self.assertRaises(UVMConfigItemNotFound):
             bb.cdb_get("FIVE", "")
 
         cc.cdb_set("TT", 33, "aa.bb.cc.*")
-        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+        with self.assertRaises(UVMConfigItemNotFound):
             cc.cdb_get("TT", "")
 
         ConfigDB().set(None, "aa.*", "TEN", 10)

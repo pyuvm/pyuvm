@@ -12,18 +12,18 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
         cdb = ConfigDB()
         # simple set/get
         cdb.set(None, "*", "LABEL", 5)
-        with self.assertRaises(error_classes.UVMError):
+        with self.assertRaises(UVMError):
             cdb.exists(None, "*", "LABEL")
         self.assertTrue(cdb.exists(None, "A", "LABEL"))
         datum = cdb.get(None, "A", "LABEL")
         self.assertEqual(5, datum)
-        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+        with self.assertRaises(UVMConfigItemNotFound):
             cdb.get(None, "A", "NOT THERE")
         self.assertFalse(cdb.exists(None, "A", "NOT THERE"))
         cdb.set(None, "top.B.C", "OTHER_LABEL", 88)
         datum = cdb.get(None, "top.B.C", "OTHER_LABEL")
         self.assertEqual(88, datum)
-        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+        with self.assertRaises(UVMConfigItemNotFound):
             _ = cdb.get(None, "A", "OTHER_LABEL")
         cdb.set(None, "", "BLANK", 99)
         datum = cdb.get(None, "", "BLANK")
@@ -31,21 +31,21 @@ class config_db_TestCase(uvm_unittest.uvm_TestCase):
 
     def test_empty_db(self):
         cdb = ConfigDB()
-        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+        with self.assertRaises(UVMConfigItemNotFound):
             cdb.get(None, "A", "LABEL")
 
         cdb.set(None, "A", "LABEL", 5)
         datum = cdb.get(None, "A", "LABEL")
         self.assertEqual(5, datum)
 
-        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+        with self.assertRaises(UVMConfigItemNotFound):
             cdb.get(None, "B", "LABEL")
 
         cdb.set(None, "B", "OTHER_LABEL", 88)
         datum = cdb.get(None, "B", "OTHER_LABEL")
         self.assertEqual(88, datum)
 
-        with self.assertRaises(error_classes.UVMConfigItemNotFound):
+        with self.assertRaises(UVMConfigItemNotFound):
             cdb.get(None, "B", "LABEL")
 
     async def test_context(self):

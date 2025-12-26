@@ -9,7 +9,7 @@ While the industry defined the 1800.2 standard in terms of SystemVerilog, there 
 
 ## API Documentation
 
-You can read the API documentation for **pyuvm** on [GitHub Pages](https://pyuvm.github.io/pyuvm/).
+You can read the API documentation for **pyuvm** on [ReadTheDocs](https://pyuvm.readthedocs.io/en/latest/).
 
 ## Python and IEEE 1800.2
 
@@ -184,9 +184,9 @@ class AluTest(uvm_test):
         self.test_all = TestAllSeq.create("test_all")
 
     async def run_phase(self):
-        self.raise_objection()
+        self.raise_objection("Description")
         await self.test_all.start()
-        self.drop_objection()
+        self.drop_objection("Another description")
 ```
 
 We extend the `AluTest` class to create a parallel version of the test and a Fibonacci program. You can find these sequences in `testbench.py`
@@ -463,7 +463,12 @@ You can contribute to **pyuvm** by forking this repository and submitting pull r
 
 The pyuvm project uses forked Github rebase flow.
 The first step is to [fork the project](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
+Then clone the repo to your machine.
 
+```sh
+git clone git@github.com/{your_username}/pyuvm.git
+cd pyuvm/
+```
 
 It is recommended to make a virtual environment and work with that environment activated.
 This can be done with the built-in [`venv`](https://docs.python.org/3/library/venv.html) module in Python,
@@ -477,7 +482,7 @@ source .venv/bin/activate
 Next install the main development tools using `pip`.
 
 ```sh
-pip install nox ruff tox pre-commit pytest
+pip install .[dev]
 ```
 
 ### Linting
