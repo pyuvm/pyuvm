@@ -38,7 +38,11 @@ def test(
         # create cocotb.test object to be picked up RegressionManager
         @cocotb.test(**test_dec_args)
         @functools.wraps(cls)
-        async def test_obj(_):
+        async def test_obj(*args: object, **kwargs: object) -> None:
+            # Assign pytest fixtures to object class
+            for name, value in kwargs.items():
+                setattr(cls, name, value)
+
             await uvm_root().run_test(
                 cls, keep_singletons=keep_singletons, keep_set=keep_set
             )
