@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import fnmatch
 import logging
 import string
@@ -496,6 +498,29 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
             self.running_phase.traverse(self.uvm_test_top)
             if self.running_phase == uvm_run_phase:
                 await ObjectionHandler().run_phase_complete()  # noqa: E501
+
+    def find_all(
+        self, comp_match: str, comp: uvm_component | None = None
+    ) -> list[uvm_component]:
+        """
+        Returns a list of components matching a given comp_match string. Matches
+        are determined using uvm_is_match (see F.3.3.1), with comp_match as expr,
+        and the component’s full name (see 13.1.3.2) as str.
+        If the comp argument is not None, the search begins from that component
+        down; otherwise, all component instances are compared.
+        """
+        raise NotImplementedError
+
+    def find(self, comp_match: str) -> uvm_component | None:
+        """
+        find does a find_all with comp = None and returns the first element in
+        the output list or None if there is an empty list.
+        """
+        components = self.find_all(comp_match, None)
+        if len(components) > 0:
+            return components[0]
+        else:
+            return None
 
 
 # In the SystemVerilog UVM the uvm_config_db is a
