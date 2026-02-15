@@ -804,3 +804,33 @@ class ConfigDB(metaclass=Singleton):
                     f"{inst_path:20}: {key:10}: {self._path_dict[inst_path][key]}"
                 )  # noqa: E501
         return "\n".join(str_list)
+
+
+class uvm_config_db(metaclass=Singleton):
+    @classmethod
+    def set(
+        cls, cntxt: uvm_component | None, inst_name: str, field_name: str, value: Any
+    ) -> None:
+        ConfigDB().set(cntxt, inst_name, field_name, value)
+
+    @classmethod
+    def get(
+        cls,
+        cntxt: uvm_component | None,
+        inst_name: str,
+        field_name: str,
+        default: Any = ConfigDB().default_get,
+    ) -> Any:
+        return ConfigDB().get(cntxt, inst_name, field_name, default)
+
+    @classmethod
+    def exists(
+        cls, cntxt: uvm_component | None, inst_name: str, field_name: str
+    ) -> bool:
+        return ConfigDB().exists(cntxt, inst_name, field_name)
+
+    @classmethod
+    async def wait_modified(
+        cls, cntxt: uvm_component | None, inst_name: str, field_name: str
+    ):
+        await ConfigDB().wait_modified(cntxt, inst_name, field_name)
