@@ -136,6 +136,7 @@ from pyuvm._s10_synchronization_classes import (
     uvm_callback,
     uvm_callback_iter,
     uvm_callbacks,
+    uvm_do_callbacks,
 )
 
 # Section 12

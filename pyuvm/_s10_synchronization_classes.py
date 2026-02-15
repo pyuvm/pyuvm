@@ -35,7 +35,7 @@ class uvm_callback(uvm_object):
         return enabled
 
     def is_enabled(self) -> bool:
-        return self._enabled
+        return self.callback_mode()
 
 
 class uvm_callbacks(uvm_object):
@@ -119,7 +119,7 @@ class uvm_callback_iter:
     def __init__(self, obj: type[uvm_object] | uvm_object):
         self._index = -1
         self._iter: list[uvm_callback] = [
-            c for c in uvm_callbacks._callbacks.get(obj, list()) if c.callback_mode()
+            c for c in uvm_callbacks._callbacks.get(obj, list()) if c.is_enabled()
         ]
 
     def __iter__(self):
@@ -169,12 +169,12 @@ class uvm_callback_iter:
 
 def uvm_do_callbacks(
     T: type[uvm_object] | uvm_object,
-    cb: type[uvm_callback],
     method: str,
     *args,
     **kwargs,
 ) -> None:
     callbacks = uvm_callback_iter(T)
     for callback in callbacks:
-        func = getattr(callback, method)
-        func(*args, **kwargs)
+        func = getattr(callback, method, None)
+        if func is not None:
+            func(*args, **kwargs)
