@@ -674,62 +674,62 @@ class ConfigDB(metaclass=Singleton):
 
         context, inst_name = self._get_context_inst_name(context, inst_name)
 
+        key_matches = []  # Make the linter happy by setting this.
         try:
-            key_matches = []  # Make the linter happy by setting this.
-            try:
-                # key_matches = [dk for dk in self._path_dict.keys()
-                #                if fnmatch.fnmatch(inst_name, dk)]
-                for dk in self._path_dict.keys():
-                    if fnmatch.fnmatch(inst_name, dk):
-                        key_matches.append(dk)
+            # key_matches = [dk for dk in self._path_dict.keys()
+            #                if fnmatch.fnmatch(inst_name, dk)]
+            for dk in self._path_dict.keys():
+                if fnmatch.fnmatch(inst_name, dk):
+                    key_matches.append(dk)
 
-            except TypeError:
-                raise UVMConfigItemNotFound(f'"{inst_name}" is not in ConfigDB().')
-            finally:
-                if len(key_matches) == 0:
-                    raise UVMConfigItemNotFound(f'"{inst_name}" is not in ConfigDB().')
-            # Here we sort the list of paths by which paths are "in" other
-            # paths. That is A comes before '*'  A.B comes before A.*, etc.
-            # We use an insertion sort. A path is inserted in front of the
-            # first path it is "in"
-            sorted_paths = []
-            try:
-                sorted_paths.append(key_matches.pop())
-            except IndexError:
-                raise UVMConfigItemNotFound(f"{inst_name} not in ConfigDB()")
+        except TypeError:
+            return self._not_found(f'"{inst_name}" is not in ConfigDB().', default)
+        finally:
+            if len(key_matches) == 0:
+                return self._not_found(f'"{inst_name}" is not in ConfigDB().', default)
+        # Here we sort the list of paths by which paths are "in" other
+        # paths. That is A comes before '*'  A.B comes before A.*, etc.
+        # We use an insertion sort. A path is inserted in front of the
+        # first path it is "in"
+        sorted_paths = []
+        try:
+            sorted_paths.append(key_matches.pop())
+        except IndexError:
+            return self._not_found(f"{inst_name} not in ConfigDB()", default)
 
-            # Sort the matching keys from most specific to
-            # most greedy. A.B.C before A.B.* before A.* before *
-            for path in key_matches:
-                inserted = False
-                for ii in range(len(sorted_paths)):
-                    if fnmatch.fnmatch(path, sorted_paths[ii]):
-                        sorted_paths.insert(ii, path)
-                        inserted = True
-                        break
-                if not inserted:
-                    sorted_paths.append(path)
-            value = None
-            for path in sorted_paths:
-                try:
-                    component_fields = self._path_dict[path]
-                    matching_path_fields = component_fields[field_name]
-                    max_precedence = max(matching_path_fields.keys())
-                    value = matching_path_fields[max_precedence]
+        # Sort the matching keys from most specific to
+        # most greedy. A.B.C before A.B.* before A.* before *
+        for path in key_matches:
+            inserted = False
+            for ii in range(len(sorted_paths)):
+                if fnmatch.fnmatch(path, sorted_paths[ii]):
+                    sorted_paths.insert(ii, path)
+                    inserted = True
                     break
-                except KeyError:
-                    pass
-            if value is not None:
-                self.trace("GET", context, inst_name, field_name, value)
-                return value
-            else:
-                raise UVMConfigItemNotFound(
-                    f'"Component {inst_name} has no key: {field_name}'
-                )
-        except UVMConfigItemNotFound as e:
-            if default is self.default_get:
-                raise e
-            return default
+            if not inserted:
+                sorted_paths.append(path)
+        value = None
+        for path in sorted_paths:
+            try:
+                component_fields = self._path_dict[path]
+                matching_path_fields = component_fields[field_name]
+                max_precedence = max(matching_path_fields.keys())
+                value = matching_path_fields[max_precedence]
+                break
+            except KeyError:
+                pass
+        if value is not None:
+            self.trace("GET", context, inst_name, field_name, value)
+            return value
+        else:
+            return self._not_found(
+                f'"Component {inst_name} has no key: {field_name}"', default
+            )
+
+    def _not_found(self, msg, default):
+        if default is self.default_get:
+            raise UVMConfigItemNotFound(msg)
+        return default
 
     def exists(self, context, inst_name, field_name):
         """

@@ -62,6 +62,7 @@ extend-select = [
     "W",        # pycodestyle warnings
     "F",        # pyflakes
     "PL",       # pylint
+    "TRY",      # tryceratops
 ]
 ignore = [
     "E741",    # ambiguous variable name (preference)
@@ -75,6 +76,9 @@ ignore = [
     "PLR0911", # Too many return statements (preference)
     "PLW0603", # Using the global statement (pedantic)
     "PLW1641", # object does not implement `__hash__` method (pedantic)
+    "TRY002",  # raise vanilla exception calls (preference)
+    "TRY003",  # raise vanilla arguments (preference)
+    "TRY400",  # used logging.error instead of logging.exception (preference)
 ]
 
 [tool.ruff.lint.isort]
