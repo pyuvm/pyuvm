@@ -129,14 +129,14 @@ class uvm_reg(uvm_object):
         if self._addr is not None:
             try:
                 self.build()
-            except AttributeError as e:
+            except AttributeError:
                 logger.error(
                     "Calling build() when not implemented by user\n"
                     "This is not the way to go, this is only for "
                     "backward compatibility, please follow the UVM "
                     "guidelines"
                 )
-                raise e
+                raise
         else:
             # END: backward compatibility
             self._regfile_parent = regfile_parent

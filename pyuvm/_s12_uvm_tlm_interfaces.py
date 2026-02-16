@@ -195,8 +195,7 @@ class uvm_nonblocking_put_port(uvm_port_base):
         port is full it returns False
         """
         try:
-            success = self.export.try_put(data)
-            return success
+            return self.export.try_put(data)
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export "
@@ -212,8 +211,7 @@ class uvm_nonblocking_put_port(uvm_port_base):
         :return: True if there is room to put
         """
         try:
-            can_do_it = self.export.can_put()
-            return can_do_it
+            return self.export.can_put()
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
@@ -242,8 +240,7 @@ class uvm_blocking_get_port(uvm_port_base):
         A blocking get that returns the data got
         """
         try:
-            data = await self.export.get()
-            return data
+            return await self.export.get()
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in "
@@ -316,8 +313,7 @@ class uvm_blocking_peek_port(uvm_port_base):
         A blocking peek that returns data without consuming it.
         """
         try:
-            datum = await self.export.peek()
-            return datum
+            return await self.export.peek()
         except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
@@ -635,10 +631,11 @@ class uvm_tlm_fifo_base(uvm_component):
             """
             try:
                 self.queue.put_nowait(item)
-                self.ap.write(item)
-                return True
             except QueueFull:
                 return False
+            else:
+                self.ap.write(item)
+                return True
 
     class uvm_PutExport(uvm_BlockingPutExport, uvm_NonBlockingPutExport): ...
 
@@ -669,10 +666,11 @@ class uvm_tlm_fifo_base(uvm_component):
             """
             try:
                 item = self.queue.get_nowait()
-                self.ap.write(item)
-                return True, item
             except QueueEmpty:
                 return False, None
+            else:
+                self.ap.write(item)
+                return True, item
 
     class uvm_GetExport(uvm_BlockingGetExport, uvm_NonBlockingGetExport): ...
 
@@ -700,8 +698,7 @@ class uvm_tlm_fifo_base(uvm_component):
             :return: (success, item)
             """
             try:
-                datum = self.queue.peek_nowait()
-                return True, datum
+                return True, self.queue.peek_nowait()
             except QueueEmpty:
                 return False, None
 
