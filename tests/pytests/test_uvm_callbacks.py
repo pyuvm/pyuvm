@@ -3,6 +3,7 @@ import pytest
 from pyuvm import (
     uvm_callback,
     uvm_callbacks,
+    uvm_component,
     uvm_object,
     uvm_root,
 )
@@ -233,31 +234,41 @@ class TestCallbacksAddByName:
 
     def test_add_by_name_to_single_component(self):
         """Test adding callback to component by name"""
-        # Note: find_all() is not implemented, so this test verifies the method exists
-        # and can be called, even though it will raise NotImplementedError
         root = uvm_root()
+        comp = uvm_component("my_comp", root)
         cb = test_callback("cb")
 
-        with pytest.raises(NotImplementedError):
-            uvm_callbacks.add_by_name("my_comp", cb, root)
+        uvm_callbacks.add_by_name("my_comp", cb, root)
+
+        assert comp in uvm_callbacks._callbacks
+        assert cb in uvm_callbacks._callbacks[comp]
 
     def test_add_by_name_with_multiple_matches(self):
-        """Test adding callback to multiple components with same name structure"""
-        # find_all() is not implemented, so verify it raises NotImplementedError
+        """Test adding callback to multiple components matching pattern"""
         root = uvm_root()
+        work1 = uvm_component("work", root)
+        work2 = uvm_component("work_0", root)
         cb = test_callback("cb")
 
-        with pytest.raises(NotImplementedError):
-            uvm_callbacks.add_by_name("work", cb, root)
+        uvm_callbacks.add_by_name("work*", cb, root)
+
+        assert cb in uvm_callbacks._callbacks[work1]
+        assert cb in uvm_callbacks._callbacks[work2]
 
     def test_add_by_name_preserves_ordering(self):
         """Test that add_by_name respects ordering parameter"""
-        # find_all() is not implemented, so verify it raises NotImplementedError
         root = uvm_root()
+        comp = uvm_component("test_comp", root)
         cb1 = test_callback("cb1")
+        cb2 = test_callback("cb2")
 
-        with pytest.raises(NotImplementedError):
-            uvm_callbacks.add_by_name("test_comp", cb1, root, uvm_apprepend.UVM_APPEND)
+        # First add cb1 with UVM_APPEND
+        uvm_callbacks.add_by_name("test_comp", cb1, root, uvm_apprepend.UVM_APPEND)
+        # Then add cb2 with UVM_APPEND (should be after cb1)
+        uvm_callbacks.add_by_name("test_comp", cb2, root, uvm_apprepend.UVM_APPEND)
+
+        callbacks = uvm_callbacks._callbacks[comp]
+        assert callbacks.index(cb1) < callbacks.index(cb2)
 
 
 class TestCallbacksDeleteByName:
@@ -265,21 +276,30 @@ class TestCallbacksDeleteByName:
 
     def test_delete_by_name(self):
         """Test deleting callback from component by name"""
-        # find_all() is not implemented, so verify it raises NotImplementedError
         root = uvm_root()
+        comp = uvm_component("my_comp", root)
         cb = test_callback("cb")
 
-        with pytest.raises(NotImplementedError):
-            uvm_callbacks.delete_by_name("my_comp", cb, root)
+        uvm_callbacks.add(comp, cb)
+        assert cb in uvm_callbacks._callbacks[comp]
+
+        uvm_callbacks.delete_by_name("my_comp", cb, root)
+        assert cb not in uvm_callbacks._callbacks[comp]
 
     def test_delete_by_name_multiple_callbacks(self):
         """Test deleting one callback leaves others when using delete_by_name"""
-        # find_all() is not implemented, so verify it raises NotImplementedError
         root = uvm_root()
-        cb = test_callback("cb")
+        comp = uvm_component("test_comp", root)
+        cb1 = test_callback("cb1")
+        cb2 = test_callback("cb2")
 
-        with pytest.raises(NotImplementedError):
-            uvm_callbacks.delete_by_name("test_comp", cb, root)
+        uvm_callbacks.add(comp, cb1)
+        uvm_callbacks.add(comp, cb2)
+        assert len(uvm_callbacks._callbacks[comp]) == 2
+
+        uvm_callbacks.delete_by_name("test_comp", cb1, root)
+        assert cb1 not in uvm_callbacks._callbacks[comp]
+        assert cb2 in uvm_callbacks._callbacks[comp]
 
 
 class TestCallbacksNotImplemented:
