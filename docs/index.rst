@@ -6,4 +6,5 @@ pyuvm
 
    docsources/README.md
    docsources/UVM_and_Python
+   docsources/pytest
    apidocs/index
