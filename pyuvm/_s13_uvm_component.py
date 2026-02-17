@@ -454,6 +454,9 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
         """
         Clear the singletons in the system.  This is used for testing
         """
+        UVM_ROOT_Singleton.clear_singletons()
+        if hasattr(uvm_root, "singleton"):
+            uvm_root.singleton = None
         keepers = {uvm_factory, FactoryData}.union(keep_set)
         Singleton.clear_singletons(keep=keepers)
 
