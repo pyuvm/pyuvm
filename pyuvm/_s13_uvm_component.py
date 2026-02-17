@@ -14,6 +14,7 @@ from pyuvm._utility_classes import (
     ObjectionHandler,
     Singleton,
     UVM_ROOT_Singleton,
+    uvm_is_match,
 )
 from pyuvm._utils import cocotb_version_info
 
@@ -502,6 +503,23 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
             if self.running_phase == uvm_run_phase:
                 await ObjectionHandler().run_phase_complete()  # noqa: E501
 
+    def _find_all_recurse(self, comp_match, comp) -> list[uvm_component]:
+        """
+        Recursively finds all components matching comp_match.
+        Returns a list of matching uvm_component instances.
+        """
+        comps = []
+
+        # 1. Recurse through children first
+        for child in comp.get_children():
+            comps.extend(self._find_all_recurse(comp_match, child))
+
+        # 2. Check the current component for a match, except uvm_root
+        if uvm_is_match(comp_match, comp.get_full_name()) and comp is not self:
+            comps.append(comp)
+
+        return comps
+
     def find_all(
         self, comp_match: str, comp: uvm_component | None = None
     ) -> list[uvm_component]:
@@ -512,7 +530,9 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
         If the comp argument is not None, the search begins from that component
         down; otherwise, all component instances are compared.
         """
-        raise NotImplementedError
+        if comp is None:
+            comp = self
+        return self._find_all_recurse(comp_match, comp)
 
     def find(self, comp_match: str) -> uvm_component | None:
         """
@@ -520,7 +540,8 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
         the output list or None if there is an empty list.
         """
         components = self.find_all(comp_match, None)
-        if len(components) > 0:
+        num_found = len(components)
+        if num_found > 0:
             return components[0]
         else:
             return None
