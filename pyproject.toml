@@ -28,10 +28,9 @@ dynamic = [
 Homepage = "https://github.com/pyuvm/pyuvm"
 "Bug Tracker" = "https://github.com/pyuvm/pyuvm/issues"
 
-[tool.setuptools]
-packages = [
-    "pyuvm",
-]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pyuvm*"]
 
 [dependency-groups]
 dev = [
