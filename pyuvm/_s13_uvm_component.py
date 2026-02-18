@@ -3,6 +3,9 @@ from __future__ import annotations
 import fnmatch
 import logging
 import string
+from typing import Any
+
+from cocotb.triggers import Event
 
 from pyuvm._error_classes import UVMConfigItemNotFound, UVMError, UVMNotImplemented
 from pyuvm._s06_reporting_classes import uvm_report_object
@@ -598,12 +601,17 @@ class ConfigDB(metaclass=Singleton):
         self._path_dict = {}
         self.is_tracing = False
         self._cond_dict = {}
+        self._events: dict[tuple, Event] = {}
 
     def clear(self):
         """Reset the ConfigDB. Used for testing."""
         if self.is_tracing:
             self.logger_holder.logger.info("CFGDB/CLEAR: Clearing ConfigDB()")
         self._path_dict = {}
+        for event in self._events.values():
+            event.set()
+            event.clear()
+        self._events.clear()
 
     @staticmethod
     def _get_context_inst_name(context, inst_name):
@@ -627,6 +635,12 @@ class ConfigDB(metaclass=Singleton):
         elif context.get_full_name() != "":
             inst_name = context.get_full_name() + "." + inst_name
         return context, inst_name
+
+    def _get_event_key(self, context, inst_name, field_name):
+        """
+        Key for lookup events in dictionary
+        """
+        return (context, inst_name, field_name)
 
     def trace(self, method, context, inst_name, field_name, value):
         """
@@ -670,6 +684,11 @@ class ConfigDB(metaclass=Singleton):
             precedence = self.default_precedence - context.get_depth()
 
         self._path_dict[inst_name][field_name][precedence] = value
+        key = self._get_event_key(context, inst_name, field_name)
+        event = self._events.pop(key, None)
+        if event:
+            event.set()
+            event.clear()
 
         self.trace("SET", context, inst_name, field_name, value)
 
@@ -771,13 +790,11 @@ class ConfigDB(metaclass=Singleton):
             return False
         return True
 
-    def wait_modified(self):
-        """
-        :raises UVMNotImplemented: This is not implemented in pyuvm
-        """
-        raise UVMNotImplemented(
-            "wait_modified not implemented pending requests for it."
-        )
+    async def wait_modified(self, context, inst_name, field_name):
+        key = self._get_event_key(context, inst_name, field_name)
+        if key not in self._events:
+            self._events[key] = Event()
+        await self._events[key].wait()
 
     def __str__(self):
         str_list = [f"\n{'PATH':20}: {'KEY':10}: {'DATA':30}"]
@@ -787,3 +804,33 @@ class ConfigDB(metaclass=Singleton):
                     f"{inst_path:20}: {key:10}: {self._path_dict[inst_path][key]}"
                 )  # noqa: E501
         return "\n".join(str_list)
+
+
+class uvm_config_db(metaclass=Singleton):
+    @classmethod
+    def set(
+        cls, cntxt: uvm_component | None, inst_name: str, field_name: str, value: Any
+    ) -> None:
+        ConfigDB().set(cntxt, inst_name, field_name, value)
+
+    @classmethod
+    def get(
+        cls,
+        cntxt: uvm_component | None,
+        inst_name: str,
+        field_name: str,
+        default: Any = ConfigDB().default_get,
+    ) -> Any:
+        return ConfigDB().get(cntxt, inst_name, field_name, default)
+
+    @classmethod
+    def exists(
+        cls, cntxt: uvm_component | None, inst_name: str, field_name: str
+    ) -> bool:
+        return ConfigDB().exists(cntxt, inst_name, field_name)
+
+    @classmethod
+    async def wait_modified(
+        cls, cntxt: uvm_component | None, inst_name: str, field_name: str
+    ):
+        await ConfigDB().wait_modified(cntxt, inst_name, field_name)

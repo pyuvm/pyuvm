@@ -209,6 +209,7 @@ from pyuvm._s13_predefined_component_classes import (
 from pyuvm._s13_uvm_component import (
     ConfigDB,
     uvm_component,
+    uvm_config_db,
     uvm_root,
 )
 
