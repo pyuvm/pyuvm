@@ -497,7 +497,11 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
             factory.clear_overrides()
         self.clear_children()
         ObjectionHandler().clear()
+<<<<<<< HEAD
         if isinstance(test_name, str):
+=======
+        if type(test_name) is str:
+>>>>>>> 3667de5 (Remove broad exception fallback in `uvm_factory()` and type-check test_name in `run_test`)
             self.uvm_test_top = factory.create_component_by_name(
                 test_name, "", "uvm_test_top", self
             )
