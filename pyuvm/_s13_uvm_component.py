@@ -497,9 +497,15 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
             factory.clear_overrides()
         self.clear_children()
         ObjectionHandler().clear()
-        self.uvm_test_top = factory.create_component_by_name(
-            test_name, "", "uvm_test_top", self
-        )
+        if type(test_name) is str:
+            self.uvm_test_top = factory.create_component_by_name(
+                test_name, "", "uvm_test_top", self
+            )
+        else:
+            self.uvm_test_top = factory.create_component_by_type(
+                test_name, "", "uvm_test_top", self
+            )
+
         for self.running_phase in uvm_common_phases:
             self.logger.log(PYUVM_DEBUG, str(self.running_phase))
             self.running_phase.traverse(self.uvm_test_top)
