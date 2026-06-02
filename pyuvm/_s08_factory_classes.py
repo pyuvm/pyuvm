@@ -238,7 +238,7 @@ class uvm_factory(metaclass=Singleton):
 
         Create an object using a string to define its uvm_object type.
         """
-        if name is None or name is "":
+        if name is None or name == "":
             raise UVMFactoryError(
                 "Parameter name must be specified in create_object_by_name"
             )
@@ -296,7 +296,7 @@ class uvm_factory(metaclass=Singleton):
         :raises: UVMFactoryError if the type is not in the factory
         :return: A uvm_object with the name given
         """
-        if name is None or name is "":
+        if name is None or name == "":
             raise UVMFactoryError(
                 "Parameter name must be specified in create_component_by_name"
             )

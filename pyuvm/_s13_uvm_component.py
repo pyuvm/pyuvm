@@ -497,7 +497,7 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
             factory.clear_overrides()
         self.clear_children()
         ObjectionHandler().clear()
-        if type(test_name) is str:
+        if isinstance(test_name, str):
             self.uvm_test_top = factory.create_component_by_name(
                 test_name, "", "uvm_test_top", self
             )
