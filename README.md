@@ -62,18 +62,21 @@ Then you can run a simple test:
 object name: my_object
 ```
 
-## Running from a cloned repository
-
-You can run pyuvm from a cloned repository by installing the cloned repository using pip.
-
-```bash
-% cd <pyuvm repo directory>
-% pip install -e .
-```
-
 # Usage
 
 This section demonstrates running an example simulation and then shows how the example has been put together demonstrating what the UVM looks like in Python.
+
+## Running from a cloned repository
+
+The following demo requires you clone the and install the development version of pyuvm.
+
+```bash
+% git clone https://github.com/pyuvm/pyuvm.git
+% cd pyuvm
+% pip install -e .
+```
+
+Confirm it works by running the simple test shown above in an interactive Python interpreter.
 
 ## Running the simulation
 
