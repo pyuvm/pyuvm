@@ -238,10 +238,23 @@ class uvm_factory(metaclass=Singleton):
 
         Create an object using a string to define its uvm_object type.
         """
+        if name is None or name == "":
+            raise UVMFactoryError(
+                "Parameter name must be specified in create_object_by_name"
+            )
+
+        # Find the requested_type_name in registered classes or overrides if
+        # the string has been registered with an override.
         try:
             requested_type = FactoryData().classes[requested_type_name]  # noqa
         except KeyError:
-            requested_type = requested_type_name
+            if requested_type_name in self.fd.overrides:
+                requested_type = requested_type_name
+            else:
+                raise UVMFactoryError(
+                    f"Requested type {requested_type_name} not in "
+                    "uvm_factory()  or overrides"
+                )
 
         new_obj = self.create_object_by_type(requested_type, parent_inst_path, name)
         return new_obj
@@ -289,15 +302,16 @@ class uvm_factory(metaclass=Singleton):
         :raises: UVMFactoryError if the type is not in the factory
         :return: A uvm_object with the name given
         """
-        if name is None:
-            raise UVMFactoryError(
-                "Parameter name must be specified in create_component_by_name"
-            )
-
         try:
             requested_type = FactoryData().classes[requested_type_name]  # noqa
         except KeyError:
-            requested_type = requested_type_name
+            if requested_type_name in self.fd.overrides:
+                requested_type = requested_type_name
+            else:
+                raise UVMFactoryError(
+                    f"Requested type {requested_type_name} not in "
+                    "uvm_factory()  or overrides"
+                )
 
         new_obj = self.create_component_by_type(
             requested_type, parent_inst_path, name, parent
