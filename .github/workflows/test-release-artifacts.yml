@@ -1,0 +1,80 @@
+name: Test Release Artifacts
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: Build sdist and wheel
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Build sdist and wheel
+        run: uv build --sdist --wheel --out-dir dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+          if-no-files-found: error
+
+  test:
+    name: Smoke test ${{matrix.artifact}}
+    needs: build
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        artifact: [sdist, wheel]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install Icarus Verilog
+        run: sudo apt install -y --no-install-recommends iverilog
+
+      - name: Install ${{matrix.artifact}} and test dependencies
+        run: |
+          shopt -s nullglob
+          if [ "${{matrix.artifact}}" = "sdist" ]; then
+            files=(dist/pyuvm-*.tar.gz)
+          else
+            files=(dist/pyuvm-*.whl)
+          fi
+          if [ ${#files[@]} -ne 1 ]; then
+            echo "Expected exactly one ${{matrix.artifact}}, found: ${files[*]}" >&2
+            exit 1
+          fi
+          python -m pip install --upgrade pip
+          python -m pip install "${files[0]}" "cocotb==2.0.*" pytest
+
+      - name: Run pytest
+        run: pytest tests/pytests
+
+      - name: Run cocotb verilog regression
+        run: make VERILOG_SIM=icarus cocotb_verilog_tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
