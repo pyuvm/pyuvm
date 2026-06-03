@@ -75,42 +75,8 @@ jobs:
           name: dist
           path: dist
 
-      - name: Set up Python ${{matrix.config.python-version}} (setup-python)
-        if: matrix.config.python-version != '3.7'
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{matrix.config.python-version}}
-
-      - name: Set up Python ${{matrix.config.python-version}} (pyenv pt.1)
-        if: matrix.config.python-version == '3.7'
-        uses: gabrielfalcao/pyenv-action@a1fc55906be92612782934c70e3985b940bd0165  # v18
-        with:
-          default: ${{matrix.config.python-version}}
-          command: pip install -U pip
-
-      - name: Set up Python ${{matrix.config.python-version}} (pyenv pt.2)
-        if: matrix.config.python-version == '3.7'
-        run: |
-          pyenv install ${{matrix.config.python-version}}
-          pyenv global ${{matrix.config.python-version}}
-
-      - name: Install Icarus Verilog
-        run: sudo apt install -y --no-install-recommends iverilog
-
-      - name: Install GHDL
-        if: matrix.config.vhdl-sim == 'ghdl'
-        uses: ghdl/setup-ghdl@v1
-        with:
-          version: v5.1.1
-          backend: mcode
-
-      - name: Install NVC
-        if: matrix.config.vhdl-sim == 'nvc'
-        uses: nickg/setup-nvc@v1
-        with:
-          version: r1.18.2
-
-      - name: Install ${{matrix.artifact}} and test dependencies
+      - name: Resolve artifact path
+        id: artifact
         run: |
           shopt -s nullglob
           if [ "${{matrix.artifact}}" = "sdist" ]; then
@@ -122,15 +88,14 @@ jobs:
             echo "Expected exactly one ${{matrix.artifact}}, found: ${files[*]}" >&2
             exit 1
           fi
-          python -m pip install --upgrade pip
-          python -m pip install "${files[0]}" "cocotb==${{matrix.config.cocotb-version}}.*" pytest
+          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
 
-      - name: Run pytest
-        run: pytest tests/pytests
-
-      - name: Run cocotb regression
-        run: |
-          make VERILOG_SIM=icarus VHDL_SIM=${{matrix.config.vhdl-sim}} cocotb_tests
+      - uses: ./.github/actions/test-pyuvm
+        with:
+          python-version: ${{matrix.config.python-version}}
+          cocotb-version: ${{matrix.config.cocotb-version}}
+          vhdl-sim: ${{matrix.config.vhdl-sim}}
+          pyuvm-package-source: ${{ steps.artifact.outputs.path }}
 
   publish-pypi:
     name: Publish to PyPI
