@@ -1,7 +1,8 @@
 VERILOG_SIM ?= icarus
 VHDL_SIM ?= ghdl
 
-.PHONY: cocotb_tests
+.PHONY: cocotb_tests docs
+
 cocotb_tests:
 	make SIM=$(VERILOG_SIM) TOPLEVEL_LANG=verilog -C tests/cocotb_tests/queue sim checkclean
 	make SIM=$(VERILOG_SIM) TOPLEVEL_LANG=verilog -C tests/cocotb_tests/run_phase sim checkclean
@@ -18,3 +19,6 @@ cocotb_tests:
 	make SIM=$(VERILOG_SIM) TOPLEVEL_LANG=verilog -C examples/TinyALU sim checkclean
 	make SIM=$(VERILOG_SIM) TOPLEVEL_LANG=verilog -C examples/TinyALU_reg sim checkclean
 	make SIM=$(VHDL_SIM)    TOPLEVEL_LANG=vhdl    -C examples/TinyALU sim checkclean
+
+docs:
+	uv run --group docs sphinx-build -b html docs docs/_build/html
