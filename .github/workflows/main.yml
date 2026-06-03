@@ -80,12 +80,14 @@ jobs:
       with:
         version: r1.18.2
 
-    - name: Test
+    - name: Install pyuvm and test dependencies
       run: |
-        COCOTB_VERSION=${{matrix.cocotb-version}} \
-        VERILOG_SIM=icarus \
-        VHDL_SIM=${{matrix.vhdl-sim}} \
-        uvx --with tox-uv --with tox-gh-actions tox
+        uv sync --group tests --no-install-project --no-install package cocotb
+        uv pip install . "cocotb==${{matrix.cocotb-version}}.*"
+
+    - name: Run tests
+      run: |
+        uv run --no-sync make VERILOG_SIM=icarus VHDL_SIM=${{matrix.vhdl-sim}} pytests cocotb_tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
