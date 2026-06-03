@@ -253,7 +253,7 @@ class uvm_factory(metaclass=Singleton):
             else:
                 raise UVMFactoryError(
                     f"Requested type {requested_type_name} not in "
-                     "uvm_factory()  or overrides"
+                    "uvm_factory()  or overrides"
                 )
 
         new_obj = self.create_object_by_type(requested_type, parent_inst_path, name)
@@ -310,7 +310,7 @@ class uvm_factory(metaclass=Singleton):
             else:
                 raise UVMFactoryError(
                     f"Requested type {requested_type_name} not in "
-                     "uvm_factory()  or overrides"
+                    "uvm_factory()  or overrides"
                 )
 
         new_obj = self.create_component_by_type(
