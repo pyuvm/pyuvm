@@ -55,39 +55,12 @@ jobs:
     steps:
     - uses: actions/checkout@v7
 
-    - name: Set up Python ${{matrix.python-version}}
-      uses: actions/setup-python@v6
+    - uses: ./.github/actions/test-pyuvm
       with:
         python-version: ${{matrix.python-version}}
-
-    - name: Install uv
-      uses: astral-sh/setup-uv@v7
-
-    - name: Install Icarus Verilog
-      run: |
-        sudo apt install -y --no-install-recommends iverilog
-
-    - name: Install GHDL
-      if: matrix.vhdl-sim == 'ghdl'
-      uses: ghdl/setup-ghdl@v1
-      with:
-        version: v5.1.1
-        backend: mcode
-
-    - name: Install NVC
-      if: matrix.vhdl-sim == 'nvc'
-      uses: nickg/setup-nvc@v1
-      with:
-        version: r1.18.2
-
-    - name: Install pyuvm and test dependencies
-      run: |
-        uv sync --group tests --no-install-project --no-install package cocotb
-        uv pip install . "cocotb==${{matrix.cocotb-version}}.*"
-
-    - name: Run tests
-      run: |
-        uv run --no-sync make VERILOG_SIM=icarus VHDL_SIM=${{matrix.vhdl-sim}} pytests cocotb_tests
+        cocotb-version: ${{matrix.cocotb-version}}
+        vhdl-sim: ${{matrix.vhdl-sim}}
+        pyuvm-package-source: "."
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

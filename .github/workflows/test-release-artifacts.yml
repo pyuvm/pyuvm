@@ -46,15 +46,8 @@ jobs:
           name: dist
           path: dist
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-
-      - name: Install Icarus Verilog
-        run: sudo apt install -y --no-install-recommends iverilog
-
-      - name: Install ${{matrix.artifact}} and test dependencies
+      - name: Resolve artifact path
+        id: artifact
         run: |
           shopt -s nullglob
           if [ "${{matrix.artifact}}" = "sdist" ]; then
@@ -66,14 +59,14 @@ jobs:
             echo "Expected exactly one ${{matrix.artifact}}, found: ${files[*]}" >&2
             exit 1
           fi
-          python -m pip install --upgrade pip
-          python -m pip install "${files[0]}" "cocotb==2.0.*" pytest
+          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
 
-      - name: Run pytest
-        run: pytest tests/pytests
-
-      - name: Run cocotb verilog regression
-        run: make VERILOG_SIM=icarus cocotb_verilog_tests
+      - uses: ./.github/actions/test-pyuvm
+        with:
+          python-version: "3.13"
+          cocotb-version: "2.0"
+          pyuvm-package-source: ${{ steps.artifact.outputs.path }}
+          make-targets: pytests cocotb_verilog_tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
