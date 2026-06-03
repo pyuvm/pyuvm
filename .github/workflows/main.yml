@@ -80,9 +80,6 @@ jobs:
         pyenv install ${{matrix.python-version}}
         pyenv global ${{matrix.python-version}}
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v7
-
     - name: Install Icarus Verilog
       run: |
         sudo apt install -y --no-install-recommends iverilog
@@ -100,12 +97,15 @@ jobs:
       with:
         version: r1.18.2
 
-    - name: Test
+    - name: Install pyuvm and test dependencies
       run: |
-        COCOTB_VERSION=${{matrix.cocotb-version}} \
-        VERILOG_SIM=icarus \
-        VHDL_SIM=${{matrix.vhdl-sim}} \
-        uvx --with tox-uv --with tox-gh-actions tox
+        python -m pip install --upgrade pip
+        python -m pip install . "cocotb==${{matrix.cocotb-version}}.*" pytest
+
+    - name: Run tests
+      run: |
+        pytest tests/pytests
+        make VERILOG_SIM=icarus VHDL_SIM=${{matrix.vhdl-sim}} cocotb_tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
