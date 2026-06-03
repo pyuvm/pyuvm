@@ -61,51 +61,12 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - name: Set up Python ${{matrix.python-version}} (setup-python)
-      if: matrix.python-version != 3.7
-      uses: actions/setup-python@v6
+    - uses: ./.github/actions/test-pyuvm
       with:
         python-version: ${{matrix.python-version}}
-
-    - name: Set up Python ${{matrix.python-version}} (pyenv pt.1)
-      if: matrix.python-version == 3.7
-      uses: gabrielfalcao/pyenv-action@a1fc55906be92612782934c70e3985b940bd0165  # v18
-      with:
-        default: ${{matrix.python-version}}
-        command: pip install -U pip  # upgrade pip after installing python
-
-    - name: Set up Python ${{matrix.python-version}} (pyenv pt.2)
-      if: matrix.python-version == 3.7
-      run: |
-        pyenv install ${{matrix.python-version}}
-        pyenv global ${{matrix.python-version}}
-
-    - name: Install Icarus Verilog
-      run: |
-        sudo apt install -y --no-install-recommends iverilog
-
-    - name: Install GHDL
-      if: matrix.vhdl-sim == 'ghdl'
-      uses: ghdl/setup-ghdl@v1
-      with:
-        version: v5.1.1
-        backend: mcode
-
-    - name: Install NVC
-      if: matrix.vhdl-sim == 'nvc'
-      uses: nickg/setup-nvc@v1
-      with:
-        version: r1.18.2
-
-    - name: Install pyuvm and test dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install . "cocotb==${{matrix.cocotb-version}}.*" pytest
-
-    - name: Run tests
-      run: |
-        pytest tests/pytests
-        make VERILOG_SIM=icarus VHDL_SIM=${{matrix.vhdl-sim}} cocotb_tests
+        cocotb-version: ${{matrix.cocotb-version}}
+        vhdl-sim: ${{matrix.vhdl-sim}}
+        pyuvm-package-source: "."
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
