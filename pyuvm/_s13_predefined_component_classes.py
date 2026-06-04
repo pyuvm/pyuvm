@@ -2,6 +2,7 @@ from enum import IntEnum
 
 from pyuvm._error_classes import UVMConfigItemNotFound, UVMFatalError
 from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_export
+from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_port
 from pyuvm._s13_uvm_component import uvm_component
 from pyuvm._s14_15_python_sequences import uvm_seq_item_port
 
@@ -165,7 +166,7 @@ class uvm_driver(uvm_component):
         """
         super().__init__(name, parent)
         self.seq_item_port = uvm_seq_item_port("seq_item_port", self)
-
+        self.rsp_port = uvm_analysis_port("rsp_port", self)
 
 # 13.8 uvm_push_driver
 
