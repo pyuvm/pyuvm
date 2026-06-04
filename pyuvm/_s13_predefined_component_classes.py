@@ -1,8 +1,7 @@
 from enum import IntEnum
 
 from pyuvm._error_classes import UVMConfigItemNotFound, UVMFatalError
-from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_export
-from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_port
+from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_export, uvm_analysis_port
 from pyuvm._s13_uvm_component import uvm_component
 from pyuvm._s14_15_python_sequences import uvm_seq_item_port
 
