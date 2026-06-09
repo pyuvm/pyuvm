@@ -7,7 +7,7 @@ name = "pyuvm"
 version = "4.0.1"
 description = "A Python implementation of the UVM using cocotb"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 authors = [
     {name = "Ray Salemi", email = "ray@raysalemi.com"}
 ]
@@ -51,7 +51,7 @@ docs = [
 docs = {requires-python = ">=3.11"}
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py39"
 
 [tool.ruff.lint]
 extend-select = [
