@@ -34,7 +34,6 @@ include = ["pyuvm*"]
 
 [dependency-groups]
 dev = [
-    "tox",
     "pre-commit",
     "pytest",
     "ruff",

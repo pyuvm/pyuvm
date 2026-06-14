@@ -1,0 +1,140 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]*'
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: Build sdist and wheel
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Verify tag matches pyproject.toml version
+        if: github.event_name == 'push'
+        run: |
+          TAG="${{ github.ref_name }}"
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag '$TAG' is not strict semver (X.Y.Z)" >&2
+            exit 1
+          fi
+          VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "Tag '$TAG' does not match pyproject.toml version '$VERSION'" >&2
+            exit 1
+          fi
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Build sdist and wheel
+        run: uv build --sdist --wheel --out-dir dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+          if-no-files-found: error
+
+  test:
+    name: ${{matrix.artifact}} | Python ${{matrix.config.python-version}} | cocotb ${{matrix.config.cocotb-version}}
+    needs: build
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        artifact: [sdist, wheel]
+        config:
+          # Mirror .github/workflows/main.yml exactly.
+          # Latest cocotb across all Python versions:
+          - { python-version: "3.7",  cocotb-version: "2.0", vhdl-sim: "nvc"  }
+          - { python-version: "3.8",  cocotb-version: "2.0", vhdl-sim: "nvc"  }
+          - { python-version: "3.9",  cocotb-version: "2.0", vhdl-sim: "nvc"  }
+          - { python-version: "3.10", cocotb-version: "2.0", vhdl-sim: "nvc"  }
+          - { python-version: "3.11", cocotb-version: "2.0", vhdl-sim: "nvc"  }
+          - { python-version: "3.12", cocotb-version: "2.0", vhdl-sim: "nvc"  }
+          - { python-version: "3.13", cocotb-version: "2.0", vhdl-sim: "nvc"  }
+          # Older cocotb versions on Python 3.8 (NVC is only supported in cocotb 1.9+):
+          - { python-version: "3.8",  cocotb-version: "1.6", vhdl-sim: "ghdl" }
+          - { python-version: "3.8",  cocotb-version: "1.7", vhdl-sim: "ghdl" }
+          - { python-version: "3.8",  cocotb-version: "1.8", vhdl-sim: "ghdl" }
+          - { python-version: "3.8",  cocotb-version: "1.9", vhdl-sim: "nvc"  }
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Resolve artifact path
+        id: artifact
+        run: |
+          shopt -s nullglob
+          if [ "${{matrix.artifact}}" = "sdist" ]; then
+            files=(dist/pyuvm-*.tar.gz)
+          else
+            files=(dist/pyuvm-*.whl)
+          fi
+          if [ ${#files[@]} -ne 1 ]; then
+            echo "Expected exactly one ${{matrix.artifact}}, found: ${files[*]}" >&2
+            exit 1
+          fi
+          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
+
+      - uses: ./.github/actions/test-pyuvm
+        with:
+          python-version: ${{matrix.config.python-version}}
+          cocotb-version: ${{matrix.config.cocotb-version}}
+          vhdl-sim: ${{matrix.config.vhdl-sim}}
+          pyuvm-package-source: ${{ steps.artifact.outputs.path }}
+
+  publish-pypi:
+    name: Publish to PyPI
+    if: github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-24.04
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    if: github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: ubuntu-24.04
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false

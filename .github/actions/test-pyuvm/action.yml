@@ -1,0 +1,80 @@
+name: Test pyuvm
+description: >
+  Install pyuvm from a given spec (source tree, sdist, or wheel),
+  install cocotb and a simulator stack, and run the pytest + cocotb
+  regression. Assumes the repository has already been checked out.
+
+inputs:
+  python-version:
+    description: Python version to test against (e.g. "3.13", "3.7").
+    required: true
+  cocotb-version:
+    description: cocotb major.minor to pin (e.g. "2.0", "1.9").
+    required: true
+  verilog-sim:
+    description: Verilog simulator to install and run (currently only "icarus" is supported).
+    required: false
+    default: icarus
+  vhdl-sim:
+    description: VHDL simulator to install ("ghdl", "nvc", or empty to skip).
+    required: false
+    default: ""
+  pyuvm-package-source:
+    description: pip install target for pyuvm (e.g. "." or "dist/pyuvm-4.0.1-py3-none-any.whl").
+    required: true
+  make-targets:
+    description: Space-separated list of make targets to run (e.g. "pytests cocotb_tests", "pytests cocotb_verilog_tests").
+    required: false
+    default: pytests cocotb_tests
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python ${{ inputs.python-version }} (setup-python)
+      if: inputs.python-version != '3.7'
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Set up Python ${{ inputs.python-version }} (pyenv pt.1)
+      if: inputs.python-version == '3.7'
+      uses: gabrielfalcao/pyenv-action@a1fc55906be92612782934c70e3985b940bd0165  # v18
+      with:
+        default: ${{ inputs.python-version }}
+        command: pip install -U pip
+
+    - name: Set up Python ${{ inputs.python-version }} (pyenv pt.2)
+      if: inputs.python-version == '3.7'
+      shell: bash
+      run: |
+        pyenv install ${{ inputs.python-version }}
+        pyenv global ${{ inputs.python-version }}
+
+    - name: Install Icarus Verilog
+      if: inputs.verilog-sim == 'icarus'
+      shell: bash
+      run: sudo apt install -y --no-install-recommends iverilog
+
+    - name: Install GHDL
+      if: inputs.vhdl-sim == 'ghdl'
+      uses: ghdl/setup-ghdl@v1
+      with:
+        version: v5.1.1
+        backend: mcode
+
+    - name: Install NVC
+      if: inputs.vhdl-sim == 'nvc'
+      uses: nickg/setup-nvc@v1
+      with:
+        version: r1.18.2
+
+    - name: Install pyuvm and test dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install "${{ inputs.pyuvm-package-source }}" "cocotb==${{ inputs.cocotb-version }}.*" pytest
+
+    - name: Run tests
+      shell: bash
+      run: |
+        make VERILOG_SIM=${{ inputs.verilog-sim }} VHDL_SIM=${{ inputs.vhdl-sim }} ${{ inputs.make-targets }}

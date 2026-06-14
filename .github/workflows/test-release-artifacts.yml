@@ -1,0 +1,73 @@
+name: Test Release Artifacts
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: Build sdist and wheel
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Build sdist and wheel
+        run: uv build --sdist --wheel --out-dir dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+          if-no-files-found: error
+
+  test:
+    name: Smoke test ${{matrix.artifact}}
+    needs: build
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        artifact: [sdist, wheel]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Resolve artifact path
+        id: artifact
+        run: |
+          shopt -s nullglob
+          if [ "${{matrix.artifact}}" = "sdist" ]; then
+            files=(dist/pyuvm-*.tar.gz)
+          else
+            files=(dist/pyuvm-*.whl)
+          fi
+          if [ ${#files[@]} -ne 1 ]; then
+            echo "Expected exactly one ${{matrix.artifact}}, found: ${files[*]}" >&2
+            exit 1
+          fi
+          echo "path=${files[0]}" >> "$GITHUB_OUTPUT"
+
+      - uses: ./.github/actions/test-pyuvm
+        with:
+          python-version: "3.13"
+          cocotb-version: "2.0"
+          pyuvm-package-source: ${{ steps.artifact.outputs.path }}
+          make-targets: pytests cocotb_verilog_tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false

@@ -504,27 +504,18 @@ pre-commit install
 
 ### Testing
 
-The repository runs all needed tests using [tox](https://tox.wiki/en/stable/).
-This will run the full set of tests for all supported operating systems, Python versions, and cocotb versions.
-But it will automatically skip any tests that don't apply to your system (OS and Python version).
+There are two test suites, both run in CI against every supported Python and cocotb combination.
 
-```sh
-tox
-```
-
-You can also run tests manually without the use of tox.
-
-There are [pytest](https://docs.pytest.org/en/stable/) tests that test features that don't use coroutines.
-You can run these by using calling `pytest` directly at the repo root.
+The [pytest](https://docs.pytest.org/en/stable/) suite covers features that don't use coroutines.
+Run it from the repo root:
 
 ```sh
 pytest
 ```
 
-The rest of the tests are in `tests/cocotb_tests` and use cocotb, thus requiring a simulator.
-You can run these by calling `make` in the repo root.
-You can change which simulator to use by setting `VERILOG_SIM` and `VHDL_SIM` to set the Verilog and VHDL simulator of choice, respectively.
-These `*_SIM` variables take the values the cocotb `SIM` make variable would take.
+The remaining tests are in `tests/cocotb_tests` and use cocotb, so they need a simulator.
+Run them by calling `make` in the repo root.
+Set `VERILOG_SIM` and `VHDL_SIM` to pick the Verilog and VHDL simulators; both accept the values cocotb's `SIM` variable accepts.
 
 ```sh
 make VERILOG_SIM=icarus VHDL_SIM=nvc
