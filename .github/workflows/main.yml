@@ -69,7 +69,7 @@ jobs:
 
     - name: Set up Python ${{matrix.python-version}} (pyenv pt.1)
       if: matrix.python-version == 3.7
-      uses: gabrielfalcao/pyenv-action@a1fc55906be92612782934c70e3985b940bd0165  # v18
+      uses: gabrielfalcao/pyenv-action@b87c106701c870bb86081a69fc903806426ad8a2  # v19
       with:
         default: ${{matrix.python-version}}
         command: pip install -U pip  # upgrade pip after installing python
