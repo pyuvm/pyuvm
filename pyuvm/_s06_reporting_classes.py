@@ -11,6 +11,8 @@ import sys
 
 from pyuvm._s05_base_classes import uvm_object
 from pyuvm._utils import cocotb_version_info
+from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
+from pyuvm.uvm_reporting.uvm_report_server import uvm_report_server
 
 if cocotb_version_info < (2, 0):
     from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
@@ -24,6 +26,19 @@ else:
     from cocotb.logging import SimLogFormatter, SimTimeContextFilter
 
     FormatterBase = SimLogFormatter
+
+
+class PyuvmSimTimeContextFilter(SimTimeContextFilter):
+    """Use cocotb sim time, but tolerate pytest/docs runs outside simulation."""
+
+    def filter(self, record):
+        try:
+            return super().filter(record)
+        except RuntimeError:
+            # cocotb's filter needs a running simulator. Plain pytest and docs
+            # imports do not have one, but should still be able to log.
+            record.created_sim_time = None
+            return True
 
 
 class PyuvmFormatter(FormatterBase):
@@ -51,9 +66,36 @@ class PyuvmFormatter(FormatterBase):
         return formatted_msg
 
 
+def configure_uvm_root_logger():
+    """Attach pyuvm's default stream handler once to the shared uvm logger."""
+    if not get_sv_uvm_style_reporting_enabled():
+        return None
+
+    uvm_root_logger = logging.getLogger("uvm")
+    uvm_root_logger.setLevel(logging.INFO)
+    uvm_root_logger.propagate = False
+    for handler in uvm_root_logger.handlers:
+        if getattr(handler, "_pyuvm_default_handler", False):
+            return handler
+
+    streaming_handler = logging.StreamHandler(sys.stdout)
+    streaming_handler._pyuvm_default_handler = True
+    streaming_handler.addFilter(PyuvmSimTimeContextFilter())
+    streaming_handler.setLevel(logging.NOTSET)
+    streaming_handler.setFormatter(FormatterBase())
+    uvm_root_logger.addHandler(streaming_handler)
+
+    manager = uvm_report_server.get_or_none()
+    if manager is not None:
+        manager.register_logger(uvm_root_logger)
+    return streaming_handler
+
+
+configure_uvm_root_logger()
+
+
 # 6.2.1
 class uvm_report_object(uvm_object):
-    __default_logging_level = logging.INFO
     """ The basis of all classes that can report """
 
     def __init__(self, name):
@@ -63,35 +105,21 @@ class uvm_report_object(uvm_object):
 
         """
         super().__init__(name)
-        uvm_root_logger = logging.getLogger("uvm")
-        # Every object gets its own logger
-        logger_name = self.get_initial_logger_name()
-        self.logger = uvm_root_logger.getChild(logger_name)
-        self.logger.setLevel(level=uvm_report_object.get_default_logging_level())
-        # We are not sending log messages up the hierarchy
-        self.logger.propagate = False
-        self._streaming_handler = logging.StreamHandler(sys.stdout)
-        self._streaming_handler.addFilter(SimTimeContextFilter())
-        # Don't let the handler interfere with logger level
-        self._streaming_handler.setLevel(logging.NOTSET)
-        # Make log messages look like UVM messages
         self._uvm_formatter = PyuvmFormatter(self.get_full_name())
-        self.add_logging_handler(self._streaming_handler)
-
-    def get_initial_logger_name(self):
-        """
-        :returns: The name of the initial logger
-
-        Override this method if you want to change the way the logger name is
-        generated.
-
-        The default looks like this:
-
-        .. code-block:: python
-            return self.get_full_name() + str(id(self))
-
-        """
-        return self.get_full_name() + str(id(self))
+        if get_sv_uvm_style_reporting_enabled():
+            configure_uvm_root_logger()
+            self.logger.propagate = True
+            for handler in list(self.logger.handlers):
+                if getattr(handler, "_pyuvm_object_default_handler", False):
+                    self.logger.removeHandler(handler)
+            self._streaming_handler = None
+        else:
+            self.logger.propagate = False
+            self._streaming_handler = logging.StreamHandler(sys.stdout)
+            self._streaming_handler._pyuvm_object_default_handler = True
+            self._streaming_handler.addFilter(PyuvmSimTimeContextFilter())
+            self._streaming_handler.setLevel(logging.NOTSET)
+            self.add_logging_handler(self._streaming_handler)
 
     @staticmethod
     def set_default_logging_level(default_logging_level):
@@ -100,7 +128,7 @@ class uvm_report_object(uvm_object):
         :returns: None
 
         """
-        uvm_report_object.__default_logging_level = default_logging_level
+        uvm_object.set_default_logging_level(default_logging_level)
 
     @staticmethod
     def get_default_logging_level():
@@ -108,7 +136,7 @@ class uvm_report_object(uvm_object):
         :returns: The default logging level
 
         """
-        return uvm_report_object.__default_logging_level
+        return uvm_object.get_default_logging_level()
 
     def set_logging_level(self, logging_level):
         """
@@ -128,9 +156,12 @@ class uvm_report_object(uvm_object):
             f"You must pass a logging.Handler not {type(handler)}"
         )
         if handler.formatter is None:
-            handler.addFilter(SimTimeContextFilter())
+            handler.addFilter(PyuvmSimTimeContextFilter())
             handler.setFormatter(self._uvm_formatter)
         self.logger.addHandler(handler)
+        manager = uvm_report_server.get_or_none()
+        if manager is not None:
+            manager.register_logger(self.logger)
 
     def remove_logging_handler(self, handler):
         """
@@ -149,7 +180,10 @@ class uvm_report_object(uvm_object):
 
         Removes the streaming handler
         """
+        if self._streaming_handler is None:
+            return
         self.logger.removeHandler(self._streaming_handler)
+        self._streaming_handler = None
 
     def disable_logging(self):
         """
@@ -158,4 +192,5 @@ class uvm_report_object(uvm_object):
         Disables logging
         """
         self.remove_streaming_handler()
+        self.logger.propagate = False
         self.add_logging_handler(logging.NullHandler())

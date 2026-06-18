@@ -2,16 +2,24 @@
 This file defines the UVM base classes
 """
 
+import logging
+
 from cocotb.utils import get_sim_time
 
 from pyuvm._error_classes import UsePythonMethod, UVMFatalError, UVMNotImplemented
 from pyuvm._s08_factory_classes import uvm_factory
 from pyuvm._utility_classes import uvm_void
+from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
+from pyuvm.uvm_reporting.uvm_base_core_report import uvm_base_core_report
+from pyuvm.uvm_reporting.uvm_report_server import uvm_report_server
+from pyuvm.uvm_reporting.uvm_verbosity import UVM_LOW
 
 
 # 5.3.1
 class uvm_object(uvm_void):
     """The most basic UVM object"""
+
+    __default_logging_level = logging.INFO
 
     # 5.3.2
     def __init__(self, name=""):
@@ -19,7 +27,99 @@ class uvm_object(uvm_void):
         :param name: Name of the object. Default is empty string.
         """
         assert isinstance(name, str), f"{name} is not a string it is a {type(name)}"
+        self._logger = None
+        self._uvm_report_core = None
+        parent = getattr(self, "parent", None)
+        self._uvm_verbosity = int(getattr(parent, "uvm_verbosity", UVM_LOW))
         self.set_name(name)
+
+    def get_initial_logger_name(self):
+        """
+        :returns: The name of the initial logger
+
+        Override this method if you want to change the way the logger name is
+        generated.
+
+        The default looks like this:
+
+        .. code-block:: python
+            return self.get_full_name() + str(id(self))
+
+        """
+        return self.get_full_name() + str(id(self))
+
+    @staticmethod
+    def set_default_logging_level(default_logging_level):
+        """
+        :param default_logging_level: The default logging level
+        :returns: None
+
+        """
+        uvm_object.__default_logging_level = default_logging_level
+
+    @staticmethod
+    def get_default_logging_level():
+        """
+        :returns: The default logging level
+
+        """
+        return uvm_object.__default_logging_level
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            uvm_root_logger = logging.getLogger("uvm")
+            logger_name = self.get_initial_logger_name()
+            self._logger = uvm_root_logger.getChild(logger_name) if logger_name else uvm_root_logger
+            self._logger.setLevel(level=uvm_object.get_default_logging_level())
+            self._logger.propagate = get_sv_uvm_style_reporting_enabled()
+            manager = uvm_report_server.get_or_none()
+            if manager is not None:
+                manager.register_logger(self._logger)
+        return self._logger
+
+    @logger.setter
+    def logger(self, logger):
+        assert isinstance(logger, logging.Logger), (
+            f"You must pass a logging.Logger not {type(logger)}"
+        )
+        self._logger = logger
+        manager = uvm_report_server.get_or_none()
+        if manager is not None:
+            manager.register_logger(logger)
+        if self._uvm_report_core is not None:
+            self._uvm_report_core.set_logger(logger)
+
+    @property
+    def uvm_verbosity(self):
+        return self._uvm_verbosity
+
+    @uvm_verbosity.setter
+    def uvm_verbosity(self, verbosity):
+        self.set_report_verbosity(verbosity)
+
+    def get_report_verbosity(self):
+        return self._uvm_verbosity
+
+    def set_report_verbosity(self, verbosity):
+        self._uvm_verbosity = int(verbosity)
+        if self._uvm_report_core is None:
+            _ = self.uvm_report
+        self._uvm_report_core.set_verbosity(self._uvm_verbosity)
+        return self._uvm_verbosity
+
+    def set_report_logger(self, logger):
+        self.logger = logger
+
+    @property
+    def uvm_report(self):
+        if self._uvm_report_core is None:
+            self._uvm_report_core = uvm_base_core_report(
+                owner=self,
+                parent=None,
+                default_verbosity=self._uvm_verbosity,
+            )
+        return self._uvm_report_core.uvm_report
 
     # 5.3.3.1
     def get_uvm_seeding(self):

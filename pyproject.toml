@@ -92,6 +92,11 @@ known-third-party = [
 [tool.ruff.lint.per-file-ignores]
 "pyuvm/__init__.py" = [
     "F401",
+    "I001",
+]
+"pyuvm/uvm_reporting/__init__.py" = [
+    "E402",
+    "I001",
 ]
 
 [tool.codespell]
