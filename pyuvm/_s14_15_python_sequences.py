@@ -350,7 +350,7 @@ class uvm_sequencer(uvm_component):
     items with the sequencer.
     """
 
-    def __init__(self, name, parent):
+    def __init__(self, name, parent=None):
         super().__init__(name, parent)
         self.seq_item_export = uvm_seq_item_export("seq_item_export", self)
         self.seq_q = UVMQueue(0)

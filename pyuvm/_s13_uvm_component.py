@@ -43,13 +43,15 @@ class uvm_component(uvm_report_object):
     def clear_components(cls):
         cls.component_dict = {}
 
-    def __init__(self, name, parent):
+    def __init__(self, name, parent=None):
         """
         13.1.2.1---This is new() in the IEEE-UVM, but we mean
         the same thing with __init__()
 
         :param name: The name of the component. Used in the UVM hierarchy
-        :param parent: The parent component.  If None, the parent is uvm_root
+        :param parent: The parent component.  If None (default), the
+            parent is ``uvm_root``. Matches IEEE 1800.2 ``new(name,
+            parent=null)``.
         """
 
         self._children = {}

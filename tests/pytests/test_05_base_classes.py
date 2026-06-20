@@ -285,3 +285,18 @@ def test_clone():
     clone = orig.clone()
     assert id(orig) != id(clone)
     assert orig.val == clone.val
+
+
+def test_uvm_component_parent_default(initialize_pyuvm):
+    # IEEE 1800.2 declares ``new(name, parent=null)``; uvm_component should
+    # match that signature and resolve a missing parent to uvm_root.
+    uc = uvm_component("c_default")
+    assert uc.parent is uvm_root()
+
+
+def test_uvm_sequencer_parent_default(initialize_pyuvm):
+    # The constructor of uvm_sequencer was missing the default parent
+    # argument expected by the IEEE 1800.2 signature
+    # ``new(name, parent=null)``. See pyuvm issue #299.
+    seq = uvm_sequencer("seqr_default")
+    assert seq.parent is uvm_root()
