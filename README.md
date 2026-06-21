@@ -77,6 +77,15 @@ This section demonstrates running an example simulation and then shows how the e
 
 ## Running the simulation
 
+> **Note** &mdash; The example files in `examples/` are kept in lockstep with the
+> latest pyuvm source on `master` and may rely on API additions that have not
+> yet been published to PyPI. Install pyuvm in editable mode from your cloned
+> repository (see [Running from a cloned repository](#running-from-a-cloned-repository)
+> above) before running the example, otherwise the imports resolve to the
+> older PyPI release and you may hit errors such as
+> `TypeError: uvm_component.raise_objection() takes 1 positional argument but 2 were given`
+> (see #363).
+
 The TinyALU is, as its name implies, a tiny ALU. It has four operations: ADD, AND, NOT, and MUL. This example shows us running the Verilog version of the design, but there is also a VHDL version.
 
 **cocotb** uses a Makefile to run its simulation. We see it in `examples/TinyALU`:
