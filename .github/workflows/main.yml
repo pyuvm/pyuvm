@@ -59,7 +59,7 @@ jobs:
             vhdl-sim: "nvc"
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Set up Python ${{matrix.python-version}} (setup-python)
       if: matrix.python-version != 3.7
