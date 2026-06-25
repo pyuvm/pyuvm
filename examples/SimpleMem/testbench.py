@@ -116,8 +116,9 @@ class MemWriteThenReadSeq(uvm_sequence):
 
     async def body(self):
         for addr in range(1 << ADDR_WIDTH):
-            wr = MemSeqItem(f"wr_{addr:02x}", op=MemOp.WRITE, addr=addr,
-                            wdata=0xA5A5_0000 | addr)
+            wr = MemSeqItem(
+                f"wr_{addr:02x}", op=MemOp.WRITE, addr=addr, wdata=0xA5A5_0000 | addr
+            )
             await self.start_item(wr)
             await self.finish_item(wr)
         for addr in range(1 << ADDR_WIDTH):
