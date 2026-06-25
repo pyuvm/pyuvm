@@ -21,12 +21,12 @@ write-then-read sequences, and a PASSIVE agent (monitor only) observing
 stimulus that is generated outside of UVM.
 """
 
-import logging
 import random
 
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
+from simple_mem_utils import GoldenMem, MemOp, SimpleMemBfm
 
 import pyuvm
 from pyuvm import (
@@ -48,8 +48,6 @@ from pyuvm import (
     uvm_test,
     uvm_tlm_analysis_fifo,
 )
-
-from simple_mem_utils import GoldenMem, MemOp, SimpleMemBfm
 
 ADDR_WIDTH = SimpleMemBfm.ADDR_WIDTH
 DATA_WIDTH = SimpleMemBfm.DATA_WIDTH
