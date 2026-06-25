@@ -19,6 +19,7 @@ cocotb_tests:
 	make SIM=$(VERILOG_SIM) TOPLEVEL_LANG=verilog -C examples/TinyALU sim checkclean
 	make SIM=$(VERILOG_SIM) TOPLEVEL_LANG=verilog -C examples/TinyALU_reg sim checkclean
 	make SIM=$(VHDL_SIM)    TOPLEVEL_LANG=vhdl    -C examples/TinyALU sim checkclean
+	make SIM=$(VERILOG_SIM) TOPLEVEL_LANG=verilog -C examples/SimpleMem sim checkclean
 
 docs:
 	uv run --group docs sphinx-build -b html docs docs/_build/html
