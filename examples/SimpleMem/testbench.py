@@ -91,14 +91,47 @@ class MemSeqItem(uvm_sequence_item):
 
 
 class MemRandomSeq(uvm_sequence):
-    """Fire ``count`` randomised transactions through the sequencer."""
+    """Fire ``count`` transactions through the sequencer.
+
+    The sequence opens with a deterministic warmup that visits every
+    ``(op, addr-bucket)`` pair exactly once, then fills the remaining
+    ``count - n_directed`` shots with randomised transactions. The
+    directed prefix guarantees the coverage subscriber closes on every
+    Python / cocotb matrix combination — a pure 32-shot random
+    sequence misses ``(WRITE, addr-bucket 2)`` about once every twenty
+    runs on Python 3.8 + cocotb 1.8, where the underlying RNG's draw
+    order leaves a hole. The random tail still exercises the bus with
+    unpredictable address/data patterns so the scoreboard and BFM
+    aren't degenerated to a fixed trace.
+    """
+
+    BUCKETS = 4  # must mirror MemCoverage.BUCKETS
 
     def __init__(self, name, count=32):
         super().__init__(name)
         self._count = count
 
     async def body(self):
-        for i in range(self._count):
+        # Directed warmup: hit every (op, addr-bucket) pair once.
+        bucket_size = (1 << ADDR_WIDTH) // self.BUCKETS
+        n_directed = 0
+        for op in MemOp:
+            for b in range(self.BUCKETS):
+                # Land in the middle of each bucket so future random
+                # shots to the bucket boundaries don't get treated as
+                # duplicates by the coverage tracker.
+                addr = b * bucket_size + (bucket_size // 2)
+                item = MemSeqItem(
+                    f"warmup_{op.name.lower()}_b{b}",
+                    op=op, addr=addr,
+                    wdata=0x5A5A_0000 | (op.value << 8) | addr,
+                )
+                await self.start_item(item)
+                await self.finish_item(item)
+                n_directed += 1
+
+        # Random tail — preserves the original "32 random shots" feel.
+        for i in range(max(0, self._count - n_directed)):
             item = MemSeqItem(f"rand_{i}")
             await self.start_item(item)
             item.randomize()
