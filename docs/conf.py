@@ -67,7 +67,12 @@ version = ".".join(release.split(".")[:2])
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ["_build"]
+exclude_patterns = [
+    "_build",
+    # Keep only the top-level pyuvm package docs.
+    # MyST generates then for the private modules and this causes a Sphinx warning.
+    "apidocs/pyuvm/pyuvm._*.md",
+]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 # default_role = None
