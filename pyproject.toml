@@ -1,10 +1,13 @@
 [build-system]
-requires = ["setuptools>=61","wheel"]
+requires = [
+    "setuptools>=61",
+    "wheel",
+    "setuptools-git-versioning>=3.0,<4",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyuvm"
-version = "4.0.1"
 description = "A Python implementation of the UVM using cocotb"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -22,6 +25,7 @@ dependencies = [
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/pyuvm/pyuvm"
@@ -148,3 +152,10 @@ markers = [
     "reg_block_with_sub_blocks",
     "reg_block_get_field_empty_reg",
 ]
+
+[tool.setuptools-git-versioning]
+enabled = true
+version_file = "VERSION"
+count_commits_from_version_file = true
+dev_template = "{tag}.dev{ccount}+r{sha}"
+dirty_template = "{tag}.dev{ccount}+r{sha}.dirty"
