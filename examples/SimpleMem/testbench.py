@@ -346,7 +346,7 @@ class _MemTestBase(uvm_test):
         await seq.start(seqr)
 
     async def run_phase(self):
-        self.raise_objection("running test")
+        self.raise_objection()
         bfm = SimpleMemBfm()
         await bfm.reset()
         bfm.start_bfm()
@@ -354,7 +354,7 @@ class _MemTestBase(uvm_test):
         # Let monitored items drain into the fifo before check_phase.
         for _ in range(5):
             await RisingEdge(cocotb.top.clk)
-        self.drop_objection("test done")
+        self.drop_objection()
 
 
 @pyuvm.test()
