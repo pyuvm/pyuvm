@@ -462,7 +462,7 @@ class AluSeqItem(uvm_sequence_item):
 
 You can contribute to **pyuvm** by forking this repository and submitting pull requests.
 
-### Development Environment Setup
+## Development Environment Setup
 
 The pyuvm project uses forked Github rebase flow.
 The first step is to [fork the project](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
@@ -488,7 +488,7 @@ Next install the main development tools using `pip`.
 pip install .[dev]
 ```
 
-### Linting
+## Linting
 
 Linting is done with various tools: ruff, pre-commit, codespell, and others.
 These tools are all run using [pre-commit](https://pre-commit.com/).
@@ -505,7 +505,7 @@ pre-commit install
 ```
 
 
-### Testing
+## Testing
 
 The repository runs all needed tests using [tox](https://tox.wiki/en/stable/).
 This will run the full set of tests for all supported operating systems, Python versions, and cocotb versions.
