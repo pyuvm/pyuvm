@@ -27,13 +27,6 @@ class MemOp(enum.IntEnum):
     WRITE = 1
 
 
-def _get_int(signal):
-    try:
-        return int(signal.value)
-    except ValueError:
-        return 0
-
-
 class SimpleMemBfm(metaclass=Singleton):
     """BFM for the SimpleMem bus.
 
@@ -100,10 +93,16 @@ class SimpleMemBfm(metaclass=Singleton):
             # Wait until the slave grants (single-cycle handshake here, but
             # writing the loop this way keeps the BFM ready for back-pressure
             # variants of the DUT.)
+            #
+            # start_bfm() is only called after bfm.reset() returns, so every
+            # signal we sample here is guaranteed to have a defined value —
+            # int(signal.value) is strict (raises ValueError on X/Z) and any
+            # surprise X mid-sim becomes a hard failure rather than a silent
+            # zero, per pyuvm/pyuvm#379 review.
             while True:
                 await RisingEdge(self.dut.clk)
-                if _get_int(self.dut.gnt) == 1:
-                    rdata = _get_int(self.dut.rdata) if op == MemOp.READ else 0
+                if int(self.dut.gnt.value) == 1:
+                    rdata = int(self.dut.rdata.value) if op == MemOp.READ else 0
                     break
 
             await FallingEdge(self.dut.clk)
@@ -117,15 +116,18 @@ class SimpleMemBfm(metaclass=Singleton):
     async def _monitor_bfm(self):
         # Sample on rising edges so the monitor sees exactly what the DUT
         # commits each cycle and is fully decoupled from the driver.
+        #
+        # start_bfm() is only invoked after bfm.reset() has driven rst_n
+        # high, so we never need to gate on rst_n here — and int() is
+        # left strict so any X/Z surprise mid-sim raises ValueError
+        # rather than getting silently coerced to zero.
         while True:
             await RisingEdge(self.dut.clk)
-            if _get_int(self.dut.rst_n) == 0:
-                continue
-            if _get_int(self.dut.req) == 1 and _get_int(self.dut.gnt) == 1:
-                op = MemOp.WRITE if _get_int(self.dut.we) == 1 else MemOp.READ
-                addr = _get_int(self.dut.addr)
-                wdata = _get_int(self.dut.wdata) if op == MemOp.WRITE else 0
-                rdata = _get_int(self.dut.rdata) if op == MemOp.READ else 0
+            if int(self.dut.req.value) == 1 and int(self.dut.gnt.value) == 1:
+                op = MemOp.WRITE if int(self.dut.we.value) == 1 else MemOp.READ
+                addr = int(self.dut.addr.value)
+                wdata = int(self.dut.wdata.value) if op == MemOp.WRITE else 0
+                rdata = int(self.dut.rdata.value) if op == MemOp.READ else 0
                 await self.monitor_queue.put((op, addr, wdata, rdata))
 
 
