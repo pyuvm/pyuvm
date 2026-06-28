@@ -95,6 +95,7 @@ known-third-party = [
 ]
 
 [tool.codespell]
+skip = 'uv.lock'
 ignore-words-list = [
     "synopsys",
 ]

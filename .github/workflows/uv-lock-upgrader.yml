@@ -1,0 +1,35 @@
+name: Upgrade locked dependencies
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # every Monday at midnight
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  upgrade:
+    name: Upgrade locked dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        activate-environment: "true"
+
+    - name: Upgrade dependencies
+      run: uv lock --upgrade
+
+    - name: Open pull request
+      uses: peter-evans/create-pull-request@v8
+      with:
+        commit-message: "Upgrade locked dependencies"
+        title: "Upgrade locked dependencies"
+        body: ""
+        author: "uv.lock upgrader <noreply@example.org>"
+        branch: "upgrade-locked-dependencies"
+        sign-commits: true
