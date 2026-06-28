@@ -61,8 +61,11 @@ ADDR_MASK = (1 << ADDR_WIDTH) - 1
 
 
 class MemSeqItem(uvm_sequence_item):
-    """One bus transaction. ``rdata_observed`` is filled by the driver
-    after the DUT responds to a READ."""
+    """One bus transaction.
+
+    ``rdata_observed`` is filled by the driver after the DUT responds
+    to a READ.
+    """
 
     def __init__(self, name, op=MemOp.READ, addr=0, wdata=0):
         super().__init__(name)
@@ -326,8 +329,11 @@ class MemEnv(uvm_env):
 
 
 class _MemTestBase(uvm_test):
-    """Shared boilerplate — every test brings up the env, resets the DUT,
-    runs a sequence, and asserts coverage/scoreboard at the end."""
+    """Shared boilerplate for every Mem* test.
+
+    Brings up the env, resets the DUT, runs a sequence, and asserts
+    coverage and scoreboard at the end.
+    """
 
     SEQUENCE_CLS = MemRandomSeq
 
@@ -360,20 +366,24 @@ class MemRandomTest(_MemTestBase):
 
 @pyuvm.test()
 class MemWriteThenReadTest(_MemTestBase):
-    """Write the full address space, then read it back. Verifies both the
-    DUT (memory contents survive the writes) and the scoreboard (the
-    golden model predicts every read)."""
+    """Write the full address space, then read it back.
+
+    Verifies both the DUT (memory contents survive the writes) and the
+    scoreboard (the golden model predicts every read).
+    """
 
     SEQUENCE_CLS = MemWriteThenReadSeq
 
 
 @pyuvm.test()
 class MemPassiveAgentTest(_MemTestBase):
-    """The agent is reconfigured as PASSIVE — only a monitor exists in
-    UVM-land. Stimulus is driven by a plain cocotb coroutine that pokes
-    the BFM directly, simulating a third-party stimulus source. The
-    monitor / scoreboard / coverage should still cover every (op,
-    addr-bucket) pair."""
+    """The agent is reconfigured as PASSIVE.
+
+    Only a monitor exists in UVM-land. Stimulus is driven by a plain
+    cocotb coroutine that pokes the BFM directly, simulating a
+    third-party stimulus source. The monitor / scoreboard / coverage
+    should still cover every (op, addr-bucket) pair.
+    """
 
     def build_phase(self):
         ConfigDB().set(
@@ -397,9 +407,12 @@ class MemPassiveAgentTest(_MemTestBase):
 
 @pyuvm.test(expect_fail=True)
 class MemPassiveFailingTest(MemPassiveAgentTest):
-    """Negative twin of :class:`MemPassiveAgentTest` — only writes are
-    issued, so the coverage subscriber must flag the missing READ
-    buckets. Marked ``expect_fail=True`` so ``make`` still exits 0."""
+    """Negative twin of :class:`MemPassiveAgentTest`.
+
+    Only writes are issued, so the coverage subscriber must flag the
+    missing READ buckets. Marked ``expect_fail=True`` so ``make`` still
+    exits 0.
+    """
 
     async def _run_sequence(self):
         bfm = SimpleMemBfm()
