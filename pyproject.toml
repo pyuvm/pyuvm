@@ -20,9 +20,8 @@ classifiers = [
 dependencies = [
     "cocotb>=1.6.0,<3.0",
 ]
-dynamic = [
-    "license"
-]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 
 [project.urls]
 Homepage = "https://github.com/pyuvm/pyuvm"
