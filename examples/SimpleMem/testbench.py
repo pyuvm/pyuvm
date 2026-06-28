@@ -123,7 +123,8 @@ class MemRandomSeq(uvm_sequence):
                 addr = b * bucket_size + (bucket_size // 2)
                 item = MemSeqItem(
                     f"warmup_{op.name.lower()}_b{b}",
-                    op=op, addr=addr,
+                    op=op,
+                    addr=addr,
                     wdata=0x5A5A_0000 | (op.value << 8) | addr,
                 )
                 await self.start_item(item)
