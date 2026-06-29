@@ -767,7 +767,6 @@ wheels = [
 
 [[package]]
 name = "pyuvm"
-version = "4.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "cocotb" },
