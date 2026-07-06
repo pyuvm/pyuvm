@@ -12,7 +12,7 @@ jobs:
     name: Build sdist and wheel
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Verify tag matches pyproject.toml version
         if: github.event_name == 'push'
@@ -67,7 +67,7 @@ jobs:
           - { python-version: "3.8",  cocotb-version: "1.9", vhdl-sim: "nvc"  }
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Download artifacts
         uses: actions/download-artifact@v8
