@@ -468,7 +468,7 @@ For testbenches that need UVM-style report IDs, UVM verbosity filtering, severit
 Enable the shared SV-UVM-style reporting mode before creating UVM objects or components:
 
 ```bash
-PYUVM_ENABLE_SV_UVM_STYLE_REPORTING=1 
+PYUVM_ENABLE_SV_UVM_STYLE_REPORTING=1
 ```
 
 You can also enable it from Python before constructing the testbench:
