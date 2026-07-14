@@ -94,6 +94,8 @@ class uvm_report_catcher:
         - action (always ``THROW``)
         - possibly rewritten severity
         """
-        report = uvm_report_message(report_id=report_id, message=message, severity=severity)
+        report = uvm_report_message(
+            report_id=report_id, message=message, severity=severity
+        )
         action = self.catch(report)
         return action, report.severity

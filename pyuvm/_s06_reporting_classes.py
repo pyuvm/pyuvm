@@ -96,7 +96,7 @@ configure_uvm_root_logger()
 
 # 6.2.1
 class uvm_report_object(uvm_object):
-    """ The basis of all classes that can report """
+    """The basis of all classes that can report"""
 
     def __init__(self, name):
         """

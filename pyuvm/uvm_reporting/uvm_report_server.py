@@ -61,7 +61,9 @@ class uvm_report_stats:
         return total
 
     def error_quit_reached(self, policy: uvm_report_policy) -> bool:
-        return int(policy.max_quit_count) > 0 and self.error_quit_count >= int(policy.max_quit_count)
+        return int(policy.max_quit_count) > 0 and self.error_quit_count >= int(
+            policy.max_quit_count
+        )
 
 
 class _uvm_report_filter(logging.Filter):
@@ -210,7 +212,9 @@ class uvm_report_server:
         print_char_len: int = 300,
     ) -> None:
         self.shutdown()
-        self._root_logger = root_logger if root_logger is not None else logging.getLogger("uvm")
+        self._root_logger = (
+            root_logger if root_logger is not None else logging.getLogger("uvm")
+        )
         self._verbosity = int(verbosity)
         self._print_char_len = int(print_char_len)
         self._policy = policy if policy is not None else uvm_report_policy()
@@ -364,7 +368,11 @@ class uvm_report_server:
         prior_failure_msg: str | None = None,
     ) -> str | None:
         """Log DV_TEST_STATUS and return terminal failure message if present."""
-        fail_msg = prior_failure_msg if prior_failure_msg is not None else self.failure_message(context)
+        fail_msg = (
+            prior_failure_msg
+            if prior_failure_msg is not None
+            else self.failure_message(context)
+        )
         if fail_msg is not None:
             logger.info("DV_TEST_STATUS: FAILED")
             return fail_msg
@@ -413,7 +421,9 @@ class uvm_report_server:
                     )
                     base_formatter = base_formatter.base_formatter
                 else:
-                    wrapped = _uvm_wrapped_formatter(base_formatter, self._print_char_len)
+                    wrapped = _uvm_wrapped_formatter(
+                        base_formatter, self._print_char_len
+                    )
                 handler.setFormatter(wrapped)
             self._attached.append((handler, True, original_formatter))
             self._attached_keys.add(hkey)

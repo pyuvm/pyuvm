@@ -130,7 +130,9 @@ class uvm_reporter:
         return UVM_INFO
 
     def _apply_local_catcher(self, severity: str, report_id: str, msg: str) -> str:
-        _action, new_severity = self._local_catcher.catch_fields(report_id, msg, severity)
+        _action, new_severity = self._local_catcher.catch_fields(
+            report_id, msg, severity
+        )
         return self._normalize_severity(new_severity)
 
     def add_change_sev(self, report_id: str, msg_regex: str, sev: Any) -> None:
@@ -190,7 +192,9 @@ class uvm_reporter:
                 raise RuntimeError(f"UVM_FATAL: {msg}")
             return
         self._sync_with_manager()
-        manager.emit_uvm(UVM_WARNING, msg, report_id=report_id, logger=self._logger, stacklevel=3)
+        manager.emit_uvm(
+            UVM_WARNING, msg, report_id=report_id, logger=self._logger, stacklevel=3
+        )
 
     def error(self, report_id: str, msg: str) -> None:
         manager = uvm_report_server.get_or_none()
@@ -208,7 +212,9 @@ class uvm_reporter:
                 raise RuntimeError(f"UVM_FATAL: {msg}")
             return
         self._sync_with_manager()
-        manager.emit_uvm(UVM_ERROR, msg, report_id=report_id, logger=self._logger, stacklevel=3)
+        manager.emit_uvm(
+            UVM_ERROR, msg, report_id=report_id, logger=self._logger, stacklevel=3
+        )
 
     def fatal(self, report_id: str, msg: str) -> None:
         manager = uvm_report_server.get_or_none()
@@ -226,4 +232,6 @@ class uvm_reporter:
                 raise RuntimeError(f"UVM_FATAL: {msg}")
             return
         self._sync_with_manager()
-        manager.emit_uvm(UVM_FATAL, msg, report_id=report_id, logger=self._logger, stacklevel=3)
+        manager.emit_uvm(
+            UVM_FATAL, msg, report_id=report_id, logger=self._logger, stacklevel=3
+        )

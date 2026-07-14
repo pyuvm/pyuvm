@@ -70,7 +70,11 @@ class uvm_object(uvm_void):
         if self._logger is None:
             uvm_root_logger = logging.getLogger("uvm")
             logger_name = self.get_initial_logger_name()
-            self._logger = uvm_root_logger.getChild(logger_name) if logger_name else uvm_root_logger
+            self._logger = (
+                uvm_root_logger.getChild(logger_name)
+                if logger_name
+                else uvm_root_logger
+            )
             self._logger.setLevel(level=uvm_object.get_default_logging_level())
             self._logger.propagate = get_sv_uvm_style_reporting_enabled()
             manager = uvm_report_server.get_or_none()

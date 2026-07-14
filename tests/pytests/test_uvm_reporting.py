@@ -217,7 +217,9 @@ def test_direct_logger_error_is_counted_when_report_server_is_active(reporting_l
     assert stats.error_quit_count == 1
 
 
-def test_direct_logger_error_is_counted_once_through_uvm_propagation(uvm_root_reporting):
+def test_direct_logger_error_is_counted_once_through_uvm_propagation(
+    uvm_root_reporting,
+):
     manager, stream = uvm_root_reporting
     child_logger = logging.getLogger("uvm.phase5.direct")
     child_logger.handlers.clear()
@@ -289,7 +291,10 @@ def test_legacy_disable_logging_installs_null_handler():
 
     assert report_object._streaming_handler is None
     assert not report_object.logger.propagate
-    assert any(isinstance(handler, logging.NullHandler) for handler in report_object.logger.handlers)
+    assert any(
+        isinstance(handler, logging.NullHandler)
+        for handler in report_object.logger.handlers
+    )
 
 
 def test_legacy_custom_handler_receives_logger_messages():
@@ -393,7 +398,9 @@ def test_component_supports_uvm_report(initialize_pyuvm, uvm_root_reporting):
         (uvm_transaction, "transaction", "transaction report"),
     ],
 )
-def test_non_component_objects_support_uvm_report(cls, name, message, uvm_root_reporting):
+def test_non_component_objects_support_uvm_report(
+    cls, name, message, uvm_root_reporting
+):
     _manager, stream = uvm_root_reporting
     obj = cls(name)
 
