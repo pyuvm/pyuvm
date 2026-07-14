@@ -24,7 +24,7 @@ You can read the API documentation for **pyuvm** on [ReadTheDocs](https://pyuvm.
 |Section|Name|Description|
 |-------|----|-----------|
 |5|Base Classes|Basic classes such as `uvm_void` and `uvm_object`|
-|6|Reporting Classes|**pyuvm** uses the **logging** package to implement reporting, but integrates it within some of the UVM reporting functionality.|
+|6|Reporting Classes|**pyuvm** uses the **logging** package as the reporting backend and provides optional SV-UVM-style reporting APIs, verbosity filtering, report IDs, severity counts, and summaries.|
 |8|Factory Classes|**pyuvm** implements all the UVM factory functionality without using the macros needed in SystemVerilog.  The factory supports any class extended from `uvm_void`.|
 |9|Phasing|IEEE 1800.2 describes basic phasing that everyone uses and a complicated custom phasing system that almost nobody uses.  **pyuvm** only implmenents the phasing that everyone uses, but you can extend phasing using Python OOP techniques.|
 |12|UVM TLM Interfaces|**pyuvm** fully implements the UVM *Transaction Level Modeling* (TLM) system. |
@@ -173,7 +173,7 @@ You'll see the following in the test:
 
 * The `ConfigDB()` singleton acts the same way as the `uvm_config_db` interface in the SystemVerilog UVM. **pyuvm** refactored away the `uvm_resource_db` as there are no issues with classes to manage.
 
-* **pyuvm** leverages the Python logging system and does not implement the UVM reporting system. Every descendent of `uvm_report_object` has a `logger` data member.
+* **pyuvm**'s default reporting use model leverages the Python logging system. Every `uvm_object` instance, including descendant instances, has a logger available through `self.logger`. The optional SV-UVM-style reporting path is described below.
 
 * Sequences work as they do in the SystemVerilog UVM.
 
@@ -278,7 +278,7 @@ The scoreboard receives commands from the command monitor and results from the r
 * The scoreboard exposes the FIFO exports by copying them into class data members.  As we see in the environment above, this allows us to connect the exports without reaching into the `Scoreboard's` inner workings.
 * We connect the exports in the `connect_phase()`
 * The `check_phase()` runs after the `run_phase()`.  At this point the scoreboard has all operations and results. It loops through the operations and predicts the result, then it compares the predicted and actual result.
-* Notice that we do not use UVM reporting. Instead we us the Python `logging` module. Every `uvm_report_object` and its children has its own logger stored in `self.logger.`
+* This example uses the Python `logging` module directly. Every `uvm_object` instance, including descendant instances, has a logger available through `self.logger`. Tests that need UVM-style report IDs and verbosity filtering can use `self.uvm_report` instead.
 
 ```python
 class Scoreboard(uvm_component):
@@ -456,6 +456,70 @@ class AluSeqItem(uvm_sequence_item):
         OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"
 
 ```
+
+## SV-UVM-style reporting
+
+Existing pyuvm testbenches can continue to use Python logging directly:
+
+```python
+self.logger.info("Covered all operations")
+self.logger.error("Functional coverage error")
+```
+
+For testbenches that need UVM-style report IDs, UVM verbosity filtering, severity counts, report summaries, or report catching, pyuvm also provides an opt-in SV-UVM-style reporting path. Python logging remains the backend; the UVM-style layer decides whether a report is enabled, assigns UVM severity and report ID metadata, and then emits through logging.
+
+Enable the shared SV-UVM-style reporting mode before creating UVM objects or components:
+
+```bash
+PYUVM_ENABLE_SV_UVM_STYLE_REPORTING=1
+```
+
+You can also enable it from Python before constructing the testbench:
+
+```python
+from pyuvm import set_sv_uvm_style_reporting_enabled
+
+set_sv_uvm_style_reporting_enabled(True)
+```
+
+The enable flag changes the logging topology so `uvm_object` loggers propagate to the shared `uvm` logger. In this mode, `uvm_report_object` does not install a default stream handler on every report object. If you also want centralized counts, summaries, and report catching, create the report server early in the test:
+
+```python
+from pyuvm import UVM_LOW, uvm_report_server
+
+report_server = uvm_report_server.create(verbosity=UVM_LOW)
+```
+
+Then write reports through `self.uvm_report`:
+
+```python
+from pyuvm import UVM_HIGH, UVM_LOW, uvm_component
+
+
+class Scoreboard(uvm_component):
+    def check_phase(self):
+        self.uvm_report.info("SCOREBOARD", "checking final results", UVM_LOW)
+
+        if self.mismatch_seen:
+            self.uvm_report.error("SCOREBOARD", "result mismatch detected")
+        else:
+            self.uvm_report.info("SCOREBOARD", "all results matched", UVM_HIGH)
+```
+
+UVM verbosity is handled separately from Python logging levels. A UVM info report passes when its message verbosity is less than or equal to the configured verbosity. Warning, error, and fatal reports are severity reports and are not suppressed by info verbosity. Python logging levels still carry severity to the backend formatter and handlers.
+
+At the end of a test, the report server can emit a summary and check failure policy:
+
+```python
+import logging
+from pyuvm import uvm_report_server
+
+report_server = uvm_report_server.get()
+report_server.log_summary(logging.getLogger("uvm"))
+report_server.assert_no_failures("end of test")
+```
+
+Output formatting still uses Python logging formatters. pyuvm's `PyuvmFormatter` remains the customization point for teams that want a different log layout while keeping the UVM-style report metadata and filtering behavior.
 
 
 # Contributing

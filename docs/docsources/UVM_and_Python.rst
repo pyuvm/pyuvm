@@ -141,4 +141,29 @@ There are no field macros and thus no need to implement this class.
 Reporting Classes
 ^^^^^^^^^^^^^^^^^
 
-We use Python logging instead of the UVM reporting system.
+pyuvm uses Python logging as the reporting backend. Existing tests can keep
+using ``self.logger`` directly, and every ``uvm_object`` instance, including
+descendant instances, has a logger available through ``self.logger``.
+
+pyuvm also provides an opt-in SV-UVM-style reporting path for tests that need
+report IDs, UVM verbosity filtering, severity counts, summaries, and report
+catching. Enable it before constructing the testbench:
+
+.. code-block:: python
+
+   from pyuvm import set_sv_uvm_style_reporting_enabled
+
+   set_sv_uvm_style_reporting_enabled(True)
+
+or from the shell:
+
+.. code-block:: bash
+
+   PYUVM_ENABLE_SV_UVM_STYLE_REPORTING=1 make sim
+
+UVM verbosity is handled separately from Python logging levels. Info reports
+pass when the report verbosity is less than or equal to the configured UVM
+verbosity. Python logging levels continue to represent severity for the backend
+formatter and handlers.
+
+See :doc:`SV_UVM_Style_Reporting` for examples.

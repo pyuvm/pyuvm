@@ -109,6 +109,35 @@ from pyuvm._s05_base_classes import (
 
 # Section 6
 from pyuvm._s06_reporting_classes import uvm_report_object
+from pyuvm.uvm_reporting.uvm_report_catcher import (
+    uvm_report_action_e,
+    uvm_report_catcher,
+    uvm_report_message,
+)
+from pyuvm.uvm_reporting.uvm_report_server import (
+    uvm_report_policy,
+    uvm_report_server,
+    uvm_report_stats,
+)
+from pyuvm.uvm_reporting import (
+    get_sv_uvm_style_reporting_enabled,
+    set_sv_uvm_style_reporting_enabled,
+)
+from pyuvm.uvm_reporting.uvm_verbosity import (
+    UVM_DEBUG,
+    UVM_ERROR,
+    UVM_FATAL,
+    UVM_FULL,
+    UVM_HIGH,
+    UVM_INFO,
+    UVM_LOW,
+    UVM_MEDIUM,
+    UVM_NONE,
+    UVM_WARNING,
+    parse_uvm_verbosity,
+    resolve_uvm_verbosity,
+    uvm_reporter,
+)
 
 # Section 8
 from pyuvm._s08_factory_classes import uvm_factory
@@ -342,7 +371,28 @@ __all__ = [
     "uvm_policy",
     "uvm_transaction",
     # Section 6 - Reporting classes
+    "UVM_DEBUG",
+    "UVM_ERROR",
+    "UVM_FATAL",
+    "UVM_FULL",
+    "UVM_HIGH",
+    "UVM_INFO",
+    "UVM_LOW",
+    "UVM_MEDIUM",
+    "UVM_NONE",
+    "UVM_WARNING",
+    "parse_uvm_verbosity",
+    "resolve_uvm_verbosity",
+    "get_sv_uvm_style_reporting_enabled",
+    "set_sv_uvm_style_reporting_enabled",
+    "uvm_report_action_e",
+    "uvm_report_catcher",
+    "uvm_report_message",
     "uvm_report_object",
+    "uvm_report_policy",
+    "uvm_report_server",
+    "uvm_report_stats",
+    "uvm_reporter",
     # Section 8 - Factory classes
     "uvm_factory",
     # Section 9 - Phasing classes
@@ -458,7 +508,8 @@ __all__ = [
 # Set the __module__ attribute for all re-exported names.
 # This is necessary for the documentation generation tools to link objects correctly.
 for _name in __all__:
-    # Skip non-classes and non-functions.
-    if _name in {"__version__", "FIFO_DEBUG", "PYUVM_DEBUG", "uvm_common_phases"}:
-        continue
-    globals()[_name].__module__ = __name__
+    _obj = globals()[_name]
+    # Constants and collection exports do not have __module__; re-home only
+    # exported objects that expose it for autodoc links.
+    if hasattr(_obj, "__module__"):
+        _obj.__module__ = __name__

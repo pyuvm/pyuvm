@@ -1,6 +1,8 @@
+import logging
+
 import pytest
 
-from pyuvm import *
+from pyuvm import uvm_report_object
 
 
 def test_object_creation():
@@ -10,6 +12,7 @@ def test_object_creation():
     ro = uvm_report_object("ro")
     assert hasattr(ro, "logger")
     assert not ro.logger.propagate
+    assert ro._streaming_handler in ro.logger.handlers
 
 
 @pytest.mark.parametrize(
