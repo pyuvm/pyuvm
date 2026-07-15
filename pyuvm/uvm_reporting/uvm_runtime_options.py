@@ -10,6 +10,8 @@ import os
 from collections.abc import Iterable
 from typing import Any
 
+import cocotb
+
 _TRUE_VALUES = {"1", "true", "t", "yes", "y", "on"}
 _FALSE_VALUES = {"0", "false", "f", "no", "n", "off", ""}
 
@@ -22,11 +24,6 @@ def _as_names(names: str | Iterable[str]) -> tuple[str, ...]:
 
 def get_plusarg(name: str) -> str | None:
     """Return a cocotb plusarg value when cocotb exposes plusargs."""
-    try:
-        import cocotb
-    except Exception:
-        return None
-
     plusargs = getattr(cocotb, "plusargs", None)
     if plusargs is None:
         return None

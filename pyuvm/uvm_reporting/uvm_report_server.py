@@ -335,16 +335,13 @@ class uvm_report_server:
         self._log_uvm_info(logger, "--- UVM Report Summary ---", full_name)
         self._log_uvm_info(logger, "** Report counts by severity", full_name)
         self._log_uvm_info(logger, f"UVM_INFO    : {stats.info_count:4d}", full_name)
-        self._log_uvm_info(
-            logger, f"UVM_WARNING : {stats.warning_count:4d}", full_name
-        )
+        self._log_uvm_info(logger, f"UVM_WARNING : {stats.warning_count:4d}", full_name)
         self._log_uvm_info(logger, f"UVM_ERROR   : {stats.error_count:4d}", full_name)
         self._log_uvm_info(logger, f"UVM_FATAL   : {stats.fatal_count:4d}", full_name)
         max_quit_count = self._max_quit_count_text()
         self._log_uvm_info(
             logger,
-            f"Quit count : {stats.error_quit_count:5d} of {max_quit_count} "
-            "(UVM_ERROR)",
+            f"Quit count : {stats.error_quit_count:5d} of {max_quit_count} (UVM_ERROR)",
             full_name,
         )
 
@@ -482,10 +479,7 @@ class uvm_report_server:
         stacklevel: int = 2,
         uvm_full_name: str = "",
     ) -> None:
-        msg = (
-            f"Severity changed from UVM_{original_severity} "
-            f"to UVM_{new_severity}"
-        )
+        msg = f"Severity changed from UVM_{original_severity} to UVM_{new_severity}"
         if report_id:
             msg = f"{msg} for report ID '{report_id}'"
         extra = self._uvm_record_extra("SEVCHG", uvm_full_name)

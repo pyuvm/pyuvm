@@ -455,9 +455,7 @@ def test_uvm_report_formatter_uses_source_location_and_full_name(reporting_logge
     output = stream.getvalue()
     assert "INFO:" in output
     assert "test_uvm_reporting.py(" in output
-    assert (
-        "[uvm_test_top.env.scoreboard]: [SRC_ID] source-tagged message" in output
-    )
+    assert "[uvm_test_top.env.scoreboard]: [SRC_ID] source-tagged message" in output
 
 
 def test_object_uvm_report_formatter_uses_owner_full_name(reporting_logger):
@@ -477,9 +475,7 @@ def test_object_uvm_report_formatter_uses_owner_full_name(reporting_logger):
 def test_report_summary_uses_uvm_source_location_without_counting(
     reporting_logger,
 ):
-    manager, logger, stream = reporting_logger(
-        fmt="%(levelname)s:%(name)s:%(message)s"
-    )
+    manager, logger, stream = reporting_logger(fmt="%(levelname)s:%(name)s:%(message)s")
     reporter = uvm_reporter(logger, full_name="uvm_test_top")
     reporter.info("INFO_ID", "counted info", UVM_LOW)
     expected_counts = manager.get_stats().info_count
@@ -604,9 +600,7 @@ def test_uvm_test_does_not_auto_create_report_server_when_disabled(
 
 
 @pytest.mark.parametrize("test_cls", [uvm_test, internal_uvm_test])
-def test_uvm_test_auto_creates_report_server_when_enabled(
-    initialize_pyuvm, test_cls
-):
+def test_uvm_test_auto_creates_report_server_when_enabled(initialize_pyuvm, test_cls):
     set_sv_uvm_style_reporting_enabled(True)
 
     test = test_cls("enabled_test")
@@ -618,9 +612,7 @@ def test_uvm_test_auto_creates_report_server_when_enabled(
     assert manager.policy.test_status_label == "TEST_STATUS"
 
 
-def test_uvm_test_report_server_uses_env_runtime_options(
-    initialize_pyuvm, monkeypatch
-):
+def test_uvm_test_report_server_uses_env_runtime_options(initialize_pyuvm, monkeypatch):
     monkeypatch.setenv("UVM_VERBOSITY", "HIGH")
     monkeypatch.setenv("UVM_FAIL_ON_WARNING", "1")
     monkeypatch.setenv("UVM_FAIL_ON_ERROR", "0")
@@ -777,6 +769,34 @@ def test_sv_uvm_style_report_object_does_not_create_default_stream_handler():
         isinstance(handler, logging.StreamHandler)
         for handler in report_object.logger.handlers
     )
+
+
+def test_sv_uvm_style_report_object_removes_reused_logger_stream_handler():
+    logger_name = f"reused_report_object.{uuid.uuid4().hex}"
+    logger = logging.getLogger(f"uvm.{logger_name}")
+
+    class ReusedLoggerReportObject(uvm_report_object):
+        def get_initial_logger_name(self):
+            return logger_name
+
+    try:
+        legacy_report_object = ReusedLoggerReportObject("legacy_report_object")
+        assert any(
+            isinstance(handler, logging.StreamHandler)
+            for handler in legacy_report_object.logger.handlers
+        )
+
+        set_sv_uvm_style_reporting_enabled(True)
+        report_object = ReusedLoggerReportObject("report_object")
+
+        assert report_object.logger is logger
+        assert report_object.logger.propagate
+        assert report_object._streaming_handler is None
+        assert not report_object.logger.handlers
+    finally:
+        for handler in list(logger.handlers):
+            logger.removeHandler(handler)
+            handler.close()
 
 
 def test_uvm_report_uses_existing_object_verbosity():

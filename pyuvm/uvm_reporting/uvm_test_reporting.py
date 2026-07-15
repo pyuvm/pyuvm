@@ -33,9 +33,7 @@ class uvm_test_reporting_config:
 
 def get_uvm_test_reporting_config() -> uvm_test_reporting_config:
     """Resolve report-server configuration from plusargs, env vars, defaults."""
-    verbosity = parse_uvm_verbosity(
-        get_runtime_option("UVM_VERBOSITY", None), UVM_LOW
-    )
+    verbosity = parse_uvm_verbosity(get_runtime_option("UVM_VERBOSITY", None), UVM_LOW)
     policy = uvm_report_policy(
         fail_on_warning=get_runtime_bool("UVM_FAIL_ON_WARNING", False),
         fail_on_error=get_runtime_bool("UVM_FAIL_ON_ERROR", True),

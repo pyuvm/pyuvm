@@ -17,7 +17,6 @@ set_sv_uvm_style_reporting_enabled(True)
 sys.path.append(str(Path("../TinyALU").resolve()))
 from tinyalu_utils import Ops, TinyAluBfm, alu_prediction  # noqa: E402
 
-
 # Sequence classes
 
 
@@ -185,9 +184,7 @@ class Coverage(uvm_subscriber):
                     f"Functional coverage error. Missed: {set(Ops) - self.cvg}",
                 )
             else:
-                self.uvm_report.info(
-                    self.get_name(), "Covered all operations", UVM_LOW
-                )
+                self.uvm_report.info(self.get_name(), "Covered all operations", UVM_LOW)
 
 
 class Scoreboard(uvm_component):
@@ -205,9 +202,7 @@ class Scoreboard(uvm_component):
 
     def _quit_count_reached(self):
         report_server = uvm_report_server.get_or_none()
-        return (
-            report_server is not None and report_server.error_quit_count_reached()
-        )
+        return report_server is not None and report_server.error_quit_count_reached()
 
     def check_phase(self):
         try:

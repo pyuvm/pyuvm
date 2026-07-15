@@ -110,8 +110,7 @@ class uvm_report_object(uvm_object):
             configure_uvm_root_logger()
             self.logger.propagate = True
             for handler in list(self.logger.handlers):
-                if getattr(handler, "_pyuvm_object_default_handler", False):
-                    self.logger.removeHandler(handler)
+                self.logger.removeHandler(handler)
             self._streaming_handler = None
         else:
             self.logger.propagate = False
