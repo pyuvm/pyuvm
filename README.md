@@ -121,75 +121,6 @@ You should be able to run the simulation like this:
 250000.00ns INFO     testbench.py(209)[uvm_test_top.env.scoreboard]: PASSED: 0xff MUL 0xff = 0xfe01
 ```
 
-## TinyALU with SV-UVM-style reporting
-
-The original `examples/TinyALU` example intentionally shows pyuvm's direct
-Python logging style. A sibling example, `examples/TinyALU_uvm_reporting`,
-uses the same TinyALU RTL and BFM while demonstrating the opt-in
-SV-UVM-style reporting API:
-
-```bash
-% cd <path>/pyuvm/examples/TinyALU_uvm_reporting
-% make SIM=verilator TOPLEVEL_LANG=verilog sim checkclean
-```
-
-This example enables shared SV-UVM-style reporting before constructing UVM
-objects, creates a `uvm_report_server`, and reports through `self.uvm_report`.
-The output includes source file and line information, UVM hierarchy, report
-IDs, UVM verbosity filtering, severity counts, and a final report summary:
-
-```text
-INFO     .._uvm_reporting/testbench.py(262) [uvm_test_top.env.scoreboard]: [scoreboard] PASSED: 0xff MUL 0xff = 0xfe01
-INFO     .._uvm_reporting/testbench.py(221) [uvm_test_top.env.coverage]: [coverage] Covered all operations
-INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: --- UVM Report Summary ---
-INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: ** Report counts by severity
-INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: UVM_INFO    :    9
-INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: UVM_WARNING :    0
-INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: UVM_ERROR   :    0
-INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: UVM_FATAL   :    0
-INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: TEST_STATUS: PASSED
-```
-
-UVM verbosity is separate from Python logging levels. The monitors report at
-`UVM_DEBUG`, so debug-level monitor output can be enabled without changing the
-Python logging setup:
-
-```bash
-% UVM_VERBOSITY=DEBUG make SIM=verilator TOPLEVEL_LANG=verilog sim checkclean
-```
-
-Verilator-style plusargs are also accepted:
-
-```bash
-% make SIM=verilator TOPLEVEL_LANG=verilog \
-    COCOTB_PLUSARGS="+UVM_VERBOSITY=DEBUG +max_quit_count=25 +test_status_label=MY_TEST_STATUS +print_char_len=80" sim checkclean
-```
-
-Set `+max_quit_count=0` to report all errors without quit-count suppression;
-the summary prints the limit as `UNLIMITED`. The `maxquit-demo` target runs the
-intentional-error test at `0`, `1`, `2`, and `25`:
-
-```bash
-% make SIM=verilator TOPLEVEL_LANG=verilog maxquit-demo
-```
-
-The final status line defaults to `TEST_STATUS: PASSED` or `TEST_STATUS: FAILED`;
-set `+test_status_label=...` to match a local log-scraping convention.
-
-The reporting example also includes negative cocotb regression tests. `AluTestErrors`
-uses the normal scoreboard mismatch path and reports errors until the quit count
-is reached. `FatalReportTest` drives the same ALU traffic but reports the first
-scoreboard mismatch through `self.uvm_report.fatal(...)`; cocotb marks it as
-passing because the test expects the resulting `RuntimeError`.
-`FatalDowngradeToErrorTest` uses the fatal path with a report catcher rule that
-downgrades the scoreboard report ID to `UVM_ERROR`, so the test reaches the
-normal summary/status path and fails through the final error count. The report
-server also prints a count-neutral `[SEVCHG]` diagnostic at the fatal call site
-when the downgrade happens.
-`FatalDowngradeToInfoTest` and `ErrorDowngradeToInfoTest` use the same real
-scoreboard mismatch paths but downgrade the reports to `UVM_INFO`, demonstrating
-that waived fatal and error reports no longer contribute to failure counts.
-
 ## The `TinyAluBfm` in `tinyalu_utils.py`
 
 The `TinyAluBfm` is a singleton that uses **cocotb** to communicate with the TinyALU.  The BFM exposes three coroutines to the user: `send_op()`, `get_cmd()`, and `get_result()`.
@@ -608,6 +539,75 @@ such as `[uvm_test_top.env.scoreboard]: [scoreboard] ...`. Direct Python logger
 records are not rewritten or counted by the report server.
 
 Output formatting still uses Python logging formatters. pyuvm's `PyuvmFormatter` remains the customization point for teams that want a different log layout while keeping the UVM-style report metadata and filtering behavior.
+
+## TinyALU with SV-UVM-style reporting
+
+The original `examples/TinyALU` example intentionally shows pyuvm's direct
+Python logging style. A sibling example, `examples/TinyALU_uvm_reporting`,
+uses the same TinyALU RTL and BFM while demonstrating the opt-in
+SV-UVM-style reporting API:
+
+```bash
+% cd <path>/pyuvm/examples/TinyALU_uvm_reporting
+% make SIM=verilator TOPLEVEL_LANG=verilog sim checkclean
+```
+
+This example enables shared SV-UVM-style reporting before constructing UVM
+objects, creates a `uvm_report_server`, and reports through `self.uvm_report`.
+The output includes source file and line information, UVM hierarchy, report
+IDs, UVM verbosity filtering, severity counts, and a final report summary:
+
+```text
+INFO     .._uvm_reporting/testbench.py(262) [uvm_test_top.env.scoreboard]: [scoreboard] PASSED: 0xff MUL 0xff = 0xfe01
+INFO     .._uvm_reporting/testbench.py(221) [uvm_test_top.env.coverage]: [coverage] Covered all operations
+INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: --- UVM Report Summary ---
+INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: ** Report counts by severity
+INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: UVM_INFO    :    9
+INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: UVM_WARNING :    0
+INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: UVM_ERROR   :    0
+INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: UVM_FATAL   :    0
+INFO     ..orting/uvm_report_server.py(...) [uvm_test_top]: TEST_STATUS: PASSED
+```
+
+UVM verbosity is separate from Python logging levels. The monitors report at
+`UVM_DEBUG`, so debug-level monitor output can be enabled without changing the
+Python logging setup:
+
+```bash
+% UVM_VERBOSITY=DEBUG make SIM=verilator TOPLEVEL_LANG=verilog sim checkclean
+```
+
+Verilator-style plusargs are also accepted:
+
+```bash
+% make SIM=verilator TOPLEVEL_LANG=verilog \
+    COCOTB_PLUSARGS="+UVM_VERBOSITY=DEBUG +max_quit_count=25 +test_status_label=MY_TEST_STATUS +print_char_len=80" sim checkclean
+```
+
+Set `+max_quit_count=0` to report all errors without quit-count suppression;
+the summary prints the limit as `UNLIMITED`. The `maxquit-demo` target runs the
+intentional-error test at `0`, `1`, `2`, and `25`:
+
+```bash
+% make SIM=verilator TOPLEVEL_LANG=verilog maxquit-demo
+```
+
+The final status line defaults to `TEST_STATUS: PASSED` or `TEST_STATUS: FAILED`;
+set `+test_status_label=...` to match a local log-scraping convention.
+
+The reporting example also includes negative cocotb regression tests. `AluTestErrors`
+uses the normal scoreboard mismatch path and reports errors until the quit count
+is reached. `FatalReportTest` drives the same ALU traffic but reports the first
+scoreboard mismatch through `self.uvm_report.fatal(...)`; cocotb marks it as
+passing because the test expects the resulting `RuntimeError`.
+`FatalDowngradeToErrorTest` uses the fatal path with a report catcher rule that
+downgrades the scoreboard report ID to `UVM_ERROR`, so the test reaches the
+normal summary/status path and fails through the final error count. The report
+server also prints a count-neutral `[SEVCHG]` diagnostic at the fatal call site
+when the downgrade happens.
+`FatalDowngradeToInfoTest` and `ErrorDowngradeToInfoTest` use the same real
+scoreboard mismatch paths but downgrade the reports to `UVM_INFO`, demonstrating
+that waived fatal and error reports no longer contribute to failure counts.
 
 
 # Contributing
