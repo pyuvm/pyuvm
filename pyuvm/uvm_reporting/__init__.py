@@ -7,6 +7,8 @@
 import os
 from typing import Any
 
+from pyuvm.uvm_reporting.uvm_runtime_options import get_plusarg
+
 
 _ENV_VAR = "PYUVM_ENABLE_SV_UVM_STYLE_REPORTING"
 _TRUE_VALUES = {"1", "true", "t", "yes", "y", "on"}
@@ -33,6 +35,9 @@ def set_sv_uvm_style_reporting_enabled(enabled: bool) -> None:
 
 def get_sv_uvm_style_reporting_enabled() -> bool:
     """Return whether SV-UVM-style centralized reporting behavior is enabled."""
+    plusarg_value = get_plusarg(_ENV_VAR)
+    if plusarg_value is not None:
+        return _parse_bool(plusarg_value)
     return _sv_uvm_style_reporting_enabled
 
 

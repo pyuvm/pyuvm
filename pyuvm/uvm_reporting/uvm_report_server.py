@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 import textwrap
-import weakref
 from dataclasses import dataclass
 from typing import Any
 
@@ -31,6 +30,7 @@ class uvm_report_policy:
     fail_on_error: bool = True
     fail_on_fatal: bool = True
     max_quit_count: int = 1
+    test_status_label: str = "TEST_STATUS"
 
 
 @dataclass
@@ -66,20 +66,6 @@ class uvm_report_stats:
         )
 
 
-class _uvm_report_filter(logging.Filter):
-    """Filter that normalizes severities and updates global counters."""
-
-    def __init__(self, manager: uvm_report_server) -> None:
-        super().__init__("uvm_report_filter")
-        self._manager_ref = weakref.ref(manager)
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        manager = self._manager_ref()
-        if manager is not None:
-            manager.process_record(record)
-        return True
-
-
 class _uvm_wrapped_formatter(logging.Formatter):
     """Wrap rendered log lines without changing the underlying formatter layout."""
 
@@ -92,11 +78,30 @@ class _uvm_wrapped_formatter(logging.Formatter):
     def base_formatter(self) -> logging.Formatter:
         return self._base_formatter
 
+    def _is_uvm_report_record(self, record: logging.LogRecord) -> bool:
+        return bool(getattr(record, "_uvm_report_record", False))
+
+    def _source_name(self, record: logging.LogRecord) -> str:
+        pathname = str(getattr(record, "pathname", "") or "")
+        lineno = getattr(record, "lineno", 0)
+        if pathname and lineno:
+            return f"{pathname}({lineno})"
+        return record.name
+
     def _display_message(self, record: logging.LogRecord) -> str:
         message = record.getMessage()
+        if not self._is_uvm_report_record(record):
+            return message
+
+        full_name = str(getattr(record, "uvm_full_name", "") or "")
         report_id = str(getattr(record, "report_id", "") or "")
+        prefix = ""
+        if full_name:
+            prefix = f"[{full_name}]: "
         if report_id:
-            return f"[{report_id}] {message}"
+            return f"{prefix}[{report_id}] {message}"
+        if prefix:
+            return f"{prefix}{message}"
         return message
 
     def format(self, record: logging.LogRecord) -> str:
@@ -104,6 +109,8 @@ class _uvm_wrapped_formatter(logging.Formatter):
         clone = logging.makeLogRecord(record.__dict__.copy())
         clone.msg = display_message
         clone.args = ()
+        if self._is_uvm_report_record(record):
+            clone.name = self._source_name(record)
 
         rendered = self._base_formatter.format(clone)
         if self._max_chars <= 0 or len(rendered) <= self._max_chars:
@@ -152,9 +159,10 @@ class uvm_report_server:
         self._policy = uvm_report_policy()
         self._stats = uvm_report_stats()
         self._catcher = uvm_report_catcher("uvm_report_catcher")
-        self._filter = _uvm_report_filter(self)
-        self._attached: list[tuple[Any, bool, logging.Formatter | None]] = []
-        self._attached_keys: set[tuple[str, int]] = set()
+        self._attached: list[tuple[logging.Handler, logging.Formatter | None]] = []
+        self._attached_keys: set[int] = set()
+        self._logger_full_names: dict[int, str] = {}
+        self._quit_count_message_emitted = False
         self._initialized = False
 
     @classmethod
@@ -203,6 +211,7 @@ class uvm_report_server:
 
     def clear_counts(self) -> None:
         self._stats.clear()
+        self._quit_count_message_emitted = False
 
     def initialize(
         self,
@@ -219,24 +228,21 @@ class uvm_report_server:
         self._print_char_len = int(print_char_len)
         self._policy = policy if policy is not None else uvm_report_policy()
         self._stats.clear()
+        self._quit_count_message_emitted = False
+        self._logger_full_names.clear()
         self._catcher = uvm_report_catcher("uvm_report_catcher")
-        self._filter = _uvm_report_filter(self)
-        self._attach_filters()
+        self._attach_formatters()
         self._initialized = True
 
     def shutdown(self) -> None:
-        for target, is_handler, formatter in self._attached:
+        for handler, formatter in self._attached:
             try:
-                target.removeFilter(self._filter)
+                handler.setFormatter(formatter)
             except Exception:
                 pass
-            if is_handler:
-                try:
-                    target.setFormatter(formatter)
-                except Exception:
-                    pass
         self._attached.clear()
         self._attached_keys.clear()
+        self._logger_full_names.clear()
         self._initialized = False
 
     def set_verbosity(self, verbosity: int) -> None:
@@ -259,6 +265,7 @@ class uvm_report_server:
         verbosity: int = 100,
         logger: logging.Logger | None = None,
         stacklevel: int = 2,
+        uvm_full_name: str = "",
     ) -> None:
         sev = self._normalize_severity(severity)
         log = logger if logger is not None else self._root_logger
@@ -268,57 +275,34 @@ class uvm_report_server:
             if int(verbosity) > eff:
                 return
 
+        original_sev = sev
         sev = self._apply_catcher(msg, sev, report_id)
+        if self._should_suppress_for_quit_count(sev):
+            return
+        if sev != original_sev:
+            self._log_severity_change(
+                log,
+                original_sev,
+                sev,
+                report_id,
+                stacklevel + 1,
+                uvm_full_name,
+            )
         level = self._severity_to_level(sev)
 
-        # Count directly at emission time so fail-on-error is deterministic even if
-        # the logging filter chain changes underneath us.
-        if sev == UVM_INFO:
-            self._stats.info_count += 1
-        elif sev == UVM_WARNING:
-            self._stats.warning_count += 1
-        elif sev == UVM_ERROR:
-            self._stats.error_count += 1
-            self._stats.error_quit_count += 1
-        elif sev == UVM_FATAL:
-            self._stats.fatal_count += 1
+        self._count_severity(sev)
 
-        extra = {"_uvm_counted_by_emit": True}
-        if report_id:
-            extra["report_id"] = report_id
+        extra = self._uvm_record_extra(report_id, uvm_full_name)
         try:
             log.log(level, msg, extra=extra, stacklevel=stacklevel)
         except TypeError:
             log.log(level, msg, extra=extra)
 
+        if sev == UVM_ERROR:
+            self._maybe_log_quit_count_reached(log, stacklevel + 1, uvm_full_name)
+
         if sev == UVM_FATAL:
             raise RuntimeError(f"UVM_FATAL: {msg}")
-
-    def process_record(self, record: logging.LogRecord) -> None:
-        if getattr(record, "_uvm_report_processed", False):
-            return
-        setattr(record, "_uvm_report_processed", True)
-
-        if getattr(record, "_uvm_counted_by_emit", False):
-            return
-
-        severity = self._severity_from_level(record.levelno)
-        report_id = str(getattr(record, "report_id", "") or "")
-        message = record.getMessage()
-        new_severity = self._apply_catcher(message, severity, report_id)
-
-        if new_severity != severity:
-            self._set_record_level(record, self._severity_to_level(new_severity))
-
-        if new_severity == UVM_INFO:
-            self._stats.info_count += 1
-        elif new_severity == UVM_WARNING:
-            self._stats.warning_count += 1
-        elif new_severity == UVM_ERROR:
-            self._stats.error_count += 1
-            self._stats.error_quit_count += 1
-        elif new_severity == UVM_FATAL:
-            self._stats.fatal_count += 1
 
     def assert_no_failures(self, context: str = "") -> None:
         msg = self.failure_message(context)
@@ -345,41 +329,51 @@ class uvm_report_server:
             )
         return f"{prefix}Detected report failures at termination ({summary})"
 
-    def log_summary(self, logger: logging.Logger) -> None:
+    def log_summary(self, logger: logging.Logger, uvm_full_name: str = "") -> None:
         stats = self._stats
-        logger.info("")
-        logger.info("--- UVM Report Summary ---")
-        logger.info("")
-        logger.info("** Report counts by severity")
-        logger.info(f"UVM_INFO    : {stats.info_count:4d}")
-        logger.info(f"UVM_WARNING : {stats.warning_count:4d}")
-        logger.info(f"UVM_ERROR   : {stats.error_count:4d}")
-        logger.info(f"UVM_FATAL   : {stats.fatal_count:4d}")
-        logger.info(
-            f"Quit count : {stats.error_quit_count:5d} of {self._policy.max_quit_count:5d} "
-            "(UVM_ERROR)"
+        full_name = str(uvm_full_name).strip() or self._logger_uvm_full_name(logger)
+        self._log_uvm_info(logger, "--- UVM Report Summary ---", full_name)
+        self._log_uvm_info(logger, "** Report counts by severity", full_name)
+        self._log_uvm_info(logger, f"UVM_INFO    : {stats.info_count:4d}", full_name)
+        self._log_uvm_info(
+            logger, f"UVM_WARNING : {stats.warning_count:4d}", full_name
         )
-        logger.info("")
+        self._log_uvm_info(logger, f"UVM_ERROR   : {stats.error_count:4d}", full_name)
+        self._log_uvm_info(logger, f"UVM_FATAL   : {stats.fatal_count:4d}", full_name)
+        max_quit_count = self._max_quit_count_text()
+        self._log_uvm_info(
+            logger,
+            f"Quit count : {stats.error_quit_count:5d} of {max_quit_count} "
+            "(UVM_ERROR)",
+            full_name,
+        )
+
+    def error_quit_count_reached(self) -> bool:
+        return self._stats.error_quit_reached(self._policy)
 
     def log_final_status(
         self,
         logger: logging.Logger,
         context: str = "",
         prior_failure_msg: str | None = None,
+        test_status_label: str | None = None,
+        uvm_full_name: str = "",
     ) -> str | None:
-        """Log DV_TEST_STATUS and return terminal failure message if present."""
+        """Log final test status and return terminal failure message if present."""
         fail_msg = (
             prior_failure_msg
             if prior_failure_msg is not None
             else self.failure_message(context)
         )
+        label = self._final_status_label(test_status_label)
+        full_name = str(uvm_full_name).strip() or self._logger_uvm_full_name(logger)
         if fail_msg is not None:
-            logger.info("DV_TEST_STATUS: FAILED")
+            self._log_uvm_info(logger, f"{label}: FAILED", full_name)
             return fail_msg
-        logger.info("DV_TEST_STATUS: PASSED")
+        self._log_uvm_info(logger, f"{label}: PASSED", full_name)
         return None
 
-    def _attach_filters(self) -> None:
+    def _attach_formatters(self) -> None:
         loggers: list[logging.Logger] = []
 
         loggers.append(logging.getLogger())
@@ -396,21 +390,20 @@ class uvm_report_server:
         for log in loggers:
             self.register_logger(log)
 
-    def register_logger(self, log: logging.Logger | None) -> None:
+    def register_logger(
+        self, log: logging.Logger | None, uvm_full_name: str = ""
+    ) -> None:
         if log is None:
             return
 
-        key = ("logger", id(log))
-        if key not in self._attached_keys:
-            log.addFilter(self._filter)
-            self._attached.append((log, False, None))
-            self._attached_keys.add(key)
+        full_name = str(uvm_full_name).strip()
+        if full_name:
+            self._logger_full_names[id(log)] = full_name
 
         for handler in log.handlers:
-            hkey = ("handler", id(handler))
+            hkey = id(handler)
             if hkey in self._attached_keys:
                 continue
-            handler.addFilter(self._filter)
             original_formatter = handler.formatter
             base_formatter = original_formatter or logging.Formatter("%(message)s")
             if self._print_char_len > 0:
@@ -425,7 +418,7 @@ class uvm_report_server:
                         base_formatter, self._print_char_len
                     )
                 handler.setFormatter(wrapped)
-            self._attached.append((handler, True, original_formatter))
+            self._attached.append((handler, original_formatter))
             self._attached_keys.add(hkey)
 
     def _effective_verbosity(self, logger_name: str) -> int:
@@ -441,6 +434,114 @@ class uvm_report_server:
         report = uvm_report_message(report_id=report_id, message=msg, severity=severity)
         self._catcher.catch(report)
         return self._normalize_severity(report.severity)
+
+    def _count_severity(self, severity: str) -> None:
+        if severity == UVM_INFO:
+            self._stats.info_count += 1
+        elif severity == UVM_WARNING:
+            self._stats.warning_count += 1
+        elif severity == UVM_ERROR:
+            self._stats.error_count += 1
+            self._stats.error_quit_count += 1
+        elif severity == UVM_FATAL:
+            self._stats.fatal_count += 1
+
+    def _should_suppress_for_quit_count(self, severity: str) -> bool:
+        return self._normalize_severity(severity) == UVM_ERROR and (
+            self.error_quit_count_reached()
+        )
+
+    def _maybe_log_quit_count_reached(
+        self,
+        logger: logging.Logger,
+        stacklevel: int = 2,
+        uvm_full_name: str = "",
+    ) -> None:
+        if self._quit_count_message_emitted:
+            return
+        if not self._stats.error_quit_reached(self._policy):
+            return
+
+        self._quit_count_message_emitted = True
+        msg = (
+            f"Quit count reached: {self._stats.error_quit_count} "
+            f"of {self._policy.max_quit_count} (UVM_ERROR)"
+        )
+        extra = self._uvm_record_extra("MAXQUIT", uvm_full_name)
+        try:
+            logger.warning(msg, extra=extra, stacklevel=stacklevel)
+        except TypeError:
+            logger.warning(msg, extra=extra)
+
+    def _log_severity_change(
+        self,
+        logger: logging.Logger,
+        original_severity: str,
+        new_severity: str,
+        report_id: str = "",
+        stacklevel: int = 2,
+        uvm_full_name: str = "",
+    ) -> None:
+        msg = (
+            f"Severity changed from UVM_{original_severity} "
+            f"to UVM_{new_severity}"
+        )
+        if report_id:
+            msg = f"{msg} for report ID '{report_id}'"
+        extra = self._uvm_record_extra("SEVCHG", uvm_full_name)
+        try:
+            logger.info(msg, extra=extra, stacklevel=stacklevel)
+        except TypeError:
+            logger.info(msg, extra=extra)
+
+    def _uvm_record_extra(
+        self, report_id: str = "", uvm_full_name: str = ""
+    ) -> dict[str, str | bool]:
+        extra: dict[str, str | bool] = {"_uvm_report_record": True}
+        if report_id:
+            extra["report_id"] = str(report_id)
+        full_name = str(uvm_full_name).strip()
+        if full_name:
+            extra["uvm_full_name"] = full_name
+        return extra
+
+    def _log_uvm_info(
+        self,
+        logger: logging.Logger,
+        msg: str,
+        uvm_full_name: str = "",
+        stacklevel: int = 2,
+    ) -> None:
+        extra = self._uvm_record_extra(uvm_full_name=uvm_full_name)
+        try:
+            logger.info(msg, extra=extra, stacklevel=stacklevel)
+        except TypeError:
+            logger.info(msg, extra=extra)
+
+    def _logger_uvm_full_name(self, logger: logging.Logger) -> str:
+        registered = self._logger_full_names.get(id(logger))
+        if registered:
+            return registered
+
+        name = str(getattr(logger, "name", "") or "")
+        if name == "uvm":
+            return "uvm"
+        if not name.startswith("uvm."):
+            return ""
+        full_name = name[4:]
+        if full_name and full_name[-1].isdigit():
+            full_name = full_name.rstrip("0123456789")
+        return full_name
+
+    def _max_quit_count_text(self) -> str:
+        if int(self._policy.max_quit_count) == 0:
+            return "UNLIMITED"
+        return f"{self._policy.max_quit_count:5d}"
+
+    def _final_status_label(self, override: str | None = None) -> str:
+        label = self._policy.test_status_label if override is None else override
+        label = str(label).strip()
+        return label if label else "TEST_STATUS"
 
     def _normalize_severity(self, severity: Any) -> str:
         text = str(severity).strip().upper()
@@ -465,16 +566,3 @@ class uvm_report_server:
         if sev == UVM_ERROR:
             return logging.ERROR
         return logging.CRITICAL
-
-    def _severity_from_level(self, level: int) -> str:
-        if level >= logging.CRITICAL:
-            return UVM_FATAL
-        if level >= logging.ERROR:
-            return UVM_ERROR
-        if level >= logging.WARNING:
-            return UVM_WARNING
-        return UVM_INFO
-
-    def _set_record_level(self, record: logging.LogRecord, level: int) -> None:
-        record.levelno = int(level)
-        record.levelname = logging.getLevelName(level)

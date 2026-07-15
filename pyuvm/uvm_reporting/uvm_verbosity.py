@@ -66,9 +66,15 @@ def resolve_uvm_verbosity(inherited: int, cfg: Any | None = None) -> int:
 class uvm_reporter:
     """Centralized UVM-style reporter."""
 
-    def __init__(self, logger: logging.Logger, verbosity: int = UVM_LOW) -> None:
+    def __init__(
+        self,
+        logger: logging.Logger,
+        verbosity: int = UVM_LOW,
+        full_name: str = "",
+    ) -> None:
         self._logger = logger
         self._verbosity = int(verbosity)
+        self._full_name = str(full_name)
         self._local_catcher = uvm_report_catcher("uvm_report_catcher")
         self._sync_with_manager()
 
@@ -87,16 +93,20 @@ class uvm_reporter:
         self._logger = logger
         self._sync_with_manager()
 
+    def set_full_name(self, full_name: str) -> None:
+        self._full_name = str(full_name)
+        self._sync_with_manager()
+
     def _sync_with_manager(self) -> None:
         manager = uvm_report_server.get_or_none()
         if manager is not None:
-            manager.register_logger(self._logger)
+            manager.register_logger(self._logger, self._full_name)
 
     def set_verbosity(self, verbosity: int) -> None:
         self._verbosity = int(verbosity)
         manager = uvm_report_server.get_or_none()
         if manager is not None:
-            manager.register_logger(self._logger)
+            manager.register_logger(self._logger, self._full_name)
             manager.set_verbosity(self._verbosity)
 
     def should_log(self, msg_verbosity: int = UVM_LOW) -> bool:
@@ -174,6 +184,7 @@ class uvm_reporter:
             verbosity=verbosity,
             logger=self._logger,
             stacklevel=3,
+            uvm_full_name=self._full_name,
         )
 
     def warning(self, report_id: str, msg: str) -> None:
@@ -193,7 +204,12 @@ class uvm_reporter:
             return
         self._sync_with_manager()
         manager.emit_uvm(
-            UVM_WARNING, msg, report_id=report_id, logger=self._logger, stacklevel=3
+            UVM_WARNING,
+            msg,
+            report_id=report_id,
+            logger=self._logger,
+            stacklevel=3,
+            uvm_full_name=self._full_name,
         )
 
     def error(self, report_id: str, msg: str) -> None:
@@ -213,7 +229,12 @@ class uvm_reporter:
             return
         self._sync_with_manager()
         manager.emit_uvm(
-            UVM_ERROR, msg, report_id=report_id, logger=self._logger, stacklevel=3
+            UVM_ERROR,
+            msg,
+            report_id=report_id,
+            logger=self._logger,
+            stacklevel=3,
+            uvm_full_name=self._full_name,
         )
 
     def fatal(self, report_id: str, msg: str) -> None:
@@ -233,5 +254,10 @@ class uvm_reporter:
             return
         self._sync_with_manager()
         manager.emit_uvm(
-            UVM_FATAL, msg, report_id=report_id, logger=self._logger, stacklevel=3
+            UVM_FATAL,
+            msg,
+            report_id=report_id,
+            logger=self._logger,
+            stacklevel=3,
+            uvm_full_name=self._full_name,
         )

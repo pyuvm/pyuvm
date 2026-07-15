@@ -4,6 +4,7 @@ from pyuvm._error_classes import UVMConfigItemNotFound, UVMFatalError
 from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_export, uvm_analysis_port
 from pyuvm._s13_uvm_component import uvm_component
 from pyuvm._s14_15_python_sequences import uvm_seq_item_port
+from pyuvm.uvm_reporting.uvm_test_reporting import configure_uvm_test_reporting
 
 # This section and sequences are the crux of pyuvm.
 # The classes here allow us to build classic UVM
@@ -39,6 +40,18 @@ class uvm_test(uvm_component):
     """
     The base class for all tests
     """
+
+    def __init__(self, name, parent=None):
+        super().__init__(name, parent)
+        report_server = self.configure_uvm_reporting()
+        if report_server is not None:
+            self.report_server = report_server
+
+    def configure_uvm_reporting(self):
+        return configure_uvm_test_reporting(self)
+
+    def add_message_demotes(self, catcher):
+        del catcher
 
 
 # 13.3

@@ -28,7 +28,8 @@ class uvm_base_core_report:
         self.logger = getattr(owner, "logger")
         inherited = getattr(parent, "uvm_verbosity", default_verbosity)
         self.verbosity: int = int(inherited)
-        self.uvm_report = uvm_reporter(self.logger, self.verbosity)
+        self.full_name = self._owner_full_name(owner)
+        self.uvm_report = uvm_reporter(self.logger, self.verbosity, self.full_name)
 
     def apply_cfg(self, cfg: Any | None = None) -> int:
         """Resolve effective verbosity with an optional cfg override."""
@@ -45,3 +46,12 @@ class uvm_base_core_report:
     def set_logger(self, logger: Any) -> None:
         self.logger = logger
         self.uvm_report.set_logger(logger)
+
+    def _owner_full_name(self, owner: Any) -> str:
+        get_full_name = getattr(owner, "get_full_name", None)
+        if callable(get_full_name):
+            return str(get_full_name())
+        get_name = getattr(owner, "get_name", None)
+        if callable(get_name):
+            return str(get_name())
+        return ""

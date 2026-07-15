@@ -20,6 +20,7 @@ from pyuvm._utility_classes import (
     uvm_is_match,
 )
 from pyuvm._utils import cocotb_version_info
+from pyuvm.uvm_reporting.uvm_test_reporting import configure_uvm_test_reporting
 
 if cocotb_version_info < (2, 0):
     from cocotb.log import SimColourLogFormatter, SimLogFormatter, SimTimeContextFilter
@@ -437,6 +438,18 @@ class uvm_test(uvm_component):
     """
     The base class for all tests
     """
+
+    def __init__(self, name, parent=None):
+        super().__init__(name, parent)
+        report_server = self.configure_uvm_reporting()
+        if report_server is not None:
+            self.report_server = report_server
+
+    def configure_uvm_reporting(self):
+        return configure_uvm_test_reporting(self)
+
+    def add_message_demotes(self, catcher):
+        del catcher
 
 
 class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
