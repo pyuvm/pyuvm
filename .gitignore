@@ -28,3 +28,8 @@ examples/TinyALU/tinyalu
 .env
 .editorconfig
 scratch/
+.coverage
+.coverage.*
+.coverage_data/
+coverage.xml
+htmlcov/

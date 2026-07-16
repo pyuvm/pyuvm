@@ -1,0 +1,13 @@
+[run]
+branch = true
+parallel = true
+relative_files = true
+source = pyuvm
+
+[paths]
+source =
+    pyuvm/
+    */site-packages/pyuvm/
+
+[report]
+show_missing = true

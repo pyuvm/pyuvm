@@ -26,6 +26,10 @@ inputs:
     description: Space-separated list of make targets to run (e.g. "pytests cocotb_tests", "pytests cocotb_verilog_tests").
     required: false
     default: pytests cocotb_tests
+  coverage:
+    description: Collect coverage of pyuvm ("true" to enable). Requires the coverage package.
+    required: false
+    default: "false"
 
 runs:
   using: composite
@@ -65,4 +69,9 @@ runs:
     - name: Run tests
       shell: bash
       run: |
-        uv run --no-sync make VERILOG_SIM=${{ inputs.verilog-sim }} VHDL_SIM=${{ inputs.vhdl-sim }} ${{ inputs.make-targets }}
+        uv run --no-sync make COVERAGE=${{ inputs.coverage == 'true' && '1' || '' }} VERILOG_SIM=${{ inputs.verilog-sim }} VHDL_SIM=${{ inputs.vhdl-sim }} ${{ inputs.make-targets }}
+
+    - name: Combine coverage and generate report
+      if: inputs.coverage == 'true'
+      shell: bash
+      run: uv run --no-sync make COVERAGE=1 coverage_report
