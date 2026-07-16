@@ -527,17 +527,19 @@ class uvm_mem(uvm_object):
         rc, map_info = self._check_access(rw)
         if not rc:
             return
-        self._read_in_progress = True
-        rw.set_status(uvm_status_e.UVM_IS_OK)
-        # TODO: pre_read callbacks
-        door = rw.get_door()
-        if door == uvm_door_e.UVM_BACKDOOR:
-            await self._do_read_backdoor(rw, map_info)
-        elif door == uvm_door_e.UVM_FRONTDOOR:
-            await self._do_read_frontdoor(rw, map_info)
-        # TODO: post_read callbacks
-        # TODO: report
-        self._read_in_progress = False
+        try:
+            self._read_in_progress = True
+            rw.set_status(uvm_status_e.UVM_IS_OK)
+            # TODO: pre_read callbacks
+            door = rw.get_door()
+            if door == uvm_door_e.UVM_BACKDOOR:
+                await self._do_read_backdoor(rw, map_info)
+            elif door == uvm_door_e.UVM_FRONTDOOR:
+                await self._do_read_frontdoor(rw, map_info)
+            # TODO: post_read callbacks
+            # TODO: report
+       finally:
+            self._read_in_progress = False
 
     async def _do_read_backdoor(
         self, rw: uvm_reg_item, map_info: uvm_reg_map_info
