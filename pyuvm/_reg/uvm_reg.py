@@ -600,8 +600,11 @@ class uvm_reg(uvm_object):
     ) -> uvm_status_e:
         if not self.needs_update():
             return uvm_status_e.UVM_IS_OK
+        value = 0
+        for field in self._fields:
+            value |= field.get_update_value() << field.get_lsb_pos()
         return await self.write(
-            self.get(fname, lineno),
+            value,
             path,
             map,
             parent,
