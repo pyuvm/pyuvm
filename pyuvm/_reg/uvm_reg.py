@@ -19,6 +19,7 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_status_e,
 )
 from pyuvm._s05_base_classes import uvm_object
+from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
 
 if TYPE_CHECKING:
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
@@ -38,6 +39,20 @@ if TYPE_CHECKING:
 
 __all__ = ["uvm_reg"]
 logger = logging.getLogger("RegModel")
+
+
+def _report_warning(obj: uvm_object, report_id: str, msg: str) -> None:
+    if get_sv_uvm_style_reporting_enabled():
+        obj.uvm_report.warning(report_id, msg)
+    else:
+        logger.warning(msg)
+
+
+def _report_error(obj: uvm_object, report_id: str, msg: str) -> None:
+    if get_sv_uvm_style_reporting_enabled():
+        obj.uvm_report.error(report_id, msg)
+    else:
+        logger.error(msg)
 
 
 class uvm_reg(uvm_object):
@@ -318,7 +333,16 @@ class uvm_reg(uvm_object):
         return self._fields
 
     def get_field_by_name(self, name: str) -> uvm_reg_field:
-        raise NotImplementedError
+        for field in self._fields:
+            if field.get_name() == name:
+                return field
+        _report_warning(
+            self,
+            "REG_FIELD_LOOKUP",
+            f"Unable to locate field {repr(name)} in register "
+            f"{repr(self.get_full_name())}",
+        )
+        return None
 
     def _get_fields_access(self, map: uvm_reg_map) -> str:
         readable = False
@@ -339,8 +363,14 @@ class uvm_reg(uvm_object):
             return "RO"
         return "RW"
 
-    def get_offset(self, map: uvm_reg_map) -> uvm_reg_addr_t:
-        raise NotImplementedError
+    def get_offset(self, map: uvm_reg_map = None) -> uvm_reg_addr_t:
+        local_map = self.get_local_map(map)
+        if local_map is None:
+            return -1
+        map_info = local_map.get_reg_map_info(self)
+        if map_info is None:
+            return -1
+        return map_info.offset
 
     def get_address(self, map: uvm_reg_map = None) -> uvm_reg_addr_t:
         # TODO: remove backward compatibility
@@ -394,8 +424,11 @@ class uvm_reg(uvm_object):
             value |= field.get_mirrored_value() << field.get_lsb_pos()
         return value
 
-    def needs_update() -> bool:
-        raise NotImplementedError
+    def get_mask(self) -> uvm_reg_data_t:
+        return (1 << self.get_n_bits()) - 1
+
+    def needs_update(self) -> bool:
+        return any(field.needs_update() for field in self._fields)
 
     def reset(self, kind: str = "HARD") -> None:
         for field in self._fields:
@@ -412,13 +445,22 @@ class uvm_reg(uvm_object):
         self._set_is_busy(False)
 
     def get_reset(self, kind: str = "HARD") -> int:
-        raise NotImplementedError
+        value = 0
+        for field in self._fields:
+            value |= field.get_reset(kind) << field.get_lsb_pos()
+        return value & self.get_mask()
 
     def has_reset(self, kind: str = "HARD", delete: bool = False) -> bool:
-        raise NotImplementedError
+        has_reset = False
+        for field in self._fields:
+            has_reset |= field.has_reset(kind, delete)
+        return has_reset
 
     def set_reset(self, value: uvm_reg_data_t, kind: str = "HARD") -> None:
-        raise NotImplementedError
+        for field in self._fields:
+            field_mask = (1 << field.get_n_bits()) - 1
+            field_value = (value >> field.get_lsb_pos()) & field_mask
+            field.set_reset(field_value, kind)
 
     async def write(
         self,
@@ -503,7 +545,22 @@ class uvm_reg(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        async with self._atomic:
+            rw = uvm_reg_item("poke_item")
+            rw.set_element(self)
+            rw.set_element_kind(uvm_elem_kind_e.UVM_REG)
+            rw.set_kind(uvm_access_e.UVM_WRITE)
+            rw.set_value(value & self.get_mask())
+            rw.set_door(uvm_door_e.UVM_BACKDOOR)
+            rw.set_parent_sequence(parent)
+            rw.set_extension(extension)
+            rw.set_bd_kind(kind)
+            rw.set_fname(fname)
+            rw.set_line(lineno)
+            await self.do_write(rw)
+            if rw.get_status() != uvm_status_e.UVM_NOT_OK:
+                self.do_predict(rw, uvm_predict_e.UVM_PREDICT_DIRECT)
+        return rw.get_status()
 
     async def peek(
         self,
@@ -513,7 +570,23 @@ class uvm_reg(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> tuple[uvm_status_e, uvm_reg_data_t]:
-        raise NotImplementedError
+        async with self._atomic:
+            rw = uvm_reg_item("peek_item")
+            rw.set_element(self)
+            rw.set_element_kind(uvm_elem_kind_e.UVM_REG)
+            rw.set_kind(uvm_access_e.UVM_READ)
+            rw.set_value(0)
+            rw.set_door(uvm_door_e.UVM_BACKDOOR)
+            rw.set_parent_sequence(parent)
+            rw.set_extension(extension)
+            rw.set_bd_kind(kind)
+            rw.set_fname(fname)
+            rw.set_line(lineno)
+            await self.do_read(rw)
+            rw.set_value(rw.get_value() & self.get_mask())
+            if rw.get_status() != uvm_status_e.UVM_NOT_OK:
+                self.do_predict(rw, uvm_predict_e.UVM_PREDICT_DIRECT)
+        return rw.get_status(), rw.get_value()
 
     async def update(
         self,
@@ -525,7 +598,18 @@ class uvm_reg(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        if not self.needs_update():
+            return uvm_status_e.UVM_IS_OK
+        return await self.write(
+            self.get(fname, lineno),
+            path,
+            map,
+            parent,
+            prior,
+            extension,
+            fname,
+            lineno,
+        )
 
     async def mirror(
         self,
@@ -538,7 +622,27 @@ class uvm_reg(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        expected = self.get_mirrored_value(fname, lineno)
+        status, value = await self.read(path, map, parent, prior, extension, fname, lineno)
+        if status == uvm_status_e.UVM_NOT_OK:
+            return status
+        if check == uvm_check_e.UVM_CHECK:
+            self.do_check(expected, value, map)
+        predict_path = path
+        if predict_path == uvm_door_e.UVM_DEFAULT_DOOR:
+            if self._parent is not None:
+                predict_path = self._parent.get_default_door()
+            else:
+                predict_path = uvm_door_e.UVM_FRONTDOOR
+        self.predict(
+            value,
+            kind=uvm_predict_e.UVM_PREDICT_READ,
+            path=predict_path,
+            map=map,
+            fname=fname,
+            lineno=lineno,
+        )
+        return status
 
     def predict(
         self,
@@ -580,6 +684,7 @@ class uvm_reg(uvm_object):
         rw = uvm_reg_item("read_item")
         rw.set_element(self)
         rw.set_element_kind(uvm_elem_kind_e.UVM_REG)
+        rw.set_kind(uvm_access_e.UVM_READ)
         rw.set_value(0)
         rw.set_door(path)
         rw.set_map(map)
@@ -617,7 +722,22 @@ class uvm_reg(uvm_object):
     def do_check(
         self, expected: uvm_reg_data_t, actual: uvm_reg_data_t, map: uvm_reg_map
     ) -> bool:
-        raise NotImplementedError
+        valid_bits_mask = 0
+        for field in self.get_fields():
+            if field.get_compare() == uvm_check_e.UVM_CHECK and not field.is_volatile():
+                field_mask = (1 << field.get_n_bits()) - 1
+                valid_bits_mask |= field_mask << field.get_lsb_pos()
+        valid_bits_mask &= self.get_mask()
+        if ((expected ^ actual) & valid_bits_mask) == 0:
+            return True
+        _report_error(
+            self,
+            "REG_COMPARE",
+            f"Register {repr(self.get_full_name())} value read from DUT "
+            f"(0x{actual & valid_bits_mask:X}) does not match mirrored value "
+            f"(0x{expected & valid_bits_mask:X})",
+        )
+        return False
 
     async def do_write(self, rw: uvm_reg_item) -> None:
         self.fname = rw.get_fname()
@@ -665,8 +785,8 @@ class uvm_reg(uvm_object):
         else:
             await local_map.do_write(rw)
         self._set_is_busy(False)
-        if system_map.get_auto_predict():
-            if rw.get_status() != uvm_status_e.UVM_NOT_OK:
+        if system_map.get_auto_predict() and rw.get_status() == uvm_status_e.UVM_IS_OK:
+            if self._cover_on:
                 self.sample(rw.get_value(), -1, False, rw.get_map())
                 self._parent._sample(map_info.offset, False, rw.get_map())
             status = rw.get_status()
@@ -760,18 +880,38 @@ class uvm_reg(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> None:
-        raise NotImplementedError
+        self._fname = fname
+        self._lineno = lineno
+        local_map = self.get_local_map(map)
+        if local_map is None:
+            return
+        map_info = local_map.get_reg_map_info(self)
+        if map_info is not None:
+            map_info.frontdoor = ftdr
 
     def get_frontdoor(self, map: uvm_reg_map = None) -> uvm_reg_frontdoor:
-        raise NotImplementedError
+        local_map = self.get_local_map(map)
+        if local_map is None:
+            return None
+        map_info = local_map.get_reg_map_info(self)
+        if map_info is None:
+            return None
+        return map_info.frontdoor
 
     def set_backdoor(
         self, bkdr: uvm_reg_backdoor, fname: str = "", lineno: int = 0
     ) -> None:
-        raise NotImplementedError
+        self._fname = fname
+        self._lineno = lineno
+        if bkdr is not None:
+            bkdr.fname = fname
+            bkdr.lineno = lineno
+        self._backdoor = bkdr
 
     def get_backdoor(self, inherited: bool = True) -> uvm_reg_backdoor:
-        raise NotImplementedError
+        if self._backdoor is None and inherited and self._parent is not None:
+            self._backdoor = self._parent.get_backdoor()
+        return self._backdoor
 
     def clear_hdl_path(self, kind: str = "RTL") -> None:
         raise NotImplementedError

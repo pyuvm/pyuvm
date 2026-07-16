@@ -109,6 +109,7 @@ class uvm_reg_field(uvm_object):
         self._lsb_pos = lsb_pos
         self._access = access
         self._volatile = volatile
+        self._check = uvm_check_e.UVM_NO_CHECK if volatile else uvm_check_e.UVM_CHECK
 
         # TODO: Remove backward compatibility check
         if has_reset is None:
@@ -587,11 +588,11 @@ class uvm_reg_field(uvm_object):
             #                           rw.get_door(), rw.get_map())
             field_value &= (1 << self.get_n_bits()) - 1
         elif kind == uvm_predict_e.UVM_PREDICT_DIRECT:
-            if self.parent.is_busy():
+            if self._parent.is_busy():
                 logger.warning(
                     "Trying to predict value of field "
                     f"{repr(self.get_name())} while register "
-                    f"{repr(self.parent.get_name())} is being "
+                    f"{repr(self._parent.get_name())} is being "
                     "accessed."
                 )
                 rw.set_status(uvm_status_e.UVM_NOT_OK)

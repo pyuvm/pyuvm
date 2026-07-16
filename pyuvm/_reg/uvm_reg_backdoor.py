@@ -37,7 +37,7 @@ class uvm_reg_backdoor(uvm_object):
         raise NotImplementedError
 
     def is_auto_updated(self, field: uvm_reg_field) -> bool:
-        raise NotImplementedError
+        return False
 
     async def wait_for_change(element: uvm_object) -> None:
         raise NotImplementedError

@@ -61,6 +61,7 @@ class uvm_reg_block(uvm_object):
         self._lock_model_complete: Event = Event()
         self._default_hdl_path = "RTL"
         self._hdl_paths_pool: dict[str, list[str]] = dict()
+        self._backdoor: uvm_reg_backdoor = None
 
     def configure(self, parent: uvm_reg_block = None, hdl_path: str = "") -> None:
         self._parent = parent
@@ -368,7 +369,7 @@ class uvm_reg_block(uvm_object):
         raise NotImplementedError
 
     def _sample(self, addr: uvm_reg_addr_t, is_read: bool, map: uvm_reg_map) -> None:
-        raise NotImplementedError
+        self.sample(addr, is_read, map)
 
     def get_default_door(self) -> uvm_door_e:
         if self.default_path is not uvm_door_e.UVM_DEFAULT_DOOR:
@@ -479,12 +480,19 @@ class uvm_reg_block(uvm_object):
         raise NotImplementedError
 
     def get_backdoor(self, inherited: bool = True) -> uvm_reg_backdoor:
-        raise NotImplementedError
+        if self._backdoor is not None or not inherited:
+            return self._backdoor
+        if self._parent is not None:
+            return self._parent.get_backdoor()
+        return None
 
     def set_backdoor(
         self, bkdr: uvm_reg_backdoor, fname: str = "", lineno: int = 0
     ) -> None:
-        raise NotImplementedError
+        if bkdr is not None:
+            bkdr.fname = fname
+            bkdr.lineno = lineno
+        self._backdoor = bkdr
 
     def clear_hdl_path(self, kind: str = "RTL") -> None:
         raise NotImplementedError
