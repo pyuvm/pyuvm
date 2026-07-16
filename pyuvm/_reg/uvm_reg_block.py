@@ -58,7 +58,8 @@ class uvm_reg_block(uvm_object):
         self._maps: list[uvm_reg_map] = list()
         self._locked: bool = False
         self._default_map: uvm_reg_map = None
-        self._lock_model_complete: Event = Event()
+        # Python 3.9 binds asyncio.Event to the current loop at construction.
+        self._lock_model_complete: Event | None = None
         self._default_hdl_path = "RTL"
         self._hdl_paths_pool: dict[str, list[str]] = dict()
         self._backdoor: uvm_reg_backdoor = None
@@ -184,12 +185,17 @@ class uvm_reg_block(uvm_object):
                         "models have to be unique"
                     )
             # NOTE: Trigger event
-            self._lock_model_complete.set()
+            if self._lock_model_complete is not None:
+                self._lock_model_complete.set()
 
     def unlock_model(self) -> None:
         raise NotImplementedError
 
     async def wait_for_lock(self) -> None:
+        if self.is_locked():
+            return
+        if self._lock_model_complete is None:
+            self._lock_model_complete = Event()
         await self._lock_model_complete.wait()
         self._lock_model_complete.clear()
 

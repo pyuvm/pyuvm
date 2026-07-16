@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from pyuvm import (
@@ -61,6 +62,18 @@ def test_block_map_construction_default_map_and_lock_model():
     assert control.get_default_map() is alias_map
     assert control.get_address() == 0x2004
     assert control.get_address(main_map) == 0x1010
+
+
+def test_block_construction_after_asyncio_run_clears_event_loop():
+    async def noop():
+        return None
+
+    asyncio.run(noop())
+
+    block = uvm_reg_block("reg_model_after_asyncio_run")
+    block.lock_model()
+
+    asyncio.run(block.wait_for_lock())
 
 
 def test_map_add_reg_info_and_address_lookup_after_lock():
