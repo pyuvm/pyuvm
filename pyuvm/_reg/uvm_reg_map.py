@@ -556,87 +556,129 @@ class uvm_reg_map(uvm_object):
     def get_check_on_read(self) -> bool:
         return self._check_on_read
 
-    async def do_bus_write(
-        self, rw: uvm_reg_item, sequencer: uvm_sequencer_base, adapter: uvm_reg_adapter
-    ) -> None:
+    def _get_bus_access_config(
+        self, rw: uvm_reg_item
+    ) -> tuple[uvm_sequencer_base, uvm_reg_adapter]:
+        system_map = self.get_root_map()
+        adapter = system_map.get_adapter()
+        sequencer = system_map.get_sequencer()
+        element = rw.get_element()
+        element_name = (
+            element.get_full_name()
+            if element is not None and hasattr(element, "get_full_name")
+            else rw.get_name()
+        )
+        map_name = system_map.get_full_name()
+        if adapter is None:
+            raise UVMFatalError(
+                f"Register map {repr(map_name)} has no adapter configured for "
+                f"frontdoor access to {repr(element_name)}. Call "
+                "set_sequencer(sequencer, adapter) before using register "
+                "frontdoor reads or writes."
+            )
+        if sequencer is None:
+            raise UVMFatalError(
+                f"Register map {repr(map_name)} has no sequencer configured for "
+                f"frontdoor access to {repr(element_name)}. Call "
+                "set_sequencer(sequencer, adapter) before using register "
+                "frontdoor reads or writes."
+            )
+        return sequencer, adapter
+
+    def _get_bus_sequence(
+        self, rw: uvm_reg_item, adapter: uvm_reg_adapter
+    ) -> uvm_sequence:
+        sequence = adapter.parent_sequence
+        if sequence is None:
+            sequence = uvm_sequence("base_seq")
+        if not hasattr(sequence, "start_item") or not hasattr(
+            sequence, "finish_item"
+        ):
+            raise UVMFatalError(
+                f"Adapter {repr(adapter.get_full_name())} parent_sequence must "
+                "provide start_item() and finish_item()."
+            )
+        rw.set_parent_sequence(sequence)
+        return sequence
+
+    def _make_bus_op(
+        self,
+        rw: uvm_reg_item,
+        access_kind: uvm_access_e,
+        adapter: uvm_reg_adapter,
+    ) -> uvm_reg_bus_op:
         reg = rw.get_element()
-        bus_width, addrs, _ = self._get_physical_addresses_to_map(
+        bus_width, addrs, byte_offset = self._get_physical_addresses_to_map(
             self._regs_info[reg].offset, 0x0, reg.get_n_bytes(), None, None
         )
         bus_op = uvm_reg_bus_op()
-        bus_op.kind = uvm_access_e.UVM_WRITE
+        bus_op.kind = access_kind
         bus_op.addr = addrs[0]
         bus_op.data = rw.get_value()
-        bus_op.n_bits = bus_width * 8
-        # TODO: Support byte enable
-        bus_op.byte_en = (1 << bus_width) - 1
+        bus_op.n_bits = min(reg.get_n_bits(), bus_width * 8)
+        bus_op.status = rw.get_status()
+        if adapter.supports_byte_enable:
+            byte_offset = int(byte_offset)
+            available_bytes = max(bus_width - byte_offset, 0)
+            enabled_bytes = min(ceildiv(bus_op.n_bits, 8), available_bytes)
+            bus_op.byte_en = ((1 << enabled_bytes) - 1) << byte_offset
+        else:
+            bus_op.byte_en = -1
+        return bus_op
+
+    async def _send_bus_op(
+        self,
+        rw: uvm_reg_item,
+        bus_op: uvm_reg_bus_op,
+        sequencer: uvm_sequencer_base,
+        adapter: uvm_reg_adapter,
+    ) -> None:
+        sequence = self._get_bus_sequence(rw, adapter)
         adapter.set_item(rw)
-        bus_seq_item = adapter.reg2bus(bus_op)
-        adapter.set_item(None)
-        sequence: uvm_sequence = adapter.parent_sequence
+        try:
+            bus_seq_item = adapter.reg2bus(bus_op)
+        finally:
+            adapter.set_item(None)
+        if bus_seq_item is None:
+            raise UVMFatalError(
+                f"Adapter {repr(adapter.get_full_name())} reg2bus() returned None"
+            )
+
         sequence.sequencer = sequencer
         await sequence.start_item(bus_seq_item)
         await sequence.finish_item(bus_seq_item)
-        adapter.bus2reg(bus_seq_item, bus_op)
+
+        bus_rsp_item = bus_seq_item
+        if adapter.provides_responses:
+            bus_rsp_item = await sequence.get_response()
+            if bus_rsp_item is None:
+                raise UVMFatalError(
+                    f"Adapter {repr(adapter.get_full_name())} expects bus "
+                    "responses, but the sequencer returned None"
+                )
+
+        adapter.bus2reg(bus_rsp_item, bus_op)
         rw.set_value(bus_op.data)
         rw.set_status(bus_op.status)
+
+    async def do_bus_write(
+        self, rw: uvm_reg_item, sequencer: uvm_sequencer_base, adapter: uvm_reg_adapter
+    ) -> None:
+        bus_op = self._make_bus_op(rw, uvm_access_e.UVM_WRITE, adapter)
+        await self._send_bus_op(rw, bus_op, sequencer, adapter)
 
     async def do_bus_read(
         self, rw: uvm_reg_item, sequencer: uvm_sequencer_base, adapter: uvm_reg_adapter
     ) -> None:
-        reg = rw.get_element()
-        bus_width, addrs, _ = self._get_physical_addresses_to_map(
-            self._regs_info[reg].offset, 0x0, reg.get_n_bytes(), None, None
-        )
-        bus_op = uvm_reg_bus_op()
-        bus_op.kind = uvm_access_e.UVM_READ
-        bus_op.addr = addrs[0]
-        bus_op.data = rw.get_value()
-        bus_op.n_bits = bus_width * 8
-        bus_op.byte_en = (1 << bus_width) - 1
-        adapter.set_item(rw)
-        bus_seq_item = adapter.reg2bus(bus_op)
-        adapter.set_item(None)
-        sequence: uvm_sequence = adapter.parent_sequence
-        sequence.sequencer = sequencer
-        await sequence.start_item(bus_seq_item)
-        await sequence.finish_item(bus_seq_item)
-        adapter.bus2reg(bus_seq_item, bus_op)
-        rw.set_value(bus_op.data)
-        rw.set_status(bus_op.status)
+        bus_op = self._make_bus_op(rw, uvm_access_e.UVM_READ, adapter)
+        await self._send_bus_op(rw, bus_op, sequencer, adapter)
 
     async def do_write(self, rw: uvm_reg_item) -> None:
-        system_map = self.get_root_map()
-        adapter = system_map.get_adapter()
-        sequencer = system_map.get_sequencer()
-        # TODO: See official UVM implementation for special cases
-        if adapter and adapter.parent_sequence:
-            rw.set_parent_sequence(adapter.parent_sequence)
-        else:
-            base_seq = uvm_sequence("base_seq")
-            rw.set_parent_sequence(base_seq)
-            adapter.parent_sequence = base_seq
-        # if not rw.get_parent_sequence():
-        #     raise NotImplementedError
-        if not adapter:
-            raise NotImplementedError
+        sequencer, adapter = self._get_bus_access_config(rw)
         await self.do_bus_write(rw, sequencer, adapter)
 
     async def do_read(self, rw: uvm_reg_item) -> None:
-        system_map = self.get_root_map()
-        adapter = system_map.get_adapter()
-        sequencer = system_map.get_sequencer()
-        # TODO: See official UVM implementation for special cases
-        if adapter and adapter.parent_sequence:
-            rw.set_parent_sequence(adapter.parent_sequence)
-        else:
-            base_seq = uvm_sequence("base_seq")
-            rw.set_parent_sequence(base_seq)
-            adapter.parent_sequence = base_seq
-        # if not rw.get_parent_sequence():
-        #     raise NotImplementedError
-        if not adapter:
-            raise NotImplementedError
+        sequencer, adapter = self._get_bus_access_config(rw)
         await self.do_bus_read(rw, sequencer, adapter)
 
     def _get_bus_info(self, rw: uvm_reg_item) -> tuple[uvm_reg_map_info, int, int, int]:

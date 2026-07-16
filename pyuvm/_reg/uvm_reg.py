@@ -493,6 +493,7 @@ class uvm_reg(uvm_object):
             self.set(value)
             rw = uvm_reg_item("write_item")
             rw.set_element(self)
+            rw.set_element_kind(uvm_elem_kind_e.UVM_REG)
             rw.set_kind(uvm_access_e.UVM_WRITE)
             rw.set_value(value)
             rw.set_door(path)
@@ -840,15 +841,9 @@ class uvm_reg(uvm_object):
         else:  # Built-in frontdoor
             await local_map.do_read(rw)
         self._set_is_busy(False)
-        if system_map.get_auto_predict():
-            if (
-                local_map.get_check_on_read()
-                and rw.get_status() != uvm_status_e.UVM_NOT_OK
-            ):
+        if system_map.get_auto_predict() and rw.get_status() == uvm_status_e.UVM_IS_OK:
+            if local_map.get_check_on_read():
                 self.do_check(exp_value, rw.get_value(), system_map)
-            if rw.get_status() != uvm_status_e.UVM_NOT_OK:
-                # TODO: sample
-                pass
             status = rw.get_status()
             self.do_predict(rw, uvm_predict_e.UVM_PREDICT_READ)
             rw.set_status(status)

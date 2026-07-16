@@ -12,10 +12,19 @@ __all__ = ["uvm_reg_adapter", "uvm_reg_tlm_adapter"]
 
 class uvm_reg_adapter(uvm_object):
     def __init__(self, name: str = ""):
+        super().__init__(name)
         self.supports_byte_enable: bool = False
-        self.provides_response: bool = False
+        self.provides_responses: bool = False
         self.parent_sequence: uvm_sequence_base = None
         self._item: uvm_reg_item = None
+
+    @property
+    def provides_response(self) -> bool:
+        return self.provides_responses
+
+    @provides_response.setter
+    def provides_response(self, value: bool) -> None:
+        self.provides_responses = value
 
     def get_item(self) -> uvm_reg_item:
         return self._item
