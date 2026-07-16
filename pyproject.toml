@@ -43,6 +43,7 @@ dev = [
 ]
 tests = [
     "pytest",
+    "coverage",
 ]
 docs = [
     "cocotb>=2.0.1",

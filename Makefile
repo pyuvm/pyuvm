@@ -1,12 +1,24 @@
 VERILOG_SIM ?= icarus
 VHDL_SIM ?= ghdl
 
-.PHONY: tests pytests cocotb_tests cocotb_verilog_tests cocotb_vhdl_tests docs
+# Opt into coverage collection by setting COVERAGE=1.
+COVERAGE ?=
+ifeq ($(COVERAGE),1)
+  export COVERAGE := 1
+  export COCOTB_USER_COVERAGE := 1
+  export COVERAGE_RCFILE := $(abspath .coveragerc)
+  export COVERAGE_FILE := $(abspath .coverage_data/.coverage)
+  PYTEST := coverage run --rcfile=$(COVERAGE_RCFILE) -m pytest
+else
+  PYTEST := pytest
+endif
+
+.PHONY: tests pytests cocotb_tests cocotb_verilog_tests cocotb_vhdl_tests docs coverage-report
 
 tests: pytests cocotb_tests
 
 pytests:
-	pytest tests/pytests
+	$(PYTEST) tests/pytests
 
 cocotb_tests: cocotb_verilog_tests cocotb_vhdl_tests
 
@@ -32,3 +44,8 @@ cocotb_vhdl_tests:
 
 docs:
 	uv run --group docs sphinx-build -b html docs docs/_build/html
+
+coverage_report:
+	coverage combine
+	coverage xml
+	coverage report

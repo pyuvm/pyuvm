@@ -54,6 +54,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
+      with:
+        # GitHub PR's create a merge commit, and Actions are run on that commit.
+        # Codecov's uploader needs the previous commit (tip of PR branch) to associate coverage correctly.
+        # A fetch depth of 2 provides enough information without fetching the entire history.
+        fetch-depth: 2
 
     - uses: ./.github/actions/test-pyuvm
       with:
@@ -61,6 +66,17 @@ jobs:
         cocotb-version: ${{matrix.cocotb-version}}
         vhdl-sim: ${{matrix.vhdl-sim}}
         pyuvm-package-source: "."
+        coverage: "true"
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v7.0.0
+      with:
+        disable_search: true
+        plugins: noop
+        files: coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
+        verbose: true
+        fail_ci_if_error: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
