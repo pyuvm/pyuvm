@@ -22,8 +22,27 @@ from pyuvm import (
 )
 
 
+def _purge_uvm_logger_handlers():
+    """Remove handlers leaked onto ``uvm`` child loggers by prior tests.
+
+    ``uvm_report_object`` derives its logger name from ``id(self)`` (see
+    ``get_initial_logger_name``), and Python caches loggers and their handlers
+    globally forever. When CPython reuses a freed object's ``id()``, a later
+    object can retrieve a cached logger still carrying handlers a previous test
+    added via ``add_logging_handler`` and never removed. Clearing them between
+    tests keeps these order-dependent leaks from crossing test boundaries.
+    """
+    manager = logging.root.manager
+    for name, logger in list(manager.loggerDict.items()):
+        if name == "uvm" or name.startswith("uvm."):
+            if isinstance(logger, logging.Logger):
+                for handler in list(logger.handlers):
+                    logger.removeHandler(handler)
+
+
 @pytest.fixture(autouse=True)
 def clean_report_server():
+    _purge_uvm_logger_handlers()
     set_sv_uvm_style_reporting_enabled(False)
     manager = uvm_report_server.get_or_none()
     if manager is not None:
@@ -37,6 +56,7 @@ def clean_report_server():
         manager.shutdown()
         manager.clear_counts()
         manager.catcher.clear()
+    _purge_uvm_logger_handlers()
 
 
 @pytest.fixture()
@@ -315,7 +335,7 @@ def test_sv_uvm_style_report_object_does_not_create_default_stream_handler():
     assert report_object.logger.propagate
     assert report_object._streaming_handler is None
     assert not any(
-        isinstance(handler, logging.StreamHandler)
+        getattr(handler, "_pyuvm_object_default_handler", False)
         for handler in report_object.logger.handlers
     )
 
