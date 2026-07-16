@@ -627,7 +627,9 @@ class uvm_reg(uvm_object):
         lineno: int = 0,
     ) -> uvm_status_e:
         expected = self.get_mirrored_value(fname, lineno)
-        status, value = await self.read(path, map, parent, prior, extension, fname, lineno)
+        status, value = await self.read(
+            path, map, parent, prior, extension, fname, lineno
+        )
         if status == uvm_status_e.UVM_NOT_OK:
             return status
         if check == uvm_check_e.UVM_CHECK:

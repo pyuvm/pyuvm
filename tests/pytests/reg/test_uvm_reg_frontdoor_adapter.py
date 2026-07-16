@@ -164,9 +164,7 @@ def test_frontdoor_write_and_read_through_adapter():
     write_status = asyncio.run(
         reg.write(0x1234_5678, uvm_door_e.UVM_FRONTDOOR, reg_map)
     )
-    read_status, read_data = asyncio.run(
-        reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map)
-    )
+    read_status, read_data = asyncio.run(reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert write_status == uvm_status_e.UVM_IS_OK
     assert read_status == uvm_status_e.UVM_IS_OK

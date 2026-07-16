@@ -99,9 +99,7 @@ def build_reg(reg=None):
 def build_policy_field(access, reset=0xA):
     idx = next(_policy_ids)
     block = uvm_reg_block(f"policy_block_{idx}")
-    reg_map = block.create_map(
-        "csr", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True
-    )
+    reg_map = block.create_map("csr", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True)
     reg = PolicyReg(f"policy_reg_{idx}", access, reset)
     reg.configure(block)
     reg_map.add_reg(reg, 0, "RW")
@@ -113,9 +111,7 @@ def build_policy_field(access, reset=0xA):
 def build_spy_policy_reg(access, reset=0xA):
     idx = next(_policy_ids)
     block = uvm_reg_block(f"policy_block_{idx}")
-    reg_map = block.create_map(
-        "csr", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True
-    )
+    reg_map = block.create_map("csr", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True)
     reg = SpyPolicyReg(f"policy_reg_{idx}", access, reset)
     reg.configure(block)
     reg_map.add_reg(reg, 0, "RW")

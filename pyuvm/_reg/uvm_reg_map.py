@@ -591,9 +591,7 @@ class uvm_reg_map(uvm_object):
         sequence = adapter.parent_sequence
         if sequence is None:
             sequence = uvm_sequence("base_seq")
-        if not hasattr(sequence, "start_item") or not hasattr(
-            sequence, "finish_item"
-        ):
+        if not hasattr(sequence, "start_item") or not hasattr(sequence, "finish_item"):
             raise UVMFatalError(
                 f"Adapter {repr(adapter.get_full_name())} parent_sequence must "
                 "provide start_item() and finish_item()."
