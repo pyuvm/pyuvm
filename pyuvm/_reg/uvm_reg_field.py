@@ -7,9 +7,11 @@ from typing import TYPE_CHECKING, ClassVar
 from pyuvm._reg.uvm_reg_item import uvm_reg_item
 from pyuvm._reg.uvm_reg_map import uvm_reg_map
 from pyuvm._reg.uvm_reg_model import (
+    uvm_access_e,
     uvm_check_e,
     uvm_coverage_model_e,
     uvm_door_e,
+    uvm_elem_kind_e,
     uvm_predict_e,
     uvm_status_e,
 )
@@ -326,7 +328,12 @@ class uvm_reg_field(uvm_object):
         # Define an all 1 values
         _mask = (1 << self._size) - 1
 
-        # TODO: check if value given is bigger than the size of field
+        if value >> self._size:
+            logger.warning(
+                f"Specified value (0x{value:X}) greater than field "
+                f"{repr(self.get_name())} size ({self._size} bits)"
+            )
+            value &= _mask
 
         # Ideally the set value should be checked against the parent
         # register being accessed.
@@ -356,10 +363,11 @@ class uvm_reg_field(uvm_object):
         elif access == "W0T":
             self._desired = self._desired ^ (~value & _mask)
         elif access in ("W1", "WO1"):
-            if self._has_been_writ is False:
+            if self._written is False:
                 self._desired = value
         else:
             self._desired = value
+        self.value = self._desired
 
     def get(self, fname: str = "", lineno: int = 0) -> uvm_reg_data_t:
         self._fname = fname
@@ -407,6 +415,86 @@ class uvm_reg_field(uvm_object):
             return False
         return (self._desired != self._mirrored) | self._volatile
 
+    def get_mask(self) -> uvm_reg_data_t:
+        return (1 << self.get_n_bits()) - 1
+
+    def get_register_mask(self) -> uvm_reg_data_t:
+        return self.get_mask() << self.get_lsb_pos()
+
+    def extract_from_register(self, value: uvm_reg_data_t) -> uvm_reg_data_t:
+        return (value >> self.get_lsb_pos()) & self.get_mask()
+
+    def insert_into_register(
+        self, reg_value: uvm_reg_data_t, field_value: uvm_reg_data_t
+    ) -> uvm_reg_data_t:
+        register_mask = self.get_register_mask()
+        field_bits = (field_value & self.get_mask()) << self.get_lsb_pos()
+        return (reg_value & ~register_mask) | field_bits
+
+    def _get_parent_write_value(
+        self, value: uvm_reg_data_t, map: uvm_reg_map = None
+    ) -> uvm_reg_data_t:
+        value_adjust = 0
+        for field in self._parent.get_fields():
+            if field is self:
+                value_adjust |= (value & field.get_mask()) << field.get_lsb_pos()
+                continue
+
+            access = field.get_access(map)
+            if access in (
+                "RO",
+                "RC",
+                "RS",
+                "W1C",
+                "W1S",
+                "W1T",
+                "W1SRC",
+                "W1CRS",
+            ):
+                continue
+            if access in ("W0C", "W0S", "W0T", "W0SRC", "W0CRS"):
+                value_adjust |= field.get_register_mask()
+                continue
+            value_adjust |= field.get_mirrored_value() << field.get_lsb_pos()
+        return value_adjust & self._parent.get_mask()
+
+    def get_update_value(self) -> uvm_reg_data_t:
+        mask = self.get_mask()
+        access = self._access
+        if access in (
+            "RO",
+            "RW",
+            "RC",
+            "RS",
+            "WRC",
+            "WRS",
+            "WC",
+            "WS",
+            "WSRC",
+            "WCRS",
+            "WO",
+            "WOC",
+            "WOS",
+            "W1",
+            "WO1",
+        ):
+            update = self._desired
+        elif access in ("W1C", "W1CRS"):
+            update = ~self._desired
+        elif access in ("W1S", "W1SRC"):
+            update = self._desired
+        elif access == "W1T":
+            update = self._desired ^ self._mirrored
+        elif access in ("W0C", "W0CRS"):
+            update = self._desired
+        elif access in ("W0S", "W0SRC"):
+            update = ~self._desired
+        elif access == "W0T":
+            update = ~(self._desired ^ self._mirrored)
+        else:
+            update = self._desired
+        return update & mask
+
     async def write(
         self,
         value: uvm_reg_data_t,
@@ -418,7 +506,22 @@ class uvm_reg_field(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        async with self._parent._atomic:
+            self.set(value, fname, lineno)
+            rw = uvm_reg_item("field_write_item")
+            rw.set_element(self)
+            rw.set_element_kind(uvm_elem_kind_e.UVM_FIELD)
+            rw.set_kind(uvm_access_e.UVM_WRITE)
+            rw.set_value(value)
+            rw.set_door(path)
+            rw.set_map(map)
+            rw.set_parent_sequence(parent)
+            rw.set_priority(prior)
+            rw.set_extension(extension)
+            rw.set_fname(fname)
+            rw.set_line(lineno)
+            await self.do_write(rw)
+        return rw.get_status()
 
     async def read(
         self,
@@ -430,7 +533,21 @@ class uvm_reg_field(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> tuple[uvm_status_e, uvm_reg_data_t]:
-        raise NotImplementedError
+        async with self._parent._atomic:
+            rw = uvm_reg_item("field_read_item")
+            rw.set_element(self)
+            rw.set_element_kind(uvm_elem_kind_e.UVM_FIELD)
+            rw.set_kind(uvm_access_e.UVM_READ)
+            rw.set_value(0)
+            rw.set_door(path)
+            rw.set_map(map)
+            rw.set_parent_sequence(parent)
+            rw.set_priority(prior)
+            rw.set_extension(extension)
+            rw.set_fname(fname)
+            rw.set_line(lineno)
+            await self.do_read(rw)
+        return rw.get_status(), rw.get_value()
 
     async def poke(
         self,
@@ -441,7 +558,30 @@ class uvm_reg_field(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        self._fname = fname
+        self._lineno = lineno
+        status, reg_value = await self._parent.peek(
+            kind,
+            parent,
+            extension,
+            fname,
+            lineno,
+        )
+        if status == uvm_status_e.UVM_NOT_OK:
+            logger.error(
+                f"uvm_reg_field::poke(): Peek of register "
+                f"{repr(self._parent.get_full_name())} returned status {status}"
+            )
+            return status
+        reg_value = self.insert_into_register(reg_value, value)
+        return await self._parent.poke(
+            reg_value,
+            kind,
+            parent,
+            extension,
+            fname,
+            lineno,
+        )
 
     async def peek(
         self,
@@ -451,7 +591,16 @@ class uvm_reg_field(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> tuple[uvm_status_e, uvm_reg_data_t]:
-        raise NotImplementedError
+        self._fname = fname
+        self._lineno = lineno
+        status, reg_value = await self._parent.peek(
+            kind,
+            parent,
+            extension,
+            fname,
+            lineno,
+        )
+        return status, self.extract_from_register(reg_value)
 
     async def mirror(
         self,
@@ -464,7 +613,18 @@ class uvm_reg_field(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        self._fname = fname
+        self._lineno = lineno
+        return await self._parent.mirror(
+            check,
+            path,
+            map,
+            parent,
+            prior,
+            extension,
+            fname,
+            lineno,
+        )
 
     def set_compare(self, check: uvm_check_e) -> None:
         self._check = check
@@ -473,7 +633,7 @@ class uvm_reg_field(uvm_object):
         return self._check
 
     def is_indv_accessible(self, path: uvm_door_e, local_map: uvm_reg_map) -> bool:
-        raise NotImplementedError
+        return False
 
     def predict(
         self,
@@ -500,6 +660,8 @@ class uvm_reg_field(uvm_object):
         self, cur_val: uvm_reg_data_t, wr_val: uvm_reg_data_t, map: uvm_reg_map
     ) -> uvm_reg_data_t:
         mask = (1 << self.get_n_bits()) - 1
+        cur_val &= mask
+        wr_val &= mask
         access = self.get_access(map)
         if access in ["RO", "RC", "RS", "NOACCESS"]:
             return cur_val
@@ -510,10 +672,10 @@ class uvm_reg_field(uvm_object):
         elif access in ["WS", "WSRC", "WOS"]:
             return mask
         elif access in ["W1C", "W1CRS"]:
-            return cur_val & ~mask
+            return cur_val & (~wr_val & mask)
         elif access in ["W1S", "W1SRC"]:
             return cur_val | wr_val
-        elif access in ["WT"]:
+        elif access in ["W1T"]:
             return cur_val ^ wr_val
         elif access in ["W0C", "W0CRS"]:
             return cur_val & wr_val
@@ -530,16 +692,23 @@ class uvm_reg_field(uvm_object):
             return wr_val
 
     def _update(self) -> uvm_reg_data_t:
-        raise NotImplementedError
+        return self.get_update_value()
 
     def _check_access(self, rw: uvm_reg_item, map_info: uvm_reg_map_info) -> bool:
         raise NotImplementedError
 
     async def do_write(self, rw: uvm_reg_item) -> None:
-        raise NotImplementedError
+        reg_value = self._get_parent_write_value(rw.get_value(0), rw.get_map())
+        rw.set_element_kind(uvm_elem_kind_e.UVM_REG)
+        rw.set_element(self._parent)
+        rw.set_value(reg_value)
+        await self._parent.do_write(rw)
 
     async def do_read(self, rw: uvm_reg_item) -> None:
-        raise NotImplementedError
+        rw.set_element_kind(uvm_elem_kind_e.UVM_REG)
+        rw.set_element(self._parent)
+        await self._parent.do_read(rw)
+        rw.set_value(self.extract_from_register(rw.get_value(0)))
 
     def do_predict(
         self,
@@ -560,7 +729,7 @@ class uvm_reg_field(uvm_object):
                 or rw.get_door() == uvm_door_e.UVM_PREDICT
             ):
                 field_value = self._predict(self._mirrored, field_value, rw.get_map())
-            self.written = True
+            self._written = True
             # TODDO: implement callbacks
             # callbacks = uvm_reg_field_cb_iter(self)
             # for callback in self._callbacks:
