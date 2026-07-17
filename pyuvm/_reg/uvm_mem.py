@@ -538,7 +538,7 @@ class uvm_mem(uvm_object):
                 await self._do_read_frontdoor(rw, map_info)
             # TODO: post_read callbacks
             # TODO: report
-       finally:
+        finally:
             self._read_in_progress = False
 
     async def _do_read_backdoor(
