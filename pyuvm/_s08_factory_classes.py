@@ -151,7 +151,11 @@ class uvm_factory(metaclass=Singleton):
         assert issubclass(override_type, uvm_void), (
             "You tried to use a non-uvm_void class as an override"
         )
-        if (original_type not in self.fd.overrides) or replace:
+        if (
+            original_type not in self.fd.overrides
+            or self.fd.overrides[original_type].type_override is None
+            or replace
+        ):
             self.__set_override(original_type, override_type)
 
     # 8.3.1.4.2
@@ -185,7 +189,11 @@ class uvm_factory(metaclass=Singleton):
         except KeyError:
             original_type = original_type_name
 
-        if (original_type not in self.fd.overrides) or replace:
+        if (
+            original_type not in self.fd.overrides
+            or self.fd.overrides[original_type].type_override is None
+            or replace
+        ):
             self.__set_override(original_type, override_type)
 
     def __find_override(self, requested_type, parent_inst_path="", name=""):
@@ -466,9 +474,10 @@ class uvm_factory(metaclass=Singleton):
         if len(self.fd.overrides) > 0:
             factory_str += "Overrides:\n"
             for inst in self.fd.overrides:
-                factory_str += (
-                    f"{inst.__name__:25}" + ": " + str(self.fd.overrides[inst])
-                )  # noqa
+                # Override keys can be arbitrary strings (name-based overrides
+                # of an unregistered original), which have no __name__.
+                inst_name = getattr(inst, "__name__", str(inst))
+                factory_str += f"{inst_name:25}" + ": " + str(self.fd.overrides[inst])  # noqa
                 factory_str += "\n"
         # Need to add 1 and 2
         user_list = [

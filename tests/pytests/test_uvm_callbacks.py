@@ -97,6 +97,19 @@ class TestCallbacksAdd:
         assert len(uvm_callbacks._callbacks[obj]) == 1
         assert uvm_callbacks._callbacks[obj][0] is cb
 
+    def test_add_duplicate_preserves_existing_queue(self):
+        """Re-adding an existing callback must not wipe other callbacks"""
+        obj = test_object("obj")
+        cb1 = test_callback("cb1")
+        cb2 = test_callback("cb2")
+
+        uvm_callbacks.add(obj, cb1)
+        uvm_callbacks.add(obj, cb2)
+        # Re-adding cb1 is a no-op; it must leave cb2 in place.
+        uvm_callbacks.add(obj, cb1)
+
+        assert uvm_callbacks._callbacks[obj] == [cb1, cb2]
+
     def test_add_with_append_ordering(self):
         """Test UVM_APPEND ordering appends to end"""
         obj = test_object("obj")
