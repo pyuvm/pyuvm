@@ -127,6 +127,10 @@ class FibonacciSeq(uvm_sequence):
         super().__init__(name)
         self.seqr = ConfigDB().get(None, "", "SEQR")
 
+    def report_fibonacci_sequence(self, fib_list):
+        uvm_root().logger.info("Fibonacci Sequence: " + str(fib_list))
+        uvm_root().set_logging_level_hier(logging.CRITICAL)
+
     async def body(self):
         prev_num = 0
         cur_num = 1
@@ -136,8 +140,7 @@ class FibonacciSeq(uvm_sequence):
             fib_list.append(sum)
             prev_num = cur_num
             cur_num = sum
-        uvm_root().logger.info("Fibonacci Sequence: " + str(fib_list))
-        uvm_root().set_logging_level_hier(logging.CRITICAL)
+        self.report_fibonacci_sequence(fib_list)
 
 
 class Driver(uvm_driver):
@@ -170,20 +173,25 @@ class Coverage(uvm_subscriber):
         (_, _, op) = cmd
         self.cvg.add(op)
 
+    def report_coverage_error(self, missed):
+        self.logger.error(f"Functional coverage error. Missed: {missed}")
+        assert False
+
+    def report_coverage_pass(self):
+        self.logger.info("Covered all operations")
+        assert True
+
     def report_phase(self):
         try:
             disable_errors = ConfigDB().get(self, "", "DISABLE_COVERAGE_ERRORS")
         except UVMConfigItemNotFound:
             disable_errors = False
         if not disable_errors:
-            if len(set(Ops) - self.cvg) > 0:
-                self.logger.error(
-                    f"Functional coverage error. Missed: {set(Ops) - self.cvg}"
-                )
-                assert False
+            missed = set(Ops) - self.cvg
+            if len(missed) > 0:
+                self.report_coverage_error(missed)
             else:
-                self.logger.info("Covered all operations")
-                assert True
+                self.report_coverage_pass()
 
 
 class Scoreboard(uvm_component):
@@ -199,6 +207,33 @@ class Scoreboard(uvm_component):
         self.cmd_get_port.connect(self.cmd_fifo.get_export)
         self.result_get_port.connect(self.result_fifo.get_export)
 
+    def pass_message(self, A, B, op, actual_result):
+        return f"PASSED: 0x{A:02x} {op.name} 0x{B:02x} = 0x{actual_result:04x}"
+
+    def mismatch_message(self, A, B, op, actual_result, predicted_result):
+        return (
+            f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
+            f"= 0x{actual_result:04x} "
+            f"expected 0x{predicted_result:04x}"
+        )
+
+    def report_missing_command(self, actual_result):
+        self.logger.critical(f"result {actual_result} had no command")
+
+    def report_pass(self, A, B, op, actual_result):
+        self.logger.info(self.pass_message(A, B, op, actual_result))
+
+    def report_mismatch(self, A, B, op, actual_result, predicted_result):
+        self.logger.error(
+            self.mismatch_message(A, B, op, actual_result, predicted_result)
+        )
+
+    def quit_count_reached(self):
+        return False
+
+    def finish_check(self, passed):
+        assert passed
+
     def check_phase(self):
         passed = True
         try:
@@ -209,23 +244,19 @@ class Scoreboard(uvm_component):
             _, actual_result = self.result_get_port.try_get()
             cmd_success, cmd = self.cmd_get_port.try_get()
             if not cmd_success:
-                self.logger.critical(f"result {actual_result} had no command")
+                self.report_missing_command(actual_result)
             else:
                 (A, B, op_numb) = cmd
                 op = Ops(op_numb)
                 predicted_result = alu_prediction(A, B, op, self.errors)
                 if predicted_result == actual_result:
-                    self.logger.info(
-                        f"PASSED: 0x{A:02x} {op.name} 0x{B:02x} = 0x{actual_result:04x}"
-                    )
+                    self.report_pass(A, B, op, actual_result)
                 else:
-                    self.logger.error(
-                        f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
-                        f"= 0x{actual_result:04x} "
-                        f"expected 0x{predicted_result:04x}"
-                    )
+                    self.report_mismatch(A, B, op, actual_result, predicted_result)
                     passed = False
-        assert passed
+                    if self.quit_count_reached():
+                        break
+        self.finish_check(passed)
 
 
 class Monitor(uvm_component):
@@ -238,11 +269,19 @@ class Monitor(uvm_component):
         self.bfm = TinyAluBfm()
         self.get_method = getattr(self.bfm, self.method_name)
 
+    def report_monitored(self, datum):
+        self.logger.debug(f"MONITORED {datum}")
+
     async def run_phase(self):
         while True:
             datum = await self.get_method()
-            self.logger.debug(f"MONITORED {datum}")
+            self.report_monitored(datum)
             self.ap.write(datum)
+
+
+class CommandMonitor(Monitor):
+    def __init__(self, name, parent):
+        super().__init__(name, parent, "get_cmd")
 
 
 class AluEnv(uvm_env):
@@ -252,9 +291,9 @@ class AluEnv(uvm_env):
         self.seqr = uvm_sequencer("seqr", self)
         ConfigDB().set(None, "*", "SEQR", self.seqr)
         self.driver = Driver.create("driver", self)
-        self.cmd_mon = Monitor("cmd_mon", self, "get_cmd")
-        self.coverage = Coverage("coverage", self)
-        self.scoreboard = Scoreboard("scoreboard", self)
+        self.cmd_mon = CommandMonitor.create("cmd_mon", self)
+        self.coverage = Coverage.create("coverage", self)
+        self.scoreboard = Scoreboard.create("scoreboard", self)
 
     def connect_phase(self):
         self.driver.seq_item_port.connect(self.seqr.seq_item_export)
@@ -268,7 +307,7 @@ class AluTest(uvm_test):
     """Test ALU with random and max values"""
 
     def build_phase(self):
-        self.env = AluEnv("env", self)
+        self.env = AluEnv.create("env", self)
 
     def end_of_elaboration_phase(self):
         self.test_all = TestAllSeq.create("test_all")
