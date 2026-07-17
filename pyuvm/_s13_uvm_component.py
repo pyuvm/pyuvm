@@ -230,7 +230,6 @@ class uvm_component(uvm_report_object):
             f"{self.get_full_name()} already has a child named {name}"
         )
         self._children[name] = child
-        pass
 
     @property
     def hierarchy(self):
@@ -243,13 +242,7 @@ class uvm_component(uvm_report_object):
         yield self
         for child in self.children:
             assert isinstance(child, uvm_component)
-            yield child
-            for grandchild in child.children:
-                assert isinstance(
-                    grandchild,
-                    uvm_component,
-                )
-                yield grandchild
+            yield from child.hierarchy
 
         # The UVM relies upon a hokey iteration system to get the children
         # out of a component class. You get the name of the first child and
@@ -506,25 +499,31 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
         :return: none
         """
         factory = uvm_factory()
+        # clear_singletons() nulls the uvm_root singleton, so the next uvm_root()
+        # call builds a fresh instance. Drive the run on whatever uvm_root()
+        # returns now, not on the stale self; otherwise the tree (and
+        # running_phase) would be built on a root that uvm_root() no longer
+        # returns, breaking traversal and ConfigDB build-phase precedence.
         if not keep_singletons:
             uvm_report_object.set_default_logging_level(logging.INFO)
             self.clear_singletons(keep_set)
             factory.clear_overrides()
-        self.clear_children()
+        root = uvm_root()
+        root.clear_children()
         ObjectionHandler().clear()
         if isinstance(test_name, str):
-            self.uvm_test_top = factory.create_component_by_name(
-                test_name, "", "uvm_test_top", self
+            root.uvm_test_top = factory.create_component_by_name(
+                test_name, "", "uvm_test_top", root
             )
         else:
-            self.uvm_test_top = factory.create_component_by_type(
-                test_name, "", "uvm_test_top", self
+            root.uvm_test_top = factory.create_component_by_type(
+                test_name, "", "uvm_test_top", root
             )
 
-        for self.running_phase in uvm_common_phases:
-            self.logger.log(PYUVM_DEBUG, str(self.running_phase))
-            self.running_phase.traverse(self.uvm_test_top)
-            if self.running_phase == uvm_run_phase:
+        for root.running_phase in uvm_common_phases:
+            root.logger.log(PYUVM_DEBUG, str(root.running_phase))
+            root.running_phase.traverse(root.uvm_test_top)
+            if root.running_phase == uvm_run_phase:
                 await ObjectionHandler().run_phase_complete()  # noqa: E501
 
     def _find_all_recurse(self, comp_match, comp) -> list[uvm_component]:
@@ -645,9 +644,8 @@ class ConfigDB(metaclass=Singleton):
 
         """
         assert context is None or isinstance(context, uvm_component), (
-            "config_db context must be None or a uvm_component. "
+            f"config_db context must be None or a uvm_component. Not {type(context)}"
         )
-        f"Not {type(context)}"
         if context is None:
             context = uvm_root()
 
@@ -706,8 +704,10 @@ class ConfigDB(metaclass=Singleton):
 
         self._path_dict[inst_name][field_name][precedence] = value
         key = self._get_event_key(context, inst_name, field_name)
-        event = self._events.pop(key, None)
+        event = self._events.get(key)
         if event:
+            # Wake current waiters and reset the event in place; keep it in
+            # the dict so its identity is stable for future waiters.
             event.set()
             event.clear()
 
@@ -748,9 +748,8 @@ class ConfigDB(metaclass=Singleton):
 
         except TypeError:
             return self._not_found(f'"{inst_name}" is not in ConfigDB().', default)
-        finally:
-            if len(key_matches) == 0:
-                return self._not_found(f'"{inst_name}" is not in ConfigDB().', default)
+        if len(key_matches) == 0:
+            return self._not_found(f'"{inst_name}" is not in ConfigDB().', default)
         # Here we sort the list of paths by which paths are "in" other
         # paths. That is A comes before '*'  A.B comes before A.*, etc.
         # We use an insertion sort. A path is inserted in front of the
@@ -772,7 +771,8 @@ class ConfigDB(metaclass=Singleton):
                     break
             if not inserted:
                 sorted_paths.append(path)
-        value = None
+        _missing = object()
+        value = _missing
         for path in sorted_paths:
             try:
                 component_fields = self._path_dict[path]
@@ -782,7 +782,7 @@ class ConfigDB(metaclass=Singleton):
                 break
             except KeyError:
                 pass
-        if value is not None:
+        if value is not _missing:
             self.trace("GET", context, inst_name, field_name, value)
             return value
         else:
@@ -812,6 +812,10 @@ class ConfigDB(metaclass=Singleton):
         return True
 
     async def wait_modified(self, context, inst_name, field_name):
+        # Normalize the same way set() does so waiter and setter agree on the
+        # event key; otherwise a non-empty inst_name produces a different key
+        # and the waiter is never woken.
+        context, inst_name = self._get_context_inst_name(context, inst_name)
         key = self._get_event_key(context, inst_name, field_name)
         if key not in self._events:
             self._events[key] = Event()

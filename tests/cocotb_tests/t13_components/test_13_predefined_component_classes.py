@@ -50,7 +50,10 @@ class s13_predefined_component_TestCase(uvm_unittest.uvm_TestCase):
         child1 = uvm_component("child1", parent)
         child2 = uvm_component("child2", parent)
         child3 = uvm_component("child3", child1)
-        golden_list = [parent, child1, child3, child2]
+        # A 4th level (depth >= 3 below parent) must still be yielded; the
+        # generator has to recurse rather than descend a fixed number of levels.
+        child4 = uvm_component("child4", child3)
+        golden_list = [parent, child1, child3, child4, child2]
         self.assertEqual(list(parent.hierarchy), golden_list)
         hier = list(parent.hierarchy)
         hier.reverse()

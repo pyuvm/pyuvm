@@ -140,14 +140,9 @@ class uvm_port_base(uvm_export_base):
         """
 
         self._check_export(export)
-        try:
-            self.export = export
-            self.connected_to[export.get_full_name()] = export
-            export.provided_to[self.get_full_name()] = self
-        except KeyError:
-            raise UVMTLMConnectionError(
-                f"Error connecting {self.get_name()} using {export}"
-            )
+        self.export = export
+        self.connected_to[export.get_full_name()] = export
+        export.provided_to[self.get_full_name()] = self
 
 
 # put
@@ -353,8 +348,13 @@ class uvm_nonblocking_peek_port(uvm_port_base):
 
         Checks if peeking will be successful
         """
-        can = self.export.can_peek()
-        return can
+        try:
+            return self.export.can_peek()
+        except AttributeError:
+            raise UVMTLMConnectionError(
+                "Missing or wrong export in"
+                f" {self.get_full_name()}. Did you connect it?"
+            )
 
 
 class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port): ...
@@ -465,15 +465,12 @@ class uvm_analysis_port(uvm_port_base):
         Returns regardless of whether there are any subscribers.
 
         :param datum: data to send
-        :raises: UVMTLMConnectionError if export is missing
         :return: None
 
         """
+        # Subscribers are validated in connect() via _check_export, so the
+        # broadcast reaches every subscriber without an early abort.
         for export in self.subscribers:
-            if not hasattr(export, "write"):
-                raise UVMTLMConnectionError(
-                    f"No write() method in {export}. Did you connect it?"
-                )
             export.write(datum)
 
     def connect(self, export):
@@ -541,7 +538,7 @@ class uvm_blocking_master_export(
 
 
 class uvm_nonblocking_master_export(
-    uvm_blocking_peek_export, uvm_nonblocking_get_peek_export
+    uvm_nonblocking_put_export, uvm_nonblocking_get_peek_export
 ): ...
 
 
@@ -745,7 +742,7 @@ class uvm_tlm_fifo_base(uvm_component):
             "nonblocking_get_export",
             self,  # noqa: E501
             self.queue,
-            self.put_ap,
+            self.get_ap,
         )  # noqa: E501
 
         self.get_export = self.uvm_GetExport(
@@ -919,7 +916,8 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
                 self.queue.put_nowait(item)
             except QueueFull:
                 raise QueueFull(
-                    f"Full analysis fifo: {self.__name__}. This should never happen"
+                    f"Full analysis fifo: {self.get_full_name()}."
+                    " This should never happen"
                 )  # noqa: E501
 
     def __init__(self, name, parent=None):
@@ -976,7 +974,27 @@ class uvm_tlm_req_rsp_channel(uvm_component):
             """
             :return: (success, item)
             """
-            return self.get_peek_export.try_get
+            return self.get_peek_export.try_get()
+
+        async def peek(self):
+            """
+            :return: item
+
+            A coroutine that blocks if the FIFO is empty
+            """
+            return await self.get_peek_export.peek()
+
+        def can_peek(self):
+            """
+            :return: True if can peek
+            """
+            return self.get_peek_export.can_peek()
+
+        def try_peek(self):
+            """
+            :return: (success, item)
+            """
+            return self.get_peek_export.try_peek()
 
     def __init__(self, name, parent=None, request_fifo_size=1, response_fifo_size=1):
         super().__init__(name, parent)
@@ -1016,12 +1034,12 @@ class uvm_tlm_transport_channel(uvm_tlm_req_rsp_channel):
             self.rsp_fifo = rsp_fifo
 
         async def transport(self, req):
-            self.req_fifo.put_export.put(req)
+            await self.req_fifo.put_export.put(req)
             return await self.rsp_fifo.get_peek_export.get()
 
         def nb_transport(self, req):
             if not self.req_fifo.put_export.try_put(req):
-                return False
+                return False, None
             return self.rsp_fifo.get_peek_export.try_get()
 
     def __init__(self, name, parent=None):

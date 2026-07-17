@@ -1,5 +1,6 @@
 import inspect
 
+import cocotb
 import test_12_uvm_tlm_interfaces as test_mod
 
 import pyuvm
@@ -97,3 +98,30 @@ class AnalysisTest(uvm_test):
         assert self.data_list == self.subscriber.data
         assert self.data_list == self.export.data
         assert self.data_list == self.fifo.data
+
+
+@cocotb.test()
+async def test_transport_channel_blocking_roundtrip(_):
+    """
+    12.2.9.2.2 uvm_tlm_transport_channel.transport() must enqueue the request
+    and block for the response. Regression: the request put was not awaited, so
+    the request was never enqueued and transport() blocked forever. A server
+    coroutine consumes each request and produces a response; if the request is
+    never enqueued this test hangs (times out) instead of completing.
+    """
+    channel = uvm_tlm_transport_channel("transport_channel", None)
+
+    async def server():
+        # Pull each request from the request FIFO and push a derived response
+        # into the response FIFO, mirroring a transport target.
+        while True:
+            req = await channel.req_tlm_fifo.get_peek_export.get()
+            await channel.rsp_tlm_fifo.put_export.put(f"resp:{req}")
+
+    cocotb.start_soon(server())
+
+    rsp = await channel.transport_export.transport("req0")
+    assert rsp == "resp:req0"
+    # A second round-trip confirms the FIFOs are left in a usable state.
+    rsp = await channel.transport_export.transport("req1")
+    assert rsp == "resp:req1"
