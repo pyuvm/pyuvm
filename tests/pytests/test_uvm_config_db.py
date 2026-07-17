@@ -368,13 +368,13 @@ class TestConfigDBEdgeCases:
         assert result == value
 
     def test_none_as_valid_value(self):
-        """Test that None values are not supported - ConfigDB treats None as not found"""
+        """Test that a stored None is retrievable and not confused with 'not found'"""
         root = uvm_root()
         uvm_config_db.set(root, "inst", "field", None)
 
-        # ConfigDB treats None values as not found, so it will use the default
+        # A legitimately stored None must round-trip, not fall back to default.
         result = uvm_config_db.get(root, "inst", "field", "default_for_none")
-        assert result == "default_for_none"
+        assert result is None
 
     def test_false_as_valid_value(self):
         """Test that False (boolean) can be stored and retrieved"""

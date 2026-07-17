@@ -155,6 +155,14 @@ def test_comparing():
     assert mo.compare(rhs)
     # 5.3.9.2
     assert mo.do_compare(rhs)
+    # Distinct objects must compare unequal, and compare()/do_compare()
+    # must return a real bool (not the truthy NotImplemented sentinel that
+    # object.__eq__ yields when no __eq__ is defined).
+    a = uvm_object("a")
+    b = uvm_object("b")
+    assert a.compare(b) is False
+    assert a.do_compare(b) is False
+    assert a.compare(a) is True
 
 
 def test_packing():
@@ -275,9 +283,73 @@ def test_transaction_recording():
         tr.is_active()
     with pytest.raises(UVMNotImplemented):
         tr.get_event_pool()
-    tr.get_accept_time()
-    tr.get_begin_time()
-    tr.get_end_time()
+    # Reading a time before its stage has occurred raises rather than
+    # returning a sentinel (Python has exceptions; SV-UVM's -1 does not apply).
+    with pytest.raises(UVMError):
+        tr.get_accept_time()
+    with pytest.raises(UVMError):
+        tr.get_begin_time()
+    with pytest.raises(UVMError):
+        tr.get_end_time()
+
+
+def test_transaction_time_getters_after_set():
+    """
+    5.4.2.4/5/6 get_accept_time/get_begin_time/get_end_time return the
+    recorded time once the corresponding stage has run.
+    """
+    tr = uvm_transaction("tr")
+    tr.accept_tr(10)
+    assert tr.get_accept_time() == 10
+    tr.begin_tr(20)
+    assert tr.get_begin_time() == 20
+    tr.end_tr(30)
+    assert tr.get_end_time() == 30
+
+
+def test_begin_tr_without_accept_does_not_raise():
+    """
+    5.4.2.5 begin_tr enforces begin_time >= accept_time, but only when
+    accept_tr() has actually been called. A begin_tr with no prior accept_tr
+    must not raise (there is no accept constraint to violate).
+    """
+    tr = uvm_transaction("tr")
+    # No accept_tr(); a positive begin_time must be accepted, not compared
+    # against a missing accept_time.
+    tr.begin_tr(5)
+    assert tr.get_begin_time() == 5
+
+
+def test_begin_tr_before_accept_time_is_fatal():
+    """
+    5.4.2.5 begin_time earlier than a recorded accept_time is illegal.
+    """
+    tr = uvm_transaction("tr")
+    tr.accept_tr(10)
+    with pytest.raises(UVMFatalError):
+        tr.begin_tr(5)
+
+
+def test_end_tr_without_begin_does_not_raise():
+    """
+    5.4.2.6 end_tr enforces end_time >= accept_time and >= begin_time, but
+    each ordering check applies only if that earlier stage occurred. An
+    end_tr with no prior accept_tr/begin_tr must not raise.
+    """
+    tr = uvm_transaction("tr")
+    tr.end_tr(5)
+    assert tr.get_end_time() == 5
+
+
+def test_end_tr_before_begin_time_is_fatal():
+    """
+    5.4.2.6 end_time earlier than a recorded begin_time is illegal.
+    """
+    tr = uvm_transaction("tr")
+    tr.accept_tr(1)
+    tr.begin_tr(10)
+    with pytest.raises(UVMFatalError):
+        tr.end_tr(5)
 
 
 def test_clone():
