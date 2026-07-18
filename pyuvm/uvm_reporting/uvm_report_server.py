@@ -522,10 +522,7 @@ class uvm_report_server:
             return "uvm"
         if not name.startswith("uvm."):
             return ""
-        full_name = name[4:]
-        if full_name and full_name[-1].isdigit():
-            full_name = full_name.rstrip("0123456789")
-        return full_name
+        return name[4:]
 
     def _max_quit_count_text(self) -> str:
         if int(self._policy.max_quit_count) == 0:
