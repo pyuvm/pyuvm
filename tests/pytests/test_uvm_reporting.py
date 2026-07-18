@@ -458,6 +458,48 @@ def test_uvm_report_formatter_uses_source_location_and_full_name(reporting_logge
     assert "[uvm_test_top.env.scoreboard]: [SRC_ID] source-tagged message" in output
 
 
+@pytest.mark.parametrize(
+    ("method_name", "expected_level", "expect_exception"),
+    [
+        ("info", "INFO", False),
+        ("warning", "WARNING", False),
+        ("error", "ERROR", False),
+        ("fatal", "CRITICAL", True),
+    ],
+)
+def test_uvm_report_formatter_indents_multiline_messages(
+    reporting_logger, method_name, expected_level, expect_exception
+):
+    _manager, logger, stream = reporting_logger(fmt="%(levelname)s:%(message)s")
+    reporter = uvm_reporter(logger, full_name="uvm_test_top.env.agent1")
+    report_method = getattr(reporter, method_name)
+
+    if expect_exception:
+        with pytest.raises(RuntimeError):
+            report_method("MULTI_ID", "first line\nsecond line")
+    elif method_name == "info":
+        report_method("MULTI_ID", "first line\nsecond line", UVM_LOW)
+    else:
+        report_method("MULTI_ID", "first line\nsecond line")
+
+    prefix = f"{expected_level}:"
+    expected = (
+        f"{prefix}[uvm_test_top.env.agent1]: [MULTI_ID] first line\n"
+        f"{' ' * len(prefix)}second line"
+    )
+    assert expected in stream.getvalue()
+
+
+def test_direct_logger_multiline_messages_are_not_uvm_reformatted(reporting_logger):
+    _manager, logger, stream = reporting_logger(fmt="%(levelname)s:%(message)s")
+
+    logger.error("first line\nsecond line")
+
+    output = stream.getvalue()
+    assert "ERROR:first line\nsecond line" in output
+    assert "     second line" not in output
+
+
 def test_object_uvm_report_formatter_uses_owner_full_name(reporting_logger):
     _manager, logger, stream = reporting_logger(
         fmt="%(levelname)s:%(name)s:%(message)s"

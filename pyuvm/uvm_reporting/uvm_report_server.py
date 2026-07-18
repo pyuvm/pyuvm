@@ -106,14 +106,22 @@ class _uvm_wrapped_formatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         display_message = self._display_message(record)
+        is_uvm_report = self._is_uvm_report_record(record)
         clone = logging.makeLogRecord(record.__dict__.copy())
         clone.msg = display_message
         clone.args = ()
-        if self._is_uvm_report_record(record):
+        if is_uvm_report:
             clone.name = self._source_name(record)
 
         rendered = self._base_formatter.format(clone)
-        if self._max_chars <= 0 or len(rendered) <= self._max_chars:
+        has_multiline_message = is_uvm_report and (
+            "\n" in display_message or "\r" in display_message
+        )
+        # Multiline UVM reports still need continuation indentation even when
+        # the rendered message is shorter than the wrapping limit.
+        if self._max_chars <= 0 or (
+            len(rendered) <= self._max_chars and not has_multiline_message
+        ):
             return rendered
 
         if not display_message:
