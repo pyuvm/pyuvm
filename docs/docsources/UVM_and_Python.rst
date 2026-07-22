@@ -166,4 +166,8 @@ pass when the report verbosity is less than or equal to the configured UVM
 verbosity. Python logging levels continue to represent severity for the backend
 formatter and handlers.
 
-See :doc:`SV_UVM_Style_Reporting` for examples.
+The ``examples/TinyALU_uvm_reporting`` directory demonstrates this opt-in path
+in a runnable cocotb simulation while the original ``examples/TinyALU`` example
+continues to show direct Python logging.
+
+See :doc:`SV_UVM_Style_Reporting` for the reporting API details.
