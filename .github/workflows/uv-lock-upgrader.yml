@@ -25,7 +25,7 @@ jobs:
       run: uv lock --upgrade
 
     - name: Open pull request
-      uses: peter-evans/create-pull-request@v8
+      uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8
       with:
         commit-message: "Upgrade locked dependencies"
         title: "Upgrade locked dependencies"
