@@ -3,10 +3,16 @@ This file defines the UVM base classes
 """
 
 import logging
+from typing import Optional
 
 from cocotb.utils import get_sim_time
 
-from pyuvm._error_classes import UsePythonMethod, UVMFatalError, UVMNotImplemented
+from pyuvm._error_classes import (
+    UsePythonMethod,
+    UVMError,
+    UVMFatalError,
+    UVMNotImplemented,
+)
 from pyuvm._s08_factory_classes import uvm_factory
 from pyuvm._utility_classes import uvm_void
 from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
@@ -315,7 +321,7 @@ class uvm_object(uvm_void):
         Uses ``__eq__()`` to compare the objects.  Override this
         to change the compare behavior.
         """
-        return self.__eq__(rhs)
+        return self == rhs
 
     # 5.3.10.1
     def pack(self):
@@ -464,9 +470,9 @@ class uvm_transaction(uvm_object):
         super().__init__(name)
         self.set_initiator(initiator)
         self.transaction_id = id(self)
-        self._accept_time: int = None
-        self._begin_time: int = None
-        self._end_time: int = None
+        self._accept_time: Optional[int] = None
+        self._begin_time: Optional[int] = None
+        self._end_time: Optional[int] = None
 
     def set_id_info(self, other):
         """
@@ -527,13 +533,13 @@ class uvm_transaction(uvm_object):
         :param parent_handle:
         """
         if (begin_time is not None) and (begin_time != 0):
-            # begin_time must be greater than or equal to accept_time
-            if begin_time < self._accept_time:
+            # begin_time must be >= accept_time. If accept_tr() was never called
+            # there is no accept constraint to enforce.
+            if self._accept_time is not None and begin_time < self._accept_time:
                 raise UVMFatalError(
-                    f"""begin_time : {begin_time} is less than
-                        accept_time: {self._accept_time} for
-                        the transaction : {self.get_name()}
-                     """
+                    f"begin_time : {begin_time} is less than"
+                    f" accept_time: {self._accept_time} for"
+                    f" the transaction : {self.get_name()}"
                 )
             else:
                 self._begin_time = begin_time
@@ -561,19 +567,19 @@ class uvm_transaction(uvm_object):
         :return: None
         """
         if end_time is not None and end_time != 0:
-            # end_time must be greater than or equal to
-            # accept_time and begin_time
-            if end_time < self._accept_time:
+            # end_time must be >= accept_time and >= begin_time. Any stage that
+            # was never reached imposes no constraint.
+            if self._accept_time is not None and end_time < self._accept_time:
                 raise UVMFatalError(
-                    """end_time : {end_time} is less than
-                       accept_time : {self._accept_time}
-                       for the transaction : {self.get_name()}"""
+                    f"end_time : {end_time} is less than"
+                    f" accept_time : {self._accept_time}"
+                    f" for the transaction : {self.get_name()}"
                 )
-            elif end_time < self._begin_time:
+            if self._begin_time is not None and end_time < self._begin_time:
                 raise UVMFatalError(
-                    """end_time : {end_time} is less than
-                    accept_time : {self._begin_time}
-                    for the transaction : {self.get_name()}"""
+                    f"end_time : {end_time} is less than"
+                    f" begin_time : {self._begin_time}"
+                    f" for the transaction : {self.get_name()}"
                 )
             else:
                 self._end_time = end_time
@@ -637,22 +643,31 @@ class uvm_transaction(uvm_object):
     def get_accept_time(self) -> int:
         """
         :return: Accept time of transaction
+        :raises UVMError: if ``accept_tr()`` was never called
 
         """
+        if self._accept_time is None:
+            raise UVMError(f"accept_tr() was never called on {self.get_name()}")
         return self._accept_time
 
     def get_begin_time(self) -> int:
         """
         :return: Begin time of transaction
+        :raises UVMError: if ``begin_tr()`` was never called
 
         """
+        if self._begin_time is None:
+            raise UVMError(f"begin_tr() was never called on {self.get_name()}")
         return self._begin_time
 
     def get_end_time(self) -> int:
         """
         :return: End time of transaction
+        :raises UVMError: if ``end_tr()`` was never called
 
         """
+        if self._end_time is None:
+            raise UVMError(f"end_tr() was never called on {self.get_name()}")
         return self._end_time
 
     # 5.4.2.17

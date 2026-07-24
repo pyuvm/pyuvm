@@ -60,13 +60,15 @@ class uvm_callbacks(uvm_object):
 
     @classmethod
     def add(cls, obj, cb, ordering: uvm_apprepend = uvm_apprepend.UVM_APPEND):
-        if obj in cls._callbacks and cb not in cls._callbacks[obj]:
+        if obj not in cls._callbacks:
+            cls._callbacks[obj] = [cb]
+        elif cb not in cls._callbacks[obj]:
             if ordering == uvm_apprepend.UVM_APPEND:
                 cls._callbacks[obj].append(cb)
             else:
                 cls._callbacks[obj].insert(0, cb)
-        else:
-            cls._callbacks[obj] = [cb]
+        # else: cb already registered for obj -- adding a duplicate is a
+        # no-op (spec 10.7.2.3.1), and must not disturb the existing queue.
 
     @classmethod
     def add_by_name(

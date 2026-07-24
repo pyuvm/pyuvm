@@ -240,6 +240,14 @@ class ObjectionHandler(metaclass=Singleton):
     def __init__(self):
         self.__objections = {}  # Dict holds a list for each objecting UVM component
         self._objection_event = Event()
+        # Count of raised-but-not-yet-dropped objections across all components.
+        # The phase ends when this reaches zero (IEEE 1800.2 10.5 count-based
+        # semantics), not merely when the last component's list empties.
+        self._outstanding = 0
+        # Edge-triggered: True once any objection is raised during the phase.
+        # Used only to emit the "no objection raised" warning; it must NOT gate
+        # whether we wait, otherwise a run_phase that raises and drops within a
+        # single scheduler slot is treated as if it never objected.
         self.objection_raised = False
         self.run_phase_done_flag = None  # used in test suites
         self.printed_warning = False
@@ -265,7 +273,13 @@ class ObjectionHandler(metaclass=Singleton):
         if self.__objections:
             logging.warning("Clearing all objections\n%s", str(self))
             self.__objections = {}
+        self._outstanding = 0
         self.objection_raised = False
+        self._objection_event.clear()
+
+    def get_objection_count(self):
+        """:return: number of raised objections not yet dropped"""
+        return self._outstanding
 
     def raise_objection(self, raiser, description, stacklevel=1):
         name = raiser.get_full_name()
@@ -273,29 +287,40 @@ class ObjectionHandler(metaclass=Singleton):
         sourceline = f"{frame.f_code.co_filename}:{frame.f_lineno}"
         objection = Objection(name, description, sourceline)
         self.__objections.setdefault(name, []).append(objection)
+        self._outstanding += 1
         self.objection_raised = True
         self._objection_event.clear()
 
     def drop_objection(self, dropper, description):
         name = dropper.get_full_name()
-        try:
-            self.__objections[name].pop()
-        except KeyError:
-            self.objection_raised = True
-            pass
+        if not self.__objections.get(name):
+            # A drop with no matching raise is a no-op; it must not crash
+            # the run phase or corrupt the outstanding count.
+            logging.warning("Dropped objection for '%s' with no matching raise", name)
+            return
+        self.__objections[name].pop()
         if not self.__objections[name]:
             del self.__objections[name]
-            # only signal all objections done if none exist anywhere
-            if len(self.__objections) == 0:
-                self._objection_event.set()
+        self._outstanding -= 1
+        # The phase may end only when every raised objection has been dropped.
+        if self._outstanding == 0:
+            self._objection_event.set()
 
     async def run_phase_complete(self):
         # Allow the run_phase coros to get scheduled and raise objections:
         await NullTrigger()
-        if self.objection_raised:
-            await self._objection_event.wait()
-        else:
+        if not self.objection_raised:
             logging.warning("You did not call self.raise_objection() in any run_phase")
+            return
+        # Wait for the outstanding objection count to reach zero. We always wait
+        # on the event at least once (even if the count is already zero) so that
+        # daemon run_phase coroutines get a scheduler turn to finish draining.
+        # The loop re-checks the count to handle a raise that bumps it back up
+        # between the count hitting zero and this coroutine resuming.
+        while True:
+            await self._objection_event.wait()
+            if self._outstanding == 0:
+                break
 
 
 class UVMQueue(cocotb.queue.Queue):
