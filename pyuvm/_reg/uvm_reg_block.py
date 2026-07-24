@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import logging
 import warnings
-from asyncio import Event
 from typing import TYPE_CHECKING, ClassVar
+
+from cocotb.triggers import Event
 
 from pyuvm._error_classes import UVMFatalError
 from pyuvm._reg.uvm_mem import uvm_mem
@@ -58,7 +59,6 @@ class uvm_reg_block(uvm_object):
         self._maps: list[uvm_reg_map] = list()
         self._locked: bool = False
         self._default_map: uvm_reg_map = None
-        # Python 3.9 binds asyncio.Event to the current loop at construction.
         self._lock_model_complete: Event | None = None
         self._default_hdl_path = "RTL"
         self._hdl_paths_pool: dict[str, list[str]] = dict()
