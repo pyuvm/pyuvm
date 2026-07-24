@@ -74,7 +74,7 @@ def test_block_construction_after_asyncio_run_clears_event_loop():
     block = uvm_reg_block("reg_model_after_asyncio_run")
     block.lock_model()
 
-    asyncio.run(block.wait_for_lock())
+    run_pytest_coro(block.wait_for_lock())
 
 
 def test_map_add_reg_info_and_address_lookup_after_lock():
