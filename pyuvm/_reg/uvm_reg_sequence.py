@@ -1,13 +1,9 @@
 from __future__ import annotations
 
 import logging
-
-try:
-    from cocotb.triggers import Lock
-except ModuleNotFoundError:
-    from asyncio import Semaphore as Lock
-
 from typing import TYPE_CHECKING
+
+from cocotb.triggers import Lock
 
 from pyuvm._reg.uvm_reg_model import (
     uvm_check_e,
