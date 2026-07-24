@@ -3,23 +3,23 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, ClassVar
 
+from cocotb.triggers import Lock
+
 from pyuvm._error_classes import UVMFatalError
+from pyuvm._reg.uvm_reg_item import uvm_reg_item
 from pyuvm._reg.uvm_reg_model import (
+    uvm_access_e,
     uvm_coverage_model_e,
     uvm_door_e,
+    uvm_elem_kind_e,
+    uvm_status_e,
 )
 from pyuvm._s05_base_classes import uvm_object
 
 if TYPE_CHECKING:
-    from pyuvm._reg.uvm_mem_mam import (
-        alloc_mode_e,
-        locality_e,
-        uvm_mem_mam,
-        uvm_mem_mam_cfg,
-    )
+    from pyuvm._reg.uvm_mem_mam import uvm_mem_mam
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
     from pyuvm._reg.uvm_reg_block import uvm_reg_block
-    from pyuvm._reg.uvm_reg_item import uvm_reg_item
     from pyuvm._reg.uvm_reg_map import uvm_reg_map, uvm_reg_map_info
     from pyuvm._reg.uvm_reg_model import (
         uvm_hdl_path_concat,
@@ -27,7 +27,6 @@ if TYPE_CHECKING:
         uvm_reg_addr_t,
         uvm_reg_cvr_t,
         uvm_reg_data_t,
-        uvm_status_e,
     )
     from pyuvm._reg.uvm_reg_sequence import uvm_reg_frontdoor
     from pyuvm._reg.uvm_vreg import uvm_vreg
@@ -67,7 +66,7 @@ class uvm_mem(uvm_object):
         self._vregs: list[uvm_vreg] = list()
         # self._hdl_paths_pool: uvm_object_string_pool = None
         self._mam: uvm_mem_mam = None
-        raise NotImplementedError
+        self._atomic = Lock()
 
     def configure(self, parent: uvm_reg_block, hdl_path: str = "") -> None:
         if not parent:
@@ -80,16 +79,10 @@ class uvm_mem(uvm_object):
                 "and 'RO', setting access to 'RW'"
             )
             self._access = "RW"
-            cfg = uvm_mem_mam_cfg()
-            cfg.n_bytes = 0
-            cfg.start_offset = 0
-            cfg.end_offset = self._size - 1
-            cfg.mode = alloc_mode_e.GREEDY
-            cfg.locality = locality_e.BROAD
-            self.mam = uvm_mem_mam(self.get_full_name(), cfg, self)
-            self._parent.add_mem(self)
-            if hdl_path != "":
-                self.add_hdl_path_slice(hdl_path, -1, -1)
+        # TODO: construct self._mam via uvm_mem_mam once implemented (PR2)
+        self._parent._add_memory(self)
+        if hdl_path != "":
+            self.add_hdl_path_slice(hdl_path, -1, -1)
 
     def set_offset(
         self, map: uvm_reg_map, offset: uvm_reg_addr_t, unmapped: bool = False
@@ -111,7 +104,7 @@ class uvm_mem(uvm_object):
         self._maps.append(map)
 
     def _lock_model(self) -> None:
-        self._lock_model = True
+        self._locked = True
 
     def _add_vreg(self, vreg: uvm_vreg) -> None:
         raise NotImplementedError
@@ -221,7 +214,7 @@ class uvm_mem(uvm_object):
         return self._size
 
     def get_n_bytes(self) -> int:
-        return int(self._n_bits - 1 / 8 + 1)
+        return (self._n_bits + 7) // 8
 
     def get_n_bits(self) -> int:
         return self._n_bits
@@ -300,9 +293,62 @@ class uvm_mem(uvm_object):
                 f"Memory '{self.get_name()}' is unmapped in map '{map_name}'"
             )
             return -1, list()
-        stride = map_info.stride
+        stride = map_info.mem_range.stride
         addresses = [a + stride * offset for a in map_info.addr]
         return local_map.get_n_bytes(), addresses
+
+    def _build_write_item(
+        self,
+        offset: uvm_reg_addr_t,
+        value: uvm_reg_data_t,
+        path: uvm_door_e,
+        map: uvm_reg_map,
+        parent: uvm_sequence_base,
+        prior: int,
+        extension: uvm_object,
+        fname: str,
+        lineno: int,
+    ) -> uvm_reg_item:
+        rw = uvm_reg_item("write_item")
+        rw.set_element(self)
+        rw.set_element_kind(uvm_elem_kind_e.UVM_MEM)
+        rw.set_kind(uvm_access_e.UVM_WRITE)
+        rw.set_value(value)
+        rw.set_offset(offset)
+        rw.set_door(path)
+        rw.set_map(map)
+        rw.set_parent_sequence(parent)
+        rw.set_priority(prior)
+        rw.set_extension(extension)
+        rw.set_fname(fname)
+        rw.set_line(lineno)
+        return rw
+
+    def _build_read_item(
+        self,
+        offset: uvm_reg_addr_t,
+        path: uvm_door_e,
+        map: uvm_reg_map,
+        parent: uvm_sequence_base,
+        prior: int,
+        extension: uvm_object,
+        fname: str,
+        lineno: int,
+    ) -> uvm_reg_item:
+        rw = uvm_reg_item("read_item")
+        rw.set_element(self)
+        rw.set_element_kind(uvm_elem_kind_e.UVM_MEM)
+        rw.set_kind(uvm_access_e.UVM_READ)
+        rw.set_value(0)
+        rw.set_offset(offset)
+        rw.set_door(path)
+        rw.set_map(map)
+        rw.set_parent_sequence(parent)
+        rw.set_priority(prior)
+        rw.set_extension(extension)
+        rw.set_fname(fname)
+        rw.set_line(lineno)
+        return rw
 
     async def write(
         self,
@@ -316,7 +362,12 @@ class uvm_mem(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        async with self._atomic:
+            rw = self._build_write_item(
+                offset, value, path, map, parent, prior, extension, fname, lineno
+            )
+            await self.do_write(rw)
+        return rw.get_status()
 
     async def read(
         self,
@@ -329,7 +380,12 @@ class uvm_mem(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> tuple[uvm_status_e, uvm_reg_data_t]:
-        raise NotImplementedError
+        async with self._atomic:
+            rw = self._build_read_item(
+                offset, path, map, parent, prior, extension, fname, lineno
+            )
+            await self.do_read(rw)
+        return rw.get_status(), rw.get_value()
 
     async def burst_write(
         self,
@@ -343,7 +399,16 @@ class uvm_mem(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        status = uvm_status_e.UVM_IS_OK
+        async with self._atomic:
+            for i, val in enumerate(value):
+                rw = self._build_write_item(
+                    offset + i, val, path, map, parent, prior, extension, fname, lineno
+                )
+                await self.do_write(rw)
+                if rw.get_status() != uvm_status_e.UVM_IS_OK:
+                    status = rw.get_status()
+        return status
 
     async def burst_read(
         self,
@@ -357,7 +422,17 @@ class uvm_mem(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        status = uvm_status_e.UVM_IS_OK
+        async with self._atomic:
+            for i in range(len(value)):
+                rw = self._build_read_item(
+                    offset + i, path, map, parent, prior, extension, fname, lineno
+                )
+                await self.do_read(rw)
+                if rw.get_status() != uvm_status_e.UVM_IS_OK:
+                    status = rw.get_status()
+                value[i] = rw.get_value()
+        return status
 
     async def poke(
         self,
@@ -382,14 +457,110 @@ class uvm_mem(uvm_object):
     ) -> tuple[uvm_status_e, uvm_reg_data_t]:
         raise NotImplementedError
 
-    def _check_access(self, rw: uvm_reg_item) -> uvm_reg_map_info | None:
-        raise NotImplementedError
+    def _check_access(self, rw: uvm_reg_item) -> tuple[bool, uvm_reg_map_info | None]:
+        map_info = None
+        if rw.get_door() == uvm_door_e.UVM_DEFAULT_DOOR:
+            rw.set_door(self._parent.get_default_door())
+        if rw.get_door() == uvm_door_e.UVM_BACKDOOR:
+            raise NotImplementedError
+        if rw.get_door() != uvm_door_e.UVM_BACKDOOR:
+            tmp_map = rw.get_map()
+            rw.set_local_map(self.get_local_map(tmp_map))
+            if not rw.get_local_map():
+                # TODO: Error message
+                rw.set_status(uvm_status_e.UVM_NOT_OK)
+                return False, None
+            tmp_local_map = rw.get_local_map()
+            map_info = tmp_local_map.get_mem_map_info(self)
+            if not map_info.frontdoor and map_info.unmapped:
+                # TODO: Error message
+                rw.set_status(uvm_status_e.UVM_NOT_OK)
+                return False, None
+            if not tmp_map:
+                rw.set_map(tmp_local_map)
+        return True, map_info
 
     async def do_write(self, rw: uvm_reg_item) -> None:
+        self._fname = rw.get_fname()
+        self._lineno = rw.get_line()
+        rc, map_info = self._check_access(rw)
+        if not rc:
+            return
+        self._write_in_progress = True
+        rw.set_status(uvm_status_e.UVM_IS_OK)
+        # TODO: pre_write callbacks
+        door = rw.get_door()
+        if door == uvm_door_e.UVM_BACKDOOR:
+            await self._do_write_backdoor(rw, map_info)
+        elif door == uvm_door_e.UVM_FRONTDOOR:
+            await self._do_write_frontdoor(rw, map_info)
+        # TODO: post_write callbacks
+        # TODO: report
+        self._write_in_progress = False
+
+    async def _do_write_backdoor(
+        self, rw: uvm_reg_item, map_info: uvm_reg_map_info
+    ) -> None:
         raise NotImplementedError
 
+    async def _do_write_frontdoor(
+        self, rw: uvm_reg_item, map_info: uvm_reg_map_info
+    ) -> None:
+        local_map = rw.get_local_map()
+        system_map = local_map.get_root_map()
+        # INFO: User frontdoor
+        if map_info.frontdoor is not None:
+            frontdoor = map_info.frontdoor
+            frontdoor.atomic_lock()
+            frontdoor.rw_info = rw
+            if frontdoor.sequencer is None:
+                frontdoor.sequencer = system_map.get_sequencer()
+            frontdoor.start(frontdoor.sequencer, rw.get_parent_sequence())
+            frontdoor.atomic_unlock()
+        # INFO: Built in frontdoor
+        else:
+            await local_map.do_write(rw)
+
     async def do_read(self, rw: uvm_reg_item) -> None:
+        self._fname = rw.get_fname()
+        self._lineno = rw.get_line()
+        rc, map_info = self._check_access(rw)
+        if not rc:
+            return
+        try:
+            self._read_in_progress = True
+            rw.set_status(uvm_status_e.UVM_IS_OK)
+            # TODO: pre_read callbacks
+            door = rw.get_door()
+            if door == uvm_door_e.UVM_BACKDOOR:
+                await self._do_read_backdoor(rw, map_info)
+            elif door == uvm_door_e.UVM_FRONTDOOR:
+                await self._do_read_frontdoor(rw, map_info)
+            # TODO: post_read callbacks
+            # TODO: report
+        finally:
+            self._read_in_progress = False
+
+    async def _do_read_backdoor(
+        self, rw: uvm_reg_item, map_info: uvm_reg_map_info
+    ) -> None:
         raise NotImplementedError
+
+    async def _do_read_frontdoor(
+        self, rw: uvm_reg_item, map_info: uvm_reg_map_info
+    ) -> None:
+        local_map = rw.get_local_map()
+        system_map = local_map.get_root_map()
+        if map_info.frontdoor:
+            frontdoor = map_info.frontdoor
+            frontdoor.atomic_lock()
+            frontdoor.rw_info = rw
+            if not frontdoor.sequencer:
+                frontdoor.sequencer = system_map.get_sequencer()
+            frontdoor.start(frontdoor.sequencer, rw.get_parent_sequence())
+            frontdoor.atomic_unlock()
+        else:  # Built-in frontdoor
+            await local_map.do_read(rw)
 
     def set_frontdoor(
         self,

@@ -139,6 +139,19 @@ class uvm_reg_block(uvm_object):
             return
         self._regs[uid] = reg
 
+    def _add_memory(self, mem: uvm_mem) -> None:
+        uid = mem.get_inst_id()
+        if self.is_locked():
+            logger.error("Cannot add memory to a locked block model")
+            return
+        if uid in self._mems:
+            logger.error(
+                f"Memory {repr(mem.get_name())} has already been "
+                f"registered with block {self.get_full_name()}"
+            )
+            return
+        self._mems[uid] = mem
+
     def _add_virtual_register(self, vreg: uvm_vreg) -> None:
         raise NotImplementedError
 
