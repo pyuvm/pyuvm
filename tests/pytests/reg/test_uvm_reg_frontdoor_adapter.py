@@ -1,7 +1,7 @@
-import asyncio
 from dataclasses import replace
 
 import pytest
+from async_helpers import run_pytest_coro
 
 from pyuvm._error_classes import UVMFatalError
 from pyuvm._reg.uvm_reg import uvm_reg
@@ -139,6 +139,39 @@ class RecordingAdapter(uvm_reg_adapter):
         rw.status = bus_item.status
 
 
+class NoneReg2BusAdapter(RecordingAdapter):
+    def reg2bus(self, rw):
+        self.reg2bus_ops.append(replace(rw))
+
+
+class InvalidParentSequence:
+    async def start_item(self, item):
+        pass
+
+
+class NoneResponseSequencer(MockSequencer):
+    async def get_response(self, txn_id=None):
+        self.response_txn_ids.append(txn_id)
+
+
+class SamplingBlock(uvm_reg_block):
+    def __init__(self, name="sampling_block"):
+        super().__init__(name)
+        self.samples = []
+
+    def sample(self, offset, is_read, map):
+        self.samples.append((offset, is_read, map))
+
+
+class SamplingReg(FrontdoorReg):
+    def __init__(self, name="sampling_reg"):
+        super().__init__(name)
+        self.samples = []
+
+    def sample(self, data, byte_en, is_read, map):
+        self.samples.append((data, byte_en, is_read, map))
+
+
 def build_model(adapter=None, sequencer=None, auto_predict=True):
     block = uvm_reg_block("phase4_block")
     reg_map = block.create_map(
@@ -161,10 +194,12 @@ def test_frontdoor_write_and_read_through_adapter():
     sequencer = MockSequencer(read_data=0xCAFE_BABE)
     _, reg_map, reg = build_model(adapter, sequencer)
 
-    write_status = asyncio.run(
+    write_status = run_pytest_coro(
         reg.write(0x1234_5678, uvm_door_e.UVM_FRONTDOOR, reg_map)
     )
-    read_status, read_data = asyncio.run(reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
+    read_status, read_data = run_pytest_coro(
+        reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map)
+    )
 
     assert write_status == uvm_status_e.UVM_IS_OK
     assert read_status == uvm_status_e.UVM_IS_OK
@@ -197,7 +232,7 @@ def test_frontdoor_status_controls_auto_prediction():
     sequencer = MockSequencer(write_status=uvm_status_e.UVM_NOT_OK)
     _, reg_map, reg = build_model(adapter, sequencer)
 
-    status = asyncio.run(reg.write(0x1111_2222, uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status = run_pytest_coro(reg.write(0x1111_2222, uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_NOT_OK
     assert reg.get_mirrored_value() == 0
@@ -208,7 +243,7 @@ def test_adapter_without_byte_enable_uses_all_bytes_sentinel():
     sequencer = MockSequencer()
     _, reg_map, reg = build_model(adapter, sequencer)
 
-    status = asyncio.run(reg.write(0xA5A5_A5A5, uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status = run_pytest_coro(reg.write(0xA5A5_A5A5, uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert adapter.reg2bus_ops[-1].byte_en == -1
@@ -221,7 +256,7 @@ def test_adapter_parent_sequence_and_responses_are_used():
     sequencer = MockSequencer(read_data=0x1357_9BDF, use_response=True)
     _, reg_map, reg = build_model(adapter, sequencer)
 
-    status, value = asyncio.run(reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status, value = run_pytest_coro(reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert value == 0x1357_9BDF
@@ -235,7 +270,7 @@ def test_map_creates_parent_sequence_when_adapter_does_not_supply_one():
     sequencer = MockSequencer()
     _, reg_map, reg = build_model(adapter, sequencer)
 
-    status = asyncio.run(reg.write(0x55AA_55AA, uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status = run_pytest_coro(reg.write(0x55AA_55AA, uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert adapter.parent_sequence is None
@@ -246,7 +281,7 @@ def test_missing_adapter_and_sequencer_raise_useful_errors():
     _, reg_map, reg = build_model()
 
     with pytest.raises(UVMFatalError, match="no adapter configured"):
-        asyncio.run(reg.write(0x1, uvm_door_e.UVM_FRONTDOOR, reg_map))
+        run_pytest_coro(reg.write(0x1, uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     adapter = RecordingAdapter()
     _, reg_map, reg = build_model()
@@ -254,7 +289,72 @@ def test_missing_adapter_and_sequencer_raise_useful_errors():
         reg_map.set_adapter(adapter)
 
     with pytest.raises(UVMFatalError, match="no sequencer configured"):
-        asyncio.run(reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
+        run_pytest_coro(reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
+
+
+def test_adapter_parent_sequence_must_provide_bus_item_hooks():
+    adapter = RecordingAdapter()
+    adapter.parent_sequence = InvalidParentSequence()
+    sequencer = MockSequencer()
+    _, reg_map, reg = build_model(adapter, sequencer)
+
+    with pytest.raises(UVMFatalError, match="parent_sequence must"):
+        run_pytest_coro(reg.write(0x1, uvm_door_e.UVM_FRONTDOOR, reg_map))
+
+
+def test_adapter_reg2bus_must_return_bus_item():
+    adapter = NoneReg2BusAdapter()
+    sequencer = MockSequencer()
+    _, reg_map, reg = build_model(adapter, sequencer)
+
+    with pytest.raises(UVMFatalError, match="reg2bus\\(\\) returned None"):
+        run_pytest_coro(reg.write(0x1, uvm_door_e.UVM_FRONTDOOR, reg_map))
+
+
+def test_adapter_declared_response_must_return_response_item():
+    adapter = RecordingAdapter()
+    adapter.provides_responses = True
+    sequencer = NoneResponseSequencer()
+    _, reg_map, reg = build_model(adapter, sequencer)
+
+    with pytest.raises(UVMFatalError, match="sequencer returned None"):
+        run_pytest_coro(reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
+
+
+def test_frontdoor_auto_predict_samples_when_coverage_is_enabled():
+    adapter = RecordingAdapter()
+    sequencer = MockSequencer()
+    block = SamplingBlock()
+    reg_map = block.create_map(
+        "csr", 0x1000, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True
+    )
+    reg = SamplingReg()
+    reg.configure(block)
+    reg_map.add_reg(reg, 0x20, "RW")
+    block.lock_model()
+    reg._atomic = AsyncNoopLock()
+    reg.reset()
+    reg._cover_on = 1
+    reg_map.set_auto_predict(True)
+    reg_map.set_sequencer(sequencer, adapter)
+
+    status = run_pytest_coro(reg.write(0x1234_5678, uvm_door_e.UVM_FRONTDOOR, reg_map))
+
+    assert status == uvm_status_e.UVM_IS_OK
+    assert reg.samples == [(0x1234_5678, -1, False, reg_map)]
+    assert block.samples == [(0x20, False, reg_map)]
+
+
+def test_frontdoor_read_checks_mirrored_value_when_enabled():
+    adapter = RecordingAdapter()
+    sequencer = MockSequencer(read_data=0)
+    _, reg_map, reg = build_model(adapter, sequencer)
+    reg_map.set_check_on_read(True)
+
+    status, value = run_pytest_coro(reg.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
+
+    assert status == uvm_status_e.UVM_IS_OK
+    assert value == 0
 
 
 def test_legacy_response_spelling_updates_canonical_property():
@@ -262,4 +362,5 @@ def test_legacy_response_spelling_updates_canonical_property():
 
     adapter.provides_response = True
 
+    assert adapter.provides_response
     assert adapter.provides_responses

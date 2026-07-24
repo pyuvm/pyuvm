@@ -1,8 +1,8 @@
-import asyncio
 import itertools
 import logging
 
 import pytest
+from async_helpers import run_pytest_coro
 
 from pyuvm._reg.uvm_reg import uvm_reg
 from pyuvm._reg.uvm_reg_block import uvm_reg_block
@@ -66,6 +66,19 @@ class PolicyReg(uvm_reg):
         super().__init__(name, 4)
         self.field = uvm_reg_field("field")
         self.field.configure(self, 4, 0, access, False, reset, True, False, False)
+
+
+class MixedAccessReg(uvm_reg):
+    def __init__(self, name="mixed_access_reg"):
+        super().__init__(name, 12)
+        self.target = uvm_reg_field("target")
+        self.read_only = uvm_reg_field("read_only")
+        self.write_zero_clear = uvm_reg_field("write_zero_clear")
+        self.target.configure(self, 4, 0, "RW", False, 0, True, False, False)
+        self.read_only.configure(self, 4, 4, "RO", False, 0xA, True, False, False)
+        self.write_zero_clear.configure(
+            self, 4, 8, "W0C", False, 0x5, True, False, False
+        )
 
 
 class SpyPolicyReg(PolicyReg):
@@ -137,7 +150,7 @@ def test_field_write_preserves_sibling_fields_from_mirror():
     reg.reset()
     reg.high.set(0x77)
 
-    status = asyncio.run(reg.low.write(0x1AB, uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status = run_pytest_coro(reg.low.write(0x1AB, uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert len(reg.write_items) == 1
@@ -154,7 +167,7 @@ def test_field_read_delegates_to_parent_and_extracts_field_value():
     _, reg_map, reg = build_reg(SpyFieldAccessReg())
     reg.read_value = 0xABCD
 
-    status, value = asyncio.run(reg.high.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status, value = run_pytest_coro(reg.high.read(uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert value == 0xAB
@@ -169,7 +182,7 @@ def test_field_poke_and_peek_use_parent_backdoor_path():
     reg.reset()
     reg.read_value = 0x1234
 
-    status = asyncio.run(reg.low.poke(0x1FE, kind="RTL"))
+    status = run_pytest_coro(reg.low.poke(0x1FE, kind="RTL"))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert reg.read_items[-1].get_door() == uvm_door_e.UVM_BACKDOOR
@@ -180,7 +193,7 @@ def test_field_poke_and_peek_use_parent_backdoor_path():
     assert reg.get_mirrored_value() == 0x12FE
 
     reg.read_value = 0xAB89
-    status, value = asyncio.run(reg.low.peek(kind="RTL"))
+    status, value = run_pytest_coro(reg.low.peek(kind="RTL"))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert value == 0x89
@@ -196,7 +209,7 @@ def test_field_mirror_reads_compares_and_predicts(caplog):
     reg.read_value = 0x12AA
 
     with caplog.at_level(logging.ERROR, logger="RegModel"):
-        status = asyncio.run(
+        status = run_pytest_coro(
             reg.low.mirror(uvm_check_e.UVM_CHECK, uvm_door_e.UVM_FRONTDOOR, reg_map)
         )
 
@@ -214,6 +227,41 @@ def test_field_set_masks_oversized_values():
 
     assert reg.low.get() == 0xAB
     assert reg.low.value == 0xAB
+
+
+def test_field_set_honors_one_shot_write_policy():
+    _, field = build_policy_field("W1", reset=0)
+
+    field.set(0x5)
+    assert field.get() == 0x5
+
+    field._written = True
+    field.set(0xA)
+    assert field.get() == 0x5
+
+
+def test_field_parent_write_value_applies_sibling_access_policies():
+    _, reg_map, reg = build_reg(MixedAccessReg())
+
+    assert reg.target._get_parent_write_value(0x3, reg_map) == 0xF03
+
+
+def test_field_poke_returns_parent_peek_error_without_write():
+    _, _, reg = build_reg(SpyFieldAccessReg())
+    reg.reset()
+    reg.next_status = uvm_status_e.UVM_NOT_OK
+
+    status = run_pytest_coro(reg.low.poke(0x12, kind="RTL"))
+
+    assert status == uvm_status_e.UVM_NOT_OK
+    assert len(reg.read_items) == 1
+    assert reg.write_items == []
+
+
+def test_field_individual_accessibility_defaults_to_false():
+    _, reg_map, reg = build_reg()
+
+    assert not reg.low.is_indv_accessible(uvm_door_e.UVM_FRONTDOOR, reg_map)
 
 
 @pytest.mark.parametrize(
@@ -299,11 +347,32 @@ def test_field_update_value_matches_sv_xupdate(access, mirrored, desired, expect
     assert field._update() == expected
 
 
+def test_field_update_value_uses_desired_value_for_custom_policy():
+    access = f"CUSTOM_{next(_policy_ids)}"
+    assert uvm_reg_field.define_access(access)
+    _, field = build_policy_field(access, reset=0)
+    field._desired = 0xB
+
+    assert field.get_update_value() == 0xB
+
+
+def test_field_direct_prediction_fails_when_parent_is_busy():
+    _, _, reg = build_reg()
+
+    reg._set_is_busy(True)
+
+    assert not reg.low.predict(
+        0x44,
+        kind=uvm_predict_e.UVM_PREDICT_DIRECT,
+        path=uvm_door_e.UVM_FRONTDOOR,
+    )
+
+
 def test_register_update_uses_field_update_value_for_w1c():
     reg_map, reg = build_spy_policy_reg("W1C", reset=0xF)
 
     reg.field.set(0x3)
-    status = asyncio.run(reg.update(uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status = run_pytest_coro(reg.update(uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert reg.write_items[-1].get_value() == 0x3

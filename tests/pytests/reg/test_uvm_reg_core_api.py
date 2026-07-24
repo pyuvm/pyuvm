@@ -1,9 +1,10 @@
-import asyncio
 import io
 import logging
 
 import pytest
+from async_helpers import run_pytest_coro
 
+from pyuvm._error_classes import UVMFatalError
 from pyuvm._reg.uvm_reg import uvm_reg
 from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
 from pyuvm._reg.uvm_reg_block import uvm_reg_block
@@ -102,17 +103,38 @@ def test_register_helpers_reset_and_needs_update():
     assert not reg.has_reset("SOFT")
 
 
+def test_unmapped_register_helpers_raise_for_invalid_offsets():
+    loose_reg = CoreApiReg("loose")
+
+    with pytest.raises(UVMFatalError, match="not mapped"):
+        loose_reg.get_offset()
+    assert loose_reg.get_frontdoor() is None
+    loose_reg.set_frontdoor(object())
+
+    block = uvm_reg_block("unmapped_block")
+    reg_map = block.create_map("csr", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True)
+    mapped_without_info = CoreApiReg("mapped_without_info")
+    mapped_without_info.configure(block)
+    mapped_without_info.add_map(reg_map)
+
+    with pytest.raises(UVMFatalError, match="no map info"):
+        mapped_without_info.get_offset(reg_map)
+    assert mapped_without_info.get_frontdoor(reg_map) is None
+    mapped_without_info.set_frontdoor(object(), reg_map)
+    assert mapped_without_info.get_frontdoor(reg_map) is None
+
+
 def test_update_writes_desired_value_only_when_needed():
     _, reg_map, reg = build_reg(SpyReg())
     reg.reset()
 
-    status = asyncio.run(reg.update(uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status = run_pytest_coro(reg.update(uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert reg.write_items == []
 
     reg.set(0x5678)
-    status = asyncio.run(reg.update(uvm_door_e.UVM_FRONTDOOR, reg_map))
+    status = run_pytest_coro(reg.update(uvm_door_e.UVM_FRONTDOOR, reg_map))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert len(reg.write_items) == 1
@@ -131,7 +153,7 @@ def test_mirror_reads_predicts_and_compares(caplog):
     reg.read_value = 0x4567
 
     with caplog.at_level(logging.ERROR, logger="RegModel"):
-        status = asyncio.run(
+        status = run_pytest_coro(
             reg.mirror(uvm_check_e.UVM_CHECK, uvm_door_e.UVM_FRONTDOOR, reg_map)
         )
 
@@ -144,12 +166,40 @@ def test_mirror_reads_predicts_and_compares(caplog):
 
     caplog.clear()
     with caplog.at_level(logging.ERROR, logger="RegModel"):
-        status = asyncio.run(
+        status = run_pytest_coro(
             reg.mirror(uvm_check_e.UVM_CHECK, uvm_door_e.UVM_FRONTDOOR, reg_map)
         )
 
     assert status == uvm_status_e.UVM_IS_OK
     assert "does not match mirrored value" not in caplog.text
+
+
+def test_mirror_handles_not_ok_status_and_default_doors():
+    _, reg_map, reg = build_reg(SpyReg())
+    reg.reset()
+    reg.next_status = uvm_status_e.UVM_NOT_OK
+
+    status = run_pytest_coro(
+        reg.mirror(uvm_check_e.UVM_NO_CHECK, uvm_door_e.UVM_FRONTDOOR, reg_map)
+    )
+
+    assert status == uvm_status_e.UVM_NOT_OK
+
+    reg.next_status = uvm_status_e.UVM_IS_OK
+    reg.read_value = 0x1234
+    status = run_pytest_coro(reg.mirror(uvm_check_e.UVM_NO_CHECK))
+
+    assert status == uvm_status_e.UVM_IS_OK
+    assert reg.get_mirrored_value() == 0x1234
+
+    loose_reg = SpyReg("loose_mirror")
+    loose_reg._atomic = AsyncNoopLock()
+    loose_reg.read_value = 0x4321
+
+    status = run_pytest_coro(loose_reg.mirror(uvm_check_e.UVM_NO_CHECK))
+
+    assert status == uvm_status_e.UVM_IS_OK
+    assert loose_reg.get_mirrored_value() == 0x4321
 
 
 def test_do_check_uses_field_compare_mask(caplog):
@@ -180,7 +230,7 @@ def test_peek_and_poke_use_backdoor_items_and_predict():
     _, _, reg = build_reg(SpyReg())
     reg.reset()
 
-    status = asyncio.run(reg.poke(0x1A2B3, kind="RTL"))
+    status = run_pytest_coro(reg.poke(0x1A2B3, kind="RTL"))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert reg.write_items[-1].get_door() == uvm_door_e.UVM_BACKDOOR
@@ -189,12 +239,23 @@ def test_peek_and_poke_use_backdoor_items_and_predict():
     assert reg.get_mirrored_value() == 0xA2B3
 
     reg.read_value = 0x15555
-    status, value = asyncio.run(reg.peek(kind="RTL"))
+    status, value = run_pytest_coro(reg.peek(kind="RTL"))
 
     assert status == uvm_status_e.UVM_IS_OK
     assert value == 0x5555
     assert reg.read_items[-1].get_door() == uvm_door_e.UVM_BACKDOOR
     assert reg.read_items[-1].get_bd_kind() == "RTL"
+    assert reg.get_mirrored_value() == 0x5555
+
+    reg.next_status = uvm_status_e.UVM_NOT_OK
+    status = run_pytest_coro(reg.poke(0xAAAA, kind="RTL"))
+    assert status == uvm_status_e.UVM_NOT_OK
+    assert reg.get_mirrored_value() == 0x5555
+
+    reg.read_value = 0xBBBB
+    status, value = run_pytest_coro(reg.peek(kind="RTL"))
+    assert status == uvm_status_e.UVM_NOT_OK
+    assert value == 0xBBBB
     assert reg.get_mirrored_value() == 0x5555
 
 
@@ -203,6 +264,8 @@ def test_frontdoor_and_backdoor_setters_getters():
     frontdoor = object()
     block_backdoor = uvm_reg_backdoor("block_bkdr")
     reg_backdoor = uvm_reg_backdoor("reg_bkdr")
+    child = uvm_reg_block("child")
+    child.configure(block)
 
     reg.set_frontdoor(frontdoor, reg_map)
     block.set_backdoor(block_backdoor, fname="block.sv", lineno=42)
@@ -212,6 +275,8 @@ def test_frontdoor_and_backdoor_setters_getters():
     assert block.get_backdoor() is block_backdoor
     assert block_backdoor.fname == "block.sv"
     assert block_backdoor.lineno == 42
+    assert child.get_backdoor(inherited=False) is None
+    assert child.get_backdoor() is block_backdoor
     assert reg.get_backdoor(inherited=False) is None
     assert reg.get_backdoor() is block_backdoor
 
@@ -221,6 +286,42 @@ def test_frontdoor_and_backdoor_setters_getters():
     assert reg.get_backdoor(inherited=False) is reg_backdoor
     assert reg_backdoor.fname == "reg.sv"
     assert reg_backdoor.lineno == 84
+
+    reg.set_backdoor(None)
+    block.set_backdoor(None)
+
+    assert reg.get_backdoor(inherited=False) is None
+    assert block.get_backdoor() is None
+    assert uvm_reg_block("root_without_backdoor").get_backdoor() is None
+
+
+def test_wait_for_lock_returns_when_model_is_already_locked():
+    block = uvm_reg_block("locked_block")
+
+    block.lock_model()
+
+    assert run_pytest_coro(block.wait_for_lock()) is None
+
+
+def test_wait_for_lock_awaits_completion_event_when_unlocked():
+    class AsyncEvent:
+        def __init__(self):
+            self.waited = False
+            self.cleared = False
+
+        async def wait(self):
+            self.waited = True
+
+        def clear(self):
+            self.cleared = True
+
+    block = uvm_reg_block("unlocked_block")
+    event = AsyncEvent()
+    block._lock_model_complete = event
+
+    assert run_pytest_coro(block.wait_for_lock()) is None
+    assert event.waited
+    assert event.cleared
 
 
 def test_unimplemented_hooks_raise():
@@ -233,26 +334,26 @@ def test_unimplemented_hooks_raise():
     with pytest.raises(NotImplementedError):
         reg.sample_values()
     with pytest.raises(NotImplementedError):
-        asyncio.run(reg.pre_write(item))
+        run_pytest_coro(reg.pre_write(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(reg.post_write(item))
+        run_pytest_coro(reg.post_write(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(reg.pre_read(item))
+        run_pytest_coro(reg.pre_read(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(reg.post_read(item))
+        run_pytest_coro(reg.post_read(item))
 
     with pytest.raises(NotImplementedError):
         reg.low.pre_randomize()
     with pytest.raises(NotImplementedError):
         reg.low.post_randomize()
     with pytest.raises(NotImplementedError):
-        asyncio.run(reg.low.pre_write(item))
+        run_pytest_coro(reg.low.pre_write(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(reg.low.post_write(item))
+        run_pytest_coro(reg.low.post_write(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(reg.low.pre_read(item))
+        run_pytest_coro(reg.low.pre_read(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(reg.low.post_read(item))
+        run_pytest_coro(reg.low.post_read(item))
 
     with pytest.raises(NotImplementedError):
         block.sample(0, False, None)
@@ -262,21 +363,21 @@ def test_unimplemented_hooks_raise():
         block.sample_values()
 
     with pytest.raises(NotImplementedError):
-        asyncio.run(backdoor.do_pre_read(item))
+        run_pytest_coro(backdoor.do_pre_read(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(backdoor.do_post_read(item))
+        run_pytest_coro(backdoor.do_post_read(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(backdoor.do_pre_write(item))
+        run_pytest_coro(backdoor.do_pre_write(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(backdoor.do_post_write(item))
+        run_pytest_coro(backdoor.do_post_write(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(backdoor.pre_read(item))
+        run_pytest_coro(backdoor.pre_read(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(backdoor.post_read(item))
+        run_pytest_coro(backdoor.post_read(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(backdoor.pre_write(item))
+        run_pytest_coro(backdoor.pre_write(item))
     with pytest.raises(NotImplementedError):
-        asyncio.run(backdoor.post_write(item))
+        run_pytest_coro(backdoor.post_write(item))
 
     assert not backdoor.is_auto_updated(reg.low)
 
@@ -302,7 +403,7 @@ def test_new_diagnostics_use_sv_uvm_reporting_when_enabled():
 
         reg.reset()
         reg.read_value = 0x4567
-        status = asyncio.run(
+        status = run_pytest_coro(
             reg.mirror(uvm_check_e.UVM_CHECK, uvm_door_e.UVM_FRONTDOOR, reg_map)
         )
 
