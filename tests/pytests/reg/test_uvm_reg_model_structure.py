@@ -1,5 +1,6 @@
-import asyncio
 import logging
+
+from async_helpers import run_pytest_coro
 
 from pyuvm import (
     uvm_endianness_e,
@@ -68,7 +69,7 @@ def test_block_construction_after_asyncio_run_clears_event_loop():
     async def noop():
         return None
 
-    asyncio.run(noop())
+    run_pytest_coro(noop())
 
     block = uvm_reg_block("reg_model_after_asyncio_run")
     block.lock_model()

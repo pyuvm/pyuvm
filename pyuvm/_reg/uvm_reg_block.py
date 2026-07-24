@@ -485,7 +485,7 @@ class uvm_reg_block(uvm_object):
     async def writememh(filename: str) -> None:
         raise NotImplementedError
 
-    def get_backdoor(self, inherited: bool = True) -> uvm_reg_backdoor:
+    def get_backdoor(self, inherited: bool = True) -> uvm_reg_backdoor | None:
         if self._backdoor is not None or not inherited:
             return self._backdoor
         if self._parent is not None:
@@ -493,7 +493,7 @@ class uvm_reg_block(uvm_object):
         return None
 
     def set_backdoor(
-        self, bkdr: uvm_reg_backdoor, fname: str = "", lineno: int = 0
+        self, bkdr: uvm_reg_backdoor | None, fname: str = "", lineno: int = 0
     ) -> None:
         if bkdr is not None:
             bkdr.fname = fname

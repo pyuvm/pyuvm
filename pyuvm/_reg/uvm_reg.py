@@ -366,10 +366,16 @@ class uvm_reg(uvm_object):
     def get_offset(self, map: uvm_reg_map = None) -> uvm_reg_addr_t:
         local_map = self.get_local_map(map)
         if local_map is None:
-            return -1
+            raise UVMFatalError(
+                f"Register {repr(self.get_full_name())} is not mapped in "
+                "the requested address map"
+            )
         map_info = local_map.get_reg_map_info(self)
         if map_info is None:
-            return -1
+            raise UVMFatalError(
+                f"Register {repr(self.get_full_name())} has no map info in "
+                f"address map {repr(local_map.get_full_name())}"
+            )
         return map_info.offset
 
     def get_address(self, map: uvm_reg_map = None) -> uvm_reg_addr_t:
@@ -899,7 +905,7 @@ class uvm_reg(uvm_object):
         return map_info.frontdoor
 
     def set_backdoor(
-        self, bkdr: uvm_reg_backdoor, fname: str = "", lineno: int = 0
+        self, bkdr: uvm_reg_backdoor | None, fname: str = "", lineno: int = 0
     ) -> None:
         self._fname = fname
         self._lineno = lineno
@@ -908,7 +914,7 @@ class uvm_reg(uvm_object):
             bkdr.lineno = lineno
         self._backdoor = bkdr
 
-    def get_backdoor(self, inherited: bool = True) -> uvm_reg_backdoor:
+    def get_backdoor(self, inherited: bool = True) -> uvm_reg_backdoor | None:
         if self._backdoor is None and inherited and self._parent is not None:
             self._backdoor = self._parent.get_backdoor()
         return self._backdoor
