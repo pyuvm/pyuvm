@@ -18,12 +18,7 @@ from pyuvm._s05_base_classes import uvm_object
 from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
 
 if TYPE_CHECKING:
-    from pyuvm._reg.uvm_mem_mam import (
-        alloc_mode_e,
-        locality_e,
-        uvm_mem_mam,
-        uvm_mem_mam_cfg,
-    )
+    from pyuvm._reg.uvm_mem_mam import uvm_mem_mam
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
     from pyuvm._reg.uvm_reg_block import uvm_reg_block
     from pyuvm._reg.uvm_reg_item import uvm_reg_item

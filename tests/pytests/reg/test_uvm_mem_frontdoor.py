@@ -1,5 +1,4 @@
 import pytest
-
 from async_helpers import run_pytest_coro
 from test_uvm_reg_frontdoor_adapter import (
     AsyncNoopLock,

@@ -8,6 +8,10 @@ from pyuvm import (
     uvm_reg,
     uvm_reg_block,
 )
+from pyuvm._reg.uvm_reg_map import (
+    _first_progression_overlap,
+    _uvm_mem_address_set,
+)
 
 
 def make_map(name="top", base=0, n_bytes=4, byte_addressing=True):
@@ -119,7 +123,7 @@ def test_set_mem_offset_rebuilds_locked_lookup():
 
 def test_actual_memory_and_register_overlap_is_reported(caplog):
     block, reg_map = make_map()
-    mem = add_memory(block, reg_map, size=2, n_bits=16, offset=0x10)
+    add_memory(block, reg_map, size=2, n_bits=16, offset=0x10)
     reg = uvm_reg("overlap", 32)
     reg.configure(block)
     reg_map.add_reg(reg, 0x12)
@@ -276,3 +280,94 @@ def test_memory_map_selection_and_incompatible_rights_diagnostics(caplog):
     assert "Set offset requires a map" in caplog.text
     assert "restricted to WO" in caplog.text
     assert "invalid access mode" in caplog.text
+
+
+def test_large_memory_uses_one_compact_lookup_descriptor():
+    block, reg_map = make_map(base=0x100, byte_addressing=True)
+    size = 10_000_000
+    mem = add_memory(
+        block,
+        reg_map,
+        name="large",
+        size=size,
+        n_bits=16,
+        offset=0x20,
+    )
+
+    block.lock_model()
+
+    assert len(reg_map._mems_by_offset) == 1
+    descriptor = reg_map._mems_by_offset[mem]
+    assert descriptor.size == size
+    assert descriptor.first_addresses == (0x120,)
+    assert descriptor.element_strides == (2,)
+    last_address = 0x120 + (size - 1) * 2
+    assert descriptor.max == last_address
+    assert reg_map.get_mem_by_offset(last_address) is mem
+    assert reg_map.get_mem_by_offset(last_address - 1) is None
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        ((0, 2, 2, 10, 2, 2), None),
+        ((5, 0, 1, 5, 0, 1), 5),
+        ((5, 0, 1, 6, 0, 1), None),
+        ((6, 0, 1, 0, 2, 5), 6),
+        ((5, 0, 1, 0, 2, 5), None),
+        ((6, 2, 5, 6, 0, 1), 6),
+        ((6, 2, 5, 5, 0, 1), None),
+        ((0, 4, 5, 2, 4, 5), None),
+        ((0, 4, 10, 6, 6, 10), 12),
+        ((0, 4, 10, 0, 6, 10), 0),
+        ((4, 2, 10, 8, 4, 5), 8),
+        ((0, 4, 2, 6, 6, 1), None),
+    ],
+)
+def test_finite_progression_overlap_cases(args, expected):
+    assert _first_progression_overlap(*args) == expected
+
+
+def test_single_element_address_descriptor_membership_and_disjoint_overlap():
+    mem = uvm_mem("single", 1, 64)
+    descriptor = _uvm_mem_address_set.create(mem, [0x10, 0x11], None)
+    other_mem = uvm_mem("other", 1, 8)
+    other = _uvm_mem_address_set.create(other_mem, [0x20], None)
+
+    assert descriptor.element_strides == (0, 0)
+    assert descriptor.contains(0x10)
+    assert descriptor.contains(0x11)
+    assert not descriptor.contains(0x12)
+    assert not descriptor.contains(0x0F)
+    assert descriptor.first_overlap(other) is None
+
+
+def test_non_overlapping_register_and_memory_paths_are_ignored():
+    block, reg_map = make_map()
+    mem = add_memory(block, reg_map, size=2, n_bits=32, offset=0x10)
+    reg = uvm_reg("reg", 32)
+    reg.configure(block)
+    reg_map.add_reg(reg, 0x30)
+    block.lock_model()
+
+    reg.set_offset(reg_map, 0x40)
+
+    assert reg_map.get_mem_by_offset(0x10) is mem
+    assert reg_map.get_reg_by_offset(0x40) is reg
+
+
+def test_single_element_map_descriptor_and_register_remap_overlap(caplog):
+    block, reg_map = make_map()
+    mem = add_memory(block, reg_map, size=1, n_bits=32, offset=0x10)
+    reg = uvm_reg("reg", 32)
+    reg.configure(block)
+    reg_map.add_reg(reg, 0x30)
+    block.lock_model()
+
+    with caplog.at_level(logging.WARNING, logger="RegModel"):
+        reg.set_offset(reg_map, 0x10)
+
+    descriptor = reg_map._mems_by_offset[mem]
+    assert descriptor.element_strides == (0,)
+    assert descriptor.contains(0x10)
+    assert "overlaps with memory" in caplog.text

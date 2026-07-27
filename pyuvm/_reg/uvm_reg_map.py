@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import warnings
+from dataclasses import dataclass
+from math import gcd
 from typing import TYPE_CHECKING, ClassVar
 
 from pyuvm._error_classes import UVMFatalError
@@ -43,6 +45,169 @@ __all__ = [
     "uvm_reg_map",
 ]
 logger = logging.getLogger("RegModel")
+
+
+def _first_progression_overlap(
+    first_a: int,
+    stride_a: int,
+    count_a: int,
+    first_b: int,
+    stride_b: int,
+    count_b: int,
+) -> int | None:
+    """Return the first address shared by two finite arithmetic progressions.
+
+    A mapped memory is represented by one progression per physical byte lane.
+    For example, a lane whose first address is 0x100 and whose element stride
+    is four occupies 0x100, 0x104, 0x108, ... .  Map initialization needs to
+    know whether two such lanes ever occupy the same address so that it can
+    report memory-to-memory overlap accurately.
+
+    Merely comparing the minimum and maximum addresses is insufficient because
+    the progressions can contain holes.  Expanding every memory element into a
+    dictionary would preserve those holes, but would also consume storage
+    proportional to memory depth.  This helper instead solves
+
+        first_a + stride_a * i == first_b + stride_b * j
+
+    for finite index ranges using the greatest common divisor and the Chinese
+    Remainder Theorem.  The GCD test determines whether the infinite
+    progressions can intersect; the modular inverse produces one intersection;
+    and ``period`` advances that solution to the first address inside both
+    finite ranges.
+
+    A zero stride represents a progression containing only one distinct
+    address, which occurs for a one-element memory.  The explicit zero-stride
+    cases also avoid taking a modular inverse with a zero modulus.
+
+    Returns:
+        The lowest shared address within both finite progressions, or ``None``
+        when they do not intersect.
+    """
+    last_a = first_a + stride_a * (count_a - 1)
+    last_b = first_b + stride_b * (count_b - 1)
+    lower = max(first_a, first_b)
+    upper = min(last_a, last_b)
+    if lower > upper:
+        return None
+    if stride_a == 0:
+        if stride_b == 0:
+            return first_a if first_a == first_b else None
+        delta = first_a - first_b
+        return first_a if delta >= 0 and delta % stride_b == 0 else None
+    if stride_b == 0:
+        delta = first_b - first_a
+        return first_b if delta >= 0 and delta % stride_a == 0 else None
+
+    common = gcd(stride_a, stride_b)
+    difference = first_b - first_a
+    if difference % common:
+        return None
+    reduced_b = stride_b // common
+    multiplier = 0
+    if reduced_b > 1:
+        multiplier = (
+            (difference // common)
+            * pow(stride_a // common, -1, reduced_b)
+        ) % reduced_b
+    period = stride_a * reduced_b
+    candidate = (first_a + stride_a * multiplier) % period
+    if candidate < lower:
+        candidate += ((lower - candidate + period - 1) // period) * period
+    return candidate if candidate <= upper else None
+
+
+@dataclass(frozen=True)
+class _uvm_mem_address_set:
+    """Compact description of all physical addresses occupied by a memory.
+
+    ``uvm_reg_map.get_physical_addresses()`` can return several addresses for
+    one memory element, typically one per bus byte lane.  ``first_addresses``
+    stores those addresses for element zero, while ``element_strides`` stores
+    the difference between the corresponding addresses of elements zero and
+    one.  Each pair therefore describes one finite arithmetic progression
+    containing ``size`` addresses.
+
+    The register map uses this descriptor for three operations:
+
+    * ``contains()`` resolves a bus address to its mapped memory without
+      incorrectly filling gaps between strided elements.
+    * ``first_overlap()`` detects exact memory-to-memory collisions during map
+      initialization.
+    * The ``min`` and ``max`` bounds provide a cheap rejection test before the
+      exact progression calculations.
+
+    Keeping one descriptor per memory makes lookup metadata proportional to
+    the number and width of mapped memories, rather than their total number of
+    elements.  This is important for models containing very large memories.
+    """
+
+    mem: uvm_mem
+    first_addresses: tuple[uvm_reg_addr_t, ...]
+    element_strides: tuple[int, ...]
+    size: int
+    min: uvm_reg_addr_t
+    max: uvm_reg_addr_t
+
+    @classmethod
+    def create(
+        cls,
+        mem: uvm_mem,
+        first_addresses: list[uvm_reg_addr_t],
+        second_addresses: list[uvm_reg_addr_t] | None,
+    ) -> _uvm_mem_address_set:
+        if second_addresses is None:
+            strides = tuple(0 for _ in first_addresses)
+        else:
+            strides = tuple(
+                second - first
+                for first, second in zip(first_addresses, second_addresses)
+            )
+        final_addresses = [
+            first + stride * (mem.get_size() - 1)
+            for first, stride in zip(first_addresses, strides)
+        ]
+        all_bounds = [*first_addresses, *final_addresses]
+        return cls(
+            mem,
+            tuple(first_addresses),
+            strides,
+            mem.get_size(),
+            min(all_bounds),
+            max(all_bounds),
+        )
+
+    def contains(self, address: uvm_reg_addr_t) -> bool:
+        if address < self.min or address > self.max:
+            return False
+        for first, stride in zip(self.first_addresses, self.element_strides):
+            if stride == 0:
+                if address == first:
+                    return True
+                continue
+            delta = address - first
+            if delta >= 0 and delta % stride == 0 and delta // stride < self.size:
+                return True
+        return False
+
+    def first_overlap(self, other: _uvm_mem_address_set) -> int | None:
+        if self.max < other.min or other.max < self.min:
+            return None
+        for first_a, stride_a in zip(self.first_addresses, self.element_strides):
+            for first_b, stride_b in zip(
+                other.first_addresses, other.element_strides
+            ):
+                overlap = _first_progression_overlap(
+                    first_a,
+                    stride_a,
+                    self.size,
+                    first_b,
+                    stride_b,
+                    other.size,
+                )
+                if overlap is not None:
+                    return overlap
+        return None
 
 
 class uvm_reg_map_info:
@@ -97,7 +262,7 @@ class uvm_reg_map(uvm_object):
         self._mems_info: dict[uvm_mem, uvm_reg_map_info] = dict()
         self._regs_by_offset: dict[uvm_reg_addr_t, uvm_reg] = dict()
         self._regs_by_offset_wo: dict[uvm_reg_addr_t, uvm_reg] = dict()
-        self._mems_by_offset: dict[uvm_reg_addr_t, uvm_mem] = dict()
+        self._mems_by_offset: dict[uvm_mem, _uvm_mem_address_set] = dict()
         self._policy: uvm_reg_transaction_order_policy = None
 
     def _init_address_map(self) -> None:
@@ -267,31 +432,33 @@ class uvm_reg_map(uvm_object):
             info.mem_range = None
             return
 
-        occupied = []
-        for element_offset in range(mem.get_size()):
-            occupied.extend(
-                self._memory_element_addresses(mem, info, element_offset)
-            )
         info.addr = self._memory_element_addresses(mem, info, 0)
-        info.mem_range = uvm_reg_map_addr_range(
-            min(occupied), max(occupied), info.stride
+        second_addresses = None
+        if mem.get_size() > 1:
+            second_addresses = self._memory_element_addresses(mem, info, 1)
+        address_set = _uvm_mem_address_set.create(
+            mem, info.addr, second_addresses
         )
-        for addr in occupied:
-            other_mem = root_map._mems_by_offset.get(addr)
-            if other_mem is not None and other_mem is not mem:
+        info.mem_range = uvm_reg_map_addr_range(
+            address_set.min, address_set.max, info.stride
+        )
+        for other_mem, other_set in root_map._mems_by_offset.items():
+            overlap = address_set.first_overlap(other_set)
+            if overlap is not None and other_mem is not mem:
                 logger.warning(
                     f"In map {repr(self.get_full_name())} memory "
                     f"{repr(mem.get_full_name())} overlaps memory "
-                    f"{repr(other_mem.get_full_name())} at 0x{addr:X}"
+                    f"{repr(other_mem.get_full_name())} at 0x{overlap:X}"
                 )
-            reg = root_map._regs_by_offset.get(addr)
-            if reg is not None:
-                logger.warning(
-                    f"In map {repr(self.get_full_name())} memory "
-                    f"{repr(mem.get_full_name())} overlaps register "
-                    f"{repr(reg.get_full_name())} at 0x{addr:X}"
-                )
-            root_map._mems_by_offset[addr] = mem
+        for addr, reg in root_map._regs_by_offset.items():
+            if not address_set.contains(addr):
+                continue
+            logger.warning(
+                f"In map {repr(self.get_full_name())} memory "
+                f"{repr(mem.get_full_name())} overlaps register "
+                f"{repr(reg.get_full_name())} at 0x{addr:X}"
+            )
+        root_map._mems_by_offset[mem] = address_set
 
     def add_submap(self, child_map: uvm_reg_map, offset: uvm_reg_addr_t) -> None:
         if not child_map:
@@ -440,13 +607,13 @@ class uvm_reg_map(uvm_object):
                 else:
                     root_map._regs_by_offset[addr] = reg
 
-                for range in root_map._mems_by_offset.keys():
-                    if addr >= range.min and addr <= range.max:
+                for mem, address_set in root_map._mems_by_offset.items():
+                    if address_set.contains(addr):
                         logger.warning(
                             f"In map {repr(self.get_full_name())} "
                             f"register {repr(reg.get_full_name())} "
-                            "overlaps with address range of memory"
-                            f"{repr(root_map._mems_by_offset[range].get_full_name())} "
+                            "overlaps with memory "
+                            f"{repr(mem.get_full_name())} "
                             f": 0x{addr:X}"
                         )
             info.addr = addrs
@@ -645,7 +812,11 @@ class uvm_reg_map(uvm_object):
                 f"{repr(self.get_parent().get_full_name())} is not locked"
             )
             return None
-        return self.get_root_map()._mems_by_offset.get(offset)
+        address_sets = self.get_root_map()._mems_by_offset.values()
+        for address_set in reversed(tuple(address_sets)):
+            if address_set.contains(offset):
+                return address_set.mem
+        return None
 
     def set_auto_predict(self, on: bool = True) -> None:
         self._auto_predict = on
