@@ -614,6 +614,15 @@ that waived fatal and error reports no longer contribute to failure counts.
 
 You can contribute to **pyuvm** by forking this repository and submitting pull requests.
 
+## AI Pull Request Reviews
+
+This repository includes a custom AI skill to automatically review Pull Requests. When you submit a PR, it may be reviewed by an agent using the `pr-reviewer` skill to ensure your code has adequate test coverage and implements the promised intent.
+
+You are highly encouraged to use an AI agent (like Google Antigravity, Claude Code, or Codex) to review your own PR before submitting it! To do so, simply ask your agent:
+*"Run the pr-reviewer skill on PR <number>"*
+
+*(Note: The agent will use your own local compute and API limits, so no shared project tokens are consumed).*
+
 ## Development Environment Setup
 
 The pyuvm project uses forked Github rebase flow.
