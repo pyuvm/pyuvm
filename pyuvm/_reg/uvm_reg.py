@@ -19,7 +19,12 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_status_e,
 )
 from pyuvm._s05_base_classes import uvm_object
-from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
+from pyuvm.uvm_reporting import (
+    uvm_report_error as _report_error,
+)
+from pyuvm.uvm_reporting import (
+    uvm_report_warning as _report_warning,
+)
 
 if TYPE_CHECKING:
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
@@ -39,20 +44,6 @@ if TYPE_CHECKING:
 
 __all__ = ["uvm_reg"]
 logger = logging.getLogger("RegModel")
-
-
-def _report_warning(obj: uvm_object, report_id: str, msg: str) -> None:
-    if get_sv_uvm_style_reporting_enabled():
-        obj.uvm_report.warning(report_id, msg)
-    else:
-        logger.warning(msg)
-
-
-def _report_error(obj: uvm_object, report_id: str, msg: str) -> None:
-    if get_sv_uvm_style_reporting_enabled():
-        obj.uvm_report.error(report_id, msg)
-    else:
-        logger.error(msg)
 
 
 class uvm_reg(uvm_object):

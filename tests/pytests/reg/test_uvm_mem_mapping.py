@@ -75,9 +75,9 @@ def test_memory_address_introspection_rejects_negative_offset(caplog):
     block.lock_model()
 
     with caplog.at_level(logging.WARNING, logger="RegModel"):
-        assert mem.get_offset(-1, reg_map) == -1
-        assert mem.get_address(-1, reg_map) == -1
-        assert mem.get_addresses(-1, reg_map) == (-1, [])
+        assert mem.get_offset(-1, reg_map) is None
+        assert mem.get_address(-1, reg_map) is None
+        assert mem.get_addresses(-1, reg_map) == (None, [])
 
     assert "Offset 0x-1 lies outside of memory 'mem'" in caplog.text
 
@@ -117,8 +117,8 @@ def test_unmapped_memory_has_no_addresses_or_lookup_entries():
     assert info.unmapped
     assert info.addr == []
     assert info.mem_range is None
-    assert mem.get_offset(0, reg_map) == -1
-    assert mem.get_addresses(0, reg_map) == (-1, [])
+    assert mem.get_offset(0, reg_map) is None
+    assert mem.get_addresses(0, reg_map) == (None, [])
     assert reg_map.get_mem_by_offset(0x10) is None
 
 
@@ -259,14 +259,14 @@ def test_get_offset_out_of_range_returns_minus_one(offset, caplog):
     block.lock_model()
 
     with caplog.at_level(logging.WARNING, logger="RegModel"):
-        assert mem.get_offset(offset, reg_map) == -1
+        assert mem.get_offset(offset, reg_map) is None
     assert "lies outside of memory" in caplog.text
 
 
 def test_get_offset_returns_minus_one_when_memory_has_no_map():
     mem = uvm_mem("loose", 2, 8)
 
-    assert mem.get_offset() == -1
+    assert mem.get_offset() is None
 
 
 def test_memory_map_selection_and_incompatible_rights_diagnostics(caplog):
@@ -373,7 +373,7 @@ def test_memory_lookup_diagnostic_paths_are_reported(caplog):
     with caplog.at_level(logging.WARNING, logger="RegModel"):
         assert mem.get_vreg_by_name("missing") is None
         assert mem.get_vfield_by_name("missing") is None
-        assert mem.get_addresses(0) == (-1, [])
+        assert mem.get_addresses(0) == (None, [])
 
     assert "Unable to find virtual register" in caplog.text
     assert "Unable to find virtual field" in caplog.text

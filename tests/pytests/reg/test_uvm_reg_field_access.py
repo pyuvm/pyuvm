@@ -1,3 +1,4 @@
+import io
 import itertools
 import logging
 
@@ -15,6 +16,8 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_predict_e,
     uvm_status_e,
 )
+from pyuvm.uvm_reporting import set_sv_uvm_style_reporting_enabled
+from pyuvm.uvm_reporting.uvm_report_server import uvm_report_server
 
 
 class AsyncNoopLock:
@@ -256,6 +259,44 @@ def test_field_poke_returns_parent_peek_error_without_write():
     assert status == uvm_status_e.UVM_NOT_OK
     assert len(reg.read_items) == 1
     assert reg.write_items == []
+
+
+def test_field_diagnostics_use_sv_uvm_reporting_when_enabled():
+    root_logger = logging.getLogger("uvm")
+    old_level = root_logger.level
+    old_propagate = root_logger.propagate
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.setLevel(logging.NOTSET)
+    handler.setFormatter(logging.Formatter("%(levelname)s:%(message)s"))
+
+    set_sv_uvm_style_reporting_enabled(True)
+    root_logger.addHandler(handler)
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.propagate = False
+    manager = uvm_report_server.create(root_logger=root_logger)
+
+    try:
+        _, _, reg = build_reg(SpyFieldAccessReg())
+        reg.low.set(0x1AB)
+        reg.next_status = uvm_status_e.UVM_NOT_OK
+
+        status = run_pytest_coro(reg.low.poke(0x12, kind="RTL"))
+
+        assert status == uvm_status_e.UVM_NOT_OK
+        output = stream.getvalue()
+        assert "[FIELD_VALUE_WIDTH] Specified value (0x1AB)" in output
+        assert "[FIELD_POKE] uvm_reg_field::poke()" in output
+        assert manager.get_stats().warning_count == 1
+        assert manager.get_stats().error_count == 1
+    finally:
+        manager.shutdown()
+        manager.clear_counts()
+        manager.catcher.clear()
+        root_logger.removeHandler(handler)
+        root_logger.setLevel(old_level)
+        root_logger.propagate = old_propagate
+        set_sv_uvm_style_reporting_enabled(False)
 
 
 def test_field_individual_accessibility_defaults_to_false():

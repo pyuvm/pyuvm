@@ -182,7 +182,7 @@ def test_memory_offset_warning_uses_sv_uvm_reporting_when_enabled():
         reg_map.add_mem(mem, 0)
         block.lock_model()
 
-        assert mem.get_addresses(-1, reg_map) == (-1, [])
+        assert mem.get_addresses(-1, reg_map) == (None, [])
         assert (
             "[MEM_OFFSET] Offset 0x-1 lies outside of memory 'storage'"
             in stream.getvalue()

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING, ClassVar
 
 from cocotb.triggers import Lock
@@ -15,7 +14,12 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_status_e,
 )
 from pyuvm._s05_base_classes import uvm_object
-from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
+from pyuvm.uvm_reporting import (
+    uvm_report_error as _report_error,
+)
+from pyuvm.uvm_reporting import (
+    uvm_report_warning as _report_warning,
+)
 
 if TYPE_CHECKING:
     from pyuvm._reg.uvm_mem_mam import uvm_mem_mam
@@ -37,21 +41,6 @@ if TYPE_CHECKING:
     from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
 __all__ = ["uvm_mem"]
-logger = logging.getLogger("RegModel")
-
-
-def _report_warning(obj: uvm_object, report_id: str, msg: str) -> None:
-    if get_sv_uvm_style_reporting_enabled():
-        obj.uvm_report.warning(report_id, msg)
-    else:
-        logger.warning(msg)
-
-
-def _report_error(obj: uvm_object, report_id: str, msg: str) -> None:
-    if get_sv_uvm_style_reporting_enabled():
-        obj.uvm_report.error(report_id, msg)
-    else:
-        logger.error(msg)
 
 
 class uvm_mem(uvm_object):
@@ -303,7 +292,7 @@ class uvm_mem(uvm_object):
 
     def get_offset(
         self, offset: uvm_reg_addr_t = 0, map: uvm_reg_map = None
-    ) -> uvm_reg_addr_t:
+    ) -> uvm_reg_addr_t | None:
         if offset < 0 or offset >= self._size:
             _report_warning(
                 self,
@@ -311,31 +300,30 @@ class uvm_mem(uvm_object):
                 f"Offset 0x{offset:X} lies outside of memory "
                 f"'{self.get_name()}' which has size 0x{self._size:X}",
             )
-            return -1
+            return None
         local_map = self.get_local_map(map)
         if not local_map:
-            return -1
+            return None
         info = local_map.get_mem_map_info(self)
         if info.unmapped:
-            return -1
+            return None
         return info.offset + offset * info.stride
 
     def get_address(
         self, offset: uvm_reg_addr_t = 0, map: uvm_reg_map = None
-    ) -> uvm_reg_addr_t:
+    ) -> uvm_reg_addr_t | None:
         _, addresses = self.get_addresses(offset, map)
-        # UVM address-introspection APIs use -1 as the recoverable failure
-        # sentinel when an offset is invalid or no mapped address is available.
-        # This is not an exception because a failed address query does not
-        # corrupt the model or prevent simulation from continuing; exceptions
-        # are reserved for fatal configuration and model-integrity failures.
-        return addresses[0] if addresses else -1
+        # A failed address query is recoverable: it does not corrupt the model
+        # or prevent simulation from continuing.  None represents the absence
+        # of an address without inventing an out-of-domain integer sentinel;
+        # exceptions remain reserved for fatal model-integrity failures.
+        return addresses[0] if addresses else None
 
     def get_addresses(
         self,
         offset: uvm_reg_addr_t = 0,
         map: uvm_reg_map = None,
-    ) -> tuple[int, list[uvm_reg_addr_t]]:
+    ) -> tuple[uvm_reg_addr_t | None, list[uvm_reg_addr_t]]:
         if offset < 0 or offset >= self._size:
             _report_warning(
                 self,
@@ -343,7 +331,7 @@ class uvm_mem(uvm_object):
                 f"Offset 0x{offset:X} lies outside of memory "
                 f"'{self.get_name()}' which has size 0x{self._size:X}",
             )
-            return -1, list()
+            return None, list()
         local_map = self.get_local_map(map)
         if not local_map:
             map_name = "None" if not map else map.get_full_name()
@@ -352,7 +340,7 @@ class uvm_mem(uvm_object):
                 "MEM_MAP_LOOKUP",
                 f"Memory '{self.get_name()}' not found in map '{map_name}'",
             )
-            return -1, list()
+            return None, list()
         map_info = local_map.get_mem_map_info(self)
         if map_info.unmapped:
             map_name = local_map.get_full_name() if not map else map.get_full_name()
@@ -361,7 +349,7 @@ class uvm_mem(uvm_object):
                 "MEM_UNMAPPED",
                 f"Memory '{self.get_name()}' is unmapped in map '{map_name}'",
             )
-            return -1, list()
+            return None, list()
         addresses = local_map._memory_element_addresses(self, map_info, offset)
         bytes_per_access = min(self.get_n_bytes(), local_map.get_n_bytes())
         return bytes_per_access, addresses
