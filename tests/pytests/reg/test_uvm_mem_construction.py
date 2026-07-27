@@ -176,9 +176,7 @@ def test_memory_offset_warning_uses_sv_uvm_reporting_when_enabled():
 
     try:
         block = uvm_reg_block("top")
-        reg_map = block.create_map(
-            "map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN
-        )
+        reg_map = block.create_map("map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN)
         mem = uvm_mem("storage", 4, 8)
         mem.configure(block)
         reg_map.add_mem(mem, 0)
@@ -219,9 +217,7 @@ def test_block_and_map_diagnostics_use_sv_uvm_reporting_when_enabled():
 
     try:
         block = uvm_reg_block("top")
-        reg_map = block.create_map(
-            "map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN
-        )
+        reg_map = block.create_map("map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN)
         other_block = uvm_reg_block("other")
         other_map = other_block.create_map(
             "other_map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN
@@ -259,9 +255,7 @@ def test_block_diagnostic_paths_are_reported(caplog):
     block = uvm_reg_block("diagnostic_block")
     child = uvm_reg_block("child")
     child.configure(block)
-    reg_map = block.create_map(
-        "map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN
-    )
+    reg_map = block.create_map("map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN)
     reg = uvm_reg("reg", 8)
     reg.configure(block)
     mem = uvm_mem("mem", 1, 8)

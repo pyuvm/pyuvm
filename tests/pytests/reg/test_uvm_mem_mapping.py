@@ -163,9 +163,7 @@ def test_non_overlapping_memories_can_share_bounding_interval_without_warning(ca
 
 
 def test_memory_lookup_translates_through_hierarchical_submap():
-    top, root_map = make_map(
-        "top", base=0x100, n_bytes=4, byte_addressing=False
-    )
+    top, root_map = make_map("top", base=0x100, n_bytes=4, byte_addressing=False)
     child = uvm_reg_block("child")
     child.configure(top)
     child_map = child.create_map(
