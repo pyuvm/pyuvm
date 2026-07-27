@@ -12,6 +12,7 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_elem_kind_e,
     uvm_endianness_e,
     uvm_hier_e,
+    uvm_reg_map_addr_range,
 )
 from pyuvm._s05_base_classes import uvm_object
 from pyuvm._s14_15_python_sequences import uvm_sequence, uvm_sequence_base
@@ -52,6 +53,7 @@ class uvm_reg_map_info:
         self.addr: list[uvm_reg_addr_t] = list()
         self.frontdoor: uvm_reg_frontdoor = None
         self.mem_range: uvm_reg_map_addr_range = None
+        self.stride: int = 1
         self.is_initialized: bool = False
 
 
@@ -95,7 +97,7 @@ class uvm_reg_map(uvm_object):
         self._mems_info: dict[uvm_mem, uvm_reg_map_info] = dict()
         self._regs_by_offset: dict[uvm_reg_addr_t, uvm_reg] = dict()
         self._regs_by_offset_wo: dict[uvm_reg_addr_t, uvm_reg] = dict()
-        self._mems_by_offset: dict[uvm_reg_map_addr_range, uvm_mem] = dict()
+        self._mems_by_offset: dict[uvm_reg_addr_t, uvm_mem] = dict()
         self._policy: uvm_reg_transaction_order_policy = None
 
     def _init_address_map(self) -> None:
@@ -145,7 +147,7 @@ class uvm_reg_map(uvm_object):
                     # TODO: check memory overlap uvm_reg_map.svh:1619
                 self._regs_info[reg].addr = reg_addrs
         for mem, mem_info in self._mems_info.items():
-            raise NotImplementedError
+            self._initialize_memory(mem, mem_info)
         if bus_width == 0:
             bus_width = self._n_bytes
         self._system_n_bytes = bus_width
@@ -217,8 +219,79 @@ class uvm_reg_map(uvm_object):
         rights: str = "RW",
         unmapped: bool = False,
         frontdoor: uvm_reg_frontdoor = None,
-    ):
-        raise NotImplementedError
+    ) -> None:
+        if mem in self._mems_info:
+            logger.error(
+                f"Memory {repr(mem.get_name())} has already been added "
+                f"to map {repr(self.get_full_name())}"
+            )
+            return
+        if mem.get_parent() is not self.get_parent():
+            logger.error(
+                f"Memory {repr(mem.get_name())} may not be added to "
+                f"address map {repr(self.get_full_name())}: they are not "
+                "in the same block"
+            )
+            return
+        rights = rights.upper()
+        if rights not in ("RW", "RO", "WO"):
+            logger.error(
+                f"Memory {repr(mem.get_name())} has invalid map rights "
+                f"{repr(rights)}; using 'RW'"
+            )
+            rights = "RW"
+        info = uvm_reg_map_info()
+        info.offset = offset
+        info.rights = rights
+        info.unmapped = unmapped
+        info.frontdoor = frontdoor
+        info.stride = max(
+            1, ceildiv(mem.get_n_bytes(), self.get_addr_unit_bytes())
+        )
+        self._mems_info[mem] = info
+        mem.add_map(self)
+
+    def _memory_element_addresses(
+        self, mem: uvm_mem, info: uvm_reg_map_info, element_offset: int
+    ) -> list[uvm_reg_addr_t]:
+        _, addresses = self.get_physical_addresses(
+            info.offset + element_offset * info.stride, 0, mem.get_n_bytes()
+        )
+        return addresses
+
+    def _initialize_memory(self, mem: uvm_mem, info: uvm_reg_map_info) -> None:
+        root_map = self.get_root_map()
+        info.is_initialized = True
+        if info.unmapped:
+            info.addr = []
+            info.mem_range = None
+            return
+
+        occupied = []
+        for element_offset in range(mem.get_size()):
+            occupied.extend(
+                self._memory_element_addresses(mem, info, element_offset)
+            )
+        info.addr = self._memory_element_addresses(mem, info, 0)
+        info.mem_range = uvm_reg_map_addr_range(
+            min(occupied), max(occupied), info.stride
+        )
+        for addr in occupied:
+            other_mem = root_map._mems_by_offset.get(addr)
+            if other_mem is not None and other_mem is not mem:
+                logger.warning(
+                    f"In map {repr(self.get_full_name())} memory "
+                    f"{repr(mem.get_full_name())} overlaps memory "
+                    f"{repr(other_mem.get_full_name())} at 0x{addr:X}"
+                )
+            reg = root_map._regs_by_offset.get(addr)
+            if reg is not None:
+                logger.warning(
+                    f"In map {repr(self.get_full_name())} memory "
+                    f"{repr(mem.get_full_name())} overlaps register "
+                    f"{repr(reg.get_full_name())} at 0x{addr:X}"
+                )
+            root_map._mems_by_offset[addr] = mem
 
     def add_submap(self, child_map: uvm_reg_map, offset: uvm_reg_addr_t) -> None:
         if not child_map:
@@ -387,7 +460,18 @@ class uvm_reg_map(uvm_object):
     def _set_mem_offset(
         self, mem: uvm_mem, offset: uvm_reg_addr_t, unmapped: bool
     ) -> None:
-        raise NotImplementedError
+        if mem not in self._mems_info:
+            logger.error(
+                f"Cannot modify offset of memory {repr(mem.get_full_name())} "
+                f"in address map {repr(self.get_full_name())}: memory is not mapped"
+            )
+            return
+        info = self._mems_info[mem]
+        info.offset = offset if not unmapped else -1
+        info.unmapped = unmapped
+        info.is_initialized = False
+        if self.get_parent().is_locked():
+            self.get_root_map()._init_address_map()
 
     def get_full_name(self) -> str:
         parent = self.get_parent()
@@ -507,8 +591,23 @@ class uvm_reg_map(uvm_object):
             )
         return map_info
 
-    def get_mem_map_info(self, mem: uvm_mem, error: bool) -> uvm_reg_map_info:
-        raise NotImplementedError
+    def get_mem_map_info(
+        self, mem: uvm_mem, error: bool = True
+    ) -> uvm_reg_map_info | None:
+        if mem not in self._mems_info:
+            if error:
+                logger.error(
+                    f"Memory {repr(mem.get_name())} not in map "
+                    f"{repr(self.get_full_name())}"
+                )
+            return None
+        info = self._mems_info[mem]
+        if not info.is_initialized:
+            logger.warning(
+                f"Map {repr(self.get_full_name())} does not seem to be "
+                "initialized correctly; check that the top register model is locked"
+            )
+        return info
 
     def get_size(self) -> int:
         raise NotImplementedError
@@ -539,8 +638,14 @@ class uvm_reg_map(uvm_object):
             return self._regs_by_offset[offset]
         return None
 
-    def get_mem_by_offset(self, offset: uvm_reg_addr_t) -> uvm_mem:
-        raise NotImplementedError
+    def get_mem_by_offset(self, offset: uvm_reg_addr_t) -> uvm_mem | None:
+        if not self.get_parent().is_locked():
+            logger.error(
+                "Cannot get memory by offset: block "
+                f"{repr(self.get_parent().get_full_name())} is not locked"
+            )
+            return None
+        return self.get_root_map()._mems_by_offset.get(offset)
 
     def set_auto_predict(self, on: bool = True) -> None:
         self._auto_predict = on
@@ -605,15 +710,24 @@ class uvm_reg_map(uvm_object):
         access_kind: uvm_access_e,
         adapter: uvm_reg_adapter,
     ) -> uvm_reg_bus_op:
-        reg = rw.get_element()
-        bus_width, addrs, byte_offset = self._get_physical_addresses_to_map(
-            self._regs_info[reg].offset, 0x0, reg.get_n_bytes(), None, None
-        )
+        element = rw.get_element()
+        if rw.get_element_kind() == uvm_elem_kind_e.UVM_MEM:
+            info = self._mems_info[element]
+            addrs = self._memory_element_addresses(
+                element, info, rw.get_offset()
+            )
+            bus_width = self.get_n_bytes()
+            byte_offset = 0
+        else:
+            info = self._regs_info[element]
+            bus_width, addrs, byte_offset = self._get_physical_addresses_to_map(
+                info.offset, 0x0, element.get_n_bytes(), None, None
+            )
         bus_op = uvm_reg_bus_op()
         bus_op.kind = access_kind
         bus_op.addr = addrs[0]
         bus_op.data = rw.get_value()
-        bus_op.n_bits = min(reg.get_n_bits(), bus_width * 8)
+        bus_op.n_bits = min(element.get_n_bits(), bus_width * 8)
         bus_op.status = rw.get_status()
         if adapter.supports_byte_enable:
             byte_offset = int(byte_offset)

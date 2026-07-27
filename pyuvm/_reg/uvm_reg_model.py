@@ -146,9 +146,11 @@ class uvm_reg_frontdoor:
         raise NotImplementedError
 
 
+@dataclass(frozen=True)
 class uvm_reg_map_addr_range:
-    def __init__(self):
-        raise NotImplementedError
+    min: uvm_reg_addr_t
+    max: uvm_reg_addr_t
+    stride: int = 1
 
 
 class uvm_object_string_pool(uvm_object):
