@@ -19,6 +19,7 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_hier_e,
 )
 from pyuvm._s05_base_classes import uvm_object
+from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
 
 if TYPE_CHECKING:
     from pyuvm._reg.uvm_mem import uvm_mem
@@ -37,6 +38,20 @@ if TYPE_CHECKING:
 
 __all__ = ["uvm_reg_block"]
 logger = logging.getLogger("RegModel")
+
+
+def _report_warning(obj: uvm_object, report_id: str, msg: str) -> None:
+    if get_sv_uvm_style_reporting_enabled():
+        obj.uvm_report.warning(report_id, msg)
+    else:
+        logger.warning(msg)
+
+
+def _report_error(obj: uvm_object, report_id: str, msg: str) -> None:
+    if get_sv_uvm_style_reporting_enabled():
+        obj.uvm_report.error(report_id, msg)
+    else:
+        logger.error(msg)
 
 
 class uvm_reg_block(uvm_object):
@@ -88,7 +103,9 @@ class uvm_reg_block(uvm_object):
 
     def set_default_map(self, map: uvm_reg_map) -> None:
         if map not in self._maps:
-            logger.error(f"Map {repr(map.get_name())} does not exist in block")
+            _report_error(
+                self, "REG_BLOCK", f"Map {repr(map.get_name())} does not exist in block"
+            )
             return
         self._default_map = map
 
@@ -101,12 +118,16 @@ class uvm_reg_block(uvm_object):
     def _add_block(self, blk: uvm_reg_block) -> None:
         uid = blk.get_inst_id()
         if self.is_locked():
-            logger.error("Cannot add subblock to a locked block model")
+            _report_error(
+                self, "REG_BLOCK", "Cannot add subblock to a locked block model"
+            )
             return
         if uid in self._blks:
-            logger.error(
+            _report_error(
+                self,
+                "REG_BLOCK",
                 f"Subblock {repr(blk.get_name())} has already been "
-                f"registered with block {repr(self.get_name())}"
+                f"registered with block {repr(self.get_name())}",
             )
             return
         self._blks[uid] = blk
@@ -117,11 +138,13 @@ class uvm_reg_block(uvm_object):
 
     def _add_map(self, map: uvm_reg_map) -> None:
         if self.is_locked():
-            logger.error("Cannot add map to locked model")
+            _report_error(self, "REG_BLOCK", "Cannot add map to locked model")
             return
         if map in self._maps:
-            logger.error(
-                f"Map {repr(map.get_name())} already exists in {repr(self.get_full_name())}"
+            _report_error(
+                self,
+                "REG_BLOCK",
+                f"Map {repr(map.get_name())} already exists in {repr(self.get_full_name())}",
             )
             return
         self._maps.append(map)
@@ -131,12 +154,16 @@ class uvm_reg_block(uvm_object):
     def _add_register(self, reg: uvm_reg) -> None:
         uid = reg.get_inst_id()
         if self.is_locked():
-            logger.error("Cannot add register to a locked block model")
+            _report_error(
+                self, "REG_BLOCK", "Cannot add register to a locked block model"
+            )
             return
         if uid in self._regs:
-            logger.error(
+            _report_error(
+                self,
+                "REG_BLOCK",
                 f"Register {repr(reg.get_name())} has already been "
-                f"registered with block {self.get_full_name()}"
+                f"registered with block {self.get_full_name()}",
             )
             return
         self._regs[uid] = reg
@@ -144,12 +171,16 @@ class uvm_reg_block(uvm_object):
     def _add_memory(self, mem: uvm_mem) -> None:
         uid = mem.get_inst_id()
         if self.is_locked():
-            logger.error("Cannot add memory to a locked block model")
+            _report_error(
+                self, "REG_BLOCK", "Cannot add memory to a locked block model"
+            )
             return
         if uid in self._mems:
-            logger.error(
+            _report_error(
+                self,
+                "REG_BLOCK",
                 f"Memory {repr(mem.get_name())} has already been "
-                f"registered with block {self.get_full_name()}"
+                f"registered with block {self.get_full_name()}",
             )
             return
         self._mems[uid] = mem
@@ -192,10 +223,12 @@ class uvm_reg_block(uvm_object):
                 count = names.count(names[0])
                 _ = names.pop(0)
                 if count > 1:
-                    logger.error(
+                    _report_error(
+                        self,
+                        "REG_BLOCK",
                         f"There are {count} root register models "
                         "named {repr(name)}. The names of the root register "
-                        "models have to be unique"
+                        "models have to be unique",
                     )
             # NOTE: Trigger event
             if self._lock_model_complete is not None:
@@ -307,8 +340,10 @@ class uvm_reg_block(uvm_object):
             block = uvm_reg_block.get_block_by_name(f"{blk_name}.{name}")
             if block:
                 return block
-        logger.warning(
-            f"Unable to locate block {repr(name)} in block {repr(self.get_full_name())}"
+        _report_warning(
+            self,
+            "REG_BLOCK",
+            f"Unable to locate block {repr(name)} in block {repr(self.get_full_name())}",
         )
 
     @staticmethod
@@ -319,49 +354,61 @@ class uvm_reg_block(uvm_object):
         for map in self.get_maps():
             if map.get_name() == name:
                 return map
-        logger.warning(
-            f"Unable to locate map {repr(name)} in block {repr(self.get_full_name())}"
+        _report_warning(
+            self,
+            "REG_BLOCK",
+            f"Unable to locate map {repr(name)} in block {repr(self.get_full_name())}",
         )
 
     def get_reg_by_name(self, name: str) -> uvm_reg | None:
         for reg in self.get_registers(uvm_hier_e.UVM_HIER):
             if reg.get_name() == name:
                 return reg
-        logger.warning(
-            f"Unable to locate register {repr(name)} in block {repr(self.get_full_name())}"
+        _report_warning(
+            self,
+            "REG_BLOCK",
+            f"Unable to locate register {repr(name)} in block {repr(self.get_full_name())}",
         )
 
     def get_field_by_name(self, name: str) -> uvm_reg_field:
         for field in self.get_fields(uvm_hier_e.UVM_HIER):
             if field.get_name() == name:
                 return field
-        logger.warning(
-            f"Unable to locate field {repr(name)} in block {repr(self.get_full_name())}"
+        _report_warning(
+            self,
+            "REG_BLOCK",
+            f"Unable to locate field {repr(name)} in block {repr(self.get_full_name())}",
         )
 
     def get_mem_by_name(self, name: str) -> uvm_mem | None:
         for mem in self.get_memories(uvm_hier_e.UVM_HIER):
             if mem.get_name() == name:
                 return mem
-        logger.warning(
-            f"Unable to locate memory {repr(name)} in block {repr(self.get_full_name())}"
+        _report_warning(
+            self,
+            "REG_BLOCK",
+            f"Unable to locate memory {repr(name)} in block {repr(self.get_full_name())}",
         )
 
     def get_vreg_by_name(self, name: str) -> uvm_vreg | None:
         for vreg in self.get_virtual_registers(uvm_hier_e.UVM_HIER):
             if vreg.get_name() == name:
                 return vreg
-        logger.warning(
+        _report_warning(
+            self,
+            "REG_BLOCK",
             f"Unable to locate virtual register {repr(name)} in block "
-            f"{repr(self.get_full_name())}"
+            f"{repr(self.get_full_name())}",
         )
 
     def get_vfield_by_name(self, name: str) -> uvm_vreg_field:
         for vfield in self.get_virtual_fields(uvm_hier_e.UVM_HIER):
             if vfield.get_name() == name:
                 return vfield
-        logger.warning(
-            f"Unable to locate virtual field {repr(name)}' in block {repr(self.get_full_name())}"
+        _report_warning(
+            self,
+            "REG_BLOCK",
+            f"Unable to locate virtual field {repr(name)}' in block {repr(self.get_full_name())}",
         )
 
     def build_coverage(self, models: uvm_reg_cvr_t) -> uvm_reg_cvr_t:

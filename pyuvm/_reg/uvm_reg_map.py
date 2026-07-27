@@ -18,6 +18,7 @@ from pyuvm._reg.uvm_reg_model import (
 )
 from pyuvm._s05_base_classes import uvm_object
 from pyuvm._s14_15_python_sequences import uvm_sequence, uvm_sequence_base
+from pyuvm.uvm_reporting import get_sv_uvm_style_reporting_enabled
 
 if TYPE_CHECKING:
     from pyuvm import (
@@ -45,6 +46,20 @@ __all__ = [
     "uvm_reg_map",
 ]
 logger = logging.getLogger("RegModel")
+
+
+def _report_warning(obj: uvm_object, report_id: str, msg: str) -> None:
+    if get_sv_uvm_style_reporting_enabled():
+        obj.uvm_report.warning(report_id, msg)
+    else:
+        logger.warning(msg)
+
+
+def _report_error(obj: uvm_object, report_id: str, msg: str) -> None:
+    if get_sv_uvm_style_reporting_enabled():
+        obj.uvm_report.error(report_id, msg)
+    else:
+        logger.error(msg)
 
 
 def _first_progression_overlap(
@@ -107,8 +122,7 @@ def _first_progression_overlap(
     multiplier = 0
     if reduced_b > 1:
         multiplier = (
-            (difference // common)
-            * pow(stride_a // common, -1, reduced_b)
+            (difference // common) * pow(stride_a // common, -1, reduced_b)
         ) % reduced_b
     period = stride_a * reduced_b
     candidate = (first_a + stride_a * multiplier) % period
@@ -194,9 +208,7 @@ class _uvm_mem_address_set:
         if self.max < other.min or other.max < self.min:
             return None
         for first_a, stride_a in zip(self.first_addresses, self.element_strides):
-            for first_b, stride_b in zip(
-                other.first_addresses, other.element_strides
-            ):
+            for first_b, stride_b in zip(other.first_addresses, other.element_strides):
                 overlap = _first_progression_overlap(
                     first_a,
                     stride_a,
@@ -301,11 +313,13 @@ class uvm_reg_map(uvm_object):
                             # uvm_reg_read_only_cb.add(other_reg)
                             # uvm_reg_write_only_cb.add(reg)
                         else:
-                            logger.warning(
+                            _report_warning(
+                                self,
+                                "REG_MAP",
                                 f"In map {repr(self.get_full_name())} "
                                 f"register {repr(reg.get_full_name())} maps "
                                 "to the same address as register "
-                                f"{repr(other_reg.get_full_name())}: 0x{addr:X}"
+                                f"{repr(other_reg.get_full_name())}: 0x{addr:X}",
                             )
                     else:
                         root_map._regs_by_offset[addr] = reg
@@ -358,15 +372,19 @@ class uvm_reg_map(uvm_object):
         frontdoor: uvm_reg_frontdoor = None,
     ) -> None:
         if rg in self._regs_info:
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Register {repr(rg.get_name())} has already been added "
-                f"to map {repr(self.get_full_name())}"
+                f"to map {repr(self.get_full_name())}",
             )
         if rg.get_parent() != self.get_parent():
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Register {repr(rg.get_name())} may not be added to "
                 f"the address map {repr(self.get_full_name())}: they  "
-                "are not in the same block"
+                "are not in the same block",
             )
         rg.add_map(self)
         info = uvm_reg_map_info()
@@ -386,23 +404,29 @@ class uvm_reg_map(uvm_object):
         frontdoor: uvm_reg_frontdoor = None,
     ) -> None:
         if mem in self._mems_info:
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Memory {repr(mem.get_name())} has already been added "
-                f"to map {repr(self.get_full_name())}"
+                f"to map {repr(self.get_full_name())}",
             )
             return
         if mem.get_parent() is not self.get_parent():
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Memory {repr(mem.get_name())} may not be added to "
                 f"address map {repr(self.get_full_name())}: they are not "
-                "in the same block"
+                "in the same block",
             )
             return
         rights = rights.upper()
         if rights not in ("RW", "RO", "WO"):
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Memory {repr(mem.get_name())} has invalid map rights "
-                f"{repr(rights)}; using 'RW'"
+                f"{repr(rights)}; using 'RW'",
             )
             rights = "RW"
         info = uvm_reg_map_info()
@@ -410,9 +434,7 @@ class uvm_reg_map(uvm_object):
         info.rights = rights
         info.unmapped = unmapped
         info.frontdoor = frontdoor
-        info.stride = max(
-            1, ceildiv(mem.get_n_bytes(), self.get_addr_unit_bytes())
-        )
+        info.stride = max(1, ceildiv(mem.get_n_bytes(), self.get_addr_unit_bytes()))
         self._mems_info[mem] = info
         mem.add_map(self)
 
@@ -436,45 +458,52 @@ class uvm_reg_map(uvm_object):
         second_addresses = None
         if mem.get_size() > 1:
             second_addresses = self._memory_element_addresses(mem, info, 1)
-        address_set = _uvm_mem_address_set.create(
-            mem, info.addr, second_addresses
-        )
+        address_set = _uvm_mem_address_set.create(mem, info.addr, second_addresses)
         info.mem_range = uvm_reg_map_addr_range(
             address_set.min, address_set.max, info.stride
         )
         for other_mem, other_set in root_map._mems_by_offset.items():
             overlap = address_set.first_overlap(other_set)
             if overlap is not None and other_mem is not mem:
-                logger.warning(
+                _report_warning(
+                    self,
+                    "REG_MAP",
                     f"In map {repr(self.get_full_name())} memory "
                     f"{repr(mem.get_full_name())} overlaps memory "
-                    f"{repr(other_mem.get_full_name())} at 0x{overlap:X}"
+                    f"{repr(other_mem.get_full_name())} at 0x{overlap:X}",
                 )
         for addr, reg in root_map._regs_by_offset.items():
             if not address_set.contains(addr):
                 continue
-            logger.warning(
+            _report_warning(
+                self,
+                "REG_MAP",
                 f"In map {repr(self.get_full_name())} memory "
                 f"{repr(mem.get_full_name())} overlaps register "
-                f"{repr(reg.get_full_name())} at 0x{addr:X}"
+                f"{repr(reg.get_full_name())} at 0x{addr:X}",
             )
         root_map._mems_by_offset[mem] = address_set
 
     def add_submap(self, child_map: uvm_reg_map, offset: uvm_reg_addr_t) -> None:
         if not child_map:
-            logger.error("Child map cannot be None")
+            _report_error(self, "REG_MAP", "Child map cannot be None")
+            return
         parent_map = child_map.get_parent_map()
         if parent_map:
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Map {repr(child_map.get_full_name())} is already a child "
-                f"of map {repr(parent_map.get_full_name())}"
+                f"of map {repr(parent_map.get_full_name())}",
             )
         child_n_bytes = child_map.get_n_bytes(uvm_hier_e.UVM_NO_HIER)
         if self._n_bytes > child_n_bytes:
-            logger.warning(
+            _report_warning(
+                self,
+                "REG_MAP",
                 f"Adding {child_n_bytes}-bytes submap to "
                 f"{repr(child_map.get_full_name())} {self._n_bytes}-bytes map "
-                f"parent map {repr(self.get_full_name())}"
+                f"parent map {repr(self.get_full_name())}",
             )
         child_map._add_parent_map(self, offset)
         self.set_submap_offset(child_map, offset)
@@ -483,7 +512,7 @@ class uvm_reg_map(uvm_object):
         self, sequencer: uvm_sequencer, adapter: uvm_reg_adapter = None
     ) -> None:
         if not sequencer:
-            logger.error("None value specified for bus sequencer")
+            _report_error(self, "REG_MAP", "None value specified for bus sequencer")
             return
         if not adapter:
             logger.info(
@@ -496,7 +525,7 @@ class uvm_reg_map(uvm_object):
 
     def set_submap_offset(self, submap: uvm_reg_map, offset: uvm_reg_addr_t) -> None:
         if not submap:
-            logger.error("set_submap_offset: submap cannot be None")
+            _report_error(self, "REG_MAP", "set_submap_offset: submap cannot be None")
             return
         self._submaps[submap] = offset
         if self._parent.is_locked():
@@ -504,15 +533,18 @@ class uvm_reg_map(uvm_object):
             root_map._init_address_map()
 
     def get_submap_offset(self, submap: uvm_reg_map) -> uvm_reg_addr_t:
+        if submap is None:
+            _report_error(self, "REG_MAP", "get_submap_offset: submap cannot be None")
+            return -1
         try:
             return self._submaps[submap]
         except KeyError:
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Map {repr(submap.get_full_name())} is not a submap of map "
-                f"{repr(self.get_full_name())}"
+                f"{repr(self.get_full_name())}",
             )
-        except TypeError:
-            logger.error("get_submap_offset: submap cannot be None")
         return -1
 
     def set_base_addr(self, offset: uvm_reg_addr_t) -> None:
@@ -524,12 +556,14 @@ class uvm_reg_map(uvm_object):
 
     def _add_parent_map(self, parent_map: uvm_reg_map, offset: uvm_reg_addr_t) -> None:
         if not parent_map:
-            logger.error("Parent map cannot be None")
+            _report_error(self, "REG_MAP", "Parent map cannot be None")
             return
         if self._parent_map:
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Map {repr(self.get_full_name())} is already a submap "
-                f"of map {repr(self._parent_map.get_full_name())}"
+                f"of map {repr(self._parent_map.get_full_name())}",
             )
             return
         parent_map._submaps[self] = offset
@@ -542,11 +576,13 @@ class uvm_reg_map(uvm_object):
         self, reg: uvm_reg, offset: uvm_reg_addr_t, unmapped: bool
     ) -> None:
         if reg not in self._regs_info:
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Cannot modify offset of register "
                 f"{repr(reg.get_full_name())} in address map "
                 f"{repr(self.get_full_name())} register is not "
-                "mapped in that address map"
+                "mapped in that address map",
             )
             return
         info = self._regs_info[reg]
@@ -597,24 +633,28 @@ class uvm_reg_map(uvm_object):
                         # uvm_reg_read_only_cbs::remove(reg2);
                         # uvm_reg_write_only_cbs::remove(reg2);
                     else:
-                        logger.warning(
+                        _report_warning(
+                            self,
+                            "REG_MAP",
                             f"In map {repr(self.get_full_name())} "
                             f" register {repr(reg.get_full_name())} maps to same "
                             f"address as register "
                             f"{repr(root_map._regs_by_offset[addr].get_full_name())} "
-                            f": 0x{addr:X}"
+                            f": 0x{addr:X}",
                         )
                 else:
                     root_map._regs_by_offset[addr] = reg
 
                 for mem, address_set in root_map._mems_by_offset.items():
                     if address_set.contains(addr):
-                        logger.warning(
+                        _report_warning(
+                            self,
+                            "REG_MAP",
                             f"In map {repr(self.get_full_name())} "
                             f"register {repr(reg.get_full_name())} "
                             "overlaps with memory "
                             f"{repr(mem.get_full_name())} "
-                            f": 0x{addr:X}"
+                            f": 0x{addr:X}",
                         )
             info.addr = addrs
         if unmapped:
@@ -628,9 +668,11 @@ class uvm_reg_map(uvm_object):
         self, mem: uvm_mem, offset: uvm_reg_addr_t, unmapped: bool
     ) -> None:
         if mem not in self._mems_info:
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 f"Cannot modify offset of memory {repr(mem.get_full_name())} "
-                f"in address map {repr(self.get_full_name())}: memory is not mapped"
+                f"in address map {repr(self.get_full_name())}: memory is not mapped",
             )
             return
         info = self._mems_info[mem]
@@ -745,16 +787,20 @@ class uvm_reg_map(uvm_object):
     ) -> uvm_reg_map_info | None:
         if rg not in self._regs_info:
             if error:
-                logger.error(
-                    f"Register {repr(rg.get_name())} not in map {repr(self.get_full_name())}"
+                _report_error(
+                    self,
+                    "REG_MAP",
+                    f"Register {repr(rg.get_name())} not in map {repr(self.get_full_name())}",
                 )
             return
         map_info = self._regs_info[rg]
         if not map_info.is_initialized:
-            logger.warning(
+            _report_warning(
+                self,
+                "REG_MAP",
                 f"Map {repr(self.get_full_name())} does not seem to "
                 "initialized correctly, check that the top "
-                "register model is locked()"
+                "register model is locked()",
             )
         return map_info
 
@@ -763,16 +809,20 @@ class uvm_reg_map(uvm_object):
     ) -> uvm_reg_map_info | None:
         if mem not in self._mems_info:
             if error:
-                logger.error(
+                _report_error(
+                    self,
+                    "REG_MAP",
                     f"Memory {repr(mem.get_name())} not in map "
-                    f"{repr(self.get_full_name())}"
+                    f"{repr(self.get_full_name())}",
                 )
             return None
         info = self._mems_info[mem]
         if not info.is_initialized:
-            logger.warning(
+            _report_warning(
+                self,
+                "REG_MAP",
                 f"Map {repr(self.get_full_name())} does not seem to be "
-                "initialized correctly; check that the top register model is locked"
+                "initialized correctly; check that the top register model is locked",
             )
         return info
 
@@ -794,9 +844,11 @@ class uvm_reg_map(uvm_object):
         self, offset: uvm_reg_addr_t, read: bool = True
     ) -> uvm_reg | None:
         if not self.get_parent().is_locked():
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 "Cannot get register by offset : block "
-                f"{repr(self.get_parent().get_full_name())} is not locked"
+                f"{repr(self.get_parent().get_full_name())} is not locked",
             )
             return None
         if not read and offset in self._regs_by_offset_wo:
@@ -807,9 +859,11 @@ class uvm_reg_map(uvm_object):
 
     def get_mem_by_offset(self, offset: uvm_reg_addr_t) -> uvm_mem | None:
         if not self.get_parent().is_locked():
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 "Cannot get memory by offset: block "
-                f"{repr(self.get_parent().get_full_name())} is not locked"
+                f"{repr(self.get_parent().get_full_name())} is not locked",
             )
             return None
         address_sets = self.get_root_map()._mems_by_offset.values()
@@ -884,9 +938,7 @@ class uvm_reg_map(uvm_object):
         element = rw.get_element()
         if rw.get_element_kind() == uvm_elem_kind_e.UVM_MEM:
             info = self._mems_info[element]
-            addrs = self._memory_element_addresses(
-                element, info, rw.get_offset()
-            )
+            addrs = self._memory_element_addresses(element, info, rw.get_offset())
             bus_width = self.get_n_bytes()
             byte_offset = 0
         else:
@@ -1074,10 +1126,12 @@ class uvm_reg_map(uvm_object):
         ):
             local_addr = lbase_addr2 * n_addrs
         else:
-            logger.error(
+            _report_error(
+                self,
+                "REG_MAP",
                 "Map has no specified endianness. Cannot access "
                 f"{repr(n_bytes)} bytes register via its {repr(bus_width)} "
-                f"byte {repr(self.get_full_name())} interface"
+                f"byte {repr(self.get_full_name())} interface",
             )
 
         # Scale into upper map's address space

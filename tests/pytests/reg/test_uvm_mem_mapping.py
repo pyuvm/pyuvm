@@ -62,11 +62,24 @@ def test_byte_addressed_memory_offsets_addresses_and_stride_holes():
     assert mem.get_offset(2, reg_map) == 0x24
     assert mem.get_address(0, reg_map) == 0x120
     assert mem.get_address(1, reg_map) == 0x122
-    assert mem.get_addresses(2, reg_map) == (4, [0x124])
+    assert mem.get_addresses(2, reg_map) == (2, [0x124])
     assert reg_map.get_mem_by_offset(0x120) is mem
     assert reg_map.get_mem_by_offset(0x122) is mem
     assert reg_map.get_mem_by_offset(0x121) is None
     assert reg_map.get_mem_by_offset(0x123) is None
+
+
+def test_memory_address_introspection_rejects_negative_offset(caplog):
+    block, reg_map = make_map()
+    mem = add_memory(block, reg_map)
+    block.lock_model()
+
+    with caplog.at_level(logging.WARNING, logger="RegModel"):
+        assert mem.get_offset(-1, reg_map) == -1
+        assert mem.get_address(-1, reg_map) == -1
+        assert mem.get_addresses(-1, reg_map) == (-1, [])
+
+    assert "Offset 0x-1 lies outside of memory 'mem'" in caplog.text
 
 
 def test_word_addressed_memory_uses_map_address_units():
@@ -354,6 +367,82 @@ def test_non_overlapping_register_and_memory_paths_are_ignored():
 
     assert reg_map.get_mem_by_offset(0x10) is mem
     assert reg_map.get_reg_by_offset(0x40) is reg
+
+
+def test_memory_lookup_diagnostic_paths_are_reported(caplog):
+    mem = uvm_mem("mem", 2, 8)
+
+    with caplog.at_level(logging.WARNING, logger="RegModel"):
+        assert mem.get_vreg_by_name("missing") is None
+        assert mem.get_vfield_by_name("missing") is None
+        assert mem.get_addresses(0) == (-1, [])
+
+    assert "Unable to find virtual register" in caplog.text
+    assert "Unable to find virtual field" in caplog.text
+    assert "not found in map" in caplog.text
+
+
+def test_register_map_diagnostic_paths_are_reported(caplog):
+    block, reg_map = make_map(n_bytes=4)
+    other_block, other_map = make_map(name="other", n_bytes=2)
+    reg = uvm_reg("reg", 8)
+    reg.configure(block)
+    other_reg = uvm_reg("other_reg", 8)
+    other_reg.configure(other_block)
+    missing_reg = uvm_reg("missing_reg", 8)
+    missing_reg.configure(block)
+    mem = uvm_mem("mem", 1, 8)
+    mem.configure(block)
+
+    with caplog.at_level(logging.WARNING, logger="RegModel"):
+        reg_map.add_reg(reg, 0)
+        reg_map.add_reg(reg, 0)
+        reg_map.add_reg(other_reg, 4)
+        reg_map.get_reg_map_info(reg)
+        reg_map.get_reg_map_info(missing_reg)
+        reg_map.get_mem_map_info(mem)
+        assert reg_map.get_reg_by_offset(0) is None
+        assert reg_map.get_mem_by_offset(0) is None
+        reg_map._set_reg_offset(missing_reg, 4, False)
+        reg_map.set_sequencer(None)
+        reg_map.set_submap_offset(None, 0)
+        assert reg_map.get_submap_offset(other_map) == -1
+        assert reg_map.get_submap_offset(None) == -1
+        other_map._add_parent_map(None, 0)
+
+        reg_map.add_submap(other_map, 0x10)
+        reg_map.add_submap(other_map, 0x20)
+
+        reg_map.add_submap(None, 0)
+
+        reg_map._endian = None
+        with pytest.raises(TypeError):
+            reg_map.get_physical_addresses(0, 0, 1)
+
+    assert "has already been added" in caplog.text
+    assert "not in map" in caplog.text
+    assert "None value specified for bus sequencer" in caplog.text
+    assert "already a child" in caplog.text
+    assert "Map has no specified endianness" in caplog.text
+
+
+def test_register_overlap_diagnostics_are_reported(caplog):
+    block, reg_map = make_map()
+    first = uvm_reg("first", 32)
+    second = uvm_reg("second", 32)
+    third = uvm_reg("third", 32)
+    first.configure(block)
+    second.configure(block)
+    third.configure(block)
+    reg_map.add_reg(first, 0x10)
+    reg_map.add_reg(second, 0x20)
+    reg_map.add_reg(third, 0x10)
+
+    with caplog.at_level(logging.WARNING, logger="RegModel"):
+        block.lock_model()
+        second.set_offset(reg_map, 0x10)
+
+    assert "maps to same address" in caplog.text
 
 
 def test_single_element_map_descriptor_and_register_remap_overlap(caplog):

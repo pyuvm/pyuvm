@@ -40,6 +40,13 @@ __all__ = ["uvm_mem"]
 logger = logging.getLogger("RegModel")
 
 
+def _report_warning(obj: uvm_object, report_id: str, msg: str) -> None:
+    if get_sv_uvm_style_reporting_enabled():
+        obj.uvm_report.warning(report_id, msg)
+    else:
+        logger.warning(msg)
+
+
 def _report_error(obj: uvm_object, report_id: str, msg: str) -> None:
     if get_sv_uvm_style_reporting_enabled():
         obj.uvm_report.error(report_id, msg)
@@ -179,15 +186,19 @@ class uvm_mem(uvm_object):
                 if parent_map == map:
                     return local_map
                 parent_map = parent_map.get_parent_map()
-        logger.warning(
+        _report_warning(
+            self,
+            "MEM_MAP_LOOKUP",
             f"Memory '{self.get_full_name()}' is not contained "
-            f"within map '{map.get_full_name()}'"
+            f"within map '{map.get_full_name()}'",
         )
 
     def get_default_map(self) -> uvm_reg_map | None:
         if not self._maps:
-            logger.warning(
-                f"Memory '{self.get_full_name()}' is not registered with any map"
+            _report_warning(
+                self,
+                "MEM_NO_MAP",
+                f"Memory '{self.get_full_name()}' is not registered with any map",
             )
             return
         if len(self._maps) == 1:
@@ -268,17 +279,21 @@ class uvm_mem(uvm_object):
         for vreg in self.get_virtual_registers():
             if vreg.get_name() == name:
                 return vreg
-        logger.warning(
+        _report_warning(
+            self,
+            "MEM_VREG_LOOKUP",
             f"Unable to find virtual register '{name}' in memory "
-            f"'{self.get_full_name()}'"
+            f"'{self.get_full_name()}'",
         )
 
     def get_vfield_by_name(self, name: str) -> uvm_vreg_field | None:
         for field in self.get_virtual_fields():
             if field.get_name() == name:
                 return field
-        logger.warning(
-            f"Unable to find virtual field '{name}' in memory '{self.get_full_name()}'"
+        _report_warning(
+            self,
+            "MEM_VFIELD_LOOKUP",
+            f"Unable to find virtual field '{name}' in memory '{self.get_full_name()}'",
         )
 
     def get_vreg_by_offset(
@@ -290,9 +305,11 @@ class uvm_mem(uvm_object):
         self, offset: uvm_reg_addr_t = 0, map: uvm_reg_map = None
     ) -> uvm_reg_addr_t:
         if offset < 0 or offset >= self._size:
-            logger.warning(
+            _report_warning(
+                self,
+                "MEM_OFFSET",
                 f"Offset 0x{offset:X} lies outside of memory "
-                f"'{self.get_name()}' which has size 0x{self._size:X}"
+                f"'{self.get_name()}' which has size 0x{self._size:X}",
             )
             return -1
         local_map = self.get_local_map(map)
@@ -307,33 +324,47 @@ class uvm_mem(uvm_object):
         self, offset: uvm_reg_addr_t = 0, map: uvm_reg_map = None
     ) -> uvm_reg_addr_t:
         _, addresses = self.get_addresses(offset, map)
-        return addresses[0]
+        # UVM address-introspection APIs use -1 as the recoverable failure
+        # sentinel when an offset is invalid or no mapped address is available.
+        # This is not an exception because a failed address query does not
+        # corrupt the model or prevent simulation from continuing; exceptions
+        # are reserved for fatal configuration and model-integrity failures.
+        return addresses[0] if addresses else -1
 
     def get_addresses(
         self,
         offset: uvm_reg_addr_t = 0,
         map: uvm_reg_map = None,
     ) -> tuple[int, list[uvm_reg_addr_t]]:
-        if offset >= self._size:
-            logger.warning(
+        if offset < 0 or offset >= self._size:
+            _report_warning(
+                self,
+                "MEM_OFFSET",
                 f"Offset 0x{offset:X} lies outside of memory "
-                f"'{self.get_name()}' which has size 0x{self._size:X}"
+                f"'{self.get_name()}' which has size 0x{self._size:X}",
             )
             return -1, list()
         local_map = self.get_local_map(map)
         if not local_map:
             map_name = "None" if not map else map.get_full_name()
-            logger.warning(f"Memory '{self.get_name()}' not found in map '{map_name}'")
+            _report_warning(
+                self,
+                "MEM_MAP_LOOKUP",
+                f"Memory '{self.get_name()}' not found in map '{map_name}'",
+            )
             return -1, list()
         map_info = local_map.get_mem_map_info(self)
         if map_info.unmapped:
             map_name = local_map.get_full_name() if not map else map.get_full_name()
-            logger.warning(
-                f"Memory '{self.get_name()}' is unmapped in map '{map_name}'"
+            _report_warning(
+                self,
+                "MEM_UNMAPPED",
+                f"Memory '{self.get_name()}' is unmapped in map '{map_name}'",
             )
             return -1, list()
         addresses = local_map._memory_element_addresses(self, map_info, offset)
-        return local_map.get_n_bytes(), addresses
+        bytes_per_access = min(self.get_n_bytes(), local_map.get_n_bytes())
+        return bytes_per_access, addresses
 
     async def write(
         self,

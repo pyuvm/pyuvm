@@ -3,7 +3,7 @@ import logging
 
 import pytest
 
-from pyuvm import uvm_hier_e, uvm_mem, uvm_reg_block
+from pyuvm import uvm_endianness_e, uvm_hier_e, uvm_mem, uvm_reg, uvm_reg_block
 from pyuvm._error_classes import UVMFatalError
 from pyuvm.uvm_reporting import set_sv_uvm_style_reporting_enabled
 from pyuvm.uvm_reporting.uvm_report_server import (
@@ -155,3 +155,147 @@ def test_memory_constructor_errors_use_sv_uvm_reporting_when_enabled():
         root_logger.setLevel(old_level)
         root_logger.propagate = old_propagate
         set_sv_uvm_style_reporting_enabled(False)
+
+
+def test_memory_offset_warning_uses_sv_uvm_reporting_when_enabled():
+    root_logger = logging.getLogger("uvm")
+    old_level = root_logger.level
+    old_propagate = root_logger.propagate
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.setFormatter(logging.Formatter("%(levelname)s:%(message)s"))
+
+    set_sv_uvm_style_reporting_enabled(True)
+    root_logger.addHandler(handler)
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.propagate = False
+    manager = uvm_report_server.create(
+        policy=uvm_report_policy(max_quit_count=0),
+        root_logger=root_logger,
+    )
+
+    try:
+        block = uvm_reg_block("top")
+        reg_map = block.create_map(
+            "map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN
+        )
+        mem = uvm_mem("storage", 4, 8)
+        mem.configure(block)
+        reg_map.add_mem(mem, 0)
+        block.lock_model()
+
+        assert mem.get_addresses(-1, reg_map) == (-1, [])
+        assert (
+            "[MEM_OFFSET] Offset 0x-1 lies outside of memory 'storage'"
+            in stream.getvalue()
+        )
+        assert manager.get_stats().warning_count == 1
+    finally:
+        manager.shutdown()
+        manager.clear_counts()
+        manager.catcher.clear()
+        root_logger.removeHandler(handler)
+        root_logger.setLevel(old_level)
+        root_logger.propagate = old_propagate
+        set_sv_uvm_style_reporting_enabled(False)
+
+
+def test_block_and_map_diagnostics_use_sv_uvm_reporting_when_enabled():
+    root_logger = logging.getLogger("uvm")
+    old_level = root_logger.level
+    old_propagate = root_logger.propagate
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.setFormatter(logging.Formatter("%(levelname)s:%(message)s"))
+
+    set_sv_uvm_style_reporting_enabled(True)
+    root_logger.addHandler(handler)
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.propagate = False
+    manager = uvm_report_server.create(
+        policy=uvm_report_policy(max_quit_count=0),
+        root_logger=root_logger,
+    )
+
+    try:
+        block = uvm_reg_block("top")
+        reg_map = block.create_map(
+            "map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN
+        )
+        other_block = uvm_reg_block("other")
+        other_map = other_block.create_map(
+            "other_map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN
+        )
+
+        block.set_default_map(other_map)
+        block.get_map_by_name("missing")
+
+        first = uvm_mem("first", 2, 8)
+        second = uvm_mem("second", 2, 8)
+        first.configure(block)
+        second.configure(block)
+        reg_map.add_mem(first, 0)
+        reg_map.add_mem(first, 0)
+        reg_map.add_mem(second, 0)
+        block.lock_model()
+
+        output = stream.getvalue()
+        assert "[REG_BLOCK] Map 'other_map' does not exist in block" in output
+        assert "[REG_MAP] Memory 'first' has already been added" in output
+        assert "[REG_MAP] In map 'top.map' memory 'top.second' overlaps" in output
+        assert manager.get_stats().error_count == 2
+        assert manager.get_stats().warning_count == 2
+    finally:
+        manager.shutdown()
+        manager.clear_counts()
+        manager.catcher.clear()
+        root_logger.removeHandler(handler)
+        root_logger.setLevel(old_level)
+        root_logger.propagate = old_propagate
+        set_sv_uvm_style_reporting_enabled(False)
+
+
+def test_block_diagnostic_paths_are_reported(caplog):
+    block = uvm_reg_block("diagnostic_block")
+    child = uvm_reg_block("child")
+    child.configure(block)
+    reg_map = block.create_map(
+        "map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN
+    )
+    reg = uvm_reg("reg", 8)
+    reg.configure(block)
+    mem = uvm_mem("mem", 1, 8)
+    mem.configure(block)
+
+    with caplog.at_level(logging.WARNING, logger="RegModel"):
+        block._add_block(child)
+        block._add_map(reg_map)
+        block._add_register(reg)
+        empty_block = uvm_reg_block("empty")
+        empty_block.get_block_by_name("missing")
+        empty_block.get_map_by_name("missing")
+        empty_block.get_reg_by_name("missing")
+        empty_block.get_field_by_name("missing")
+        empty_block.get_mem_by_name("missing")
+        empty_block.get_vreg_by_name("missing")
+        empty_block.get_vfield_by_name("missing")
+
+        block.lock_model()
+        block._add_block(uvm_reg_block("late_child"))
+        block._add_map(reg_map)
+        block._add_register(uvm_reg("late_reg", 8))
+        block._add_memory(uvm_mem("late_mem", 1, 8))
+
+    assert "already been registered" in caplog.text
+    assert "Unable to locate virtual field" in caplog.text
+    assert "Cannot add memory to a locked block model" in caplog.text
+
+
+def test_duplicate_root_name_diagnostic_is_reported(monkeypatch, caplog):
+    monkeypatch.setattr(uvm_reg_block, "_root_names", ["duplicate", "duplicate"])
+    block = uvm_reg_block("duplicate")
+
+    with caplog.at_level(logging.ERROR, logger="RegModel"):
+        block.lock_model()
+
+    assert "There are 2 root register models" in caplog.text
