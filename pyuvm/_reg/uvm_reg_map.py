@@ -16,14 +16,14 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_hier_e,
     uvm_reg_map_addr_range,
 )
+from pyuvm._reg.uvm_reg_reporting import (
+    uvm_reg_report_error as _report_error,
+)
+from pyuvm._reg.uvm_reg_reporting import (
+    uvm_reg_report_warning as _report_warning,
+)
 from pyuvm._s05_base_classes import uvm_object
 from pyuvm._s14_15_python_sequences import uvm_sequence, uvm_sequence_base
-from pyuvm.uvm_reporting import (
-    uvm_report_error as _report_error,
-)
-from pyuvm.uvm_reporting import (
-    uvm_report_warning as _report_warning,
-)
 
 if TYPE_CHECKING:
     from pyuvm import (

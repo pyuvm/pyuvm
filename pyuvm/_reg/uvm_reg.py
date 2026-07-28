@@ -18,13 +18,13 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_predict_e,
     uvm_status_e,
 )
+from pyuvm._reg.uvm_reg_reporting import (
+    uvm_reg_report_error as _report_error,
+)
+from pyuvm._reg.uvm_reg_reporting import (
+    uvm_reg_report_warning as _report_warning,
+)
 from pyuvm._s05_base_classes import uvm_object
-from pyuvm.uvm_reporting import (
-    uvm_report_error as _report_error,
-)
-from pyuvm.uvm_reporting import (
-    uvm_report_warning as _report_warning,
-)
 
 if TYPE_CHECKING:
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor

@@ -4,7 +4,6 @@
 
 """UVM reporting helpers."""
 
-import logging
 import os
 from typing import Any
 
@@ -26,7 +25,6 @@ def _parse_bool(value: Any) -> bool:
 
 
 _sv_uvm_style_reporting_enabled = _parse_bool(os.getenv(_ENV_VAR, "0"))
-_reg_model_logger = logging.getLogger("RegModel")
 
 
 def set_sv_uvm_style_reporting_enabled(enabled: bool) -> None:
@@ -41,22 +39,6 @@ def get_sv_uvm_style_reporting_enabled() -> bool:
     if plusarg_value is not None:
         return _parse_bool(plusarg_value)
     return _sv_uvm_style_reporting_enabled
-
-
-def uvm_report_warning(obj: Any, report_id: str, msg: str) -> None:
-    """Issue a warning through SV-UVM reporting or the RegModel logger."""
-    if get_sv_uvm_style_reporting_enabled():
-        obj.uvm_report.warning(report_id, msg)
-    else:
-        _reg_model_logger.warning(msg)
-
-
-def uvm_report_error(obj: Any, report_id: str, msg: str) -> None:
-    """Issue an error through SV-UVM reporting or the RegModel logger."""
-    if get_sv_uvm_style_reporting_enabled():
-        obj.uvm_report.error(report_id, msg)
-    else:
-        _reg_model_logger.error(msg)
 
 
 from pyuvm.uvm_reporting.uvm_verbosity import (
@@ -90,7 +72,5 @@ __all__ = [
     "resolve_uvm_verbosity",
     "get_sv_uvm_style_reporting_enabled",
     "set_sv_uvm_style_reporting_enabled",
-    "uvm_report_error",
-    "uvm_report_warning",
     "uvm_reporter",
 ]
