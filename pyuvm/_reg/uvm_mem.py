@@ -1,22 +1,28 @@
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING, ClassVar
 
+from cocotb.triggers import Lock
+
 from pyuvm._error_classes import UVMFatalError
+from pyuvm._reg.uvm_reg_item import uvm_reg_item
 from pyuvm._reg.uvm_reg_model import (
+    uvm_access_e,
     uvm_coverage_model_e,
     uvm_door_e,
+    uvm_elem_kind_e,
+    uvm_status_e,
+)
+from pyuvm._reg.uvm_reg_reporting import (
+    uvm_reg_report_error as _report_error,
+)
+from pyuvm._reg.uvm_reg_reporting import (
+    uvm_reg_report_warning as _report_warning,
 )
 from pyuvm._s05_base_classes import uvm_object
 
 if TYPE_CHECKING:
-    from pyuvm._reg.uvm_mem_mam import (
-        alloc_mode_e,
-        locality_e,
-        uvm_mem_mam,
-        uvm_mem_mam_cfg,
-    )
+    from pyuvm._reg.uvm_mem_mam import uvm_mem_mam
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
     from pyuvm._reg.uvm_reg_block import uvm_reg_block
     from pyuvm._reg.uvm_reg_item import uvm_reg_item
@@ -35,7 +41,6 @@ if TYPE_CHECKING:
     from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
 __all__ = ["uvm_mem"]
-logger = logging.getLogger("RegModel")
 
 
 class uvm_mem(uvm_object):
@@ -50,12 +55,36 @@ class uvm_mem(uvm_object):
         has_coverage: int = uvm_coverage_model_e.UVM_NO_COVERAGE,
     ) -> None:
         super().__init__(name)
+        self._parent = None
+        if size < 1:
+            _report_error(
+                self,
+                "MEM_SIZE",
+                f"Memory {repr(self.get_name())} cannot have fewer than 1 location",
+            )
+            size = 1
+        if n_bits < 1:
+            _report_error(
+                self,
+                "MEM_WIDTH",
+                f"Memory {repr(self.get_name())} cannot have fewer than 1 bit",
+            )
+            n_bits = 1
+        access = access.upper()
+        if access not in ("RW", "RO"):
+            _report_error(
+                self,
+                "MEM_ACCESS",
+                f"Memory {repr(self.get_name())} can only have 'RW' or 'RO' "
+                "access; using 'RW'",
+            )
+            access = "RW"
         self._locked: bool = False
         self._read_in_progress: bool = False
         self._write_in_progress: bool = False
+        self._atomic = Lock()
         self._access: str = access
         self._size: int = size
-        self._parent = None
         self._maps: list[uvm_reg_map] = list()
         self._n_bits: int = n_bits
         self._backdoor: uvm_reg_backdoor = None
@@ -67,37 +96,25 @@ class uvm_mem(uvm_object):
         self._vregs: list[uvm_vreg] = list()
         # self._hdl_paths_pool: uvm_object_string_pool = None
         self._mam: uvm_mem_mam = None
-        raise NotImplementedError
+        uvm_mem._max_size = max(uvm_mem._max_size, self._n_bits)
 
     def configure(self, parent: uvm_reg_block, hdl_path: str = "") -> None:
         if not parent:
             raise UVMFatalError("Configure: parent is None")
         self._parent = parent
-
-        if self._access not in ["RW", "RO"]:
-            logger.error(
-                f"Memory '{self.get_full_name()}' can only be 'RW' "
-                "and 'RO', setting access to 'RW'"
-            )
-            self._access = "RW"
-            cfg = uvm_mem_mam_cfg()
-            cfg.n_bytes = 0
-            cfg.start_offset = 0
-            cfg.end_offset = self._size - 1
-            cfg.mode = alloc_mode_e.GREEDY
-            cfg.locality = locality_e.BROAD
-            self.mam = uvm_mem_mam(self.get_full_name(), cfg, self)
-            self._parent.add_mem(self)
-            if hdl_path != "":
-                self.add_hdl_path_slice(hdl_path, -1, -1)
+        self._parent._add_memory(self)
+        # HDL paths and the memory allocation manager are intentionally
+        # deferred; basic frontdoor memory configuration must not create them.
 
     def set_offset(
         self, map: uvm_reg_map, offset: uvm_reg_addr_t, unmapped: bool = False
     ) -> None:
         if len(self._maps) > 1 and not map:
-            logger.error(
+            _report_error(
+                self,
+                "MEM_MAP_REQUIRED",
                 f"Set offset requires a map when memory "
-                f"'{self.get_full_name()}' belongs to more than one map"
+                f"'{self.get_full_name()}' belongs to more than one map",
             )
             return
         local_map = self.get_local_map(map)
@@ -111,7 +128,7 @@ class uvm_mem(uvm_object):
         self._maps.append(map)
 
     def _lock_model(self) -> None:
-        self._lock_model = True
+        self._locked = True
 
     def _add_vreg(self, vreg: uvm_vreg) -> None:
         raise NotImplementedError
@@ -158,15 +175,19 @@ class uvm_mem(uvm_object):
                 if parent_map == map:
                     return local_map
                 parent_map = parent_map.get_parent_map()
-        logger.warning(
+        _report_warning(
+            self,
+            "MEM_MAP_LOOKUP",
             f"Memory '{self.get_full_name()}' is not contained "
-            f"within map '{map.get_full_name()}'"
+            f"within map '{map.get_full_name()}'",
         )
 
     def get_default_map(self) -> uvm_reg_map | None:
         if not self._maps:
-            logger.warning(
-                f"Memory '{self.get_full_name()}' is not registered with any map"
+            _report_warning(
+                self,
+                "MEM_NO_MAP",
+                f"Memory '{self.get_full_name()}' is not registered with any map",
             )
             return
         if len(self._maps) == 1:
@@ -181,9 +202,6 @@ class uvm_mem(uvm_object):
         return self._maps[0]
 
     def get_rights(self, map: uvm_reg_map = None) -> str:
-        # If memory is not shared
-        if len(self._maps) <= 1:
-            return "RW"
         local_map = self.get_local_map(map)
         if not local_map:
             return "RW"
@@ -191,8 +209,6 @@ class uvm_mem(uvm_object):
         return info.rights
 
     def get_access(self, map: uvm_reg_map = None) -> str:
-        if self.get_n_maps() == 1:
-            return self._access
         local_map = self.get_local_map(map)
         if not local_map:
             return self._access
@@ -206,14 +222,18 @@ class uvm_mem(uvm_object):
             if self._access in ["RW", "WO"]:
                 return "WO"
             elif self._access in ["RO"]:
-                logger.error(
+                _report_error(
+                    self,
+                    "MEM_RIGHTS",
                     f"RO memory '{self.get_full_name()}' restricted "
-                    f"to WO in map '{local_map.get_full_name()}'"
+                    f"to WO in map '{local_map.get_full_name()}'",
                 )
             else:
-                logger.error(
+                _report_error(
+                    self,
+                    "MEM_ACCESS",
                     f"Memory '{self.get_full_name()}' has invalid "
-                    f"access mode '{self._access}'"
+                    f"access mode '{self._access}'",
                 )
         return self._access
 
@@ -221,7 +241,7 @@ class uvm_mem(uvm_object):
         return self._size
 
     def get_n_bytes(self) -> int:
-        return int(self._n_bits - 1 / 8 + 1)
+        return (self._n_bits + 7) // 8
 
     def get_n_bits(self) -> int:
         return self._n_bits
@@ -248,17 +268,21 @@ class uvm_mem(uvm_object):
         for vreg in self.get_virtual_registers():
             if vreg.get_name() == name:
                 return vreg
-        logger.warning(
+        _report_warning(
+            self,
+            "MEM_VREG_LOOKUP",
             f"Unable to find virtual register '{name}' in memory "
-            f"'{self.get_full_name()}'"
+            f"'{self.get_full_name()}'",
         )
 
     def get_vfield_by_name(self, name: str) -> uvm_vreg_field | None:
         for field in self.get_virtual_fields():
             if field.get_name() == name:
                 return field
-        logger.warning(
-            f"Unable to find virtual field '{name}' in memory '{self.get_full_name()}'"
+        _report_warning(
+            self,
+            "MEM_VFIELD_LOOKUP",
+            f"Unable to find virtual field '{name}' in memory '{self.get_full_name()}'",
         )
 
     def get_vreg_by_offset(
@@ -268,41 +292,67 @@ class uvm_mem(uvm_object):
 
     def get_offset(
         self, offset: uvm_reg_addr_t = 0, map: uvm_reg_map = None
-    ) -> uvm_reg_addr_t:
-        raise NotImplementedError
+    ) -> uvm_reg_addr_t | None:
+        if offset < 0 or offset >= self._size:
+            _report_warning(
+                self,
+                "MEM_OFFSET",
+                f"Offset 0x{offset:X} lies outside of memory "
+                f"'{self.get_name()}' which has size 0x{self._size:X}",
+            )
+            return None
+        local_map = self.get_local_map(map)
+        if not local_map:
+            return None
+        info = local_map.get_mem_map_info(self)
+        if info.unmapped:
+            return None
+        return info.offset + offset * info.stride
 
     def get_address(
         self, offset: uvm_reg_addr_t = 0, map: uvm_reg_map = None
-    ) -> uvm_reg_addr_t:
+    ) -> uvm_reg_addr_t | None:
         _, addresses = self.get_addresses(offset, map)
-        return addresses[0]
+        # A failed address query is recoverable: it does not corrupt the model
+        # or prevent simulation from continuing.  None represents the absence
+        # of an address without inventing an out-of-domain integer sentinel;
+        # exceptions remain reserved for fatal model-integrity failures.
+        return addresses[0] if addresses else None
 
     def get_addresses(
         self,
         offset: uvm_reg_addr_t = 0,
         map: uvm_reg_map = None,
-    ) -> tuple[int, list[uvm_reg_addr_t]]:
-        if offset >= self._size:
-            logger.warning(
+    ) -> tuple[uvm_reg_addr_t | None, list[uvm_reg_addr_t]]:
+        if offset < 0 or offset >= self._size:
+            _report_warning(
+                self,
+                "MEM_OFFSET",
                 f"Offset 0x{offset:X} lies outside of memory "
-                f"'{self.get_name()}' which has size 0x{self._size:X}"
+                f"'{self.get_name()}' which has size 0x{self._size:X}",
             )
-            return -1, list()
+            return None, list()
         local_map = self.get_local_map(map)
         if not local_map:
             map_name = "None" if not map else map.get_full_name()
-            logger.warning(f"Memory '{self.get_name()}' not found in map '{map_name}'")
-            return -1, list()
+            _report_warning(
+                self,
+                "MEM_MAP_LOOKUP",
+                f"Memory '{self.get_name()}' not found in map '{map_name}'",
+            )
+            return None, list()
         map_info = local_map.get_mem_map_info(self)
         if map_info.unmapped:
             map_name = local_map.get_full_name() if not map else map.get_full_name()
-            logger.warning(
-                f"Memory '{self.get_name()}' is unmapped in map '{map_name}'"
+            _report_warning(
+                self,
+                "MEM_UNMAPPED",
+                f"Memory '{self.get_name()}' is unmapped in map '{map_name}'",
             )
-            return -1, list()
-        stride = map_info.stride
-        addresses = [a + stride * offset for a in map_info.addr]
-        return local_map.get_n_bytes(), addresses
+            return None, list()
+        addresses = local_map._memory_element_addresses(self, map_info, offset)
+        bytes_per_access = min(self.get_n_bytes(), local_map.get_n_bytes())
+        return bytes_per_access, addresses
 
     async def write(
         self,
@@ -316,7 +366,22 @@ class uvm_mem(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> uvm_status_e:
-        raise NotImplementedError
+        async with self._atomic:
+            rw = uvm_reg_item("mem_write_item")
+            rw.set_element(self)
+            rw.set_element_kind(uvm_elem_kind_e.UVM_MEM)
+            rw.set_kind(uvm_access_e.UVM_WRITE)
+            rw.set_offset(offset)
+            rw.set_value(value & ((1 << self._n_bits) - 1))
+            rw.set_door(path)
+            rw.set_map(map)
+            rw.set_parent_sequence(parent)
+            rw.set_priority(prior)
+            rw.set_extension(extension)
+            rw.set_fname(fname)
+            rw.set_line(lineno)
+            await self.do_write(rw)
+        return rw.get_status()
 
     async def read(
         self,
@@ -329,7 +394,22 @@ class uvm_mem(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> tuple[uvm_status_e, uvm_reg_data_t]:
-        raise NotImplementedError
+        async with self._atomic:
+            rw = uvm_reg_item("mem_read_item")
+            rw.set_element(self)
+            rw.set_element_kind(uvm_elem_kind_e.UVM_MEM)
+            rw.set_kind(uvm_access_e.UVM_READ)
+            rw.set_offset(offset)
+            rw.set_value(0)
+            rw.set_door(path)
+            rw.set_map(map)
+            rw.set_parent_sequence(parent)
+            rw.set_priority(prior)
+            rw.set_extension(extension)
+            rw.set_fname(fname)
+            rw.set_line(lineno)
+            await self.do_read(rw)
+        return rw.get_status(), rw.get_value()
 
     async def burst_write(
         self,
@@ -383,13 +463,83 @@ class uvm_mem(uvm_object):
         raise NotImplementedError
 
     def _check_access(self, rw: uvm_reg_item) -> uvm_reg_map_info | None:
-        raise NotImplementedError
+        if rw.get_offset() < 0 or rw.get_offset() >= self._size:
+            _report_error(
+                self,
+                "MEM_BOUNDS",
+                f"Memory offset 0x{rw.get_offset():X} is outside "
+                f"{repr(self.get_full_name())}",
+            )
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return None
+        if rw.get_door() == uvm_door_e.UVM_DEFAULT_DOOR:
+            rw.set_door(self._parent.get_default_door())
+        if rw.get_door() != uvm_door_e.UVM_FRONTDOOR:
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return None
+        local_map = self.get_local_map(rw.get_map())
+        rw.set_local_map(local_map)
+        if local_map is None:
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return None
+        info = local_map.get_mem_map_info(self)
+        if info.unmapped or info.frontdoor is not None:
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return None
+        if self.get_n_bytes() > local_map.get_n_bytes():
+            _report_error(
+                self,
+                "MEM_MULTIBEAT",
+                f"Memory {repr(self.get_full_name())} element width "
+                f"({self.get_n_bytes()} bytes) exceeds map bus width "
+                f"({local_map.get_n_bytes()} bytes); multi-beat memory "
+                "access is not supported",
+            )
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return None
+        access = self.get_access(local_map)
+        if rw.get_kind() == uvm_access_e.UVM_WRITE and access == "RO":
+            _report_error(
+                self,
+                "MEM_WRITE_RO",
+                f"Cannot write read-only memory {repr(self.get_full_name())}",
+            )
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return None
+        if rw.get_kind() == uvm_access_e.UVM_READ and access == "WO":
+            _report_error(
+                self,
+                "MEM_READ_WO",
+                f"Cannot read write-only memory {repr(self.get_full_name())}",
+            )
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return None
+        if not rw.get_map():
+            rw.set_map(local_map)
+        return info
 
     async def do_write(self, rw: uvm_reg_item) -> None:
-        raise NotImplementedError
+        info = self._check_access(rw)
+        if info is None:
+            return
+        self._write_in_progress = True
+        rw.set_status(uvm_status_e.UVM_IS_OK)
+        try:
+            await rw.get_local_map().do_write(rw)
+        finally:
+            self._write_in_progress = False
 
     async def do_read(self, rw: uvm_reg_item) -> None:
-        raise NotImplementedError
+        info = self._check_access(rw)
+        if info is None:
+            return
+        self._read_in_progress = True
+        rw.set_status(uvm_status_e.UVM_IS_OK)
+        try:
+            await rw.get_local_map().do_read(rw)
+            rw.set_value(rw.get_value() & ((1 << self._n_bits) - 1))
+        finally:
+            self._read_in_progress = False
 
     def set_frontdoor(
         self,

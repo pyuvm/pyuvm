@@ -15,6 +15,12 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_predict_e,
     uvm_status_e,
 )
+from pyuvm._reg.uvm_reg_reporting import (
+    uvm_reg_report_error as _report_error,
+)
+from pyuvm._reg.uvm_reg_reporting import (
+    uvm_reg_report_warning as _report_warning,
+)
 from pyuvm._s05_base_classes import uvm_object
 from pyuvm._s24_uvm_reg_includes import uvm_resp_t
 
@@ -329,9 +335,11 @@ class uvm_reg_field(uvm_object):
         _mask = (1 << self._size) - 1
 
         if value >> self._size:
-            logger.warning(
+            _report_warning(
+                self,
+                "FIELD_VALUE_WIDTH",
                 f"Specified value (0x{value:X}) greater than field "
-                f"{repr(self.get_name())} size ({self._size} bits)"
+                f"{repr(self.get_name())} size ({self._size} bits)",
             )
             value &= _mask
 
@@ -568,9 +576,11 @@ class uvm_reg_field(uvm_object):
             lineno,
         )
         if status == uvm_status_e.UVM_NOT_OK:
-            logger.error(
+            _report_error(
+                self,
+                "FIELD_POKE",
                 f"uvm_reg_field::poke(): Peek of register "
-                f"{repr(self._parent.get_full_name())} returned status {status}"
+                f"{repr(self._parent.get_full_name())} returned status {status}",
             )
             return status
         reg_value = self.insert_into_register(reg_value, value)
