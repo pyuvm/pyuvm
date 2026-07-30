@@ -26,7 +26,6 @@ __all__ = [
     "uvm_reg_mem_test_e",
     "uvm_hdl_path_concat",
     "uvm_reg_backdoor",
-    "uvm_reg_frontdoor",
     "uvm_reg_map_addr_range",
     "uvm_object_string_pool",
 ]
@@ -138,11 +137,6 @@ class uvm_hdl_path_concat(uvm_object):
 class uvm_reg_backdoor(uvm_object):
     def __init__(self, name: str = ""):
         super().__init__(name)
-        raise NotImplementedError
-
-
-class uvm_reg_frontdoor:
-    def __init__(self):
         raise NotImplementedError
 
 
