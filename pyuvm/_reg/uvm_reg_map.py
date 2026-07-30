@@ -15,6 +15,7 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_endianness_e,
     uvm_hier_e,
     uvm_reg_map_addr_range,
+    uvm_status_e,
 )
 from pyuvm._reg.uvm_reg_reporting import (
     uvm_reg_report_error as _report_error,
@@ -23,13 +24,14 @@ from pyuvm._reg.uvm_reg_reporting import (
     uvm_reg_report_warning as _report_warning,
 )
 from pyuvm._s05_base_classes import uvm_object
-from pyuvm._s14_15_python_sequences import uvm_sequence, uvm_sequence_base
+from pyuvm._s14_15_python_sequences import (
+    uvm_sequence,
+    uvm_sequence_base,
+    uvm_sequencer,
+)
 
 if TYPE_CHECKING:
-    from pyuvm import (
-        uvm_sequencer,
-        uvm_sequencer_base,
-    )
+    from pyuvm import uvm_sequencer_base
     from pyuvm._reg.uvm_mem import uvm_mem
     from pyuvm._reg.uvm_reg import uvm_reg
     from pyuvm._reg.uvm_reg_adapter import uvm_reg_adapter
@@ -1006,6 +1008,50 @@ class uvm_reg_map(uvm_object):
     async def do_read(self, rw: uvm_reg_item) -> None:
         sequencer, adapter = self._get_bus_access_config(rw)
         await self.do_bus_read(rw, sequencer, adapter)
+
+    async def do_frontdoor(
+        self, rw: uvm_reg_item, frontdoor: uvm_reg_frontdoor
+    ) -> bool:
+        prior_sequencer = frontdoor.sequencer
+        sequencer = prior_sequencer
+        if sequencer is None:
+            sequencer = self.get_root_map().get_sequencer()
+        if sequencer is None:
+            element = rw.get_element()
+            element_name = (
+                element.get_full_name()
+                if element is not None and hasattr(element, "get_full_name")
+                else rw.get_name()
+            )
+            _report_error(
+                self,
+                "REG_FRONTDOOR",
+                f"Custom frontdoor access to {element_name!r} has no sequencer; "
+                "configure the frontdoor sequencer or the root-map sequencer",
+            )
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return False
+        if not isinstance(sequencer, uvm_sequencer):
+            _report_error(
+                self,
+                "REG_FRONTDOOR",
+                f"Custom frontdoor sequencer {sequencer!r} is not a uvm_sequencer",
+            )
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return False
+
+        await frontdoor.atomic_lock()
+        try:
+            frontdoor.rw_info = rw
+            frontdoor.sequencer = sequencer
+            await frontdoor.start(sequencer)
+        except BaseException:
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            raise
+        finally:
+            frontdoor.sequencer = prior_sequencer
+            frontdoor.atomic_unlock()
+        return True
 
     def _get_bus_info(self, rw: uvm_reg_item) -> tuple[uvm_reg_map_info, int, int, int]:
         map_info = None

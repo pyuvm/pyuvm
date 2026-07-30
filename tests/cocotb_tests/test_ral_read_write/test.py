@@ -4,11 +4,14 @@ import textwrap
 from random import choice, randint
 
 import cocotb
+from cocotb.triggers import Timer
 
 from pyuvm import (
     uvm_analysis_port,
     uvm_driver,
     uvm_env,
+    uvm_mem,
+    uvm_reg_frontdoor,
     uvm_root,
     uvm_sequence,
     uvm_sequence_item,
@@ -248,6 +251,56 @@ class ral_test_rd(uvm_test):
         self.drop_objection()
 
 
+class shared_mem_frontdoor(uvm_reg_frontdoor):
+    def __init__(self):
+        super().__init__("shared_mem_frontdoor")
+        self.active = 0
+        self.max_active = 0
+        self.operations = []
+
+    async def body(self):
+        self.active += 1
+        self.max_active = max(self.max_active, self.active)
+        rw = self.rw_info
+        try:
+            await Timer(1, "us")
+            self.operations.append((rw.get_element(), rw.get_offset(), rw.get_value()))
+            rw.set_status(uvm_status_e.UVM_IS_OK)
+        finally:
+            self.active -= 1
+
+
 @cocotb.test()
 async def test_start(dut):
     await uvm_root().run_test("ral_test_rd")
+
+
+@cocotb.test()
+async def test_shared_custom_frontdoor_serializes_memory_operations(dut):
+    block = uvm_reg_block("shared_block")
+    reg_map = block.create_map("map", 0, 4, uvm_endianness_e.UVM_LITTLE_ENDIAN, True)
+    frontdoor = shared_mem_frontdoor()
+    first = uvm_mem("first", 2, 16, "RW")
+    second = uvm_mem("second", 2, 16, "RW")
+    first.configure(block)
+    second.configure(block)
+    reg_map.add_mem(first, 0x10, frontdoor=frontdoor)
+    reg_map.add_mem(second, 0x20, frontdoor=frontdoor)
+    block.lock_model()
+    reg_map.set_sequencer(uvm_sequencer("shared_seqr"))
+
+    first_task = cocotb.start_soon(
+        first.write(0, 0x1111, uvm_door_e.UVM_FRONTDOOR, reg_map)
+    )
+    second_task = cocotb.start_soon(
+        second.write(1, 0x2222, uvm_door_e.UVM_FRONTDOOR, reg_map)
+    )
+
+    results = [await first_task, await second_task]
+
+    assert results == [uvm_status_e.UVM_IS_OK, uvm_status_e.UVM_IS_OK]
+    assert frontdoor.max_active == 1
+    assert set(frontdoor.operations) == {
+        (first, 0, 0x1111),
+        (second, 1, 0x2222),
+    }

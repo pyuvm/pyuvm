@@ -72,6 +72,12 @@ class AsyncLock:
         return self._locked
 
 
+class LegacyAsyncLock(AsyncLock):
+    @property
+    def locked(self):
+        return self._locked
+
+
 class RecordingFrontdoor(uvm_reg_frontdoor):
     def __init__(self):
         super().__init__("recording_frontdoor")
@@ -408,6 +414,17 @@ def test_frontdoor_start_does_not_reacquire_task_owned_lock():
     assert frontdoor.body_calls == 1
     assert frontdoor._atomic.acquire_calls == 1
     assert frontdoor._atomic.release_calls == 1
+
+
+def test_frontdoor_unlock_supports_legacy_cocotb_lock_property():
+    frontdoor = RecordingFrontdoor()
+    frontdoor._atomic = LegacyAsyncLock()
+
+    run_pytest_coro(frontdoor.start())
+
+    assert frontdoor._atomic.acquire_calls == 1
+    assert frontdoor._atomic.release_calls == 1
+    assert frontdoor._atomic_owner is None
 
 
 def test_frontdoor_current_task_uses_cocotb_task(monkeypatch):

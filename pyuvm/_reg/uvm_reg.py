@@ -705,6 +705,9 @@ class uvm_reg(uvm_object):
             rw.set_door(self._parent.get_default_door())
         if rw.get_door() == uvm_door_e.UVM_BACKDOOR:
             raise NotImplementedError
+        if rw.get_door() != uvm_door_e.UVM_FRONTDOOR:
+            rw.set_status(uvm_status_e.UVM_NOT_OK)
+            return False, None
         if rw.get_door() != uvm_door_e.UVM_BACKDOOR:
             tmp_map = rw.get_map()
             rw.set_local_map(self.get_local_map(tmp_map))
@@ -716,6 +719,22 @@ class uvm_reg(uvm_object):
             map_info = tmp_local_map.get_reg_map_info(self)
             if not map_info.frontdoor and map_info.unmapped:
                 # TODO: Error message
+                rw.set_status(uvm_status_e.UVM_NOT_OK)
+                return False, None
+            if rw.get_kind() == uvm_access_e.UVM_WRITE and map_info.rights == "RO":
+                _report_error(
+                    self,
+                    "REG_WRITE_RO",
+                    f"Cannot write read-only register {self.get_full_name()!r}",
+                )
+                rw.set_status(uvm_status_e.UVM_NOT_OK)
+                return False, None
+            if rw.get_kind() == uvm_access_e.UVM_READ and map_info.rights == "WO":
+                _report_error(
+                    self,
+                    "REG_READ_WO",
+                    f"Cannot read write-only register {self.get_full_name()!r}",
+                )
                 rw.set_status(uvm_status_e.UVM_NOT_OK)
                 return False, None
             if not tmp_map:
@@ -749,20 +768,18 @@ class uvm_reg(uvm_object):
         if not rc:
             return
         self._write_in_progress = True
-        value = rw.get_value() & (1 << self.get_n_bits()) - 1
-        rw.set_value(value)
-        rw.set_status(uvm_status_e.UVM_IS_OK)
-        # TODO: pre_write fields callbacks
-        # TODO: pre_write reg callbacks
-        door = rw.get_door()
-        if door == uvm_door_e.UVM_BACKDOOR:
-            await self._do_write_backdoor(rw, map_info)
-        elif door == uvm_door_e.UVM_FRONTDOOR:
+        try:
+            value = rw.get_value() & (1 << self.get_n_bits()) - 1
+            rw.set_value(value)
+            rw.set_status(uvm_status_e.UVM_IS_OK)
+            # TODO: pre_write fields callbacks
+            # TODO: pre_write reg callbacks
             await self._do_write_frontdoor(rw, map_info)
-        # TODO: post_write reg callbacks
-        # TODO: post_write fields callbacks
-        # TODO: report
-        self._write_in_progress = False
+            # TODO: post_write reg callbacks
+            # TODO: post_write fields callbacks
+            # TODO: report
+        finally:
+            self._write_in_progress = False
 
     async def _do_write_backdoor(
         self, rw: uvm_reg_item, map_info: uvm_reg_map_info
@@ -775,19 +792,13 @@ class uvm_reg(uvm_object):
         local_map = rw.get_local_map()
         system_map = local_map.get_root_map()
         self._set_is_busy(True)
-        # INFO: User frontdoor
-        if map_info.frontdoor is not None:
-            frontdoor = map_info.frontdoor
-            frontdoor.atomic_lock()
-            frontdoor.rw_info = rw
-            if frontdoor.sequencer is None:
-                frontdoor.sequencer = system_map.get_sequencer()
-            frontdoor.start(frontdoor.sequencer, rw.get_parent_sequence())
-            frontdoor.atomic_unlock()
-        # INFO: Built in frontdoor
-        else:
-            await local_map.do_write(rw)
-        self._set_is_busy(False)
+        try:
+            if map_info.frontdoor is not None:
+                await local_map.do_frontdoor(rw, map_info.frontdoor)
+            else:
+                await local_map.do_write(rw)
+        finally:
+            self._set_is_busy(False)
         if system_map.get_auto_predict() and rw.get_status() == uvm_status_e.UVM_IS_OK:
             if self._cover_on:
                 self.sample(rw.get_value(), -1, False, rw.get_map())
@@ -803,18 +814,16 @@ class uvm_reg(uvm_object):
         if not rc:
             return
         self._read_in_progress = True
-        rw.set_status(uvm_status_e.UVM_IS_OK)
-        # TODO: pre_read fields callbacks
-        # TODO: pre_read reg callbacks
-        door = rw.get_door()
-        if door == uvm_door_e.UVM_BACKDOOR:
-            await self._do_read_backdoor(rw, map_info)
-        elif door == uvm_door_e.UVM_FRONTDOOR:
+        try:
+            rw.set_status(uvm_status_e.UVM_IS_OK)
+            # TODO: pre_read fields callbacks
+            # TODO: pre_read reg callbacks
             await self._do_read_frontdoor(rw, map_info)
-        # TODO: post_read reg callbacks
-        # TODO: post_read fields callbacks
-        # TODO: report
-        self._read_in_progress = False
+            # TODO: post_read reg callbacks
+            # TODO: post_read fields callbacks
+            # TODO: report
+        finally:
+            self._read_in_progress = False
 
     async def _do_read_backdoor(
         self, rw: uvm_reg_item, map_info: uvm_reg_map_info
@@ -829,17 +838,13 @@ class uvm_reg(uvm_object):
         self._set_is_busy(True)
         if local_map.get_check_on_read():
             exp_value = self.get_mirrored_value()
-        if map_info.frontdoor:
-            frontdoor = map_info.frontdoor
-            frontdoor.atomic_lock()
-            frontdoor.rw_info = rw
-            if not frontdoor.sequencer:
-                frontdoor.sequencer = system_map.get_sequencer()
-            frontdoor.start(frontdoor.sequencer, rw.get_parent_sequence())
-            frontdoor.atomic_unlock()
-        else:  # Built-in frontdoor
-            await local_map.do_read(rw)
-        self._set_is_busy(False)
+        try:
+            if map_info.frontdoor:
+                await local_map.do_frontdoor(rw, map_info.frontdoor)
+            else:
+                await local_map.do_read(rw)
+        finally:
+            self._set_is_busy(False)
         if system_map.get_auto_predict() and rw.get_status() == uvm_status_e.UVM_IS_OK:
             if local_map.get_check_on_read():
                 self.do_check(exp_value, rw.get_value(), system_map)

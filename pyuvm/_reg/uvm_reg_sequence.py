@@ -271,7 +271,12 @@ class uvm_reg_frontdoor(uvm_reg_sequence):
 
     def atomic_unlock(self):
         owner = self._current_task()
-        if not self._atomic.locked() or self._atomic_owner is not owner:
+        try:
+            locked = self._atomic.locked()
+        except TypeError:
+            # INFO: For backward compatibility with Cocotb <= 1.8
+            locked = self._atomic.locked
+        if not locked or self._atomic_owner is not owner:
             logger.warning(
                 f"Attempt to unlock frontdoor "
                 f"{repr(self.get_full_name())} by a task that does not own it"

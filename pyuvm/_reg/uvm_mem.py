@@ -483,10 +483,10 @@ class uvm_mem(uvm_object):
             rw.set_status(uvm_status_e.UVM_NOT_OK)
             return None
         info = local_map.get_mem_map_info(self)
-        if info.unmapped or info.frontdoor is not None:
+        if info.unmapped and info.frontdoor is None:
             rw.set_status(uvm_status_e.UVM_NOT_OK)
             return None
-        if self.get_n_bytes() > local_map.get_n_bytes():
+        if info.frontdoor is None and self.get_n_bytes() > local_map.get_n_bytes():
             _report_error(
                 self,
                 "MEM_MULTIBEAT",
@@ -525,7 +525,10 @@ class uvm_mem(uvm_object):
         self._write_in_progress = True
         rw.set_status(uvm_status_e.UVM_IS_OK)
         try:
-            await rw.get_local_map().do_write(rw)
+            if info.frontdoor is None:
+                await rw.get_local_map().do_write(rw)
+            else:
+                await rw.get_local_map().do_frontdoor(rw, info.frontdoor)
         finally:
             self._write_in_progress = False
 
@@ -536,7 +539,10 @@ class uvm_mem(uvm_object):
         self._read_in_progress = True
         rw.set_status(uvm_status_e.UVM_IS_OK)
         try:
-            await rw.get_local_map().do_read(rw)
+            if info.frontdoor is None:
+                await rw.get_local_map().do_read(rw)
+            else:
+                await rw.get_local_map().do_frontdoor(rw, info.frontdoor)
             rw.set_value(rw.get_value() & ((1 << self._n_bits) - 1))
         finally:
             self._read_in_progress = False
@@ -548,10 +554,23 @@ class uvm_mem(uvm_object):
         fname: str = "",
         lineno: int = 0,
     ) -> None:
-        raise NotImplementedError
+        self._fname = fname
+        self._lineno = lineno
+        local_map = self.get_local_map(map)
+        if local_map is None:
+            return
+        info = local_map.get_mem_map_info(self)
+        if info is not None:
+            info.frontdoor = ftdr
 
     def get_frontdoor(self, map: uvm_reg_map = None) -> uvm_reg_frontdoor:
-        raise NotImplementedError
+        local_map = self.get_local_map(map)
+        if local_map is None:
+            return None
+        info = local_map.get_mem_map_info(self)
+        if info is None:
+            return None
+        return info.frontdoor
 
     def set_backdoor(
         self, bkdr: uvm_reg_backdoor, fname: str = "", lineno: int = 0
