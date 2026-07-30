@@ -1,6 +1,5 @@
 import inspect
 
-import cocotb
 import test_12_uvm_tlm_interfaces as test_mod
 
 import pyuvm
@@ -98,8 +97,3 @@ class AnalysisTest(uvm_test):
         assert self.data_list == self.subscriber.data
         assert self.data_list == self.export.data
         assert self.data_list == self.fifo.data
-
-
-@cocotb.test()
-async def run_test(_):
-    uvm_root().run_test(AnalysisTest)
