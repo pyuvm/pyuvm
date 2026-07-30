@@ -79,13 +79,12 @@ from pyuvm._reg.uvm_reg_model import (
     uvm_reg_cvr_t,
     uvm_reg_data_logic_t,
     uvm_reg_data_t,
-    uvm_reg_frontdoor,
     uvm_reg_map_addr_range,
     uvm_reg_mem_test_e,
     uvm_status_e,
 )
 from pyuvm._reg.uvm_reg_predictor import uvm_reg_predictor
-from pyuvm._reg.uvm_reg_sequence import uvm_reg_sequence
+from pyuvm._reg.uvm_reg_sequence import uvm_reg_frontdoor, uvm_reg_sequence
 from pyuvm._reg.uvm_vreg import (
     uvm_vreg,
     uvm_vreg_cb,
