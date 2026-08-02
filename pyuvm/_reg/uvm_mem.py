@@ -563,7 +563,7 @@ class uvm_mem(uvm_object):
         if info is not None:
             info.frontdoor = ftdr
 
-    def get_frontdoor(self, map: uvm_reg_map = None) -> uvm_reg_frontdoor:
+    def get_frontdoor(self, map: uvm_reg_map = None) -> uvm_reg_frontdoor | None:
         local_map = self.get_local_map(map)
         if local_map is None:
             return None

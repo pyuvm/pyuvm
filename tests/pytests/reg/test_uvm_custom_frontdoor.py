@@ -13,6 +13,7 @@ from test_uvm_reg_frontdoor_adapter import (
 )
 
 from pyuvm import (
+    UVMFatalError,
     uvm_access_e,
     uvm_door_e,
     uvm_elem_kind_e,
@@ -346,40 +347,35 @@ def test_explicit_frontdoor_sequencer_precedes_root_map_sequencer():
     assert frontdoor.sequencer is explicit
 
 
-def test_missing_custom_frontdoor_sequencer_reports_failure(caplog):
+def test_missing_custom_frontdoor_sequencer_raises_fatal_error():
     frontdoor = StorageFrontdoor()
     reg_map, reg = build_register(frontdoor=frontdoor)
 
-    status = run_pytest_coro(reg.write(1, uvm_door_e.UVM_FRONTDOOR, reg_map))
+    with pytest.raises(UVMFatalError, match="has no sequencer"):
+        run_pytest_coro(reg.write(1, uvm_door_e.UVM_FRONTDOOR, reg_map))
 
-    assert status == uvm_status_e.UVM_NOT_OK
     assert frontdoor.snapshots == []
-    assert "has no sequencer" in caplog.text
 
 
-def test_missing_sequencer_diagnostic_handles_item_without_element(caplog):
+def test_missing_sequencer_exception_handles_item_without_element():
     frontdoor = StorageFrontdoor()
     reg_map, _ = build_register()
     rw = uvm_reg_item("standalone_item")
 
-    result = run_pytest_coro(reg_map.do_frontdoor(rw, frontdoor))
-
-    assert result is False
-    assert rw.get_status() == uvm_status_e.UVM_NOT_OK
-    assert "standalone_item" in caplog.text
+    with pytest.raises(UVMFatalError, match="standalone_item"):
+        run_pytest_coro(reg_map.do_frontdoor(rw, frontdoor))
 
 
-def test_invalid_custom_frontdoor_sequencer_is_rejected_before_activity(caplog):
+def test_invalid_custom_frontdoor_sequencer_raises_before_activity():
     frontdoor = StorageFrontdoor()
     frontdoor.sequencer = object()
     reg_map, reg = build_register(frontdoor=frontdoor)
 
-    status = run_pytest_coro(reg.write(1, uvm_door_e.UVM_FRONTDOOR, reg_map))
+    with pytest.raises(UVMFatalError, match="is not a uvm_sequencer"):
+        run_pytest_coro(reg.write(1, uvm_door_e.UVM_FRONTDOOR, reg_map))
 
-    assert status == uvm_status_e.UVM_NOT_OK
     assert frontdoor.snapshots == []
     assert frontdoor.rw_info is None
-    assert "is not a uvm_sequencer" in caplog.text
 
 
 @pytest.mark.parametrize("element_kind", ["reg", "mem"])

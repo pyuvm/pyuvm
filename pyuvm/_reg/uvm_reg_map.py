@@ -1011,7 +1011,7 @@ class uvm_reg_map(uvm_object):
 
     async def do_frontdoor(
         self, rw: uvm_reg_item, frontdoor: uvm_reg_frontdoor
-    ) -> bool:
+    ) -> None:
         prior_sequencer = frontdoor.sequencer
         sequencer = prior_sequencer
         if sequencer is None:
@@ -1023,22 +1023,14 @@ class uvm_reg_map(uvm_object):
                 if element is not None and hasattr(element, "get_full_name")
                 else rw.get_name()
             )
-            _report_error(
-                self,
-                "REG_FRONTDOOR",
+            raise UVMFatalError(
                 f"Custom frontdoor access to {element_name!r} has no sequencer; "
-                "configure the frontdoor sequencer or the root-map sequencer",
+                "configure the frontdoor sequencer or the root-map sequencer"
             )
-            rw.set_status(uvm_status_e.UVM_NOT_OK)
-            return False
         if not isinstance(sequencer, uvm_sequencer):
-            _report_error(
-                self,
-                "REG_FRONTDOOR",
-                f"Custom frontdoor sequencer {sequencer!r} is not a uvm_sequencer",
+            raise UVMFatalError(
+                f"Custom frontdoor sequencer {sequencer!r} is not a uvm_sequencer"
             )
-            rw.set_status(uvm_status_e.UVM_NOT_OK)
-            return False
 
         await frontdoor.atomic_lock()
         try:
@@ -1051,7 +1043,6 @@ class uvm_reg_map(uvm_object):
         finally:
             frontdoor.sequencer = prior_sequencer
             frontdoor.atomic_unlock()
-        return True
 
     def _get_bus_info(self, rw: uvm_reg_item) -> tuple[uvm_reg_map_info, int, int, int]:
         map_info = None
