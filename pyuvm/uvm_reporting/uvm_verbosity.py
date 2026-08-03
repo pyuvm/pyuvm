@@ -6,11 +6,13 @@
 
 from __future__ import annotations
 
-import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pyuvm.uvm_reporting.uvm_report_catcher import uvm_report_catcher
 from pyuvm.uvm_reporting.uvm_report_server import uvm_report_server
+
+if TYPE_CHECKING:
+    import logging
 
 UVM_NONE = 0
 UVM_LOW = 100

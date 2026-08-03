@@ -39,7 +39,7 @@ def test_overlap_uvm_hdl_path_concat_0():
     reg_slice_1 = uvm_hdl_path_slice("reg_slice_1", 8, 4)
     reg_slice_concat_0 = uvm_hdl_path_concat("reg_slice_concat")
     reg_slice_concat_0.add_slice(reg_slice_0)
-    with pytest.raises(Exception):
+    with pytest.raises(NotImplementedError):
         reg_slice_concat_0.add_slice(reg_slice_1)
 
 
@@ -49,7 +49,7 @@ def test_overlap_uvm_hdl_path_concat_1():
     reg_slice_1 = uvm_hdl_path_slice("reg_slice_1", 8, 4)
     reg_slice_concat = uvm_hdl_path_concat("reg_slice_concat")
     reg_slice_concat.add_slice(reg_slice_0)
-    with pytest.raises(Exception):
+    with pytest.raises(NotImplementedError):
         reg_slice_concat.add_slice(reg_slice_1)
 
 
@@ -74,7 +74,7 @@ def test_uvm_hdl_path_concat_set_slices_contiguous_wrong_order():
     reg_slice_3 = uvm_hdl_path_slice("reg_slice_3", 13, 19)
     reg_slice_concat = uvm_hdl_path_concat("reg_slice_concat")
     reg_slices = [reg_slice_3, reg_slice_1, reg_slice_2, reg_slice_0]
-    with pytest.raises(Exception):
+    with pytest.raises(NotImplementedError):
         reg_slice_concat.set_slices(reg_slices)
 
 

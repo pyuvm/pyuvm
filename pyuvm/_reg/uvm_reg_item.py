@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from pyuvm._reg.uvm_reg_model import uvm_access_e, uvm_status_e
-from pyuvm._s05_base_classes import uvm_object
 from pyuvm._s14_15_python_sequences import uvm_sequence_base, uvm_sequence_item
 
 if TYPE_CHECKING:
@@ -16,8 +15,9 @@ if TYPE_CHECKING:
         uvm_reg_byte_en_t,
         uvm_reg_data_t,
     )
+    from pyuvm._s05_base_classes import uvm_object
 
-__all__ = ["uvm_reg_item", "uvm_reg_bus_op"]
+__all__ = ["uvm_reg_bus_op", "uvm_reg_item"]
 
 
 class uvm_reg_item(uvm_sequence_item):
@@ -26,7 +26,7 @@ class uvm_reg_item(uvm_sequence_item):
         self.element_kind: uvm_elem_kind_e = None
         self.element: uvm_object = None
         self.kind: uvm_access_e = None
-        self.value: list[uvm_reg_data_t] = list()
+        self.value: list[uvm_reg_data_t] = []
         self.offset: uvm_reg_addr_t = None
         self.status: uvm_status_e = uvm_status_e.UVM_IS_OK
         self.local_map: uvm_reg_map = None

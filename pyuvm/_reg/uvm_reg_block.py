@@ -26,7 +26,6 @@ from pyuvm._reg.uvm_reg_reporting import (
 from pyuvm._s05_base_classes import uvm_object
 
 if TYPE_CHECKING:
-    from pyuvm._reg.uvm_mem import uvm_mem
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
     from pyuvm._reg.uvm_reg_model import (
         uvm_endianness_e,
@@ -44,10 +43,10 @@ __all__ = ["uvm_reg_block"]
 
 
 class uvm_reg_block(uvm_object):
-    _root_names: ClassVar[list[str]] = list()
-    _roots: ClassVar[list[uvm_reg_block]] = list()
+    _root_names: ClassVar[list[str]] = []
+    _roots: ClassVar[list[uvm_reg_block]] = []
     _enable_reg_lookup_cache: ClassVar[bool] = False
-    _reg_block_registry: ClassVar[dict[str, uvm_reg_block]] = dict()
+    _reg_block_registry: ClassVar[dict[str, uvm_reg_block]] = {}
 
     def __init__(
         self, name: str = "", has_coverage: int = uvm_coverage_model_e.UVM_NO_COVERAGE
@@ -56,16 +55,16 @@ class uvm_reg_block(uvm_object):
         self._name: str | None = None  # assign when model is locked
         self.default_path: uvm_door_e = uvm_door_e.UVM_DEFAULT_DOOR
         self._parent = None
-        self._blks: dict[int, uvm_reg_block] = dict()
-        self._regs: dict[int, uvm_reg] = dict()
-        self._vregs: dict[int, uvm_vreg] = dict()
-        self._mems: dict[int, uvm_mem] = dict()
-        self._maps: list[uvm_reg_map] = list()
+        self._blks: dict[int, uvm_reg_block] = {}
+        self._regs: dict[int, uvm_reg] = {}
+        self._vregs: dict[int, uvm_vreg] = {}
+        self._mems: dict[int, uvm_mem] = {}
+        self._maps: list[uvm_reg_map] = []
         self._locked: bool = False
         self._default_map: uvm_reg_map = None
         self._lock_model_complete: Event | None = None
         self._default_hdl_path = "RTL"
-        self._hdl_paths_pool: dict[str, list[str]] = dict()
+        self._hdl_paths_pool: dict[str, list[str]] = {}
         self._backdoor: uvm_reg_backdoor = None
 
     def configure(self, parent: uvm_reg_block = None, hdl_path: str = "") -> None:
@@ -93,7 +92,7 @@ class uvm_reg_block(uvm_object):
     def set_default_map(self, map: uvm_reg_map) -> None:
         if map not in self._maps:
             _report_error(
-                self, "REG_BLOCK", f"Map {repr(map.get_name())} does not exist in block"
+                self, "REG_BLOCK", f"Map {map.get_name()!r} does not exist in block"
             )
             return
         self._default_map = map
@@ -115,8 +114,8 @@ class uvm_reg_block(uvm_object):
             _report_error(
                 self,
                 "REG_BLOCK",
-                f"Subblock {repr(blk.get_name())} has already been "
-                f"registered with block {repr(self.get_name())}",
+                f"Subblock {blk.get_name()!r} has already been "
+                f"registered with block {self.get_name()!r}",
             )
             return
         self._blks[uid] = blk
@@ -133,7 +132,7 @@ class uvm_reg_block(uvm_object):
             _report_error(
                 self,
                 "REG_BLOCK",
-                f"Map {repr(map.get_name())} already exists in {repr(self.get_full_name())}",
+                f"Map {map.get_name()!r} already exists in {self.get_full_name()!r}",
             )
             return
         self._maps.append(map)
@@ -151,7 +150,7 @@ class uvm_reg_block(uvm_object):
             _report_error(
                 self,
                 "REG_BLOCK",
-                f"Register {repr(reg.get_name())} has already been "
+                f"Register {reg.get_name()!r} has already been "
                 f"registered with block {self.get_full_name()}",
             )
             return
@@ -168,7 +167,7 @@ class uvm_reg_block(uvm_object):
             _report_error(
                 self,
                 "REG_BLOCK",
-                f"Memory {repr(mem.get_name())} has already been "
+                f"Memory {mem.get_name()!r} has already been "
                 f"registered with block {self.get_full_name()}",
             )
             return
@@ -263,7 +262,7 @@ class uvm_reg_block(uvm_object):
 
     # TODO: Document definition compared to IEEE 1800.2
     def get_blocks(self, hier: uvm_hier_e = uvm_hier_e.UVM_HIER) -> list[uvm_reg_block]:
-        blks = list()
+        blks = []
         if hier == uvm_hier_e.UVM_HIER:
             for blk in self._blks.values():
                 blks += blk.get_blocks(hier)
@@ -275,7 +274,7 @@ class uvm_reg_block(uvm_object):
 
     # TODO: Document definition compared to IEEE 1800.2
     def get_registers(self, hier: uvm_hier_e = uvm_hier_e.UVM_HIER) -> list[uvm_reg]:
-        regs = list()
+        regs = []
         if hier == uvm_hier_e.UVM_HIER:
             for blk in self._blks.values():
                 regs += blk.get_registers(hier)
@@ -283,7 +282,7 @@ class uvm_reg_block(uvm_object):
 
     # TODO: Document definition compared to IEEE 1800.2
     def get_fields(self, hier: uvm_hier_e = uvm_hier_e.UVM_HIER) -> list[uvm_reg_field]:
-        fields = list()
+        fields = []
         for reg in self._regs.values():
             fields += reg.get_fields()
         if hier == uvm_hier_e.UVM_HIER:
@@ -293,7 +292,7 @@ class uvm_reg_block(uvm_object):
 
     # TODO: Document definition compared to IEEE 1800.2
     def get_memories(self, hier: uvm_hier_e = uvm_hier_e.UVM_HIER) -> list[uvm_mem]:
-        mems = list()
+        mems = []
         if hier == uvm_hier_e.UVM_HIER:
             for blk in self._blks.values():
                 mems += blk.get_memories(hier)
@@ -303,7 +302,7 @@ class uvm_reg_block(uvm_object):
     def get_virtual_registers(
         self, hier: uvm_hier_e = uvm_hier_e.UVM_HIER
     ) -> list[uvm_vreg]:
-        regs = list()
+        regs = []
         if hier == uvm_hier_e.UVM_HIER:
             for blk in self._blks.values():
                 regs += blk.get_virtual_registers(hier)
@@ -313,7 +312,7 @@ class uvm_reg_block(uvm_object):
     def get_virtual_fields(
         self, hier: uvm_hier_e = uvm_hier_e.UVM_HIER
     ) -> list[uvm_vreg_field]:
-        fields = list()
+        fields = []
         if hier == uvm_hier_e.UVM_HIER:
             for blk in self._blks.values():
                 fields += blk.get_virtual_fields(hier)
@@ -332,7 +331,7 @@ class uvm_reg_block(uvm_object):
         _report_warning(
             self,
             "REG_BLOCK",
-            f"Unable to locate block {repr(name)} in block {repr(self.get_full_name())}",
+            f"Unable to locate block {name!r} in block {self.get_full_name()!r}",
         )
 
     @staticmethod
@@ -346,7 +345,7 @@ class uvm_reg_block(uvm_object):
         _report_warning(
             self,
             "REG_BLOCK",
-            f"Unable to locate map {repr(name)} in block {repr(self.get_full_name())}",
+            f"Unable to locate map {name!r} in block {self.get_full_name()!r}",
         )
 
     def get_reg_by_name(self, name: str) -> uvm_reg | None:
@@ -356,7 +355,7 @@ class uvm_reg_block(uvm_object):
         _report_warning(
             self,
             "REG_BLOCK",
-            f"Unable to locate register {repr(name)} in block {repr(self.get_full_name())}",
+            f"Unable to locate register {name!r} in block {self.get_full_name()!r}",
         )
 
     def get_field_by_name(self, name: str) -> uvm_reg_field:
@@ -366,7 +365,7 @@ class uvm_reg_block(uvm_object):
         _report_warning(
             self,
             "REG_BLOCK",
-            f"Unable to locate field {repr(name)} in block {repr(self.get_full_name())}",
+            f"Unable to locate field {name!r} in block {self.get_full_name()!r}",
         )
 
     def get_mem_by_name(self, name: str) -> uvm_mem | None:
@@ -376,7 +375,7 @@ class uvm_reg_block(uvm_object):
         _report_warning(
             self,
             "REG_BLOCK",
-            f"Unable to locate memory {repr(name)} in block {repr(self.get_full_name())}",
+            f"Unable to locate memory {name!r} in block {self.get_full_name()!r}",
         )
 
     def get_vreg_by_name(self, name: str) -> uvm_vreg | None:
@@ -386,8 +385,8 @@ class uvm_reg_block(uvm_object):
         _report_warning(
             self,
             "REG_BLOCK",
-            f"Unable to locate virtual register {repr(name)} in block "
-            f"{repr(self.get_full_name())}",
+            f"Unable to locate virtual register {name!r} in block "
+            f"{self.get_full_name()!r}",
         )
 
     def get_vfield_by_name(self, name: str) -> uvm_vreg_field:
@@ -397,7 +396,7 @@ class uvm_reg_block(uvm_object):
         _report_warning(
             self,
             "REG_BLOCK",
-            f"Unable to locate virtual field {repr(name)}' in block {repr(self.get_full_name())}",
+            f"Unable to locate virtual field {name!r}' in block {self.get_full_name()!r}",
         )
 
     def build_coverage(self, models: uvm_reg_cvr_t) -> uvm_reg_cvr_t:
@@ -554,7 +553,7 @@ class uvm_reg_block(uvm_object):
 
     def add_hdl_path(self, path: str, kind: str = "RTL") -> None:
         if kind not in self._hdl_paths_pool:
-            self._hdl_paths_pool[kind] = list()
+            self._hdl_paths_pool[kind] = []
         self._hdl_paths_pool[kind].append(path)
 
     def has_hdl_path(self, kind: str = "") -> bool:

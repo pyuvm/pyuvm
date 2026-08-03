@@ -117,8 +117,8 @@ class s08_factory_classes_TestCase:
             "original_comp", "comp_3", "top.mid.orig"
         )
         assert (
-            "Type Override: comp_1     || Instance Overrides: top.sib.orig => comp_2 | top.mid.orig => comp_3"
-            == str(self.fd.overrides[self.original_comp])
+            str(self.fd.overrides[self.original_comp])
+            == "Type Override: comp_1     || Instance Overrides: top.sib.orig => comp_2 | top.mid.orig => comp_3"
         )
 
     def test_find_type_override(self):
@@ -262,10 +262,10 @@ class s08_factory_classes_TestCase:
         """
         new_obj = self.factory.create_object_by_type(self.original_object, name="foo")
         assert isinstance(new_obj, self.original_object)
-        assert "foo" == new_obj.get_name()
+        assert new_obj.get_name() == "foo"
         new_obj = self.factory.create_object_by_name("object_1", name="foo_1")
         assert isinstance(new_obj, self.object_1)
-        assert "foo_1" == new_obj.get_name()
+        assert new_obj.get_name() == "foo_1"
 
     def test_create_object_by_type_and_name_with_type_override_8_3_1_5(self):
         """
@@ -283,22 +283,22 @@ class s08_factory_classes_TestCase:
             self.original_object, parent_inst_path="top.sib", name="orig"
         )
         assert isinstance(new_obj, self.object_1)
-        assert "orig" == new_obj.get_name()
+        assert new_obj.get_name() == "orig"
         new_obj = self.factory.create_object_by_type(
             self.original_object, parent_inst_path="top.noway", name="orig"
         )
         assert isinstance(new_obj, self.object_2)
-        assert "orig" == new_obj.get_name()
+        assert new_obj.get_name() == "orig"
         new_obj = self.factory.create_object_by_name(
             "original_object", parent_inst_path="top.sib", name="orig_1"
         )
         assert isinstance(new_obj, self.object_1)
-        assert "orig_1" == new_obj.get_name()
+        assert new_obj.get_name() == "orig_1"
         new_obj = self.factory.create_object_by_name(
             "original_object", parent_inst_path="top.noway", name="orig2b"
         )
         assert isinstance(new_obj, self.object_2)
-        assert "orig2b" == new_obj.get_name()
+        assert new_obj.get_name() == "orig2b"
         logger = logging.getLogger("Factory")
         level = logger.level
         logger.setLevel(logging.CRITICAL)
@@ -333,14 +333,14 @@ class s08_factory_classes_TestCase:
             parent=test_top,
         )
         assert isinstance(new_obj, self.comp_1)
-        assert "sib1" == new_obj.get_name()
-        assert "test_top.sib1" == new_obj.get_full_name()
+        assert new_obj.get_name() == "sib1"
+        assert new_obj.get_full_name() == "test_top.sib1"
         new_obj = self.factory.create_component_by_name(
             "original_comp", parent_inst_path="test_top", name="sib2", parent=test_top
         )
         assert isinstance(new_obj, self.comp_2)
-        assert "sib2" == new_obj.get_name()
-        assert "test_top.sib2" == new_obj.get_full_name()
+        assert new_obj.get_name() == "sib2"
+        assert new_obj.get_full_name() == "test_top.sib2"
 
     def test_set_type_alias_8_3_1_6_1(self):
         """
@@ -454,25 +454,25 @@ class s08_factory_classes_TestCase:
     def test_object_creation(self):
         new_obj = uvm_object.create("claribel")
         assert isinstance(new_obj, uvm_object)
-        assert "claribel" == new_obj.get_name()
+        assert new_obj.get_name() == "claribel"
 
     def test_class_creation(self):
         class Foo(uvm_object): ...
 
         new_obj = Foo.create("foobar")
         assert isinstance(new_obj, Foo)
-        assert "foobar" == new_obj.get_name()
+        assert new_obj.get_name() == "foobar"
 
     def test_component_creation(self):
         new_comp = uvm_component.create("test", None)
         assert isinstance(new_comp, uvm_component)
-        assert "test" == new_comp.get_name()
+        assert new_comp.get_name() == "test"
 
     def test_ext_comp_creation(self):
         class FooComp(uvm_component): ...
 
         new_comp = FooComp.create("Foo", None)
-        assert "Foo" == new_comp.get_name()
+        assert new_comp.get_name() == "Foo"
         assert isinstance(new_comp, FooComp)
 
     async def test_type_override_by_type(self):

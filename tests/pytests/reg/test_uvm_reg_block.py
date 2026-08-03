@@ -135,7 +135,7 @@ def test_get_field_empty_reg():
     block = uvm_reg_block()
     reg = uvm_reg("reg", 32)
     reg.configure(block, None, "")
-    assert block.get_fields() == list()
+    assert block.get_fields() == []
     assert block.get_registers() == [reg]
 
 

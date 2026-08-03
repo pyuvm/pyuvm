@@ -98,10 +98,9 @@ class uvm_agent(uvm_component):
 
         if self.is_active not in list(uvm_active_passive_enum):
             self.logger.warning(
-                f"{self.get_full_name()}"
-                "has illegal is_active"
-                f" value: {self.is_active}."
-                "Setting to UVM_ACTIVE"
+                "%s has illegal is_active value: %s. Setting to UVM_ACTIVE",
+                self.get_full_name(),
+                self.is_active,
             )
             self.is_active = uvm_active_passive_enum.UVM_ACTIVE
 

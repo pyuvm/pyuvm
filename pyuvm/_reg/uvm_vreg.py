@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from pyuvm._reg.uvm_vreg_field import uvm_vreg_field
     from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
-__all__ = ["uvm_vreg", "uvm_vreg_cbs", "uvm_vreg_cb", "uvm_vreg_cb_iter"]
+__all__ = ["uvm_vreg", "uvm_vreg_cb", "uvm_vreg_cb_iter", "uvm_vreg_cbs"]
 
 
 class uvm_vreg(uvm_object):

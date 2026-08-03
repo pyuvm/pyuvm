@@ -52,7 +52,7 @@ class TinyAluBfm(metaclass=Singleton):
     # clock generation
     async def wait_clock(self, cycles=1):
         """wait for clock pulses"""
-        for cycle in range(cycles):
+        for _cycle in range(cycles):
             await RisingEdge(self.dut.clk)
 
     async def SW_READ(self, sw_addr: int):

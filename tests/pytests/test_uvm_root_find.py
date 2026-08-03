@@ -412,7 +412,7 @@ class TestFindEdgeCases:
         root = uvm_root()
         result = root.find_all("*")
         assert len(result) == 0
-        assert result == list()
+        assert result == []
 
     def test_find_after_component_removal(self, simple_hierarchy):
         """Test find after modifying hierarchy."""

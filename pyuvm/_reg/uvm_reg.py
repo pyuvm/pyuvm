@@ -29,7 +29,6 @@ from pyuvm._s05_base_classes import uvm_object
 if TYPE_CHECKING:
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
     from pyuvm._reg.uvm_reg_block import uvm_reg_block
-    from pyuvm._reg.uvm_reg_item import uvm_reg_item
     from pyuvm._reg.uvm_reg_map import uvm_reg_map, uvm_reg_map_info
     from pyuvm._reg.uvm_reg_model import (
         uvm_hdl_path_concat,
@@ -55,7 +54,7 @@ class uvm_reg(uvm_object):
     ) -> None:
         super().__init__(name)
         if n_bits < 1:
-            logger.error(f"Register {repr(self.get_name())} cannot have 0 bits")
+            logger.error("Register %r cannot have 0 bits", self.get_name())
             n_bits = 1
         self._locked: bool = False
         self._parent: uvm_reg_block = None
@@ -74,7 +73,7 @@ class uvm_reg(uvm_object):
         self._write_in_progress: bool = False
         self._is_busy: bool = False
         self._backdoor: uvm_reg_backdoor = None
-        self._hdl_paths_pool: dict[str, list[str]] = dict()
+        self._hdl_paths_pool: dict[str, list[str]] = {}
 
         # TODO: remove backward compatibility
         self._addr = None
@@ -124,9 +123,10 @@ class uvm_reg(uvm_object):
 
         if blk_parent is None:
             logger.error(
-                "uvm_reg.configure() called without a parent block "
-                f"for instance {self.get_name()} of register type "
-                f"{self.get_type_name()}."
+                "uvm_reg.configure() called without a parent block for instance %s "
+                "of register type %s.",
+                self.get_name(),
+                self.get_type_name(),
             )
             return
         self._parent = blk_parent
@@ -153,12 +153,16 @@ class uvm_reg(uvm_object):
             if throw_error_on_read is None or throw_error_on_read is not None:
                 pass
         except NameError:
-            warnings.warn("The 'throw_error_on_read' argument is deprecated")
+            warnings.warn(
+                "The 'throw_error_on_read' argument is deprecated", stacklevel=2
+            )
         try:
             if throw_error_on_write is None or throw_error_on_write is not None:
                 pass
         except NameError:
-            warnings.warn("The 'throw_error_on_write' argument is deprecated")
+            warnings.warn(
+                "The 'throw_error_on_write' argument is deprecated", stacklevel=2
+            )
         # END: backward compatibility
 
     def set_offset(
@@ -166,8 +170,9 @@ class uvm_reg(uvm_object):
     ) -> None:
         if len(self._maps) > 1 and not map:
             logger.error(
-                f"'set_offset' requires a map when register "
-                f"{repr(self.get_full_name())} belongs to more than one map."
+                "'set_offset' requires a map when register %r belongs to more than "
+                "one map.",
+                self.get_full_name(),
             )
             return
         local_map = self.get_local_map(map)
@@ -186,7 +191,7 @@ class uvm_reg(uvm_object):
         if field is None:
             raise UVMFatalError("Field cannot be None")
         if field in self._fields:
-            logger.error(f"Field {field.get_name()} is already added")
+            logger.error("Field %s is already added", field.get_name())
 
         # NOTE: add field and sort by lsb
         self._fields.append(field)
@@ -196,7 +201,9 @@ class uvm_reg(uvm_object):
         for f in self._fields:
             if f.get_lsb_pos() + f.get_n_bits() > self.get_n_bits():
                 logger.error(
-                    f"Field {f.get_name()} is too large for register {self.get_name()}"
+                    "Field %s is too large for register %s",
+                    f.get_name(),
+                    self.get_name(),
                 )
 
         # NOTE: Check if any fields overlap
@@ -204,14 +211,15 @@ class uvm_reg(uvm_object):
             msb = self._fields[i].get_lsb_pos() + self._fields[i].get_n_bits()
             if msb > self._fields[i + 1].get_lsb_pos():
                 logger.error(
-                    f"Field {self._fields[i].get_name()} overlaps "
-                    f"field {self._fields[i + 1].get_name()} in register "
-                    f"{self.get_name()}"
+                    "Field %s overlaps field %s in register %s",
+                    self._fields[i].get_name(),
+                    self._fields[i + 1].get_name(),
+                    self.get_name(),
                 )
 
     def add_map(self, map: uvm_reg_map) -> None:
         if map in self._maps:
-            logger.error(f"Map {repr(map.get_name())} is already added")
+            logger.error("Map %r is already added", map.get_name())
         else:
             self._maps.append(map)
 
@@ -265,8 +273,7 @@ class uvm_reg(uvm_object):
     def get_maps(self, maps: list[uvm_reg_map]) -> None:
         # NOTE: The list is mutable, emulate the pass by reference
         maps.clear()
-        for i in self._maps:
-            maps.append(i)
+        maps.extend(self._maps)
 
     def get_local_map(self, map: uvm_reg_map) -> uvm_reg_map | None:
         if map is None:
@@ -280,15 +287,16 @@ class uvm_reg(uvm_object):
                     return local_map
                 parent_map = parent_map.get_parent_map()
         logger.warning(
-            f"Register {self.get_full_name()} is not contained "
-            f"within map {map.get_full_name()}"
+            "Register %s is not contained within map %s",
+            self.get_full_name(),
+            map.get_full_name(),
         )
         return None
 
     def get_default_map(self) -> uvm_reg_map | None:
         if len(self._maps) == 0:
             logger.warning(
-                f"Register {self.get_full_name()} is not registered with any map"
+                "Register %s is not registered with any map", self.get_full_name()
             )
             return None
         if len(self._maps) == 1:
@@ -330,8 +338,7 @@ class uvm_reg(uvm_object):
         _report_warning(
             self,
             "REG_FIELD_LOOKUP",
-            f"Unable to locate field {repr(name)} in register "
-            f"{repr(self.get_full_name())}",
+            f"Unable to locate field {name!r} in register {self.get_full_name()!r}",
         )
         return None
 
@@ -358,14 +365,14 @@ class uvm_reg(uvm_object):
         local_map = self.get_local_map(map)
         if local_map is None:
             raise UVMFatalError(
-                f"Register {repr(self.get_full_name())} is not mapped in "
+                f"Register {self.get_full_name()!r} is not mapped in "
                 "the requested address map"
             )
         map_info = local_map.get_reg_map_info(self)
         if map_info is None:
             raise UVMFatalError(
-                f"Register {repr(self.get_full_name())} has no map info in "
-                f"address map {repr(local_map.get_full_name())}"
+                f"Register {self.get_full_name()!r} has no map info in "
+                f"address map {local_map.get_full_name()!r}"
             )
         return map_info.offset
 
@@ -391,7 +398,7 @@ class uvm_reg(uvm_object):
             else:
                 map_name = map.get_full_name()
             logger.warning(
-                f"Register {repr(self.get_name())} is unmapped in map {repr(map_name)}"
+                "Register %r is unmapped in map %r", self.get_name(), map_name
             )
         return local_map.get_n_bytes(), map_info.addr
 
@@ -664,9 +671,7 @@ class uvm_reg(uvm_object):
         rw.set_fname(fname)
         rw.set_line(lineno)
         self.do_predict(rw, kind, be)
-        if rw.get_status() == uvm_status_e.UVM_NOT_OK:
-            return False
-        return True
+        return rw.get_status() != uvm_status_e.UVM_NOT_OK
 
     def is_busy(self) -> bool:
         return self._is_busy
@@ -755,7 +760,7 @@ class uvm_reg(uvm_object):
         _report_error(
             self,
             "REG_COMPARE",
-            f"Register {repr(self.get_full_name())} value read from DUT "
+            f"Register {self.get_full_name()!r} value read from DUT "
             f"(0x{actual & valid_bits_mask:X}) does not match mirrored value "
             f"(0x{expected & valid_bits_mask:X})",
         )
@@ -861,8 +866,8 @@ class uvm_reg(uvm_object):
         if rw.get_status() == uvm_status_e.UVM_IS_OK:
             if self.is_busy() and kind == uvm_predict_e.UVM_PREDICT_DIRECT:
                 logger.warning(
-                    "Trying to predict value of register "
-                    f"{repr(self.get_name())} while it is being accessed"
+                    "Trying to predict value of register %r while it is being accessed",
+                    self.get_name(),
                 )
                 return
             for field in self.get_fields():

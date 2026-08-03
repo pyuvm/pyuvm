@@ -15,8 +15,10 @@ def test(
     skip=False,
     stage=None,
     keep_singletons=False,
-    keep_set=set(),
+    keep_set=None,
 ):
+    if keep_set is None:
+        keep_set = set()
     if cocotb_version_info >= (1, 7, 0) and stage is None:
         stage = 0
 

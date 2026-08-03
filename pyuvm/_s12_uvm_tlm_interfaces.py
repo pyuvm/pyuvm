@@ -166,11 +166,11 @@ class uvm_blocking_put_port(uvm_port_base):
         """
         try:
             await self.export.put(datum)
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
 
 
 # 12.2.5.1
@@ -191,11 +191,11 @@ class uvm_nonblocking_put_port(uvm_port_base):
         """
         try:
             return self.export.try_put(data)
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export "
                 f"in {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
 
     # 12.2.4.2.5
     def can_put(self):
@@ -207,11 +207,11 @@ class uvm_nonblocking_put_port(uvm_port_base):
         """
         try:
             return self.export.can_put()
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
 
 
 # 12.2.5.1
@@ -236,11 +236,11 @@ class uvm_blocking_get_port(uvm_port_base):
         """
         try:
             return await self.export.get()
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in "
                 f"{self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
 
 
 # 12.2.5.1
@@ -263,11 +263,11 @@ class uvm_nonblocking_get_port(uvm_port_base):
 
         try:
             (success, data) = self.export.try_get()
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
 
         return success, data
 
@@ -280,11 +280,11 @@ class uvm_nonblocking_get_port(uvm_port_base):
         """
         try:
             can = self.export.can_get()
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
 
         return can
 
@@ -309,11 +309,11 @@ class uvm_blocking_peek_port(uvm_port_base):
         """
         try:
             return await self.export.peek()
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
 
 
 # 12.2.5.1
@@ -333,11 +333,11 @@ class uvm_nonblocking_peek_port(uvm_port_base):
         """
         try:
             success, data = self.export.try_peek()
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
         return success, data
 
     # 12.2.4.2.9
@@ -350,11 +350,11 @@ class uvm_nonblocking_peek_port(uvm_port_base):
         """
         try:
             return self.export.can_peek()
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
 
 
 class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port): ...
@@ -389,11 +389,11 @@ class uvm_blocking_transport_port(uvm_port_base):
         """
         try:
             get_data = await self.export.transport(put_data)
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
         return get_data
 
 
@@ -412,11 +412,11 @@ class uvm_nonblocking_transport_port(uvm_port_base):
         """
         try:
             success, get_data = self.export.nb_transport(put_data)
-        except AttributeError:
+        except AttributeError as err:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            )
+            ) from err
         return success, get_data
 
 
@@ -604,9 +604,9 @@ class uvm_tlm_fifo_base(uvm_component):
             A coroutine that blocks if the FIFO is full.
 
             """
-            self.logger.log(FIFO_DEBUG, f"blocking put: {item}")
+            self.logger.log(FIFO_DEBUG, "blocking put: %s", item)
             await self.queue.put(item)
-            self.logger.log(FIFO_DEBUG, f"success put {item}")
+            self.logger.log(FIFO_DEBUG, "success put %s", item)
             self.ap.write(item)
 
     #  12.2.8.1.3
@@ -645,7 +645,7 @@ class uvm_tlm_fifo_base(uvm_component):
             """
             self.logger.log(FIFO_DEBUG, "Attempting blocking get")
             item = await self.queue.get()
-            self.logger.log(FIFO_DEBUG, f"got {item}")
+            self.logger.log(FIFO_DEBUG, "got %s", item)
             self.ap.write(item)
             return item
 
@@ -680,7 +680,7 @@ class uvm_tlm_fifo_base(uvm_component):
             """
             self.logger.log(FIFO_DEBUG, "Attempting blocking peek")
             peek_data = await self.queue.peek()
-            self.logger.log(FIFO_DEBUG, f"peeked at {peek_data}")
+            self.logger.log(FIFO_DEBUG, "peeked at %s", peek_data)
             return peek_data
 
     class uvm_NonBlockingPeekExport(uvm_QueueAccessor, uvm_nonblocking_peek_export):
@@ -717,33 +717,33 @@ class uvm_tlm_fifo_base(uvm_component):
         self.put_ap = uvm_analysis_port("put_ap", self)
 
         self.blocking_put_export = self.uvm_BlockingPutExport(
-            "blocking_put_export",  # noqa: E501
+            "blocking_put_export",
             self,
             self.queue,
             self.put_ap,
         )
         self.nonblocking_put_export = self.uvm_NonBlockingPutExport(
-            "nonblocking_put_export",  # noqa: E501
+            "nonblocking_put_export",
             self,
             self.queue,
             self.put_ap,
-        )  # noqa: E501
+        )
         self.put_export = self.uvm_PutExport(
             "put_export", self, self.queue, self.put_ap
-        )  # noqa: E501
+        )
 
         self.blocking_get_export = self.uvm_BlockingGetExport(
             "blocking_get_export",
-            self,  # noqa: E501
+            self,
             self.queue,
             self.get_ap,
-        )  # noqa: E501
+        )
         self.nonblocking_get_export = self.uvm_NonBlockingGetExport(
             "nonblocking_get_export",
-            self,  # noqa: E501
+            self,
             self.queue,
             self.get_ap,
-        )  # noqa: E501
+        )
 
         self.get_export = self.uvm_GetExport(
             "get_export", self, self.queue, self.get_ap
@@ -751,35 +751,35 @@ class uvm_tlm_fifo_base(uvm_component):
 
         self.blocking_peek_export = self.uvm_BlockingPeekExport(
             "blocking_peek_export",
-            self,  # noqa: E501
+            self,
             self.queue,
             self.get_ap,
-        )  # noqa: E501
+        )
         self.nonblocking_peek_export = self.uvm_NonBlockingPeekExport(
             "nonblocking_peek_export",
-            self,  # noqa: E501
+            self,
             self.queue,
             self.get_ap,
-        )  # noqa: E501
+        )
         self.peek_export = self.uvm_PeekExport(
             "peek_export", self, self.queue, self.get_ap
         )
 
         self.blocking_get_peek_export = self.uvm_BlockingGetPeekExport(
             "blocking_get_peek_export",
-            self,  # noqa: E501
+            self,
             self.queue,
             self.get_ap,
-        )  # noqa: E501
+        )
         self.nonblocking_get_peek_export = self.uvm_NonBlockingGetPeekExport(
             "nonblocking_get_peek_export",
-            self,  # noqa: E501
+            self,
             self.queue,
             self.get_ap,
-        )  # noqa: E501
+        )
         self.get_peek_export = self.uvm_GetPeekExport(
             "get_peek_export", self, self.queue, self.get_ap
-        )  # noqa: E501
+        )
 
     async def put(self, item):
         """
@@ -914,11 +914,11 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
             """
             try:
                 self.queue.put_nowait(item)
-            except QueueFull:
+            except QueueFull as err:
                 raise QueueFull(
                     f"Full analysis fifo: {self.get_full_name()}."
                     " This should never happen"
-                )  # noqa: E501
+                ) from err
 
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 0)

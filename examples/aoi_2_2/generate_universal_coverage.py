@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate HTML coverage report for both Verilator and GHDL simulations"""
 
 import re
@@ -445,19 +444,20 @@ def detect_simulator():
 
     # Check results.xml to see which simulator was actually used
     if results_file.exists():
+        content = ""
         try:
             with open(results_file) as f:
                 content = f.read()
-                # GHDL leaves specific traces in output
-                if "GHDL" in content or "vhdl" in content.lower():
-                    if vhdl_source.exists():
-                        return "ghdl", vhdl_source
-                # Verilator detection
-                elif "Verilator" in content or verilator_annotated.exists():
-                    if verilator_annotated.exists():
-                        return "verilator", verilator_annotated
-        except Exception:
-            pass
+        except OSError:
+            content = ""
+        # GHDL leaves specific traces in output
+        if "GHDL" in content or "vhdl" in content.lower():
+            if vhdl_source.exists():
+                return "ghdl", vhdl_source
+        # Verilator detection
+        elif "Verilator" in content or verilator_annotated.exists():
+            if verilator_annotated.exists():
+                return "verilator", verilator_annotated
 
     # Fallback: check for annotated Verilator file
     if verilator_annotated.exists():

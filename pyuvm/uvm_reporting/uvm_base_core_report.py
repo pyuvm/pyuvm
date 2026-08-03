@@ -25,7 +25,7 @@ class uvm_base_core_report:
         default_verbosity: int = UVM_LOW,
     ) -> None:
         self.owner = owner
-        self.logger = getattr(owner, "logger")
+        self.logger = owner.logger
         inherited = getattr(parent, "uvm_verbosity", default_verbosity)
         self.verbosity: int = int(inherited)
         self.full_name = self._owner_full_name(owner)

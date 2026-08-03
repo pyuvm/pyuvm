@@ -88,7 +88,7 @@ async def test_stub(dut):
     """testing the basic testing mechanism"""
     top = setUp()
     top.build_phase()
-    assert "top" == phase_list["build_phase"][0]
+    assert phase_list["build_phase"][0] == "top"
     tearDown()
 
 

@@ -246,8 +246,10 @@ class uvm_report_server:
         for handler, formatter in self._attached:
             try:
                 handler.setFormatter(formatter)
-            except Exception:
-                pass
+            except (AttributeError, TypeError, ValueError) as err:
+                logging.getLogger("uvm").debug(
+                    "Unable to restore formatter for handler %r: %s", handler, err
+                )
         self._attached.clear()
         self._attached_keys.clear()
         self._logger_full_names.clear()
@@ -388,9 +390,11 @@ class uvm_report_server:
         loggers.append(logging.getLogger("pyuvm"))
         loggers.append(logging.getLogger("test"))
 
-        for logger_obj in logging.Logger.manager.loggerDict.values():
-            if isinstance(logger_obj, logging.Logger):
-                loggers.append(logger_obj)
+        loggers.extend(
+            logger_obj
+            for logger_obj in logging.Logger.manager.loggerDict.values()
+            if isinstance(logger_obj, logging.Logger)
+        )
 
         for log in loggers:
             self.register_logger(log)

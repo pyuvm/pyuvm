@@ -155,7 +155,7 @@ class uvm_object(uvm_void):
 
         Return the name of this object as passed by the constructor
         """
-        assert self._obj_name is not None, f"Internal error. {str(self)} has no name"
+        assert self._obj_name is not None, f"Internal error. {self!s} has no name"
         return self._obj_name
 
     # 5.3.4.1

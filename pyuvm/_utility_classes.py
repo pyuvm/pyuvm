@@ -40,7 +40,7 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super().__call__(*args, **kwargs)  # noqa: E501
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
 
     @classmethod
@@ -153,7 +153,7 @@ class FactoryData(metaclass=Singleton):
                 overridden_list = []
             if override in overridden_list:
                 self.logger.error(
-                    f"{requested_type} already overridden: {overridden_list}"
+                    "%s already overridden: %s", requested_type, overridden_list
                 )
                 return requested_type
             else:
@@ -209,7 +209,7 @@ class UVM_ROOT_Singleton(FactoryMeta):
 
     def __call__(cls, *args, **kwargs):
         if cls.singleton is None:
-            cls.singleton = super().__call__(*args, **kwargs)  # noqa : E501
+            cls.singleton = super().__call__(*args, **kwargs)
         return cls.singleton
 
     @classmethod
@@ -271,7 +271,7 @@ class ObjectionHandler(metaclass=Singleton):
 
     def clear(self):
         if self.__objections:
-            logging.warning("Clearing all objections\n%s", str(self))
+            logging.getLogger("uvm").warning("Clearing all objections\n%s", str(self))
             self.__objections = {}
         self._outstanding = 0
         self.objection_raised = False
@@ -296,7 +296,9 @@ class ObjectionHandler(metaclass=Singleton):
         if not self.__objections.get(name):
             # A drop with no matching raise is a no-op; it must not crash
             # the run phase or corrupt the outstanding count.
-            logging.warning("Dropped objection for '%s' with no matching raise", name)
+            logging.getLogger("pyuvm").warning(
+                "Dropped objection for '%s' with no matching raise", name
+            )
             return
         self.__objections[name].pop()
         if not self.__objections[name]:
@@ -310,7 +312,9 @@ class ObjectionHandler(metaclass=Singleton):
         # Allow the run_phase coros to get scheduled and raise objections:
         await NullTrigger()
         if not self.objection_raised:
-            logging.warning("You did not call self.raise_objection() in any run_phase")
+            logging.getLogger("pyuvm").warning(
+                "You did not call self.raise_objection() in any run_phase"
+            )
             return
         # Wait for the outstanding objection count to reach zero. We always wait
         # on the event at least once (even if the count is already zero) so that

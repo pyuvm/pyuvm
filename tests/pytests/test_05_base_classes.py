@@ -64,15 +64,15 @@ def test_identification():
     moe = my_object("moe")
     # 5.3.4.2
     name = moe.get_name()
-    assert "moe" == name
+    assert name == "moe"
     # 5.3.4.1
     moe.set_name("curly")
     name = moe.get_name()
-    assert "curly" == name
+    assert name == "curly"
     moe.set_name("larry")
     # 5.3.4.3
     name = moe.get_full_name()
-    assert "larry" == name
+    assert name == "larry"
     # 5.3.4.4
     moe_id = moe.get_inst_id()
     assert id(moe) == moe_id
@@ -83,7 +83,7 @@ def test_identification():
     with pytest.raises(UsePythonMethod):
         moe.get_object_type()
     # 5.3.4.7
-    assert "my_object" == moe.get_type_name()
+    assert moe.get_type_name() == "my_object"
 
 
 def test_creation():
@@ -94,7 +94,7 @@ def test_creation():
     mo = my_object("mo")
     # 5.3.5.1
     new_mo = mo.create("new_mo")
-    assert "new_mo" == new_mo.get_name()
+    assert new_mo.get_name() == "new_mo"
     assert type(new_mo) is type(mo)
     # 5.3.5.2
     mo.val = 5
@@ -114,7 +114,7 @@ def test_printing():
     # 5.3.6.2
     with pytest.raises(UsePythonMethod):
         mo.sprint()
-    assert "Hello" == mo.convert2string()
+    assert mo.convert2string() == "Hello"
 
 
 def test_recording():
@@ -258,7 +258,7 @@ def test_uvm_transaction_creation():
     :return:
     """
     tr = uvm_transaction()
-    assert 0 == len(tr.get_name())
+    assert len(tr.get_name()) == 0
     assert not tr.get_initiator()
     uc = uvm_component("uc", None)
     tr.set_initiator(uc)
