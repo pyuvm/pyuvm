@@ -87,7 +87,7 @@ class SetDatumTo442(uvm_test):
         self.drop_objection()
 
 
-@pyuvm.test(keep_set=set([MySingleton]))
+@pyuvm.test(keep_set={MySingleton})
 class CheckDatumis442(uvm_test):
     def build_phase(self):
         self.mysingleton = MySingleton()
@@ -159,7 +159,7 @@ class CheckMultipleSingletonAreSet(uvm_test):
         self.drop_objection()
 
 
-@pyuvm.test(keep_set=set([MySingleton, MySingleton3]))
+@pyuvm.test(keep_set={MySingleton, MySingleton3})
 class CheckMultipleSingletonAreSetAgain(uvm_test):
     def build_phase(self):
         self.mysingleton = MySingleton()

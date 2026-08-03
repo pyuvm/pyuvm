@@ -268,7 +268,7 @@ from pyuvm._utility_classes import (
 )
 from pyuvm._version import __version__
 
-__all__ = [
+__all__ = [  # noqa: RUF022
     # Error classes
     "UVMError",
     "UVMNotImplemented",

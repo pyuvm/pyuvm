@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from pyuvm._reg.uvm_mem_mam import uvm_mem_mam
     from pyuvm._reg.uvm_reg_backdoor import uvm_reg_backdoor
     from pyuvm._reg.uvm_reg_block import uvm_reg_block
-    from pyuvm._reg.uvm_reg_item import uvm_reg_item
     from pyuvm._reg.uvm_reg_map import uvm_reg_map, uvm_reg_map_info
     from pyuvm._reg.uvm_reg_model import (
         uvm_hdl_path_concat,
@@ -33,7 +32,6 @@ if TYPE_CHECKING:
         uvm_reg_addr_t,
         uvm_reg_cvr_t,
         uvm_reg_data_t,
-        uvm_status_e,
     )
     from pyuvm._reg.uvm_reg_sequence import uvm_reg_frontdoor
     from pyuvm._reg.uvm_vreg import uvm_vreg
@@ -60,14 +58,14 @@ class uvm_mem(uvm_object):
             _report_error(
                 self,
                 "MEM_SIZE",
-                f"Memory {repr(self.get_name())} cannot have fewer than 1 location",
+                f"Memory {self.get_name()!r} cannot have fewer than 1 location",
             )
             size = 1
         if n_bits < 1:
             _report_error(
                 self,
                 "MEM_WIDTH",
-                f"Memory {repr(self.get_name())} cannot have fewer than 1 bit",
+                f"Memory {self.get_name()!r} cannot have fewer than 1 bit",
             )
             n_bits = 1
         access = access.upper()
@@ -75,7 +73,7 @@ class uvm_mem(uvm_object):
             _report_error(
                 self,
                 "MEM_ACCESS",
-                f"Memory {repr(self.get_name())} can only have 'RW' or 'RO' "
+                f"Memory {self.get_name()!r} can only have 'RW' or 'RO' "
                 "access; using 'RW'",
             )
             access = "RW"
@@ -85,7 +83,7 @@ class uvm_mem(uvm_object):
         self._atomic = Lock()
         self._access: str = access
         self._size: int = size
-        self._maps: list[uvm_reg_map] = list()
+        self._maps: list[uvm_reg_map] = []
         self._n_bits: int = n_bits
         self._backdoor: uvm_reg_backdoor = None
         self._is_powered_down: bool = False
@@ -93,7 +91,7 @@ class uvm_mem(uvm_object):
         self._cover_on: int = 0
         self._fname: str = ""
         self._lineno: int = 0
-        self._vregs: list[uvm_vreg] = list()
+        self._vregs: list[uvm_vreg] = []
         # self._hdl_paths_pool: uvm_object_string_pool = None
         self._mam: uvm_mem_mam = None
         uvm_mem._max_size = max(uvm_mem._max_size, self._n_bits)
@@ -256,7 +254,7 @@ class uvm_mem(uvm_object):
 
     # TODO: Document definition compared to IEEE 1800.2
     def get_virtual_fields(self) -> list[uvm_vreg_field]:
-        field = list()
+        field = []
         for vreg in self._vregs:
             field += vreg.get_virtual_fields()
         return field
@@ -331,7 +329,7 @@ class uvm_mem(uvm_object):
                 f"Offset 0x{offset:X} lies outside of memory "
                 f"'{self.get_name()}' which has size 0x{self._size:X}",
             )
-            return None, list()
+            return None, []
         local_map = self.get_local_map(map)
         if not local_map:
             map_name = "None" if not map else map.get_full_name()
@@ -340,7 +338,7 @@ class uvm_mem(uvm_object):
                 "MEM_MAP_LOOKUP",
                 f"Memory '{self.get_name()}' not found in map '{map_name}'",
             )
-            return None, list()
+            return None, []
         map_info = local_map.get_mem_map_info(self)
         if map_info.unmapped:
             map_name = local_map.get_full_name() if not map else map.get_full_name()
@@ -349,7 +347,7 @@ class uvm_mem(uvm_object):
                 "MEM_UNMAPPED",
                 f"Memory '{self.get_name()}' is unmapped in map '{map_name}'",
             )
-            return None, list()
+            return None, []
         addresses = local_map._memory_element_addresses(self, map_info, offset)
         bytes_per_access = min(self.get_n_bytes(), local_map.get_n_bytes())
         return bytes_per_access, addresses
@@ -468,7 +466,7 @@ class uvm_mem(uvm_object):
                 self,
                 "MEM_BOUNDS",
                 f"Memory offset 0x{rw.get_offset():X} is outside "
-                f"{repr(self.get_full_name())}",
+                f"{self.get_full_name()!r}",
             )
             rw.set_status(uvm_status_e.UVM_NOT_OK)
             return None
@@ -490,7 +488,7 @@ class uvm_mem(uvm_object):
             _report_error(
                 self,
                 "MEM_MULTIBEAT",
-                f"Memory {repr(self.get_full_name())} element width "
+                f"Memory {self.get_full_name()!r} element width "
                 f"({self.get_n_bytes()} bytes) exceeds map bus width "
                 f"({local_map.get_n_bytes()} bytes); multi-beat memory "
                 "access is not supported",
@@ -502,7 +500,7 @@ class uvm_mem(uvm_object):
             _report_error(
                 self,
                 "MEM_WRITE_RO",
-                f"Cannot write read-only memory {repr(self.get_full_name())}",
+                f"Cannot write read-only memory {self.get_full_name()!r}",
             )
             rw.set_status(uvm_status_e.UVM_NOT_OK)
             return None
@@ -510,7 +508,7 @@ class uvm_mem(uvm_object):
             _report_error(
                 self,
                 "MEM_READ_WO",
-                f"Cannot read write-only memory {repr(self.get_full_name())}",
+                f"Cannot read write-only memory {self.get_full_name()!r}",
             )
             rw.set_status(uvm_status_e.UVM_NOT_OK)
             return None

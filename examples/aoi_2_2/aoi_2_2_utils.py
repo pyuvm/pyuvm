@@ -125,13 +125,13 @@ class AoiBfm(metaclass=Singleton):
 
                 # SEG = 0b1000000 (0x40) means Y=0 (displaying '0')
                 # SEG = 0b1111001 (0x79) means Y=1 (displaying '1')
-                if seg_value in {64, 64}:
+                if seg_value in {64}:
                     result = 0
-                elif seg_value in {121, 121}:
+                elif seg_value in {121}:
                     result = 1
                 else:
                     # Handle unexpected values
-                    logger.warning(f"Unexpected 7-segment value: 0x{seg_value:02x}")
+                    logger.warning("Unexpected 7-segment value: 0x%02x", seg_value)
                     result = 0
 
                 self.result_mon_queue.put_nowait(result)

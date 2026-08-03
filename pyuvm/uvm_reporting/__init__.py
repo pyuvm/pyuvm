@@ -68,9 +68,9 @@ __all__ = [
     "UVM_MEDIUM",
     "UVM_NONE",
     "UVM_WARNING",
+    "get_sv_uvm_style_reporting_enabled",
     "parse_uvm_verbosity",
     "resolve_uvm_verbosity",
-    "get_sv_uvm_style_reporting_enabled",
     "set_sv_uvm_style_reporting_enabled",
     "uvm_reporter",
 ]

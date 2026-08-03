@@ -353,9 +353,7 @@ class TestCallbackIterIteration:
         uvm_callbacks.add(obj, cb3)
 
         iterator = uvm_callback_iter(obj)
-        collected = []
-        for cb in iterator:
-            collected.append(cb)
+        collected = list(iterator)
 
         assert len(collected) == 3
         assert collected[0] is cb1

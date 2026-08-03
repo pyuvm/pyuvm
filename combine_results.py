@@ -7,13 +7,14 @@ every test simulation.
 import argparse
 import os
 import sys
+from pathlib import Path
 from xml.etree import ElementTree as ET
 
 
 def find_all(name, path):
-    for root, dirs, files in os.walk(path):
+    for root, _dirs, files in os.walk(path):
         if name in files:
-            yield os.path.join(root, name)
+            yield Path(root) / name
 
 
 def get_parser():
@@ -111,7 +112,7 @@ def main():
         testsuite_count += 1
         for testcase in testsuite.iter("testcase"):
             testcase_count += 1
-            for failure in testcase.iter("failure"):
+            for _failure in testcase.iter("failure"):
                 if args.set_rc:
                     rc = 1
                 print(
@@ -124,16 +125,15 @@ def main():
                 )
                 if os.getenv("GITHUB_ACTIONS") is not None:
                     # Get test file relative to root of repo
-                    repo_root = os.path.commonprefix(
-                        [
-                            os.path.abspath(testcase.get("file")),
-                            os.path.abspath(__file__),
-                        ]
-                    )
-                    relative_file = testcase.get("file").replace(repo_root, "")
+                    testcase_file = Path(testcase.get("file")).resolve()
+                    repo_root = Path(__file__).resolve().parent
+                    try:
+                        relative_file = testcase_file.relative_to(repo_root)
+                    except ValueError:
+                        relative_file = testcase_file
                     print(
                         "::error file={},line={}::Test {}:{} failed".format(
-                            relative_file,
+                            str(relative_file),
                             testcase.get("lineno"),
                             testcase.get("classname"),
                             testcase.get("name"),

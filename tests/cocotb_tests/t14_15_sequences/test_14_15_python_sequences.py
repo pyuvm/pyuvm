@@ -77,7 +77,9 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
                 done_method()
             self.result_list.append(datum)
 
-    async def response_getter(self, get_response_method, txn_id_list=[]):
+    async def response_getter(self, get_response_method, txn_id_list=None):
+        if txn_id_list is None:
+            txn_id_list = []
         if len(txn_id_list) == 0:
             self.result_list = [await get_response_method(None)]
         else:
@@ -97,14 +99,12 @@ class py1415_sequence_TestCase(uvm_unittest.uvm_TestCase):
     async def run_put_get(self, put_method, get_method, done_method=None):
         cocotb.start_soon(self.getter(get_method, done_method))
         send_list = [self.ItemClass("5"), self.ItemClass("3"), self.ItemClass("two")]
-        await self.putter(put_method, send_list + [self.ItemClass("end")])
+        await self.putter(put_method, [*send_list, self.ItemClass("end")])
         await cocotb.triggers.Timer(1)
         self.assertEqual(send_list, self.result_list)
 
     async def run_get_response(self, put_method, get_response_method):
-        send_list = []
-        for ii in range(5):
-            send_list.append(self.ItemClass(txn_id=ii))
+        send_list = [self.ItemClass(txn_id=ii) for ii in range(5)]
         cocotb.start_soon(self.response_getter(get_response_method, [4, 2]))
         await self.putter(put_method, send_list)
         await cocotb.triggers.Timer(1)

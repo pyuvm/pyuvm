@@ -132,7 +132,7 @@ class random_cmd_seq(uvm_sequence):
         self.iteranctions = 0
 
     async def body(self):
-        for i in range(self.iteranctions):
+        for _i in range(self.iteranctions):
             cmd = cmd_item(f"cmd{self.iteranctions}")
             await self.start_item(cmd)
             cmd.randomize()
@@ -153,8 +153,8 @@ class cmd_driver(uvm_driver):
             logger.debug(cmd)
             self.reg_target = self.driver_ral.def_map.get_reg_by_offset(cmd.addr)
             addr = self.reg_target.get_address()
-            logger.debug(f"cmd_driver -- addr: {addr}")
-            logger.debug(f"cmd_driver -- rights: {self.reg_target.get_rights()}")
+            logger.debug("cmd_driver -- addr: %s", addr)
+            logger.debug("cmd_driver -- rights: %s", self.reg_target.get_rights())
             if cmd.WR_RD == 0:
                 logger.debug("cmd_driver -- READ_CMD")
                 cmd.set_read_data(5)
@@ -230,7 +230,11 @@ class ral_test_rd(uvm_test):
             name = rg.get_name()
             addr = rg.get_address()
             logger.info(
-                f"READ: name: {name}, addr: 0x{addr:X}, data: {data}, status: {status.name}"
+                "READ: name: %s, addr: 0x%X, data: %s, status: %s",
+                name,
+                addr,
+                data,
+                status.name,
             )
             assert data == 5
             assert status == uvm_status_e.UVM_IS_OK
@@ -241,7 +245,11 @@ class ral_test_rd(uvm_test):
             addr = rg.get_address()
             rights = rg.get_rights()
             logger.info(
-                f"WRITE: name: {name}, addr: 0x{addr:X}, data: {data}, status: {status.name}"
+                "WRITE: name: %s, addr: 0x%X, data: %s, status: %s",
+                name,
+                addr,
+                data,
+                status.name,
             )
             if rights == "RO":
                 assert status == uvm_status_e.UVM_NOT_OK

@@ -462,10 +462,12 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
     """
 
     @classmethod
-    def clear_singletons(cls, keep_set={}):
+    def clear_singletons(cls, keep_set=None):
         """
         Clear the singletons in the system.  This is used for testing
         """
+        if keep_set is None:
+            keep_set = {}
         UVM_ROOT_Singleton.clear_singletons()
         if hasattr(uvm_root, "singleton"):
             uvm_root.singleton = None
@@ -490,7 +492,7 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
     # is using it, and in fact it is recommended that people
     # stick to the basic phases.  So this implementation loops
     # through the hierarchy and runs the phases.
-    async def run_test(self, test_name, keep_singletons=False, keep_set=set()):
+    async def run_test(self, test_name, keep_singletons=False, keep_set=None):
         """
         :param test_name: The uvm test name or test class
         :param keep_singletons: If True do not clear singletons (default False)
@@ -498,6 +500,8 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
             if keep_singletons is False. Pass a list of singletons to `set()`
         :return: none
         """
+        if keep_set is None:
+            keep_set = set()
         factory = uvm_factory()
         # clear_singletons() nulls the uvm_root singleton, so the next uvm_root()
         # call builds a fresh instance. Drive the run on whatever uvm_root()
@@ -524,7 +528,7 @@ class uvm_root(uvm_component, metaclass=UVM_ROOT_Singleton):
             root.logger.log(PYUVM_DEBUG, str(root.running_phase))
             root.running_phase.traverse(root.uvm_test_top)
             if root.running_phase == uvm_run_phase:
-                await ObjectionHandler().run_phase_complete()  # noqa: E501
+                await ObjectionHandler().run_phase_complete()
 
     def _find_all_recurse(self, comp_match, comp) -> list[uvm_component]:
         """
@@ -668,8 +672,13 @@ class ConfigDB(metaclass=Singleton):
         if self.is_tracing:
             # noinspection SpellCheckingInspection
             self.logger_holder.logger.info(
-                f"CFGDB/{method} Context: {context}  --  {inst_name} {field_name}={value}"
-            )  # noqa: E501
+                "CFGDB/%s Context: %s  --  %s %s=%s",
+                method,
+                context,
+                inst_name,
+                field_name,
+                value,
+            )
 
     def set(self, context, inst_name, field_name, value):
         """
@@ -740,12 +749,9 @@ class ConfigDB(metaclass=Singleton):
 
         key_matches = []  # Make the linter happy by setting this.
         try:
-            # key_matches = [dk for dk in self._path_dict.keys()
-            #                if fnmatch.fnmatch(inst_name, dk)]
-            for dk in self._path_dict.keys():
-                if fnmatch.fnmatch(inst_name, dk):
-                    key_matches.append(dk)
-
+            key_matches = [
+                dk for dk in self._path_dict.keys() if fnmatch.fnmatch(inst_name, dk)
+            ]
         except TypeError:
             return self._not_found(f'"{inst_name}" is not in ConfigDB().', default)
         if len(key_matches) == 0:
@@ -824,10 +830,12 @@ class ConfigDB(metaclass=Singleton):
     def __str__(self):
         str_list = [f"\n{'PATH':20}: {'KEY':10}: {'DATA':30}"]
         for inst_path in self._path_dict:
-            for key in self._path_dict[inst_path]:
-                str_list.append(
+            str_list.extend(
+                [
                     f"{inst_path:20}: {key:10}: {self._path_dict[inst_path][key]}"
-                )  # noqa: E501
+                    for key in self._path_dict[inst_path]
+                ]
+            )
         return "\n".join(str_list)
 
 
@@ -844,7 +852,7 @@ class uvm_config_db(metaclass=Singleton):
         cntxt: uvm_component | None,
         inst_name: str,
         field_name: str,
-        default: Any = ConfigDB().default_get,
+        default: Any = ConfigDB.default_get,
     ) -> Any:
         return ConfigDB().get(cntxt, inst_name, field_name, default)
 

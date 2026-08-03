@@ -14,7 +14,7 @@ import pyuvm
 from pyuvm import *
 
 sys.path.append(str(Path("..").resolve()))
-from tinyalu_utils import Ops, TinyAluBfm, alu_prediction  # noqa: E402
+from tinyalu_utils import Ops, TinyAluBfm, alu_prediction
 
 # Sequence classes
 
@@ -174,7 +174,7 @@ class Coverage(uvm_subscriber):
         self.cvg.add(op)
 
     def report_coverage_error(self, missed):
-        self.logger.error(f"Functional coverage error. Missed: {missed}")
+        self.logger.error("Functional coverage error. Missed: %s", missed)
         assert False
 
     def report_coverage_pass(self):
@@ -218,7 +218,7 @@ class Scoreboard(uvm_component):
         )
 
     def report_missing_command(self, actual_result):
-        self.logger.critical(f"result {actual_result} had no command")
+        self.logger.critical("result %s had no command", actual_result)
 
     def report_pass(self, A, B, op, actual_result):
         self.logger.info(self.pass_message(A, B, op, actual_result))
@@ -270,7 +270,7 @@ class Monitor(uvm_component):
         self.get_method = getattr(self.bfm, self.method_name)
 
     def report_monitored(self, datum):
-        self.logger.debug(f"MONITORED {datum}")
+        self.logger.debug("MONITORED %s", datum)
 
     async def run_phase(self):
         while True:

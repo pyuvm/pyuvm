@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Analyze cocotb profiling results"""
 
 import pstats

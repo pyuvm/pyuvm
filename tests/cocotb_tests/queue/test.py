@@ -113,14 +113,14 @@ async def test_queue(dut):
     assert got == 5
     await qq.put("x")
     peeked = await qq.peek()
-    assert "x" == peeked
+    assert peeked == "x"
     got = await qq.get()
     qq.put_nowait(5)
     got = qq.get_nowait()
     assert got == 5
     qq.put_nowait("x")
     peeked = qq.peek_nowait()
-    assert "x" == peeked
+    assert peeked == "x"
     got = qq.get_nowait()
     assert got == peeked
 

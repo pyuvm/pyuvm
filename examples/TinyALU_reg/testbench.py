@@ -44,7 +44,7 @@ from pyuvm import (
 sys.path.append(str(Path("..").resolve()))
 import os
 
-from tinyalu_utils import Ops, TinyAluBfm, alu_prediction  # noqa: E402
+from tinyalu_utils import Ops, TinyAluBfm, alu_prediction
 
 LANGUAGE = os.getenv("TOPLEVEL_LANG", "verilog")
 
@@ -247,10 +247,7 @@ class AluReg_base_sequence(uvm_sequence, uvm_report_object):
         raise UVMNotImplemented
 
     def compute_done(self, data: int):
-        if (data >> ALU_REG_CMD_DONE_S) & (ALU_REG_CMD_DONE_M) == 1:
-            return True
-        else:
-            return False
+        return data >> ALU_REG_CMD_DONE_S & ALU_REG_CMD_DONE_M == 1
 
     def seq_print(self, msg: str):
         # self.logger.info(msg)
@@ -406,7 +403,7 @@ class FibonacciSeq(uvm_sequence, uvm_report_object):
             fib_list.append(sum)
             prev_num = cur_num
             cur_num = sum
-        self.logger.info("Fibonacci Sequence: " + str(fib_list))
+        self.logger.info("Fibonacci Sequence: %s", fib_list)
         uvm_root().set_logging_level_hier(logging.CRITICAL)
 
 
@@ -447,7 +444,7 @@ class Coverage(uvm_subscriber):
         self.cvg = set()
 
     def write(self, cmd):
-        self.logger.info(f"Coverage receiving command {cmd}")
+        self.logger.info("Coverage receiving command %s", cmd)
         op = cmd.op
         self.cvg.add(op)
 
@@ -459,7 +456,7 @@ class Coverage(uvm_subscriber):
         if not disable_errors:
             if len(set(Ops) - self.cvg) > 0:
                 self.logger.critical(
-                    f"Functional coverage error. Missed: {set(Ops) - self.cvg}"
+                    "Functional coverage error. Missed: %s", set(Ops) - self.cvg
                 )
                 assert False
             else:
@@ -535,41 +532,46 @@ class Scoreboard(uvm_component):
             if self.errors is True:
                 if predicted_result != actual_result:
                     self.logger.info(
-                        f"Error scenario PASSED: 0x{A:02x} "
-                        f"{op_numb.name} "
-                        f"0x{B:02x} = "
-                        f"0x{actual_result:04x}"
+                        "Error scenario PASSED: 0x%02x %s 0x%02x = 0x%04x",
+                        A,
+                        op_numb.name,
+                        B,
+                        actual_result,
                     )
                 else:
                     self.logger.error(
-                        f"Error scenario FAILED: 0x{A:02x} "
-                        f"{op_numb.name} "
-                        f"0x{B:02x} "
-                        f"= 0x{actual_result:04x} "
-                        f"expected 0x{predicted_result:04x}"
+                        "Error scenario FAILED: 0x%02x %s 0x%02x = 0x%04x "
+                        "expected 0x%04x",
+                        A,
+                        op_numb.name,
+                        B,
+                        actual_result,
+                        predicted_result,
                     )
             elif predicted_result == actual_result:
                 self.logger.info(
-                    f"PASSED: 0x{A:02x} "
-                    f"{op_numb.name} "
-                    f"0x{B:02x} = "
-                    f"0x{actual_result:04x}"
+                    "PASSED: 0x%02x %s 0x%02x = 0x%04x",
+                    A,
+                    op_numb.name,
+                    B,
+                    actual_result,
                 )
             else:
                 self.logger.error(
-                    f"FAILED: 0x{A:02x} "
-                    f"{op_numb.name} "
-                    f"0x{B:02x} "
-                    f"= 0x{actual_result:04x} "
-                    f"expected 0x{predicted_result:04x}"
+                    "FAILED: 0x%02x %s 0x%02x = 0x%04x expected 0x%04x",
+                    A,
+                    op_numb.name,
+                    B,
+                    actual_result,
+                    predicted_result,
                 )
 
     def check_phase(self):
         if self.result_fifo.size() != 0:
             self.logger.critical(
-                f"TEST FAILED main result fifo is not"
-                f" Empty, there are {self.result_fifo.size()}"
-                f" left to be compared"
+                "TEST FAILED main result fifo is not Empty, there are %d left to be "
+                "compared",
+                self.result_fifo.size(),
             )
 
 

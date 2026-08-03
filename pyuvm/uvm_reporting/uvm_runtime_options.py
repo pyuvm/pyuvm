@@ -7,10 +7,12 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Iterable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import cocotb
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 _TRUE_VALUES = {"1", "true", "t", "yes", "y", "on"}
 _FALSE_VALUES = {"0", "false", "f", "no", "n", "off", ""}

@@ -201,14 +201,13 @@ class ParallelTest(AluTest):
         uvm_factory().set_type_override_by_type(TestAllSeq, TestAllForkSeq)
         super().build_phase()
 
+
 @pyuvm.test()
 class FibonacciTest(AluTest):
     def build_phase(self):
         ConfigDB().set(None, "*", "DISABLE_COVERAGE_ERRORS", True)
         uvm_factory().set_type_override_by_type(TestAllSeq, FibonacciSeq)
         return super().build_phase()
-
-
 ```
 
 All the familiar pieces of a UVM testbench are in **pyuvm**.
@@ -228,7 +227,6 @@ The `AluEnv` creates all these components in `build_phase()` and connects the ex
 
 ```python
 class AluEnv(uvm_env):
-
     def build_phase(self):
         self.seqr = uvm_sequencer("seqr", self)
         ConfigDB().set(None, "*", "SEQR", self.seqr)
@@ -282,7 +280,6 @@ The scoreboard receives commands from the command monitor and results from the r
 
 ```python
 class Scoreboard(uvm_component):
-
     def build_phase(self):
         self.cmd_fifo = uvm_tlm_analysis_fifo("cmd_fifo", self)
         self.result_fifo = uvm_tlm_analysis_fifo("result_fifo", self)
@@ -306,13 +303,15 @@ class Scoreboard(uvm_component):
                 op = Ops(op_numb)
                 predicted_result = alu_prediction(A, B, op)
                 if predicted_result == actual_result:
-                    self.logger.info(f"PASSED: 0x{A:02x} {op.name} 0x{B:02x} ="
-                                     f" 0x{actual_result:04x}")
+                    self.logger.info(
+                        f"PASSED: 0x{A:02x} {op.name} 0x{B:02x} = 0x{actual_result:04x}"
+                    )
                 else:
-                    self.logger.error(f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
-                                      f"= 0x{actual_result:04x} "
-                                      f"expected 0x{predicted_result:04x}")
-
+                    self.logger.error(
+                        f"FAILED: 0x{A:02x} {op.name} 0x{B:02x} "
+                        f"= 0x{actual_result:04x} "
+                        f"expected 0x{predicted_result:04x}"
+                    )
 ```
 
 ## Coverage
@@ -325,7 +324,6 @@ Since this tesbench loops through all the operations you will not see this error
 
 ```python
 class Coverage(uvm_subscriber):
-
     def end_of_elaboration_phase(self):
         self.cvg = set()
 
@@ -335,14 +333,14 @@ class Coverage(uvm_subscriber):
 
     def report_phase(self):
         try:
-            disable_errors = ConfigDB().get(
-                self, "", "DISABLE_COVERAGE_ERRORS")
+            disable_errors = ConfigDB().get(self, "", "DISABLE_COVERAGE_ERRORS")
         except UVMConfigItemNotFound:
             disable_errors = False
         if not disable_errors:
             if len(set(Ops) - self.cvg) > 0:
                 self.logger.error(
-                    f"Functional coverage error. Missed: {set(Ops)-self.cvg}")
+                    f"Functional coverage error. Missed: {set(Ops) - self.cvg}"
+                )
                 assert False
             else:
                 self.logger.info("Covered all operations")
@@ -376,7 +374,6 @@ class Driver(uvm_driver):
             self.ap.write(result)
             cmd.result = result
             self.seq_item_port.item_done()
-
 ```
 
 ### The ALU Sequence
@@ -387,14 +384,12 @@ It is clear that `start_item` and `finish_item` block because we call them using
 
 ```python
 class TestAllSeq(uvm_sequence):
-
     async def body(self):
         seqr = ConfigDB().get(None, "", "SEQR")
         random = RandomSeq("random")
         max = MaxSeq("max")
         await random.start(seqr)
         await max.start(seqr)
-
 ```
 
 This virtual sequence launches two other sequences: `RandomSeq` and `MaxSeq`. `RandomSeq` randomizes the operands.
@@ -415,7 +410,7 @@ class RandomSeq(uvm_sequence):
 class MaxSeq(uvm_sequence):
     async def body(self):
         for op in list(Ops):
-            cmd_tr = AluSeqItem("cmd_tr", 0xff, 0xff, op)
+            cmd_tr = AluSeqItem("cmd_tr", 0xFF, 0xFF, op)
             await self.start_item(cmd_tr)
             await self.finish_item(cmd_tr)
 ```
@@ -432,7 +427,6 @@ The SystemVerilog `uvm_sequence_item` class uses `convert2string()` to convert t
 
 ```python
 class AluSeqItem(uvm_sequence_item):
-
     def __init__(self, name, aa, bb, op):
         super().__init__(name)
         self.A = aa
@@ -454,7 +448,6 @@ class AluSeqItem(uvm_sequence_item):
     def __str__(self):
         return f"{self.get_name()} : A: 0x{self.A:02x} \
         OP: {self.op.name} ({self.op.value}) B: 0x{self.B:02x}"
-
 ```
 
 ## SV-UVM-style reporting

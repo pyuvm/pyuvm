@@ -1,7 +1,7 @@
 import random
 
 import cocotb
-from aoi_2_2_utils import aoi_prediction  # noqa: E402
+from aoi_2_2_utils import aoi_prediction
 from cocotb.triggers import Timer
 
 import pyuvm
@@ -122,12 +122,12 @@ class Driver(uvm_driver):
             seg_value = int(self.dut.SEG.value)
 
             # Decode 7-segment to get Y value
-            if seg_value in {64, 64}:
+            if seg_value in {64}:
                 result = 0
-            elif seg_value in {121, 121}:
+            elif seg_value in {121}:
                 result = 1
             else:
-                self.logger.warning(f"Unexpected SEG value: 0x{seg_value:02x}")
+                self.logger.warning("Unexpected SEG value: 0x%02x", seg_value)
                 result = 0
 
             item.result = result
@@ -160,18 +160,22 @@ class Coverage(uvm_subscriber):
         coverage_percent = (covered / total_combinations) * 100
 
         self.logger.info(
-            f"Coverage: {covered}/{total_combinations} combinations ({coverage_percent:.1f}%)"
+            "Coverage: %d/%d combinations (%.1f%%)",
+            covered,
+            total_combinations,
+            coverage_percent,
         )
 
         if not disable_errors and covered < total_combinations:
-            missing = []
-            for a in range(2):
-                for b in range(2):
-                    for c in range(2):
-                        for d in range(2):
-                            if (a, b, c, d) not in self.cvg:
-                                missing.append((a, b, c, d))
-            self.logger.error(f"Coverage incomplete. Missing: {missing}")
+            missing = [
+                (a, b, c, d)
+                for a in range(2)
+                for b in range(2)
+                for c in range(2)
+                for d in range(2)
+                if (a, b, c, d) not in self.cvg
+            ]
+            self.logger.error("Coverage incomplete. Missing: %s", missing)
             assert False
         else:
             self.logger.info("All input combinations covered!")
@@ -203,13 +207,25 @@ class Scoreboard(uvm_component):
 
             if predicted_result == actual_result:
                 self.logger.info(
-                    f"PASSED: A={a} B={b} C={c} D={d} -> Y={actual_result} "
-                    f"[AB={a & b}, CD={c & d}, (AB|CD)={(a & b) | (c & d)}]"
+                    "PASSED: A=%d B=%d C=%d D=%d -> Y=%d [AB=%d, CD=%d, (AB|CD)=%d]",
+                    a,
+                    b,
+                    c,
+                    d,
+                    actual_result,
+                    a & b,
+                    c & d,
+                    (a & b) | (c & d),
                 )
             else:
                 self.logger.error(
-                    f"FAILED: A={a} B={b} C={c} D={d} -> Y={actual_result} "
-                    f"expected Y={predicted_result}"
+                    "FAILED: A=%d B=%d C=%d D=%d -> Y=%d expected Y=%d",
+                    a,
+                    b,
+                    c,
+                    d,
+                    actual_result,
+                    predicted_result,
                 )
                 passed = False
 

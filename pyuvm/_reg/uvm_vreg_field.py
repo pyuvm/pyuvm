@@ -1,21 +1,25 @@
 from __future__ import annotations
 
-from pyuvm._reg.uvm_reg_map import uvm_reg_map
+from typing import TYPE_CHECKING
+
 from pyuvm._reg.uvm_reg_model import uvm_door_e, uvm_reg_data_t, uvm_status_e
-from pyuvm._reg.uvm_vreg import uvm_vreg
 from pyuvm._s05_base_classes import uvm_object
 from pyuvm._s10_synchronization_classes import (
     uvm_callback,
     uvm_callback_iter,
     uvm_callbacks,
 )
-from pyuvm._s14_15_python_sequences import uvm_sequence_base
+
+if TYPE_CHECKING:
+    from pyuvm._reg.uvm_reg_map import uvm_reg_map
+    from pyuvm._reg.uvm_vreg import uvm_vreg
+    from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
 __all__ = [
     "uvm_vreg_field",
-    "uvm_vreg_field_cbs",
     "uvm_vreg_field_cb",
     "uvm_vreg_field_cb_iter",
+    "uvm_vreg_field_cbs",
 ]
 
 

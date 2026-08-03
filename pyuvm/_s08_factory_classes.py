@@ -123,7 +123,9 @@ class uvm_factory(metaclass=Singleton):
         try:
             override_type = self.fd.classes[override_type_name]
         except KeyError:
-            raise UVMFactoryError(f"{override_type_name}" + " has not been defined.")
+            raise UVMFactoryError(
+                f"{override_type_name}" + " has not been defined."
+            ) from None
 
         # Set type override by name can use an arbitrary string as a key
         # instead of a type. Fortunately Python dicts don't care about
@@ -178,7 +180,9 @@ class uvm_factory(metaclass=Singleton):
         try:
             override_type = self.fd.classes[override_type_name]
         except KeyError:
-            raise UVMFactoryError(f"{override_type_name}" + " has not been defined.")
+            raise UVMFactoryError(
+                f"{override_type_name}" + " has not been defined."
+            ) from None
 
         # Set type override by name can use an arbitrary string as a key
         # instead of a type
@@ -212,7 +216,7 @@ class uvm_factory(metaclass=Singleton):
         new_cls = self.fd.find_override(requested_type, inst_path)
         if isinstance(new_cls, str):
             self.logger.error(
-                f'"{new_cls}" is not declared and is not an override string'
+                '"%s" is not declared and is not an override string', new_cls
             )
             return None
         else:
@@ -254,7 +258,7 @@ class uvm_factory(metaclass=Singleton):
         # Find the requested_type_name in registered classes or overrides if
         # the string has been registered with an override.
         try:
-            requested_type = FactoryData().classes[requested_type_name]  # noqa
+            requested_type = FactoryData().classes[requested_type_name]
         except KeyError:
             if requested_type_name in self.fd.overrides:
                 requested_type = requested_type_name
@@ -262,7 +266,7 @@ class uvm_factory(metaclass=Singleton):
                 raise UVMFactoryError(
                     f"Requested type {requested_type_name} not in "
                     "uvm_factory()  or overrides"
-                )
+                ) from None
 
         new_obj = self.create_object_by_type(requested_type, parent_inst_path, name)
         return new_obj
@@ -311,7 +315,7 @@ class uvm_factory(metaclass=Singleton):
         :return: A uvm_object with the name given
         """
         try:
-            requested_type = FactoryData().classes[requested_type_name]  # noqa
+            requested_type = FactoryData().classes[requested_type_name]
         except KeyError:
             if requested_type_name in self.fd.overrides:
                 requested_type = requested_type_name
@@ -319,7 +323,7 @@ class uvm_factory(metaclass=Singleton):
                 raise UVMFactoryError(
                     f"Requested type {requested_type_name} not in "
                     "uvm_factory()  or overrides"
-                )
+                ) from None
 
         new_obj = self.create_component_by_type(
             requested_type, parent_inst_path, name, parent
@@ -383,7 +387,7 @@ class uvm_factory(metaclass=Singleton):
         """
         assert isinstance(requested_type_name, str), (
             f"requested_type_name must be a string not a {type(requested_type_name)}"
-        )  # noqa
+        )
         requested_type = None  # Appeasing the linter
         try:
             requested_type = self.fd.classes[requested_type_name]
@@ -477,14 +481,14 @@ class uvm_factory(metaclass=Singleton):
                 # Override keys can be arbitrary strings (name-based overrides
                 # of an unregistered original), which have no __name__.
                 inst_name = getattr(inst, "__name__", str(inst))
-                factory_str += f"{inst_name:25}" + ": " + str(self.fd.overrides[inst])  # noqa
+                factory_str += f"{inst_name:25}" + ": " + str(self.fd.overrides[inst])
                 factory_str += "\n"
         # Need to add 1 and 2
         user_list = [
             self.fd.classes[cls].__name__
             for cls in self.fd.classes
             if not fnmatch.fnmatch(self.fd.classes[cls].__name__, "uvm_*")
-        ]  # noqa
+        ]
         uvm_list = [
             self.fd.classes[cls].__name__
             for cls in self.fd.classes

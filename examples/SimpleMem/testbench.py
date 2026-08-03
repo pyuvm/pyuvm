@@ -180,7 +180,7 @@ class MemDriver(uvm_driver):
             item = await self.seq_item_port.get_next_item()
             rdata = await self.bfm.send(item.op, item.addr, item.wdata)
             item.rdata_observed = rdata
-            self.logger.debug(f"DRV {item}")
+            self.logger.debug("DRV %s", item)
             self.seq_item_port.item_done()
 
 
@@ -196,7 +196,7 @@ class MemMonitor(uvm_monitor):
             op, addr, wdata, rdata = await self.bfm.get_monitored()
             item = MemSeqItem("mon_item", op=op, addr=addr, wdata=wdata)
             item.rdata_observed = rdata
-            self.logger.debug(f"MON {item}")
+            self.logger.debug("MON %s", item)
             self.ap.write(item)
 
 
@@ -263,13 +263,17 @@ class MemScoreboard(uvm_scoreboard):
                 expected = mem.predict_read(item.addr)
                 if item.rdata_observed != expected:
                     self.logger.error(
-                        f"FAIL @0x{item.addr:02x}: rdata=0x{item.rdata_observed:08x} "
-                        f"expected=0x{expected:08x}"
+                        "FAIL @0x%02x: rdata=0x%08x expected=0x%08x",
+                        item.addr,
+                        item.rdata_observed,
+                        expected,
                     )
                     passed = False
                 else:
                     self.logger.info(
-                        f"PASS @0x{item.addr:02x}: rdata=0x{item.rdata_observed:08x}"
+                        "PASS @0x%02x: rdata=0x%08x",
+                        item.addr,
+                        item.rdata_observed,
                     )
         assert seen_any, "scoreboard saw zero transactions"
         assert passed, "scoreboard found a mismatch"
@@ -299,10 +303,12 @@ class MemCoverage(uvm_subscriber):
         expected = {(op, b) for op in MemOp for b in range(self.BUCKETS)}
         missing = expected - self._cvg
         if missing and not disable:
-            self.logger.error(f"coverage holes: {sorted(missing)}")
+            self.logger.error("coverage holes: %s", sorted(missing))
             assert False
         self.logger.info(
-            f"coverage: hit {len(self._cvg)}/{len(expected)} (op, addr-bucket) pairs"
+            "coverage: hit %d/%d (op, addr-bucket) pairs",
+            len(self._cvg),
+            len(expected),
         )
 
 

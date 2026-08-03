@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 __all__ = [
     "uvm_apprepend",
     "uvm_callback",
-    "uvm_callbacks",
     "uvm_callback_iter",
+    "uvm_callbacks",
     "uvm_do_callbacks",
 ]
 
@@ -121,7 +121,7 @@ class uvm_callback_iter:
     def __init__(self, obj: type[uvm_object] | uvm_object):
         self._index = -1
         self._iter: list[uvm_callback] = [
-            c for c in uvm_callbacks._callbacks.get(obj, list()) if c.is_enabled()
+            c for c in uvm_callbacks._callbacks.get(obj, []) if c.is_enabled()
         ]
 
     def __iter__(self):

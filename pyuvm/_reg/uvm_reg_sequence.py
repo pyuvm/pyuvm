@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from pyuvm._s05_base_classes import uvm_object
     from pyuvm._s14_15_python_sequences import uvm_sequencer_base
 
-__all__ = ["uvm_reg_sequence", "uvm_reg_frontdoor"]
+__all__ = ["uvm_reg_frontdoor", "uvm_reg_sequence"]
 logger = logging.getLogger("RegModel")
 
 
@@ -278,8 +278,8 @@ class uvm_reg_frontdoor(uvm_reg_sequence):
             locked = self._atomic.locked
         if not locked or self._atomic_owner is not owner:
             logger.warning(
-                f"Attempt to unlock frontdoor "
-                f"{repr(self.get_full_name())} by a task that does not own it"
+                "Attempt to unlock frontdoor %r by a task that does not own it",
+                self.get_full_name(),
             )
             return
         self._atomic_owner = None

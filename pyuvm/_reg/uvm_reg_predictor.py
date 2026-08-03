@@ -3,11 +3,11 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_imp
+from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_imp, uvm_analysis_port
 from pyuvm._s13_uvm_component import uvm_component
 
 if TYPE_CHECKING:
-    from pyuvm import uvm_analysis_port, uvm_phase
+    from pyuvm import uvm_phase
     from pyuvm._reg.uvm_reg_adapter import uvm_reg_adapter
     from pyuvm._reg.uvm_reg_item import uvm_reg_item
     from pyuvm._reg.uvm_reg_map import uvm_reg_map
@@ -27,7 +27,7 @@ class uvm_reg_predictor(uvm_component):
         self.reg_ap: uvm_analysis_port = uvm_analysis_port("reg_ap")
         self.map: uvm_reg_map = None
         self.adapter: uvm_reg_adapter = None
-        self._pending: list[uvm_predict_s] = list()
+        self._pending: list[uvm_predict_s] = []
         raise NotImplementedError
 
     def pre_predict(self, rw: uvm_reg_item) -> None:
@@ -41,9 +41,10 @@ class uvm_reg_predictor(uvm_component):
                 string += f"{reg.get_full_name()}\n"
 
             logger.error(
-                f"There are {len(self._pending)} incomplete "
-                "register transactions still pending completion:\n"
-                f"{string}"
+                "There are %d incomplete register transactions still pending "
+                "completion:\n%s",
+                len(self._pending),
+                string,
             )
 
     def flush(self) -> None:

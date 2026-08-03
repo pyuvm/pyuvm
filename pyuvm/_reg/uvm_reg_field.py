@@ -31,52 +31,50 @@ if TYPE_CHECKING:
         uvm_reg_byte_en_t,
         uvm_reg_data_t,
     )
-    from pyuvm._s14_15_python_sequences import uvm_reg_item, uvm_sequence_base
+    from pyuvm._s14_15_python_sequences import uvm_sequence_base
 
 __all__ = ["uvm_reg_field"]
 logger = logging.getLogger("RegModel")
 
 
-_PREDEFINED_POLICIES: set[str] = set(
-    [
-        "RO",  # no effect, R: no effect.
-        "RW",  # as is, R: no effect.
-        "RC",  # no effect, R: clears all bits.
-        "RS",  # no effect, R: sets all bits.
-        "WRC",  # as is, R: clears all bits.
-        "WRS",  # as is, R: sets all bits.
-        "WC",  # clears all bits, R: no effect.
-        "WS",  # sets all bits, R: no effect.
-        "WSRC",  # sets all bits, R: clears all bits.
-        "WCRS",  # clears all bits, R: sets all bits.
-        "W1C",  # 1/0 clears/no effect on matching bit, R: no effect.
-        "W1S",  # 1/0 sets/no effect on matching bit, R: no effect.
-        "W1T",  # 1/0 toggles/no effect on matching bit, R: no effect.
-        "W0C",  # 1/0 no effect on/clears matching bit, R: no effect.
-        "W0S",  # 1/0 no effect on/sets matching bit, R: no effect.
-        "W0T",  # 1/0 no effect on/toggles matching bit, R: no effect.
-        "W1SRC",  # 1/0sets/no effect on matching bit, R: clears all bits.
-        "W1CRS",  # 1/0clears/no effect on matching bit, R: sets all bits.
-        "W0SRC",  # 1/0no effect on/sets matching bit, R: clears all bits.
-        "W0CRS",  # 1/0no effect on/clears matching bit, R: sets all bits.
-        "WO",  # as is, R: error.
-        "WOC",  # clears all bits, R: error.
-        "WOS",  # sets all bits, R: error.
-        # first one after HARD reset is as is,
-        # other W have no effects, R: no effect.
-        "W1",
-        # first one after HARD reset is as is,
-        # other W have no effects, R: error.
-        "WO1",
-        "NOACCESS",  # no effect, R: no effect.
-    ]
-)
+_PREDEFINED_POLICIES: set[str] = {
+    "RO",  # no effect, R: no effect.
+    "RW",  # as is, R: no effect.
+    "RC",  # no effect, R: clears all bits.
+    "RS",  # no effect, R: sets all bits.
+    "WRC",  # as is, R: clears all bits.
+    "WRS",  # as is, R: sets all bits.
+    "WC",  # clears all bits, R: no effect.
+    "WS",  # sets all bits, R: no effect.
+    "WSRC",  # sets all bits, R: clears all bits.
+    "WCRS",  # clears all bits, R: sets all bits.
+    "W1C",  # 1/0 clears/no effect on matching bit, R: no effect.
+    "W1S",  # 1/0 sets/no effect on matching bit, R: no effect.
+    "W1T",  # 1/0 toggles/no effect on matching bit, R: no effect.
+    "W0C",  # 1/0 no effect on/clears matching bit, R: no effect.
+    "W0S",  # 1/0 no effect on/sets matching bit, R: no effect.
+    "W0T",  # 1/0 no effect on/toggles matching bit, R: no effect.
+    "W1SRC",  # 1/0sets/no effect on matching bit, R: clears all bits.
+    "W1CRS",  # 1/0clears/no effect on matching bit, R: sets all bits.
+    "W0SRC",  # 1/0no effect on/sets matching bit, R: clears all bits.
+    "W0CRS",  # 1/0no effect on/clears matching bit, R: sets all bits.
+    "WO",  # as is, R: error.
+    "WOC",  # clears all bits, R: error.
+    "WOS",  # sets all bits, R: error.
+    # first one after HARD reset is as is,
+    # other W have no effects, R: no effect.
+    "W1",
+    # first one after HARD reset is as is,
+    # other W have no effects, R: error.
+    "WO1",
+    "NOACCESS",  # no effect, R: no effect.
+}
 
 
 class uvm_reg_field(uvm_object):
     _max_size: ClassVar[int] = 0
     _policy_names: ClassVar[set[str]] = _PREDEFINED_POLICIES
-    _reg_field_registry: ClassVar[dict[str, uvm_reg_field]] = dict()
+    _reg_field_registry: ClassVar[dict[str, uvm_reg_field]] = {}
 
     def __init__(self, name: str = "uvm_reg_field") -> None:
         super().__init__(name)
@@ -86,7 +84,7 @@ class uvm_reg_field(uvm_object):
         self._lsb_pos: int = -1
         self._access: str = "RW"
         self._volatile: bool = False
-        self._reset: dict[str, uvm_reg_data_t] = dict()
+        self._reset: dict[str, uvm_reg_data_t] = {}
         self._mirrored: uvm_reg_data_t = 0
         self._desired: uvm_reg_data_t = 0
         self._cover_on = uvm_coverage_model_e.UVM_NO_COVERAGE
@@ -155,7 +153,7 @@ class uvm_reg_field(uvm_object):
                 )
                 self._volatile = val
             else:
-                raise SyntaxError(f"Unknown argument {repr(arg)}")
+                raise SyntaxError(f"Unknown argument {arg!r}")
         if has_reset:
             self.set_reset(reset)
 
@@ -163,9 +161,10 @@ class uvm_reg_field(uvm_object):
             # TODO: The fallback access policy in the official implementation
             #       is "RW". Should it we implement "NOACCESS"?
             logger.error(
-                f"Access policy {repr(self._access)} for field "
-                f"{repr(self.get_full_name())} is not a defined field. "
-                f"setting to 'NOACCESS'"
+                "Access policy %r for field %r is not a defined field. setting to "
+                "'NOACCESS'",
+                self._access,
+                self.get_full_name(),
             )
             self._access = "NOACCESS"
 
@@ -221,7 +220,8 @@ class uvm_reg_field(uvm_object):
         self._access = mode.upper()
         if self._access not in uvm_reg_field._policy_names:
             logger.error(
-                f"Access policy {repr(self._access)} is not a defined field access policy"
+                "Access policy %r is not a defined field access policy",
+                self._access,
             )
             self._access = old_access
         return old_access
@@ -232,8 +232,8 @@ class uvm_reg_field(uvm_object):
         except AttributeError:
             if rand_mode is True:
                 raise NotImplementedError(
-                    f"Randomization is not supported for type {repr(type(self.value))}"
-                )
+                    f"Randomization is not supported for type {type(self.value)!r}"
+                ) from None
 
     @staticmethod
     def define_access(name: str) -> bool:
@@ -298,10 +298,12 @@ class uvm_reg_field(uvm_object):
                 return "NOACCESS"
         else:
             logger.warning(
-                f"Register {repr(self._parent.get_full_name())} "
-                f"containing field {repr(self.get_name())} is mapped in map "
-                f"{repr(map.get_full_name())} with unknown access rights "
-                f"{repr(self._parent.get_rights(map))}"
+                "Register %r containing field %r is mapped in map %r with unknown "
+                "access rights %r",
+                self._parent.get_full_name(),
+                self.get_name(),
+                map.get_full_name(),
+                self._parent.get_rights(map),
             )
         return "NOACCESS"
 
@@ -339,7 +341,7 @@ class uvm_reg_field(uvm_object):
                 self,
                 "FIELD_VALUE_WIDTH",
                 f"Specified value (0x{value:X}) greater than field "
-                f"{repr(self.get_name())} size ({self._size} bits)",
+                f"{self.get_name()!r} size ({self._size} bits)",
             )
             value &= _mask
 
@@ -385,10 +387,10 @@ class uvm_reg_field(uvm_object):
     def get_mirrored_value(self, fname: str = "", lineno: int = 0) -> uvm_reg_data_t:
         if self.is_volatile():
             logger.warning(
-                "Mirrored value returned for volatile field "
-                f"{repr(self.get_full_name())}, register "
-                f"'{self._parent.get_full_name()} may not reflect "
-                "the actual current value."
+                "Mirrored value returned for volatile field %r, register %r may not "
+                "reflect the actual current value.",
+                self.get_full_name(),
+                self._parent.get_full_name(),
             )
         self._fname = fname
         self._lineno = lineno
@@ -580,7 +582,7 @@ class uvm_reg_field(uvm_object):
                 self,
                 "FIELD_POKE",
                 f"uvm_reg_field::poke(): Peek of register "
-                f"{repr(self._parent.get_full_name())} returned status {status}",
+                f"{self._parent.get_full_name()!r} returned status {status}",
             )
             return status
         reg_value = self.insert_into_register(reg_value, value)
@@ -662,9 +664,7 @@ class uvm_reg_field(uvm_object):
         rw.set_fname(fname)
         rw.set_line(lineno)
         self.do_predict(rw, kind, be)
-        if rw.get_status() == uvm_status_e.UVM_NOT_OK:
-            return False
-        return True
+        return rw.get_status() != uvm_status_e.UVM_NOT_OK
 
     def _predict(
         self, cur_val: uvm_reg_data_t, wr_val: uvm_reg_data_t, map: uvm_reg_map
@@ -769,10 +769,10 @@ class uvm_reg_field(uvm_object):
         elif kind == uvm_predict_e.UVM_PREDICT_DIRECT:
             if self._parent.is_busy():
                 logger.warning(
-                    "Trying to predict value of field "
-                    f"{repr(self.get_name())} while register "
-                    f"{repr(self._parent.get_name())} is being "
-                    "accessed."
+                    "Trying to predict value of field %r while register %r is being "
+                    "accessed.",
+                    self.get_name(),
+                    self._parent.get_name(),
                 )
                 rw.set_status(uvm_status_e.UVM_NOT_OK)
         self._mirrored = field_value
