@@ -284,10 +284,10 @@ class uvm_seq_item_port(uvm_port_base):
 
         try:
             assert issubclass(type(item), uvm_sequence_item)
-        except AssertionError as err:
+        except AssertionError:
             raise UVMFatalError(
                 "put_response only takes uvm_sequence_items as arguments"
-            ) from err
+            ) from None
         self.export.put_response(item)
 
     async def get_next_item(self):
@@ -316,10 +316,10 @@ class uvm_seq_item_port(uvm_port_base):
         if rsp is not None:
             try:
                 assert issubclass(type(rsp), uvm_sequence_item)
-            except AssertionError as err:
+            except AssertionError:
                 raise UVMFatalError(
                     "item_done only takes uvm_sequence_items as arguments"
-                ) from err
+                ) from None
         self.export.item_done(rsp)
 
     async def get_response(self, transaction_id=None):

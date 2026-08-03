@@ -122,10 +122,10 @@ class uvm_factory(metaclass=Singleton):
         assert isinstance(override_type_name, str), "Override_name must be a string"
         try:
             override_type = self.fd.classes[override_type_name]
-        except KeyError as err:
+        except KeyError:
             raise UVMFactoryError(
                 f"{override_type_name}" + " has not been defined."
-            ) from err
+            ) from None
 
         # Set type override by name can use an arbitrary string as a key
         # instead of a type. Fortunately Python dicts don't care about
@@ -179,10 +179,10 @@ class uvm_factory(metaclass=Singleton):
         assert isinstance(override_type_name, str), "Override_name must be a string"
         try:
             override_type = self.fd.classes[override_type_name]
-        except KeyError as err:
+        except KeyError:
             raise UVMFactoryError(
                 f"{override_type_name}" + " has not been defined."
-            ) from err
+            ) from None
 
         # Set type override by name can use an arbitrary string as a key
         # instead of a type
@@ -259,14 +259,14 @@ class uvm_factory(metaclass=Singleton):
         # the string has been registered with an override.
         try:
             requested_type = FactoryData().classes[requested_type_name]
-        except KeyError as err:
+        except KeyError:
             if requested_type_name in self.fd.overrides:
                 requested_type = requested_type_name
             else:
                 raise UVMFactoryError(
                     f"Requested type {requested_type_name} not in "
                     "uvm_factory()  or overrides"
-                ) from err
+                ) from None
 
         new_obj = self.create_object_by_type(requested_type, parent_inst_path, name)
         return new_obj
@@ -316,14 +316,14 @@ class uvm_factory(metaclass=Singleton):
         """
         try:
             requested_type = FactoryData().classes[requested_type_name]
-        except KeyError as err:
+        except KeyError:
             if requested_type_name in self.fd.overrides:
                 requested_type = requested_type_name
             else:
                 raise UVMFactoryError(
                     f"Requested type {requested_type_name} not in "
                     "uvm_factory()  or overrides"
-                ) from err
+                ) from None
 
         new_obj = self.create_component_by_type(
             requested_type, parent_inst_path, name, parent

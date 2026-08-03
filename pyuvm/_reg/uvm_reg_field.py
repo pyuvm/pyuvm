@@ -229,11 +229,11 @@ class uvm_reg_field(uvm_object):
     def set_rand_mode(self, rand_mode: bool) -> None:
         try:
             self.value.rand_mode = rand_mode
-        except AttributeError as err:
+        except AttributeError:
             if rand_mode is True:
                 raise NotImplementedError(
                     f"Randomization is not supported for type {type(self.value)!r}"
-                ) from err
+                ) from None
 
     @staticmethod
     def define_access(name: str) -> bool:

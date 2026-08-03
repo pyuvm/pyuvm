@@ -166,11 +166,11 @@ class uvm_blocking_put_port(uvm_port_base):
         """
         try:
             await self.export.put(datum)
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
 
 
 # 12.2.5.1
@@ -191,11 +191,11 @@ class uvm_nonblocking_put_port(uvm_port_base):
         """
         try:
             return self.export.try_put(data)
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export "
                 f"in {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
 
     # 12.2.4.2.5
     def can_put(self):
@@ -207,11 +207,11 @@ class uvm_nonblocking_put_port(uvm_port_base):
         """
         try:
             return self.export.can_put()
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
 
 
 # 12.2.5.1
@@ -236,11 +236,11 @@ class uvm_blocking_get_port(uvm_port_base):
         """
         try:
             return await self.export.get()
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in "
                 f"{self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
 
 
 # 12.2.5.1
@@ -263,11 +263,11 @@ class uvm_nonblocking_get_port(uvm_port_base):
 
         try:
             (success, data) = self.export.try_get()
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
 
         return success, data
 
@@ -280,11 +280,11 @@ class uvm_nonblocking_get_port(uvm_port_base):
         """
         try:
             can = self.export.can_get()
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
 
         return can
 
@@ -309,11 +309,11 @@ class uvm_blocking_peek_port(uvm_port_base):
         """
         try:
             return await self.export.peek()
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
 
 
 # 12.2.5.1
@@ -333,11 +333,11 @@ class uvm_nonblocking_peek_port(uvm_port_base):
         """
         try:
             success, data = self.export.try_peek()
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
         return success, data
 
     # 12.2.4.2.9
@@ -350,11 +350,11 @@ class uvm_nonblocking_peek_port(uvm_port_base):
         """
         try:
             return self.export.can_peek()
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
 
 
 class uvm_peek_port(uvm_blocking_peek_port, uvm_nonblocking_peek_port): ...
@@ -389,11 +389,11 @@ class uvm_blocking_transport_port(uvm_port_base):
         """
         try:
             get_data = await self.export.transport(put_data)
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
         return get_data
 
 
@@ -412,11 +412,11 @@ class uvm_nonblocking_transport_port(uvm_port_base):
         """
         try:
             success, get_data = self.export.nb_transport(put_data)
-        except AttributeError as err:
+        except AttributeError:
             raise UVMTLMConnectionError(
                 "Missing or wrong export in"
                 f" {self.get_full_name()}. Did you connect it?"
-            ) from err
+            ) from None
         return success, get_data
 
 
@@ -914,11 +914,11 @@ class uvm_tlm_analysis_fifo(uvm_tlm_fifo):
             """
             try:
                 self.queue.put_nowait(item)
-            except QueueFull as err:
+            except QueueFull:
                 raise QueueFull(
                     f"Full analysis fifo: {self.get_full_name()}."
                     " This should never happen"
-                ) from err
+                ) from None
 
     def __init__(self, name, parent=None):
         super().__init__(name, parent, 0)
