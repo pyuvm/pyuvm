@@ -3,8 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from pyuvm import uvm_analysis_port
-from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_imp
+from pyuvm._s12_uvm_tlm_interfaces import uvm_analysis_imp, uvm_analysis_port
 from pyuvm._s13_uvm_component import uvm_component
 
 if TYPE_CHECKING:
