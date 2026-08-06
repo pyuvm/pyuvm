@@ -100,6 +100,7 @@ class uvm_port_base(uvm_export_base):
         "put_req",
         "put_response",
         "get_next_item",
+        "try_next_item",
         "item_done",
         "get_response",
     ]

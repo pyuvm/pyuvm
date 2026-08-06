@@ -7,6 +7,7 @@
 # SystemVerilog features.
 
 
+from cocotb.queue import QueueEmpty
 from cocotb.triggers import Event as CocotbEvent
 
 from pyuvm._error_classes import UVMFatalError, UVMSequenceError
@@ -227,6 +228,24 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         await self.current_item.item_ready.wait()
         return self.current_item
 
+    def try_next_item(self):
+        """Return the next queued sequence item without waiting.
+
+        ``None`` means the request queue is empty. Like ``get_next_item``, this
+        method tracks the returned item until ``item_done`` is called.
+        """
+        if self.current_item is not None:
+            raise UVMSequenceError(
+                "You must call item_done() before calling try_next_item again"
+            )
+        try:
+            self.current_item = self.req_q.get_nowait()
+        except QueueEmpty:
+            return None
+        self.current_item.start_condition.set()
+        self.current_item.start_condition.clear()
+        return self.current_item
+
     def item_done(self, rsp=None):
         """
         Signal that the item has been completed. If ``rsp`` is not ``None``
@@ -300,6 +319,14 @@ class uvm_seq_item_port(uvm_port_base):
         """
         try:
             return await self.export.get_next_item()
+        except AttributeError:
+            assert self.export is not None, "export is not connected"
+            raise
+
+    def try_next_item(self):
+        """Return the next sequence item immediately, or ``None`` if empty."""
+        try:
+            return self.export.try_next_item()
         except AttributeError:
             assert self.export is not None, "export is not connected"
             raise
