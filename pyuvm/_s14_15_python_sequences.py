@@ -229,10 +229,11 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         return self.current_item
 
     def try_next_item(self):
-        """Return the next queued sequence item without waiting.
+        """Return ``(success, item)`` for the next queued sequence item.
 
-        ``None`` means the request queue is empty. Like ``get_next_item``, this
-        method tracks the returned item until ``item_done`` is called.
+        ``(False, None)`` means the request queue is empty. Like
+        ``get_next_item``, this method tracks the returned item until
+        ``item_done`` is called.
         """
         if self.current_item is not None:
             raise UVMSequenceError(
@@ -241,10 +242,10 @@ class uvm_seq_item_export(uvm_blocking_put_export):
         try:
             self.current_item = self.req_q.get_nowait()
         except QueueEmpty:
-            return None
+            return False, None
         self.current_item.start_condition.set()
         self.current_item.start_condition.clear()
-        return self.current_item
+        return True, self.current_item
 
     def item_done(self, rsp=None):
         """
@@ -324,7 +325,7 @@ class uvm_seq_item_port(uvm_port_base):
             raise
 
     def try_next_item(self):
-        """Return the next sequence item immediately, or ``None`` if empty."""
+        """Return ``(success, item)`` immediately, or ``(False, None)`` if empty."""
         try:
             return self.export.try_next_item()
         except AttributeError:
