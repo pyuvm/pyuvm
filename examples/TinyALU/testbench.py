@@ -1,20 +1,13 @@
 import logging
 import random
 
-# All testbenches use tinyalu_utils, so store it in a central
-# place and add its path to the sys path so we can import it
-import sys
-from pathlib import Path
-
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Combine
 
 import pyuvm
+from examples.TinyALU.tinyalu_utils import Ops, TinyAluBfm, alu_prediction
 from pyuvm import *
-
-sys.path.append(str(Path("..").resolve()))
-from tinyalu_utils import Ops, TinyAluBfm, alu_prediction
 
 # Sequence classes
 

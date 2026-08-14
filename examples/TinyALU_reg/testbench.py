@@ -1,16 +1,13 @@
 import logging
+import os
 import random
-
-# All testbenches use tinyalu_utils, so store it in a central
-# place and add its path to the sys path so we can import it
-import sys
-from pathlib import Path
 
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Combine
 
 import pyuvm
+from examples.TinyALU_reg.tinyalu_utils import Ops, TinyAluBfm, alu_prediction
 from pyuvm import (
     ConfigDB,
     UVMConfigItemNotFound,
@@ -40,11 +37,6 @@ from pyuvm import (
     uvm_test,
     uvm_tlm_analysis_fifo,
 )
-
-sys.path.append(str(Path("..").resolve()))
-import os
-
-from tinyalu_utils import Ops, TinyAluBfm, alu_prediction
 
 LANGUAGE = os.getenv("TOPLEVEL_LANG", "verilog")
 

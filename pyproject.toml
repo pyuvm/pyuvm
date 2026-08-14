@@ -148,6 +148,10 @@ ignore-words-list = [
 testpaths = [
     "tests/pytests",
 ]
+# Make the repo top importable from any test (issue #406), so a test can
+# pull code from any other test or example, e.g.
+# `from examples.TinyALU.testbench import ...`.
+pythonpath = ["."]
 markers = [
     "test_reg_get_name",
     "test_reg_configure",
