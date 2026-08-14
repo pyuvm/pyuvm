@@ -1,6 +1,11 @@
 VERILOG_SIM ?= icarus
 VHDL_SIM ?= ghdl
 
+# Put the repo top on the test PYTHONPATH (issue #406) so any test or
+# testbench can pull code from another directory as a namespace package,
+# e.g. `from examples.TinyALU.testbench import ...`.
+export PYTHONPATH := $(abspath .):$(PYTHONPATH)
+
 # Opt into coverage collection by setting COVERAGE=1.
 COVERAGE ?=
 ifeq ($(COVERAGE),1)
