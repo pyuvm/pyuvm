@@ -14,10 +14,20 @@ jobs:
     name: Upgrade locked dependencies
     runs-on: ubuntu-latest
     steps:
+
+    - name: Generate GitHub App Token
+      id: app-token
+      uses: actions/create-github-app-token@v3
+      with:
+        client-id: ${{ vars.PR_GITHUB_APP_ID }}
+        private-key: ${{ secrets.PR_GITHUB_APP_PRIV_KEY }}
+
     - uses: actions/checkout@v7
+      with:
+        token: ${{ steps.app-token.outputs.token }}
 
     - name: Install uv
-      uses: astral-sh/setup-uv@v7
+      uses: astral-sh/setup-uv@v9.0.0
       with:
         activate-environment: "true"
 
@@ -25,11 +35,11 @@ jobs:
       run: uv lock --upgrade
 
     - name: Open pull request
-      uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8
+      uses: peter-evans/create-pull-request@v8
       with:
         commit-message: "Upgrade locked dependencies"
         title: "Upgrade locked dependencies"
         body: ""
-        author: "uv.lock upgrader <noreply@example.org>"
         branch: "upgrade-locked-dependencies"
         sign-commits: true
+        token: ${{ steps.app-token.outputs.token }}
