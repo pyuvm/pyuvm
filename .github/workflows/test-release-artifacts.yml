@@ -63,8 +63,8 @@ jobs:
 
       - uses: ./.github/actions/test-pyuvm
         with:
-          python-version: "3.13"
-          cocotb-version: "2.0"
+          python-version: "3.14"
+          cocotb-version: "2.1"
           pyuvm-package-source: ${{ steps.artifact.outputs.path }}
           make-targets: pytests cocotb_verilog_tests
 
