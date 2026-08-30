@@ -53,18 +53,18 @@ jobs:
         config:
           # Mirror .github/workflows/main.yml exactly.
           # Latest cocotb across all Python versions:
-          - { python-version: "3.7",  cocotb-version: "2.0", vhdl-sim: "nvc"  }
-          - { python-version: "3.8",  cocotb-version: "2.0", vhdl-sim: "nvc"  }
+          - { python-version: "3.9",  cocotb-version: "2.1", vhdl-sim: "nvc"  }
+          - { python-version: "3.10", cocotb-version: "2.1", vhdl-sim: "nvc"  }
+          - { python-version: "3.11", cocotb-version: "2.1", vhdl-sim: "nvc"  }
+          - { python-version: "3.12", cocotb-version: "2.1", vhdl-sim: "nvc"  }
+          - { python-version: "3.13", cocotb-version: "2.1", vhdl-sim: "nvc"  }
+          - { python-version: "3.14", cocotb-version: "2.1", vhdl-sim: "nvc"  }
+          # Older cocotb versions on Python 3.9 (NVC is only supported in cocotb 1.9+):
+          - { python-version: "3.9",  cocotb-version: "1.6", vhdl-sim: "ghdl" }
+          - { python-version: "3.9",  cocotb-version: "1.7", vhdl-sim: "ghdl" }
+          - { python-version: "3.9",  cocotb-version: "1.8", vhdl-sim: "ghdl" }
+          - { python-version: "3.9",  cocotb-version: "1.9", vhdl-sim: "nvc"  }
           - { python-version: "3.9",  cocotb-version: "2.0", vhdl-sim: "nvc"  }
-          - { python-version: "3.10", cocotb-version: "2.0", vhdl-sim: "nvc"  }
-          - { python-version: "3.11", cocotb-version: "2.0", vhdl-sim: "nvc"  }
-          - { python-version: "3.12", cocotb-version: "2.0", vhdl-sim: "nvc"  }
-          - { python-version: "3.13", cocotb-version: "2.0", vhdl-sim: "nvc"  }
-          # Older cocotb versions on Python 3.8 (NVC is only supported in cocotb 1.9+):
-          - { python-version: "3.8",  cocotb-version: "1.6", vhdl-sim: "ghdl" }
-          - { python-version: "3.8",  cocotb-version: "1.7", vhdl-sim: "ghdl" }
-          - { python-version: "3.8",  cocotb-version: "1.8", vhdl-sim: "ghdl" }
-          - { python-version: "3.8",  cocotb-version: "1.9", vhdl-sim: "nvc"  }
 
     steps:
       - uses: actions/checkout@v7
