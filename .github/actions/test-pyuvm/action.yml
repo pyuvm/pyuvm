@@ -64,7 +64,7 @@ runs:
       shell: bash
       run: |
         uv sync --group tests --no-install-project --no-install-package cocotb
-        uv pip install . "cocotb==${{ inputs.cocotb-version }} "
+        uv pip install "${{ inputs.pyuvm-package-source }}" "cocotb==${{ inputs.cocotb-version }}"
 
     - name: Run tests
       shell: bash
