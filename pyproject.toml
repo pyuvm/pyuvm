@@ -31,9 +31,13 @@ dynamic = ["version"]
 Homepage = "https://github.com/pyuvm/pyuvm"
 "Bug Tracker" = "https://github.com/pyuvm/pyuvm/issues"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["pyuvm*"]
+namespaces = false
 
 [dependency-groups]
 dev = [
@@ -129,11 +133,11 @@ known-third-party = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"pyuvm/__init__.py" = [
+"src/pyuvm/__init__.py" = [
     "F401",
     "I001",
 ]
-"pyuvm/uvm_reporting/__init__.py" = [
+"src/pyuvm/uvm_reporting/__init__.py" = [
     "E402",
     "I001",
 ]

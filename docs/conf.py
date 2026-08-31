@@ -22,7 +22,7 @@ extensions = [
 ]
 
 autodoc2_packages = [
-    "../pyuvm",
+    "../src/pyuvm",
 ]
 autodoc2_render_plugin = "myst"
 
