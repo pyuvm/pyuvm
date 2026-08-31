@@ -14,17 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Verify tag matches pyproject.toml version
+      - name: Verify tag matches VERSION
         if: github.event_name == 'push'
         run: |
           TAG="${{ github.ref_name }}"
-          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Tag '$TAG' is not strict semver (X.Y.Z)" >&2
-            exit 1
-          fi
-          VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          VERSION=$(<VERSION)
           if [ "$TAG" != "$VERSION" ]; then
-            echo "Tag '$TAG' does not match pyproject.toml version '$VERSION'" >&2
+            echo "Tag '$TAG' does not match VERSION '$VERSION'" >&2
             exit 1
           fi
 
