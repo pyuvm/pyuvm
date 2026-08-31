@@ -6,7 +6,7 @@ source = pyuvm
 
 [paths]
 source =
-    pyuvm/
+    src/pyuvm/
     */site-packages/pyuvm/
 
 [report]
