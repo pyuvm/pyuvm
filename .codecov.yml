@@ -1,0 +1,10 @@
+coverage:
+  status:
+    project:
+      default:
+        # Report a CI failure if coverage drops by more than 1 percent.
+        threshold: 1%
+
+codecov:
+  notify:
+    after_n_builds: 11
