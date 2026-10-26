@@ -32,14 +32,15 @@ jobs:
         activate-environment: "true"
 
     - name: Upgrade dependencies
-      run: uv lock --upgrade
+      run: |
+        uv lock --upgrade 2>&1 | tee "$RUNNER_TEMP/uv-upgrade-output.md"
 
     - name: Open pull request
       uses: peter-evans/create-pull-request@v8
       with:
         commit-message: "Upgrade locked dependencies"
         title: "Upgrade locked dependencies"
-        body: ""
+        body-path: ${{ runner.temp }}/uv-upgrade-output.md
         branch: "upgrade-locked-dependencies"
         sign-commits: true
         token: ${{ steps.app-token.outputs.token }}
