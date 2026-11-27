@@ -40,6 +40,9 @@ jobs:
           - python-version: "3.14"
             cocotb-version: "2.1"
             vhdl-sim: "nvc"
+          - python-version: "3.15"
+            cocotb-version: "2.1"
+            vhdl-sim: "nvc"
           # Test other cocotb versions
           # Must use GHDL as VHDL simulator as NVC is only supported in cocotb 1.9+
           - python-version: "3.9"
