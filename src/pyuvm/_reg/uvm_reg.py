@@ -437,13 +437,8 @@ class uvm_reg(uvm_object):
     def reset(self, kind: str = "HARD") -> None:
         for field in self._fields:
             field.reset(kind)
-        try:
-            if self._atomic.locked():
-                self._atomic.release()
-        except TypeError:
-            # INFO: For backward compatibility with Cocotb <= 1.8
-            if self._atomic.locked:
-                self._atomic.release()
+        if self._atomic.locked():
+            self._atomic.release()
 
         self._process = None
         self._set_is_busy(False)

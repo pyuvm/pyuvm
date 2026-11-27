@@ -19,7 +19,7 @@ def test(
 ):
     if keep_set is None:
         keep_set = set()
-    if cocotb_version_info >= (1, 7, 0) and stage is None:
+    if stage is None:
         stage = 0
 
     def decorator(cls):

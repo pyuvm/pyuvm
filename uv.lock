@@ -1317,7 +1317,7 @@ tests = [
 docs = ">=3.11"
 
 [package.metadata]
-requires-dist = [{ name = "cocotb", specifier = ">=1.6.0,<3.0" }]
+requires-dist = [{ name = "cocotb", specifier = ">=1.9.0,<3.0" }]
 
 [package.metadata.requires-dev]
 dev = [

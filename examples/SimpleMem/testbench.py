@@ -102,7 +102,7 @@ class MemRandomSeq(uvm_sequence):
     directed prefix guarantees the coverage subscriber closes on every
     Python / cocotb matrix combination — a pure 32-shot random
     sequence misses ``(WRITE, addr-bucket 2)`` about once every twenty
-    runs on Python 3.8 + cocotb 1.8, where the underlying RNG's draw
+    runs on Python 3.8 + cocotb 1.9, where the underlying RNG's draw
     order leaves a hole. The random tail still exercises the bus with
     unpredictable address/data patterns so the scoreboard and BFM
     aren't degenerated to a fixed trace.

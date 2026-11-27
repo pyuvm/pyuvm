@@ -21,7 +21,7 @@ classifiers = [
     "Framework :: cocotb",
 ]
 dependencies = [
-    "cocotb>=1.6.0,<3.0",
+    "cocotb>=1.9.0,<3.0",
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
