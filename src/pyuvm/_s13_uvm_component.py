@@ -8,7 +8,7 @@ from typing import Any
 from cocotb.triggers import Event
 
 from pyuvm._error_classes import UVMConfigItemNotFound, UVMError, UVMNotImplemented
-from pyuvm._s06_reporting_classes import uvm_report_object
+from pyuvm._s06_reporting_classes import PyuvmStreamHandler, uvm_report_object
 from pyuvm._s08_factory_classes import uvm_factory
 from pyuvm._s09_phasing import uvm_build_phase, uvm_common_phases, uvm_run_phase
 from pyuvm._utility_classes import (
@@ -613,7 +613,7 @@ class ConfigDB(metaclass=Singleton):
     def __init__(self):
         self.logger_holder = uvm_report_object("logger_holder")
         self.logger_holder.remove_streaming_handler()
-        configdb_handler = logging.StreamHandler()
+        configdb_handler = PyuvmStreamHandler()
         configdb_handler.addFilter(SimTimeContextFilter())
         # Don't let the handler interfere with logger level
         configdb_handler.setLevel(logging.NOTSET)
