@@ -1,8 +1,9 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import FallingEdge
+from cocotb.triggers import FallingEdge, Timer
 
 from pyuvm import *
+from pyuvm._utils import cocotb_version_info
 
 
 class CocotbProxy:
@@ -187,3 +188,23 @@ async def nowait_tests(dut):
         assert False
     except cocotb.queue.QueueEmpty:
         pass
+
+
+def task_done(task):
+    # cocotb 1.6 has no Task.done(); it only has the _finished property
+    return task.done() if cocotb_version_info >= (1, 7) else task._finished
+
+
+@cocotb.test()
+async def peek_wakes_waiting_getter(dut):
+    """A blocked peek must not leave a blocked get asleep on a non-empty queue"""
+    qq = UVMQueue(maxsize=1)
+    peeker = cocotb.start_soon(qq.peek())
+    getter = cocotb.start_soon(qq.get())
+    await Timer(1, "us")
+    qq.put_nowait(7)
+    await Timer(1, "us")
+    assert task_done(peeker)
+    assert task_done(getter), "get() still blocked although the queue holds an item"
+    assert peeker.result() == 7
+    assert getter.result() == 7

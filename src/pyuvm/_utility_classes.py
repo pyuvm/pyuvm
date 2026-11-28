@@ -350,6 +350,9 @@ class UVMQueue(cocotb.queue.Queue):
             event = Event()
             self._getters.append((event, current_task()))
             await event.wait()
+        # Peeking does not consume the item, so pass the wakeup that put_nowait()
+        # gave us on to the next waiter instead of swallowing it.
+        self._wakeup_next(self._getters)
         return self.peek_nowait()
 
     def peek_nowait(self):
