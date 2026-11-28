@@ -66,6 +66,18 @@ class PyuvmFormatter(FormatterBase):
         return formatted_msg
 
 
+class PyuvmHandler(logging.Handler):
+    """Base class for logging handlers owned by pyuvm."""
+
+
+class PyuvmStreamHandler(logging.StreamHandler, PyuvmHandler):
+    """Stream handler owned by pyuvm."""
+
+
+class PyuvmNullHandler(logging.NullHandler, PyuvmHandler):
+    """Null handler owned by pyuvm."""
+
+
 def configure_uvm_root_logger():
     """Attach pyuvm's default stream handler once to the shared uvm logger."""
     if not get_sv_uvm_style_reporting_enabled():
@@ -75,11 +87,10 @@ def configure_uvm_root_logger():
     uvm_root_logger.setLevel(logging.INFO)
     uvm_root_logger.propagate = False
     for handler in uvm_root_logger.handlers:
-        if getattr(handler, "_pyuvm_default_handler", False):
+        if isinstance(handler, PyuvmStreamHandler):
             return handler
 
-    streaming_handler = logging.StreamHandler(sys.stdout)
-    streaming_handler._pyuvm_default_handler = True
+    streaming_handler = PyuvmStreamHandler(sys.stdout)
     streaming_handler.addFilter(PyuvmSimTimeContextFilter())
     streaming_handler.setLevel(logging.NOTSET)
     streaming_handler.setFormatter(FormatterBase())
@@ -106,16 +117,16 @@ class uvm_report_object(uvm_object):
         """
         super().__init__(name)
         self._uvm_formatter = PyuvmFormatter(self.get_full_name())
-        if get_sv_uvm_style_reporting_enabled():
-            configure_uvm_root_logger()
-            self.logger.propagate = True
-            for handler in list(self.logger.handlers):
+        for handler in list(self.logger.handlers):
+            if isinstance(handler, PyuvmHandler):
                 self.logger.removeHandler(handler)
+        if get_sv_uvm_style_reporting_enabled():
+            self.logger.propagate = True
+            configure_uvm_root_logger()
             self._streaming_handler = None
         else:
             self.logger.propagate = False
-            self._streaming_handler = logging.StreamHandler(sys.stdout)
-            self._streaming_handler._pyuvm_object_default_handler = True
+            self._streaming_handler = PyuvmStreamHandler(sys.stdout)
             self._streaming_handler.addFilter(PyuvmSimTimeContextFilter())
             self._streaming_handler.setLevel(logging.NOTSET)
             self.add_logging_handler(self._streaming_handler)
@@ -192,4 +203,4 @@ class uvm_report_object(uvm_object):
         """
         self.remove_streaming_handler()
         self.logger.propagate = False
-        self.add_logging_handler(logging.NullHandler())
+        self.add_logging_handler(PyuvmNullHandler())

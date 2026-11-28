@@ -13,6 +13,7 @@ from pyuvm import (
     UVM_LOW,
     UVM_NONE,
     UVM_WARNING,
+    ConfigDB,
     get_sv_uvm_style_reporting_enabled,
     set_sv_uvm_style_reporting_enabled,
     uvm_component,
@@ -25,6 +26,7 @@ from pyuvm import (
     uvm_test,
     uvm_transaction,
 )
+from pyuvm._s06_reporting_classes import PyuvmHandler, configure_uvm_root_logger
 from pyuvm._s13_uvm_component import uvm_test as internal_uvm_test
 
 
@@ -781,6 +783,11 @@ def test_legacy_report_object_creates_default_stream_handler():
     assert not report_object.logger.propagate
     assert report_object._streaming_handler in report_object.logger.handlers
     assert isinstance(report_object._streaming_handler, logging.StreamHandler)
+    assert isinstance(report_object._streaming_handler, PyuvmHandler)
+    assert all(
+        isinstance(handler, PyuvmHandler)
+        for handler in ConfigDB().logger_holder.logger.handlers
+    )
 
 
 def test_legacy_remove_streaming_handler_removes_default_handler():
@@ -828,8 +835,7 @@ def test_sv_uvm_style_report_object_does_not_create_default_stream_handler():
     assert report_object.logger.propagate
     assert report_object._streaming_handler is None
     assert not any(
-        getattr(handler, "_pyuvm_object_default_handler", False)
-        for handler in report_object.logger.handlers
+        isinstance(handler, PyuvmHandler) for handler in report_object.logger.handlers
     )
 
 
@@ -859,6 +865,50 @@ def test_sv_uvm_style_report_object_removes_reused_logger_stream_handler():
         for handler in list(logger.handlers):
             logger.removeHandler(handler)
             handler.close()
+
+
+@pytest.mark.parametrize("sv_style", [False, True])
+def test_reused_uvm_logger_replaces_only_pyuvm_handlers(sv_style):
+    logger_name = f"reused_user_logger.{uuid.uuid4().hex}"
+    logger = logging.getLogger(f"uvm.{logger_name}")
+    user_stream = io.StringIO()
+    user_handler = logging.StreamHandler(user_stream)
+    user_handler.setFormatter(logging.Formatter("USER:%(message)s"))
+
+    class ReusedLoggerObject(uvm_report_object):
+        def get_initial_logger_name(self):
+            return logger_name
+
+    first = ReusedLoggerObject("first")
+    first_handler = first._streaming_handler
+    logger.addHandler(user_handler)
+
+    second = ReusedLoggerObject("second")
+    assert first_handler not in second.logger.handlers
+    assert user_handler in second.logger.handlers
+
+    second.disable_logging()
+    set_sv_uvm_style_reporting_enabled(sv_style)
+    third = ReusedLoggerObject("third")
+    third.logger.info("hello")
+
+    pyuvm_handlers = [h for h in third.logger.handlers if isinstance(h, PyuvmHandler)]
+    assert pyuvm_handlers == ([] if sv_style else [third._streaming_handler])
+    assert user_handler in third.logger.handlers
+    assert user_stream.getvalue() == "USER:hello\n"
+
+
+def test_configure_uvm_root_logger_preserves_user_handler():
+    set_sv_uvm_style_reporting_enabled(True)
+    root_logger = logging.getLogger("uvm")
+    user_handler = logging.StreamHandler(io.StringIO())
+    root_logger.addHandler(user_handler)
+
+    default_handler = configure_uvm_root_logger()
+
+    assert isinstance(default_handler, PyuvmHandler)
+    assert configure_uvm_root_logger() is default_handler
+    assert user_handler in root_logger.handlers
 
 
 def test_uvm_report_uses_existing_object_verbosity():
